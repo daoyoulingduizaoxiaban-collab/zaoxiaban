@@ -1,0 +1,32 @@
+@import '/variable.less';
+
+.schedule-container {
+  background-color: #f6f6f6;
+  padding: 32rpx 0; // 給頂部和底部一點呼吸空間
+  padding-bottom: 150rpx; // 確保內容不被底部的 TabBar 遮住 (120rpx + 緩衝)
+  min-height: calc(100vh - 200rpx); // 確保背景色能鋪滿全螢幕
+}
+
+/* 讓 Card 類型的 Cell Group 更好看 */
+.t-cell-group--card {
+  margin: 0 32rpx !important; // 讓卡片左右有間距
+}
+
+/* 狀態顏色區分 */
+.status-ongoing {
+  color: #0052d9 !important;
+  font-weight: bold;
+}
+
+.status-pending {
+  color: #ed7b2f !important;
+}
+
+.status-completed {
+  color: #abb0b8 !important;
+}
+
+.empty-state {
+  padding-top: 200rpx;
+  background: #f6f6f6;
+}

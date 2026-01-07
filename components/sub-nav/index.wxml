@@ -1,0 +1,8 @@
+<t-navbar
+  title="{{ title }}"
+  left-arrow
+  bind:go-back="onBack"
+  fixed
+  placeholder
+  t-class="custom-sub-nav"
+/>

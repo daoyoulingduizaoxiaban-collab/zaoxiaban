@@ -6,6 +6,7 @@ import request from '~/api/request';
 
 Page({
   data: {
+    titleText: '首頁',
     enable: false,
     swiperList: [],
     cardInfo: [],

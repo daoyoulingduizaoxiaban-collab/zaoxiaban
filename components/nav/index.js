@@ -7,7 +7,10 @@ Component({
       type: String,
       value: 'title',
     },
-    titleText: String,
+    titleText: {
+      type: String,
+      value: '' // 預設值
+    }
   },
   data: {
     visible: false,
