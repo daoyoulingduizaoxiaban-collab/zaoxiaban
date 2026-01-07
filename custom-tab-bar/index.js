@@ -80,7 +80,7 @@ Component({
         },
         {
           icon: 'home',
-          value: 'my',
+          value: 'profile',
           label: '我的'
         },
       ];

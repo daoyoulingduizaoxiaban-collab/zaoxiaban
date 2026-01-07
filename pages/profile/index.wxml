@@ -1,0 +1,19 @@
+<nav nav-type="profile" titleText="{{titleText}}" />
+
+<view class="profile-container">
+  <t-cell-group theme="card">
+    <block wx:for="{{ profileList }}" wx:key="id">
+      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="出發日期：{{ item.date }}" hover arrow
+        bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
+        <t-icon slot="left-icon" name="calendar" size="48rpx" color="#0052d9" />
+      </t-cell>
+    </block>
+  </t-cell-group>
+
+  <view wx:if="{{ profileList.length === 0 }}" class="empty-state">
+    <t-empty icon="info-circle" description="暫無我的安排" />
+  </view>
+
+  <t-fab icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增我的" style="right: 32rpx; bottom: 180rpx;" />
+
+</view>

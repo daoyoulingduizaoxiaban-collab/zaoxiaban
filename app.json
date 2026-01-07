@@ -12,6 +12,9 @@
     "pages/providers/index",
     "pages/providers/edit/index",
 
+    "pages/profile/index",
+    "pages/profile/edit/index",
+
     "pages/home/index",
     "pages/message/index",
     "pages/my/index"
@@ -106,7 +109,7 @@
         "text": "供應管理"
       },
       {
-        "pagePath": "pages/my/index",
+        "pagePath": "pages/profile/index",
         "text": "我的"
       }
     ]
