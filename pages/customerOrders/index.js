@@ -1,85 +1,48 @@
-import request from '~/api/request';
-
 Page({
   data: {
-    phoneNumber: '',
-    isPhoneNumber: false,
-    isCheck: false,
-    isSubmit: false,
-    isPasswordLogin: false,
-    passwordInfo: {
-      account: '',
-      password: '',
-    },
-    radioValue: '',
+    titleText: '客戶訂單',
+    // 模擬數據：客戶訂單名稱、狀態、日期
+    customerOrdersList: [
+      { id: 'S001', title: '台北三日遊 - 收集行李規劃', status: 'ongoing', statusText: '進行中', date: '2026-01-10' },
+      { id: 'S002', title: '台中商務客戶訂單', status: 'pending', statusText: '待出發', date: '2026-01-15' },
+      { id: 'S003', title: '高雄導覽活動', status: 'completed', statusText: '已結束', date: '2025-12-25' }
+    ]
   },
 
-  /* 自定义功能函数 */
-  changeSubmit() {
-    if (this.data.isPasswordLogin) {
-      if (this.data.passwordInfo.account !== '' && this.data.passwordInfo.password !== '' && this.data.isCheck) {
-        this.setData({ isSubmit: true });
-      } else {
-        this.setData({ isSubmit: false });
+  // 點擊客戶訂單跳轉至詳情頁
+  goToDetail(e) {
+    const { id } = e.currentTarget.dataset;
+    wx.navigateTo({
+      // 跳轉時攜帶 id，方便詳情頁請求對應數據
+      url: `/pages/customerOrders/detail?id=${id}`,
+      fail: (err) => {
+        console.error("跳轉詳情頁失敗：", err);
       }
-    } else if (this.data.isPhoneNumber && this.data.isCheck) {
-      this.setData({ isSubmit: true });
-    } else {
-      this.setData({ isSubmit: false });
+    });
+  },
+
+  // 同步 TabBar 狀態 (之前提到的關鍵細節)
+  onShow() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        value: 'customerOrders' 
+      });
     }
   },
 
-  // 手机号变更
-  onPhoneInput(e) {
-    const isPhoneNumber = /^[1][3,4,5,7,8,9][0-9]{9}$/.test(e.detail.value);
-    this.setData({
-      isPhoneNumber,
-      phoneNumber: e.detail.value,
-    });
-    this.changeSubmit();
-  },
-
-  // 用户协议选择变更
-  onCheckChange(e) {
-    const { value } = e.detail;
-    this.setData({
-      radioValue: value,
-      isCheck: value === 'agree',
-    });
-    this.changeSubmit();
-  },
-
-  onAccountChange(e) {
-    this.setData({ passwordInfo: { ...this.data.passwordInfo, account: e.detail.value } });
-    this.changeSubmit();
-  },
-
-  onPasswordChange(e) {
-    this.setData({ passwordInfo: { ...this.data.passwordInfo, password: e.detail.value } });
-    this.changeSubmit();
-  },
-
-  // 切换登录方式
-  changeLogin() {
-    this.setData({ isPasswordLogin: !this.data.isPasswordLogin, isSubmit: false });
-  },
-
-  async login() {
-    if (this.data.isPasswordLogin) {
-      const res = await request('/login/postPasswordLogin', 'post', { data: this.data.passwordInfo });
-      if (res.success) {
-        await wx.setStorageSync('access_token', res.data.token);
-        wx.switchTab({
-          url: `/pages/my/index`,
-        });
+  onGoToEdit(e) {
+    const id = e.currentTarget?.dataset?.id;
+    const url = id ? `/pages/customerOrders/edit/index?id=${id}` : '/pages/customerOrders/edit/index';
+    console.log(url)
+    wx.navigateTo({
+      url: url,
+      success: () => console.log('跳轉成功'),
+      fail: (err) => {
+        console.error('跳轉失敗原因:', err); // 💡 這行會告訴你為什麼沒換畫面
+        if (err.errMsg.includes('tabbar')) {
+          wx.switchTab({ url });
+        }
       }
-    } else {
-      const res = await request('/login/getSendMessage', 'get');
-      if (res.success) {
-        wx.navigateTo({
-          url: `/pages/loginCode/loginCode?phoneNumber=${this.data.phoneNumber}`,
-        });
-      }
-    }
-  },
+    });
+  }
 });
