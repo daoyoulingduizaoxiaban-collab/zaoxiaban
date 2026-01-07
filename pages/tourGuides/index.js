@@ -1,66 +1,48 @@
-// pages/tourGuides/index.js
 Page({
-
-  /**
-   * 页面的初始数据
-   */
   data: {
-
+    titleText: '導遊管理',
+    // 模擬數據：行程名稱、狀態、日期
+    tourGuidesList: [
+      { id: 'S001', title: '台北三日遊 - 收集行李規劃', status: 'ongoing', statusText: '進行中', date: '2026-01-10' },
+      { id: 'S002', title: '台中商務行程', status: 'pending', statusText: '待出發', date: '2026-01-15' },
+      { id: 'S003', title: '高雄導覽活動', status: 'completed', statusText: '已結束', date: '2025-12-25' }
+    ]
   },
 
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad(options) {
-
+  // 點擊行程跳轉至詳情頁
+  goToDetail(e) {
+    const { id } = e.currentTarget.dataset;
+    wx.navigateTo({
+      // 跳轉時攜帶 id，方便詳情頁請求對應數據
+      url: `/pages/tourGuides/detail?id=${id}`,
+      fail: (err) => {
+        console.error("跳轉詳情頁失敗：", err);
+      }
+    });
   },
 
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
-  onReady() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面显示
-   */
+  // 同步 TabBar 狀態 (之前提到的關鍵細節)
   onShow() {
-
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        value: 'tourGuides' 
+      });
+    }
   },
 
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
-  onHide() {
-
-  },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
-  onUnload() {
-
-  },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
-  onPullDownRefresh() {
-
-  },
-
-  /**
-   * 页面上拉触底事件的处理函数
-   */
-  onReachBottom() {
-
-  },
-
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage() {
-
+  onGoToEdit(e) {
+    const id = e.currentTarget?.dataset?.id;
+    const url = id ? `/pages/tourGuides/edit/index?id=${id}` : '/pages/tourGuides/edit/index';
+    console.log(url)
+    wx.navigateTo({
+      url: url,
+      success: () => console.log('跳轉成功'),
+      fail: (err) => {
+        console.error('跳轉失敗原因:', err); // 💡 這行會告訴你為什麼沒換畫面
+        if (err.errMsg.includes('tabbar')) {
+          wx.switchTab({ url });
+        }
+      }
+    });
   }
-})
+});

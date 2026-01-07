@@ -1,0 +1,13 @@
+<sub-nav title="{{ pageTitle }}" />
+
+<view class="edit-container">
+  <t-cell-group theme="card">
+    <t-input label="導遊名稱" placeholder="請輸入導遊名稱" value="{{ formData.title }}" />
+    <t-cell title="出發日期" note="{{ formData.date || '請選擇' }}" arrow bind:tap="showDatePicker" />
+    <t-input label="導遊狀態" value="{{ formData.statusText }}" disabled />
+  </t-cell-group>
+
+  <view class="submit-bar">
+    <t-button theme="primary" size="large" block bind:tap="onSave">保存導遊</t-button>
+  </view>
+</view>
