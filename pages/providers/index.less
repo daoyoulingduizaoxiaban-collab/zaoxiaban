@@ -1,91 +1,32 @@
-.login {
-  &__title {
-    color: rgba(0, 0, 0, 0.9);
-    font-size: 56rpx;
-    font-weight: 600;
-    line-height: 72rpx;
-    padding: 16rpx 32rpx 40rpx;
-  }
+@import '/variable.less';
 
-  &__input {
-    .input-label {
-      display: flex;
-      padding-right: 32rpx;
-      box-sizing: border-box;
-      border-right: 1rpx solid #e7e7e7;
-    }
+.providers-container {
+  background-color: #f6f6f6;
+  padding: 32rpx 0; // 給頂部和底部一點呼吸空間
+  padding-bottom: 150rpx; // 確保內容不被底部的 TabBar 遮住 (120rpx + 緩衝)
+  min-height: calc(100vh - 200rpx); // 確保背景色能鋪滿全螢幕
+}
 
-    .input-icon {
-      margin-left: 8rpx;
-    }
-  }
+/* 讓 Card 類型的 Cell Group 更好看 */
+.t-cell-group--card {
+  margin: 0 32rpx !important; // 讓卡片左右有間距
+}
 
-  &__tips {
-    color: rgba(0, 0, 0, 0.4);
-    font-size: 24rpx;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 40rpx;
-    margin: 24rpx 32rpx 32rpx;
-  }
+/* 狀態顏色區分 */
+.status-ongoing {
+  color: #0052d9 !important;
+  font-weight: bold;
+}
 
-  &__button {
-    margin: 0 32rpx;
-  }
+.status-pending {
+  color: #ed7b2f !important;
+}
 
-  &__password--forget {
-    display: flex;
-    font-size: 24rpx;
-    align-items: center;
-    margin: 32rpx;
-    line-height: 40rpx;
-  }
+.status-completed {
+  color: #abb0b8 !important;
+}
 
-  &__others {
-    margin: 64rpx 32rpx auto 32rpx;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    &-label {
-      min-width: 96rpx;
-      color: rgba(0, 0, 0, 0.6);
-      font-size: 24rpx;
-      line-height: 40rpx;
-    }
-
-    &-buttons {
-      flex: 1;
-      margin-left: 32rpx;
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-
-      .button {
-        margin: 0 !important;
-
-        &:not(:last-child) {
-          margin-right: 32rpx !important;
-        }
-      }
-    }
-  }
-
-  // 覆盖组件样式
-  .radio-class {
-    --td-radio-icon-size: 32rpx;
-    --td-radio-label-line-height: 40rpx;
-
-    align-items: center;
-  }
-
-  .radio-class-icon {
-    margin-top: 0 !important;
-  }
-
-  .radio-class-label {
-    margin-left: 8rpx !important;
-    font-size: 24rpx !important;
-    line-height: 40rpx !important;
-  }
+.empty-state {
+  padding-top: 200rpx;
+  background: #f6f6f6;
 }

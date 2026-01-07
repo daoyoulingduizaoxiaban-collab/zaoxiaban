@@ -2,7 +2,7 @@
   "pages": [
     "pages/schedule/index",
     "pages/schedule/edit/index",
-    
+
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
 
@@ -10,6 +10,8 @@
     "pages/customerOrders/edit/index",
 
     "pages/providers/index",
+    "pages/providers/edit/index",
+
     "pages/home/index",
     "pages/message/index",
     "pages/my/index"
