@@ -18,6 +18,7 @@ const MOCK_LIST = [
     totalReceivable: 10000,
     totalReceived: 500,
     totalCustomers: 20,
+    qrCodeUrl:"https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 1,

@@ -74,13 +74,13 @@ Page({
 
   addItinerary(e) {
     const id = e.currentTarget?.dataset?.id;
-    const url = id ? `/pages/itinerary/detail/index?id=${id}` : '/pages/itinerary/detail/index';
-    console.log(url)
+    const url = id ? `/sub-pages/itinerary/detail/index?id=${id}` : '/sub-pages/itinerary/detail/index';
+
     wx.navigateTo({
       url: url,
       success: () => console.log('跳轉成功'),
       fail: (err) => {
-        console.error('跳轉失敗原因:', err); // 💡 這行會告訴你為什麼沒換畫面
+        console.error('跳轉失敗原因:', err); 
         if (err.errMsg.includes('tabbar')) {
           wx.switchTab({
             url

@@ -319,4 +319,22 @@
 /* 關閉按鈕間距 */
 .popup-footer t-button {
   --td-button-border-radius: 12rpx;
+}.qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 0;
+  border-top: 1rpx solid #f3f3f3; /* 增加一條細線與上方輸入框區隔 */
+  background-color: #fff;
+
+  .qr-image {
+    width: 280rpx;
+    height: 280rpx;
+    margin-bottom: 16rpx;
+  }
+
+  .qr-label {
+    font-size: 24rpx;
+    color: #999;
+  }
 }

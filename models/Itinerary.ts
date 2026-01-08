@@ -11,6 +11,7 @@ export class Itinerary {
   totalReceivable: number;
   totalReceived: number;
   totalCustomers: number;
+  qrCodeUrl: string;
 
   constructor(data: Partial<Itinerary> = {}) {
     this.id = data.id ?? -1;
@@ -21,6 +22,7 @@ export class Itinerary {
     this.totalReceivable = data.totalReceivable ?? -1;
     this.totalReceived = data.totalReceived ?? -1;
     this.totalCustomers = data.totalCustomers ?? -1;
+    this.qrCodeUrl = data.qrCodeUrl ?? "";
 
     const rawGoods = Array.isArray(data.customerOrderList) ? data.customerOrderList : [];
     this.customerOrderList = rawGoods.map((item: CustomerOrder) => new CustomerOrder(item));

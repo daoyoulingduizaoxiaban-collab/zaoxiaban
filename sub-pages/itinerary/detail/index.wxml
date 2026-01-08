@@ -7,6 +7,11 @@
     <t-input label="行程狀態" value="{{ itinerary.statusText }}" />
     <t-input label="描述" value="{{ itinerary.description }}" />
     <!-- <t-cell title="出發日期" note="{{ itinerary.date || '請選擇' }}" arrow bind:tap="showDatePicker" /> -->
+    <view class="qr-container" bindtap="previewQR">
+      <image class="qr-image" src="{{ itinerary.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
+        show-menu-by-longpress />
+      <view class="qr-label">點一下放大</view>
+    </view>
   </t-cell-group>
 
   <view class="statistics-card">

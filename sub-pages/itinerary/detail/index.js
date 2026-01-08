@@ -15,7 +15,7 @@ Page({
 
   onLoad(options) {
     //todo 測試假資料
-    let id = options.id;
+    let id = 1;
 
     if (id) {
       this.setData({
@@ -101,11 +101,13 @@ Page({
 
   onShowOrderDetails(e) {
     // 從 data-index 取得目前點擊的索引
-    const { index } = e.currentTarget.dataset;
-    
+    const {
+      index
+    } = e.currentTarget.dataset;
+
     // 依照你的資料結構，從 itinerary 裡的 customerOrderList 抓取物件
     const selectedOrder = this.data.itinerary.customerOrderList[index];
-  
+
     if (selectedOrder) {
       this.setData({
         selectedOrder: selectedOrder,
@@ -119,6 +121,43 @@ Page({
   onCloseDetails() {
     this.setData({
       showDetails: false
+    });
+  },
+  previewQR() {
+    wx.previewImage({
+      urls: [this.data.itinerary.qrCodeUrl],
+      current: this.data.itinerary.qrCodeUrl
+    });
+  },
+
+  onImageError(e) {
+    const {
+      errMsg
+    } = e.detail;
+    const {
+      qrCodeUrl
+    } = this.data.itinerary.qrCodeUrl;
+
+    console.error('【圖片加載失敗】:', errMsg);
+    console.error('【當前錯誤路徑】:', qrCodeUrl);
+
+    // 快速診斷建議
+    if (qrCodeUrl.indexOf('http://') === 0) {
+      console.warn('⚠️ 錯誤提示：微信小程序正式環境要求使用 https，請檢查連結協定。');
+    }
+
+    if (!qrCodeUrl || qrCodeUrl === '') {
+      console.warn('⚠️ 錯誤提示：qrCodeUrl 為空，請檢查 API 回傳數據。');
+    }
+
+    // 可選：載入失敗時給用戶一個預設圖
+    this.setData({
+      'itinerary.qrCodeUrl': '/assets/images/error-qr.png'
+    });
+
+    wx.showToast({
+      title: '圖片載入失敗',
+      icon: 'none'
     });
   }
 });
