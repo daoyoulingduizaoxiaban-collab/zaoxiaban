@@ -33,20 +33,36 @@ Component({
   },
   methods: {
     handleChange(e) {
-      const {
-        value
-      } = e.detail;
-      wx.switchTab({
-        url: `/pages/${value}/index`
-      });
+      try {
+        const {
+          value
+        } = e.detail;
+        console.log(value)
+        let url = '/pages/home/index'
+
+        switch (value) {
+          case "itinerary":
+            url = `/pages/itinerary/list/index`
+            break;
+
+          default:
+            url = `/pages/${value}/index`
+            break;
+        }
+        wx.switchTab({
+          url: url
+        });
+      } catch (error) {
+        console.log(error)
+      }
     },
 
     /** 设置未读消息数量 */
-    setUnreadNum(unreadNum) {
-      this.setData({
-        unreadNum
-      });
-    },
+    // setUnreadNum(unreadNum) {
+    //   this.setData({
+    //     unreadNum
+    //   });
+    // },
 
     // 初始化下方BAR
     initTabBar() {
@@ -61,7 +77,7 @@ Component({
         // },
         {
           icon: 'home',
-          value: 'schedule',
+          value: 'itinerary',
           label: '行程'
         },
         {

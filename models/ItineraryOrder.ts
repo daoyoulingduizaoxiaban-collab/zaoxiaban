@@ -16,7 +16,7 @@ export class ItineraryOrder {
     this.scheduleId = data.scheduleId ?? 0;
     this.totalAmount = data.totalAmount ?? 0;
     this.orderStatus = data.orderStatus ?? 0;
-    this.orderStatusText = getOrderStatusTextByValue(data.orderStatus ?? -1);
+    this.orderStatusText = getOrderStatusTextByValue(data.orderStatus ?? OrderStatus.ALL);
     this.customerOrder = data.customerOrder ?? [];
   }
 

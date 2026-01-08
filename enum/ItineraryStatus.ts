@@ -11,14 +11,16 @@ export const ItineraryStatusText = Object.freeze({
 });
 
 export const getItineraryStatusList = () => {
-  return Object.keys(ItineraryStatus).map(key => {
-    const value = ItineraryStatus[key];
-    return {
-      label: getStatusTextByValue(value), // 取得對應文字
-      value: value,
-      key: key
-    };
-  });
+  return Object.keys(ItineraryStatus)
+    .filter(key => isNaN(Number(key)))
+    .map(key => {
+      const value = ItineraryStatus[key];
+      return {
+        label: getStatusTextByValue(value), // 取得對應文字
+        value: value,
+        key: key
+      };
+    });
 };
 
 export const getStatusTextByValue = (value: ItineraryStatus) => {

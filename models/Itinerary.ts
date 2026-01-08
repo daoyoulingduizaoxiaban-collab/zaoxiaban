@@ -1,10 +1,10 @@
-import {  ItineraryOrder } from './ItineraryOrder';
-import { getStatusTextByValue } from '~/enum/ItineraryStatus'
+import { ItineraryOrder } from './ItineraryOrder';
+import { getStatusTextByValue, ItineraryStatus } from '~/enum/ItineraryStatus'
 
 export class Itinerary {
   id: number;
   title: string;
-  status: number;
+  status: ItineraryStatus;
   statusText: string;
   description: string;
   itineraryOrders: ItineraryOrder[] = [];
@@ -16,7 +16,7 @@ export class Itinerary {
     this.id = data.id ?? -1;
     this.title = data.title ?? '';
     this.status = data.status ?? -1;
-    this.statusText = getStatusTextByValue(data.status ?? -1);
+    this.statusText = getStatusTextByValue(data.status ?? ItineraryStatus.ALL);
     this.description = data.description ?? '';
     this.totalReceivable = data.totalReceivable ?? -1;
     this.totalReceived = data.totalReceived ?? -1;

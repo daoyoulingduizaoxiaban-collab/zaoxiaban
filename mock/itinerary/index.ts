@@ -33,7 +33,6 @@ const MOCK_LIST = [
             amount: 1,
             totalPrice: 1000
           })],
-          quantity: 2,
           snapshotPrice: 30,
         })],
       }),
@@ -58,7 +57,6 @@ const MOCK_LIST = [
           id: 1,
           itineraryOrderId: 1,
           goodsList: [],
-          quantity: 2,
           snapshotPrice: 30,
         })],
       })

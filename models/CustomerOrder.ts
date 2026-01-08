@@ -10,7 +10,7 @@ export class CustomerOrder {
   constructor(data: Partial<CustomerOrder> = {}) {
     this.id = data.id ?? -1;
     this.itineraryOrderId = data.itineraryOrderId ?? -1;
-    this.status = data.status ?? -1;
+    this.status = data.status ?? OrderItemStatus.UNPAID;
     this.snapshotPrice = data.snapshotPrice ?? -1;
     this.goodsList = data.goodsList ?? [];
   }

@@ -112,7 +112,7 @@ Page({
     } = this.data;
 
     // 呼叫 Mock API，同時傳入兩個條件
-    const res = await itineraryMock.filterItineraryList(searchKeyword, currentStatus);
+    const res = await ItineraryMock.filterItineraryList(searchKeyword, currentStatus);
 
     this.setData({
       // 確保畫面更新的是篩選後的結果
