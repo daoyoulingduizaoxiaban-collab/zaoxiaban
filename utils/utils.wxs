@@ -4,6 +4,7 @@ var formatNumber = function (num) {
   var reg = getRegExp('(\d)(?=(\d{3})+$)', 'g');
   return str.replace(reg, '$1,');
 }
+
 var getOrderBadgeColor = function (status) {
   // 根據狀態回傳不同顏色，讓導遊一眼看出急迫性
   if (status === 0) return '#ff4d4f'; // 未付款用紅色
@@ -11,7 +12,27 @@ var getOrderBadgeColor = function (status) {
   return '#52c41a'; // 已確認用綠色
 }
 
+var customerOrderHelper = {
+  getStatusText: function(status) {
+    console.log(status)
+    if (status === 0) return '未付款';
+    if (status === 1) return '客戶付款';
+    if (status === 2) return '已確認';
+    if (status === 3) return '已取消';
+    return '未知';
+  },
+  getStatusClass: function(status) {
+    console.log(status)
+    if (status === 0) return 'status-unpaid';
+    if (status === 1) return 'status-paid';
+    if (status === 2) return 'status-confirm';
+    if (status === 3) return 'status-cancel';
+    return 'stats err';
+  }
+};
+
 module.exports = {
   formatNumber: formatNumber,
-  getOrderBadgeColor: getOrderBadgeColor
+  getOrderBadgeColor: getOrderBadgeColor,
+  customerOrderHelper: customerOrderHelper
 };

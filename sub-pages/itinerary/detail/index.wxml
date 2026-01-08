@@ -30,16 +30,14 @@
     </view>
   </view>
   <!-- TODO iterator錯誤 -->
-  <view class="section-title">客戶訂單</view>
 
+  <view class="section-title">客戶訂單</view>
   <block wx:for="{{itinerary.customerOrderList}}" wx:key="id" wx:for-item="customerDetail">
     <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" hover-class="card-hover">
 
       <view class="order-header">
         <text class="order-no">訂單編號：#{{customerDetail.id}}</text>
-        <text class="order-status {{customerDetail.customerOrdertatus === 1 ? 'status-done' : 'status-pending'}}">
-          {{customerDetail.customerOrdertatus === 1 ? '已完成' : '待付款'}}
-        </text>
+         <text class="order-status {{utils.customerOrderHelper.getStatusClass(customerDetail.status)}}">{{utils.customerOrderHelper.getStatusText(customerDetail.status)}}</text>
       </view>
 
       <view class="order-body">

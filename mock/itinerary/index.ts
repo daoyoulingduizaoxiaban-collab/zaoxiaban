@@ -1,6 +1,6 @@
 import { CustomerOrder } from '~/models/CustomerOrder';
 import { CustomerGoods } from '~/models/CustomerGoods';
-import { OrderItemStatus } from '~/enum/OrderItemStatus'
+import { CustomerOrderStatus } from '~/enum/OrderItemStatus'
 import {
   Itinerary
 } from '../../models/Itinerary';
@@ -23,7 +23,40 @@ const MOCK_LIST = [
       new CustomerOrder({
         itineraryId: 1,
         id: 1,
-        status: OrderItemStatus.UNPAID,
+        status: CustomerOrderStatus.UNPAID,
+        totalPrice: 1000,
+        customerGoodsList: [new CustomerGoods({
+          goodsId: 1,
+          amount: 5,
+          totalPrice: 2000,
+        })]
+      }),
+      new CustomerOrder({
+        itineraryId: 1,
+        id: 1,
+        status: CustomerOrderStatus.PAID,
+        totalPrice: 1000,
+        customerGoodsList: [new CustomerGoods({
+          goodsId: 1,
+          amount: 5,
+          totalPrice: 2000,
+        })]
+      }),
+      new CustomerOrder({
+        itineraryId: 1,
+        id: 1,
+        status: CustomerOrderStatus.CONFIRMED,
+        totalPrice: 1000,
+        customerGoodsList: [new CustomerGoods({
+          goodsId: 1,
+          amount: 5,
+          totalPrice: 2000,
+        })]
+      }),
+      new CustomerOrder({
+        itineraryId: 1,
+        id: 1,
+        status: CustomerOrderStatus.CANCELLED,
         totalPrice: 1000,
         customerGoodsList: [new CustomerGoods({
           goodsId: 1,
@@ -46,7 +79,7 @@ const MOCK_LIST = [
       new CustomerOrder({
         itineraryId: 2,
         id: 2,
-        status: OrderItemStatus.UNPAID,
+        status: CustomerOrderStatus.UNPAID,
         totalPrice: 500,
         customerGoodsList: [
           new CustomerGoods({
@@ -65,7 +98,7 @@ const MOCK_LIST = [
       new CustomerOrder({
         itineraryId: 2,
         id: 2,
-        status: OrderItemStatus.UNPAID,
+        status: CustomerOrderStatus.UNPAID,
         totalPrice: 500,
         customerGoodsList: [
           new CustomerGoods({
@@ -96,7 +129,7 @@ const MOCK_LIST = [
       new CustomerOrder({
         itineraryId: 1,
         id: 1,
-        status: OrderItemStatus.UNPAID,
+        status: CustomerOrderStatus.UNPAID,
         totalPrice: 1000,
         customerGoodsList: [new CustomerGoods({
           goodsId: 1,
@@ -107,7 +140,7 @@ const MOCK_LIST = [
       new CustomerOrder({
         itineraryId: 2,
         id: 2,
-        status: OrderItemStatus.UNPAID,
+        status: CustomerOrderStatus.UNPAID,
         totalPrice: 500,
         customerGoodsList: [
           new CustomerGoods({
@@ -126,7 +159,7 @@ const MOCK_LIST = [
       new CustomerOrder({
         itineraryId: 2,
         id: 2,
-        status: OrderItemStatus.UNPAID,
+        status: CustomerOrderStatus.UNPAID,
         totalPrice: 2500,
         customerGoodsList: [
           new CustomerGoods({
