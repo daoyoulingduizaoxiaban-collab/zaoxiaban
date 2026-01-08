@@ -1,3 +1,4 @@
+/* 客戶買的商品 */
 export class CustomerGoods {
   goodsId: number;
   amount: number;

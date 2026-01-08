@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "新增行程",
+  "usingComponents": {
+    "sub-nav": "/components/sub-nav/index",
+    "t-navbar": "tdesign-miniprogram/navbar/navbar",
+    "t-input": "tdesign-miniprogram/input/input",
+    "t-textarea": "tdesign-miniprogram/textarea/textarea",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group"
+  }
+}

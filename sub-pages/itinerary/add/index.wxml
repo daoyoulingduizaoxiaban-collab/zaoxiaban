@@ -1,0 +1,50 @@
+<sub-nav title="新增行程" />
+
+<view class="add-container">
+  <t-cell-group theme="card" title="基本資訊">
+    <t-input label="行程名稱" placeholder="請輸入行程標題" bindchange="onInput" data-field="title" />
+    <t-input label="應收總額" type="number" placeholder="0" suffix="元" bindchange="onInput" data-field="totalReceivable" />
+    <t-input label="下單人數" type="number" placeholder="0" suffix="人" bindchange="onInput" data-field="totalCustomers" />
+  </t-cell-group>
+  <t-cell-group theme="card" title="商品設定">
+    <view class="goods-list" wx:if="{{selectedGoods.length > 0}}">
+      <view class="goods-item" wx:for="{{selectedGoods}}" wx:key="id">
+        <image class="goods-thumb" src="{{item.pictureUrls[0]}}" mode="aspectFill" />
+        <view class="goods-info">
+          <view class="goods-title">{{item.title}}</view>
+          <view class="price-tags-wrapper">
+            <view class="price-badge" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
+              {{price.minQuantity}}件起: ¥{{price.unitPrice}}
+            </view>
+          </view>
+        </view>
+        <view class="remove-btn" bindtap="onRemoveGoods" data-index="{{index}}">
+          <t-icon name="close-circle-filled" size="40rpx" color="#ccc" />
+        </view>
+      </view>
+    </view>
+
+    <view class="add-goods-btn-wrap" bindtap="onSelectGoods">
+      <t-icon name="add" size="48rpx" color="#0052d9" />
+      <text class="add-text">添加行程商品</text>
+    </view>
+  </t-cell-group>
+
+  <t-cell-group theme="card" title="其他設定">
+    <view class="status-row">
+      <text class="label">行程預設狀態</text>
+      <text class="order-status">未付款</text>
+    </view>
+    <t-textarea
+      label="行程描述"
+      placeholder="請詳細列出細項（如：14:00 領取行李、步行 10 分鐘等）"
+      bordered
+      bindchange="onInput" 
+      data-field="description"
+    />
+  </t-cell-group>
+
+  <view class="footer">
+    <t-button theme="primary" size="large" block bindtap="onSave">保存並發布行程</t-button>
+  </view>
+</view>

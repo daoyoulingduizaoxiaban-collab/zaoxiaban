@@ -1,0 +1,120 @@
+/* sub-pages/itinerary/add/index.less */
+.add-container {
+  padding-top: 10rpx;
+  padding-bottom: 200rpx;
+  background-color: #f6f6f6;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 商品清單優化：增加層次感 */
+.goods-list {
+  padding: 0 32rpx; /* 改為與 cell 對齊 */
+  background: #fff;
+  
+  .goods-item {
+    display: flex;
+    align-items: flex-start; /* 改為頂部對齊，適合多行內容 */
+    padding: 24rpx 0;
+    border-bottom: 1rpx solid #f0f0f0;
+    
+    .goods-thumb {
+      width: 100rpx; /* 稍微加大 */
+      height: 100rpx;
+      border-radius: 12rpx;
+      margin-right: 20rpx;
+      background: #f0f0f0;
+    }
+    
+    .goods-info {
+      flex: 1;
+      .goods-title { 
+        font-size: 28rpx; 
+        font-weight: 500; 
+        color: #333; 
+        margin-bottom: 8rpx;
+      }
+      
+      .price-tags-wrapper {
+        display: flex;
+        flex-wrap: wrap; /* 自動換行處理多個門檻 */
+        gap: 8rpx;
+      }
+
+      .price-badge {
+        font-size: 20rpx;
+        color: #fa8c16;
+        background: #fff7e6;
+        padding: 2rpx 12rpx;
+        border-radius: 4rpx;
+        border: 1rpx solid #ffd591;
+      }
+    }
+
+    .remove-btn {
+      padding: 10rpx;
+      margin-left: 10rpx;
+    }
+  }
+}
+
+/* 狀態標籤垂直置中：嚴禁 line-height: 0.7 */
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16rpx;
+  height: 44rpx; /* 固定高度 */
+  font-size: 22rpx;
+  border-radius: 8rpx;
+  line-height: 1 !important; /* 修正核心 */
+  background-color: #fff7e6;
+  color: #fa8c16;
+  border: 1rpx solid #ffd591;
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20rpx 32rpx env(safe-area-inset-bottom);
+  background: #fff;
+  z-index: 100;
+}/* 商品清單內部的添加按鈕 */
+.add-goods-btn-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 0;
+  margin: 20rpx 32rpx;
+  border: 2rpx dashed #dcdcdc; /* 虛線框 */
+  border-radius: 12rpx;
+  background: #fafafa;
+
+  .add-text {
+    font-size: 26rpx;
+    color: #0052d9;
+    margin-top: 12rpx;
+    line-height: 1; /* 保持垂直居中，不使用 0.7 */
+  }
+
+  &:active {
+    background: #f0f0f0;
+  }
+}
+
+/* 狀態標籤修正：嚴禁使用 line-height: 0.7 */
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8rpx 16rpx;
+  font-size: 22rpx;
+  border-radius: 8rpx;
+  line-height: 1 !important; 
+  background-color: #fff7e6;
+  color: #fa8c16;
+  border: 1rpx solid #ffd591;
+}

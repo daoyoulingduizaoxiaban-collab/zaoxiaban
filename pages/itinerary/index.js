@@ -73,8 +73,7 @@ Page({
   },
 
   addItinerary(e) {
-    const id = e.currentTarget?.dataset?.id;
-    const url = id ? `/sub-pages/itinerary/detail/index?id=${id}` : '/sub-pages/itinerary/detail/index';
+    const url = '/sub-pages/itinerary/add/index';
 
     wx.navigateTo({
       url: url,

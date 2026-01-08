@@ -1,6 +1,6 @@
 {
   "pages": [
-    "sub-pages/itinerary/detail/index",
+    "sub-pages/itinerary/add/index",
     "pages/itinerary/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
@@ -18,7 +18,6 @@
     "t-toast": "tdesign-miniprogram/toast/toast"
   },
   "subpackages": [
-   
     {
       "root": "pages/search",
       "name": "search",
@@ -26,6 +25,7 @@
         "index"
       ]
     },
+   
     {
       "root": "pages/my/info-edit",
       "name": "edit",
