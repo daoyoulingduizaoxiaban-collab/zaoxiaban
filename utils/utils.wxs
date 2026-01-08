@@ -14,7 +14,6 @@ var getOrderBadgeColor = function (status) {
 
 var customerOrderHelper = {
   getStatusText: function(status) {
-    console.log(status)
     if (status === 0) return '未付款';
     if (status === 1) return '客戶付款';
     if (status === 2) return '已確認';
@@ -22,7 +21,6 @@ var customerOrderHelper = {
     return '未知';
   },
   getStatusClass: function(status) {
-    console.log(status)
     if (status === 0) return 'status-unpaid';
     if (status === 1) return 'status-paid';
     if (status === 2) return 'status-confirm';

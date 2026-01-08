@@ -1,6 +1,6 @@
 {
   "pages": [
-    "sub-pages/itinerary/add/index",
+    "sub-pages/itinerary/detail/index",
     "pages/itinerary/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",

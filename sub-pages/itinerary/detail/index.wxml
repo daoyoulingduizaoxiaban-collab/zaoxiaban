@@ -33,11 +33,13 @@
 
   <view class="section-title">客戶訂單</view>
   <block wx:for="{{itinerary.customerOrderList}}" wx:key="id" wx:for-item="customerDetail">
-    <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" hover-class="card-hover">
+    <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}"
+      data-customerId="customerDetail.customerId" hover-class="card-hover">
 
       <view class="order-header">
         <text class="order-no">訂單編號：#{{customerDetail.id}}</text>
-         <text class="order-status {{utils.customerOrderHelper.getStatusClass(customerDetail.status)}}">{{utils.customerOrderHelper.getStatusText(customerDetail.status)}}</text>
+        <text
+          class="order-status {{utils.customerOrderHelper.getStatusClass(customerDetail.status)}}">{{utils.customerOrderHelper.getStatusText(customerDetail.status)}}</text>
       </view>
 
       <view class="order-body">
@@ -52,6 +54,10 @@
         <view class="info-item">
           <text class="label">應付總額：</text>
           <text class="value price">￥{{customerDetail.totalAmount}}</text>
+        </view>
+        <view class="action-section" wx:if="{{customerDetail.status === 1}}">
+          <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
+            data-id="{{customerDetail.id}}">確認已到帳</t-button>
         </view>
       </view>
     </view>
@@ -94,3 +100,6 @@
     </view>
   </view>
 </t-popup>
+
+<t-dialog visible="{{showConfirmDialog}}" title="確認到帳" content="是否確認該筆訂單（編號：#{{selectedOrderId}}）款項已實際入帳？"
+  confirm-btn="確認" cancel-btn="取消" bind:confirm="handleDialogConfirm" bind:cancel="handleDialogClose" />

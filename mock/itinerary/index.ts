@@ -18,12 +18,12 @@ const MOCK_LIST = [
     totalReceivable: 10000,
     totalReceived: 500,
     totalCustomers: 20,
-    qrCodeUrl:"https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
+    qrCodeUrl: "https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 1,
         id: 1,
-        status: CustomerOrderStatus.UNPAID,
+        status: CustomerOrderStatus.PAID,
         totalPrice: 1000,
         customerGoodsList: [new CustomerGoods({
           goodsId: 1,
@@ -75,6 +75,7 @@ const MOCK_LIST = [
     totalReceivable: 4000,
     totalReceived: 1000,
     totalCustomers: 12,
+    qrCodeUrl: "https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 2,

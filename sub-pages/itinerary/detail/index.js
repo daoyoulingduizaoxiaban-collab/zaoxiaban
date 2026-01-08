@@ -5,17 +5,21 @@ import {
   ItineraryMock
 } from '../../../mock/itinerary/index';
 
+//todo 測試假資料
+const g_id = 1;
+
 Page({
   data: {
     pageTitle: '',
     itinerary: new Itinerary(),
-    showDetails: false, // 補上這個
-    selectedCustomerOrder: {} // 補上這個
+    showDetails: false,
+    selectedCustomerOrder: {},
+    showConfirmDialog: false,
+    selectedOrderId: 0
   },
 
   onLoad(options) {
-    //todo 測試假資料
-    let id = 1;
+    let id = g_id;
 
     if (id) {
       this.setData({
@@ -159,5 +163,51 @@ Page({
       title: '圖片載入失敗',
       icon: 'none'
     });
+  },
+
+  onConfirmPayment(e) {
+    const {
+      id
+    } = e.currentTarget.dataset;
+    this.setData({
+      showConfirmDialog: true,
+      selectedOrderId: id
+    });
+
+    console.log(id)
+    console.log(e)
+  },
+
+  // 彈窗點擊取消
+  handleDialogClose() {
+    this.setData({
+      showConfirmDialog: false
+    });
+  },
+
+  // 彈窗點擊確認
+  async handleDialogConfirm() {
+    const id = this.data.selectedOrderId;
+
+    wx.showLoading({
+      title: '處理中...'
+    });
+
+    // 這裡模擬 API 請求，將狀態改為 2 (已確認)
+    setTimeout(() => {
+      wx.hideLoading();
+      this.setData({
+        showConfirmDialog: false
+      });
+
+      wx.showToast({
+        title: '款項已確認',
+        icon: 'success'
+      });
+
+      //TODO 模擬刷新資料
+      this.fetchItineraryDetail(2);
+
+    }, 800);
   }
 });

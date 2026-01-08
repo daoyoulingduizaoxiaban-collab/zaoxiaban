@@ -1,26 +1,26 @@
 /* 商品設定檔 */
 export class GoodsSetting {
   id: number;
-  prividerId:number;
+  prividerId: number;
   title: string;
+  description: string;
   pictureUrls: string[];
   priceSetting: PriceSetting[];
-  description: string;
 
   constructor(data: Partial<GoodsSetting> = {}) {
     this.id = data.id ?? 0;
     this.prividerId = data.prividerId ?? 0;
     this.title = data.title ?? '';
+    this.description = data.description ?? '';
     this.pictureUrls = data.pictureUrls ?? [];
     this.priceSetting = data.priceSetting ?? [];
-    this.description = data.description ?? '';
   }
 }
 
 export class PriceSetting {
   /** 最小購買數量觸發門檻 */
   minQuantity: number;
-  
+
   /** 該門檻下的單件價格 (Unit Price) */
   unitPrice: number;
 

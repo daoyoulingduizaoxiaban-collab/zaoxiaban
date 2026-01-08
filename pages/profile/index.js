@@ -33,7 +33,7 @@ Page({
   onGoToEdit(e) {
     const id = e.currentTarget?.dataset?.id;
     const url = id ? `/pages/profile/edit/index?id=${id}` : '/pages/profile/edit/index';
-    console.log(url)
+
     wx.navigateTo({
       url: url,
       success: () => console.log('跳轉成功'),
