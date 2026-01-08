@@ -21,7 +21,7 @@
       "root": "sub-pages",
       "name": "itinerary",
       "pages": [
-        "itinerary/orderList/index"
+        "itinerary/detail/index"
       ]
     },
     {
