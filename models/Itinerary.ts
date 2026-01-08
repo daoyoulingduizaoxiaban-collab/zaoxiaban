@@ -1,4 +1,4 @@
-import { Order } from './Order';
+import {  ItineraryOrder } from './ItineraryOrder';
 import { getStatusTextByValue } from '~/enum/ItineraryStatus'
 
 export class Itinerary {
@@ -7,7 +7,7 @@ export class Itinerary {
   status: number;
   statusText: string;
   description: string;
-  orders: Order[] = [];
+  itineraryOrders: ItineraryOrder[] = [];
   totalReceivable: number;
   totalReceived: number;
   totalCustomers: number;
@@ -22,7 +22,7 @@ export class Itinerary {
     this.totalReceived = data.totalReceived ?? -1;
     this.totalCustomers = data.totalCustomers ?? -1;
 
-    const rawGoods = Array.isArray(data.orders) ? data.orders : [];
-    this.orders = rawGoods.map((item: Order) => new Order(item));
+    const rawGoods = Array.isArray(data.itineraryOrders) ? data.itineraryOrders : [];
+    this.itineraryOrders = rawGoods.map((item: ItineraryOrder) => new ItineraryOrder(item));
   }
 }

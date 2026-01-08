@@ -1,8 +1,7 @@
 {
   "pages": [
+    "pages/itinerary/list/index",
     "pages/itinerary/orderList/index",
-    "pages/itinerary/order/index",
-    "pages/itinerary/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
     "pages/customerOrders/index",
@@ -89,7 +88,7 @@
         "text": "首頁"
       },
       {
-        "pagePath": "pages/itinerary/index",
+        "pagePath": "pages/itinerary/list/index",
         "text": "行程"
       },
       {

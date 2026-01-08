@@ -1,5 +1,6 @@
-import { Order } from '~/models/Order';
-import { OrderItem } from '~/models/OrderItem';
+import { ItineraryOrder } from '~/models/ItineraryOrder';
+import { CustomerOrder } from '~/models/CustomerOrder';
+import { CustomerGoods } from '~/models/CustomerGoods';
 import {
   Itinerary
 } from '../../models/Itinerary';
@@ -17,35 +18,25 @@ const MOCK_LIST = [
     totalReceivable: 10000,
     totalReceived: 500,
     totalCustomers: 20,
-    orders: [
-      new Order({
+    itineraryOrders: [
+      new ItineraryOrder({
         id: 1,
         customerId: 1,
         scheduleId: 1,
         totalAmount: 2,
         orderStatus: 0,
-        items: [new OrderItem({
+        customerOrder: [new CustomerOrder({
           id: 1,
-          orderId: 1,
-          goodsId: 1,
+          itineraryOrderId: 1,
+          goodsList: [new CustomerGoods({
+            goodsId: 1,
+            amount: 1,
+            totalPrice: 1000
+          })],
           quantity: 2,
           snapshotPrice: 30,
         })],
       }),
-      // new Order({
-      //   id: 2,
-      //   customerId: 2,
-      //   scheduleId: 2,
-      //   totalAmount: 3,
-      //   orderStatus: 1,
-      //   items: [new OrderItem({
-      //     id: 1,
-      //     orderId: 1,
-      //     goodsId: 1,
-      //     quantity: 2,
-      //     snapshotPrice: 30,
-      //   })],
-      // })
     ]
   }),
   new Itinerary({
@@ -56,17 +47,17 @@ const MOCK_LIST = [
     description: '我靜靜的看你要打什麼',
     totalReceivable: 10000,
     totalReceived: 500,
-    totalCustomers: 20, orders: [
-      new Order({
+    totalCustomers: 20, itineraryOrders: [
+      new ItineraryOrder({
         id: 1,
         customerId: 1,
         scheduleId: 1,
         totalAmount: 2,
         orderStatus: 0,
-        items: [new OrderItem({
+        customerOrder: [new CustomerOrder({
           id: 1,
-          orderId: 1,
-          goodsId: 1,
+          itineraryOrderId: 1,
+          goodsList: [],
           quantity: 2,
           snapshotPrice: 30,
         })],
@@ -81,14 +72,14 @@ const MOCK_LIST = [
     description: 'say something',
     totalReceivable: 10000,
     totalReceived: 500,
-    totalCustomers: 20, orders: [
-      new Order({
+    totalCustomers: 20, itineraryOrders: [
+      new ItineraryOrder({
         id: 1,
         customerId: 1,
         scheduleId: 1,
         totalAmount: 2,
         orderStatus: 0,
-        items: [],
+        customerOrder: [],
       })
     ]
   }),
@@ -112,7 +103,7 @@ export const ItineraryMock = {
     return new Promise(resolve => setTimeout(() => resolve({
       code: 200,
       data: data || new Itinerary({
-        orders: []
+        itineraryOrders: []
       })
     }), 300));
   },

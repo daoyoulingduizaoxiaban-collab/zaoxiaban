@@ -9,6 +9,8 @@ Page({
   data: {
     pageTitle: '',
     itinerary: new Itinerary(),
+    showDetails: false, // 補上這個
+    selectedOrder: {} // 補上這個
   },
 
   onLoad(options) {
@@ -30,7 +32,7 @@ Page({
   async fetchItineraryDetail(id) {
     try {
       const res = await ItineraryMock.fetchById(id)
-      console.log(res.data)
+
       if (res.code === 200) {
         this.setData({
           itinerary: res.data
@@ -89,8 +91,36 @@ Page({
       },
       fail: (err) => {
         console.error("跳轉失敗：", err);
-        wx.showToast({ title: '頁面跳轉失敗', icon: 'none' });
+        wx.showToast({
+          title: '頁面跳轉失敗',
+          icon: 'none'
+        });
       }
+    });
+  },
+
+  onShowOrderDetails(e) {
+    try {
+      const {
+        index
+      } = e.currentTarget.dataset;
+     
+      const order = this.data.itinerary.itineraryOrders[index];
+
+      // 如果狀態是未付款，可以決定是否要擋住（或是照樣顯示明細但提示未付）
+      this.setData({
+        selectedOrder: order,
+        showDetails: true
+      });
+    } catch (error) {
+      console.log(error)
+    }
+
+  },
+
+  onCloseDetails() {
+    this.setData({
+      showDetails: false
     });
   }
 });

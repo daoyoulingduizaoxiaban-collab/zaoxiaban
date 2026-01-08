@@ -1,18 +1,17 @@
 import { OrderItemStatus } from '~/enum/OrderItemStatus'
-export class OrderItem {
+import { CustomerGoods } from '~/models/CustomerGoods'
+export class CustomerOrder {
   id: number;
-  orderId: number;
+  itineraryOrderId: number;
   status: OrderItemStatus;
-  goodsId: number;
-  quantity: number;
   snapshotPrice: number; // 紀錄下單時的價格，避免商品調價影響舊訂單
+  goodsList: CustomerGoods[] = [];
 
-  constructor(data: Partial<OrderItem> = {}) {
+  constructor(data: Partial<CustomerOrder> = {}) {
     this.id = data.id ?? -1;
-    this.orderId = data.orderId ?? -1;
+    this.itineraryOrderId = data.itineraryOrderId ?? -1;
     this.status = data.status ?? -1;
-    this.goodsId = data.goodsId ?? -1;
-    this.quantity = data.quantity ?? -1;
     this.snapshotPrice = data.snapshotPrice ?? -1;
+    this.goodsList = data.goodsList ?? [];
   }
 }
