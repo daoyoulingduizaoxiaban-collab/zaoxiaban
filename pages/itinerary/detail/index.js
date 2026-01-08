@@ -1,23 +1,25 @@
 import {
-  Schedule
-} from '~/models/schedule';
+  Itinerary
+} from '~/models/Itinerary';
 import {
-  scheduleMock
-} from '../../../mock/schedule/index';
-import * as SelectUtil from '../../../utils/selectUtil';
+  ItineraryMock
+} from '../../../mock/itinerary/index';
 
 Page({
   data: {
     pageTitle: '',
-    formData: new Schedule(),
+    formData: new Itinerary(),
   },
 
   onLoad(options) {
-    if (options.id) {
+    //todo 測試假資料
+    let id = 1 ?? options.id;
+
+    if (id) {
       this.setData({
         pageTitle: '查看行程',
       });
-      this.fetchScheduleDetail(options.id);
+      this.fetchItineraryDetail(id);
     } else {
       this.setData({
         pageTitle: '新增行程',
@@ -25,9 +27,10 @@ Page({
     }
   },
 
-  async fetchScheduleDetail(id) {
+  async fetchItineraryDetail(id) {
     try {
-      const res = await scheduleMock.fetchById(id)
+      const res = await ItineraryMock.fetchById(id)
+      console.log(res.data)
       if (res.code === 200) {
         this.setData({
           formData: res.data

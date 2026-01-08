@@ -1,4 +1,4 @@
-<nav nav-type="schedule" titleText="{{titleText}}" />
+<nav nav-type="itinerary" titleText="{{titleText}}" />
 <view class="filter-section">
   <t-search 
     value="{{searchKeyword}}" 
@@ -15,17 +15,17 @@
   </t-dropdown-menu>
 </view>
 
-<view class="schedule-container">
+<view class="itinerary-container">
   <t-cell-group theme="card">
-    <block wx:for="{{ scheduleList }}" wx:key="id">
+    <block wx:for="{{ itineraryList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
-        bind:tap="viewSchedule" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
+        bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
         <!-- <t-icon slot="left-icon" name="calendar" size="48rpx" color="#0052d9" /> -->
       </t-cell>
     </block>
   </t-cell-group>
 
-  <view wx:if="{{ scheduleList.length === 0 }}" class="empty-wrapper">
+  <view wx:if="{{ itineraryList.length === 0 }}" class="empty-wrapper">
     <t-empty icon="info-circle" description="暫無行程安排" t-class-description="empty-text">
       <view slot="action">
         <t-button theme="primary" variant="outline" size="small">
@@ -35,7 +35,7 @@
     </t-empty>
   </view>
 
-  <t-fab icon="add" bind:click="addSchedule" bind:tap="addSchedule" aria-label="新增行程"
+  <t-fab icon="add" bind:click="addItinerary" bind:tap="addItinerary" aria-label="新增行程"
     style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

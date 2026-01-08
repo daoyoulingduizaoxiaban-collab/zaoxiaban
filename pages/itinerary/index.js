@@ -1,36 +1,36 @@
 import {
-  Schedule
-} from '~/models/schedule';
+  Itinerary
+} from '~/models/Itinerary';
 import {
-  scheduleMock
-} from '../../mock/schedule/index';
+  ItineraryMock
+} from '../../mock/itinerary/index';
 import {
-  getScheduleStatusList,
+  getItineraryStatusList,
   getStatusTextByValue
-} from '../../utils/selectUtil'
+} from '~/enum/ItineraryStatus'
 
 Page({
   data: {
     titleText: '行程',
     // 模擬數據：行程名稱、狀態、日期
-    scheduleList: [],
-    statusOptions: getScheduleStatusList(),
+    itineraryList: [],
+    statusOptions: getItineraryStatusList(),
     currentStatus: 0,
   },
 
   // 初始化
   async onLoad(options) {
     //console.log('頁面載入，參數為：', options);
-    await this.fetchScheduleList();
+    await this.fetchItineraryList();
   },
 
-  async fetchScheduleList() {
+  async fetchItineraryList() {
     wx.showLoading({
       title: '載入中'
     });
 
     try {
-      const res = await scheduleMock.fetchScheduleListMock();
+      const res = await ItineraryMock.fetchItineraryListMock();
       if (res.code === 200) {
 
         const list = res.data.map(item => ({
@@ -39,7 +39,7 @@ Page({
         }));
 
         this.setData({
-          scheduleList: list
+          itineraryList: list
         });
       }
     } catch (err) {
@@ -50,13 +50,13 @@ Page({
   },
 
   // 點擊行程跳轉至詳情頁
-  viewSchedule(e) {
+  viewItinerary(e) {
     const {
       id
     } = e.currentTarget.dataset;
     wx.navigateTo({
       // 跳轉時攜帶 id，方便詳情頁請求對應數據
-      url: `/pages/schedule/detail/index?id=${id}&readonly=1`,
+      url: `/pages/itinerary/detail/index?id=${id}&readonly=1`,
       fail: (err) => {
         console.error("跳轉詳情頁失敗：", err);
       }
@@ -67,14 +67,14 @@ Page({
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
-        value: 'schedule'
+        value: 'itinerary'
       });
     }
   },
 
-  addSchedule(e) {
+  addItinerary(e) {
     const id = e.currentTarget?.dataset?.id;
-    const url = id ? `/pages/schedule/detail/index?id=${id}` : '/pages/schedule/detail/index';
+    const url = id ? `/pages/itinerary/detail/index?id=${id}` : '/pages/itinerary/detail/index';
     console.log(url)
     wx.navigateTo({
       url: url,
@@ -112,11 +112,11 @@ Page({
     } = this.data;
 
     // 呼叫 Mock API，同時傳入兩個條件
-    const res = await scheduleMock.filterScheduleList(searchKeyword, currentStatus);
+    const res = await itineraryMock.filterItineraryList(searchKeyword, currentStatus);
 
     this.setData({
       // 確保畫面更新的是篩選後的結果
-      scheduleList: res.data
+      itineraryList: res.data
     });
   }
 

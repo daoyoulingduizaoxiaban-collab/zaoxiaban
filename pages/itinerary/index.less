@@ -1,6 +1,6 @@
 @import '/variable.less';
 
-.schedule-container {
+.itinerary-container {
   background-color: #f6f6f6;
   padding: 32rpx 0; // 給頂部和底部一點呼吸空間
   padding-bottom: 150rpx; // 確保內容不被底部的 TabBar 遮住 (120rpx + 緩衝)
@@ -45,7 +45,7 @@
 }
 
 
-.schedule-container {
+.itinerary-container {
   padding-top: 20rpx; // 與篩選區保持間距
 }
 
@@ -70,13 +70,13 @@
 
   t-dropdown-menu {
     flex-shrink: 0; // 強制不被壓縮，保持內容寬度
-    width: auto !important; 
+    width: 200rpx !important; 
 
     :deep(.t-dropdown-menu__bar) {
       box-shadow: none !important; 
       border-bottom: none !important;
       background: transparent !important;
-      width: auto !important; // 關鍵：讓 Bar 不要撐滿 100%
+      width: 200rpx  !important; // 關鍵：讓 Bar 不要撐滿 100%
     }
 
     :deep(.t-dropdown-item__label) {
