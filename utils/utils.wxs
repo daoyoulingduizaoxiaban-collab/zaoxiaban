@@ -1,0 +1,17 @@
+var formatNumber = function (num) {
+  if (!num) return '0';
+  var str = num.toString();
+  var reg = getRegExp('(\d)(?=(\d{3})+$)', 'g');
+  return str.replace(reg, '$1,');
+}
+var getOrderBadgeColor = function (status) {
+  // 根據狀態回傳不同顏色，讓導遊一眼看出急迫性
+  if (status === 0) return '#ff4d4f'; // 未付款用紅色
+  if (status === 1) return '#ffa940'; // 客戶付款用橘色 (待確認)
+  return '#52c41a'; // 已確認用綠色
+}
+
+module.exports = {
+  formatNumber: formatNumber,
+  getOrderBadgeColor: getOrderBadgeColor
+};

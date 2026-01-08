@@ -1,0 +1,74 @@
+<wxs src="../../../utils/utils.wxs" module="utils" />
+<sub-nav title="{{ pageTitle }}" />
+
+<view class="edit-container">
+  <t-cell-group theme="card">
+    <t-input label="行程名稱" placeholder="請輸入1~20個字元" value="{{ itinerary.title }}" />
+    <t-input label="行程狀態" value="{{ itinerary.statusText }}" />
+    <t-input label="描述" value="{{ itinerary.description }}" />
+    <!-- <t-cell title="出發日期" note="{{ itinerary.date || '請選擇' }}" arrow bind:tap="showDatePicker" /> -->
+  </t-cell-group>
+
+  <view class="statistics-card">
+    <view class="stat-item">
+      <text class="stat-label">應收總金額</text>
+      <text class="stat-value">￥{{ utils.formatNumber(itinerary.totalReceivable)}}</text>
+    </view>
+    <view class="stat-item">
+      <text class="stat-label">已收總金額</text>
+      <text class="stat-value">￥{{ utils.formatNumber(itinerary.totalReceived)}}</text>
+    </view>
+    <view class="stat-divider"></view>
+    <view class="stat-item">
+      <text class="stat-label">總下單人數</text>
+      <text class="stat-value">{{ utils.formatNumber(itinerary.totalCustomers)}}人</text>
+    </view>
+  </view>
+  <!-- TODO iterator錯誤 -->
+  <view class="section-title">訂單明細</view>
+
+  <block wx:for="{{itinerary.orders}}" wx:key="id" wx:for-item="order">
+    <view class="order-card" bindtap="goToOrderDetail">
+
+      <view class="order-header">
+        <text class="order-no">訂單編號：#{{order.id}}</text>
+        <text class="order-status {{order.orderStatus === 1 ? 'status-done' : 'status-pending'}}">
+          {{order.orderStatus === 1 ? '已完成' : '待付款'}}
+        </text>
+      </view>
+
+      <view class="order-body">
+        <view class="info-item">
+          <text class="label">客戶 ID：</text>
+          <text class="value">{{order.customerId}}</text>
+        </view>
+        <view class="info-item">
+          <text class="label">商品數量：</text>
+          <text class="value">{{order.items.length || 0}} 件</text>
+        </view>
+        <view class="info-item">
+          <text class="label">應付總額：</text>
+          <text class="value price">￥{{order.totalAmount}}</text>
+        </view>
+      </view>
+
+      <view class="order-footer">
+        <button class="btn-detail" size="mini"  data-id="{{order.id}}">
+          查看詳情
+        </button>
+      </view>
+
+    </view>
+  </block>
+
+  <view wx:if="{{itinerary.orders.length === 0}}" class="empty-msg">
+    目前尚無訂購資料
+  </view>
+
+  <view class="footer-action-bar">
+    <t-button theme="primary" size="large" block bind:tap="onExportReport"
+      disabled="{{itinerary.orders.length === 0 }}">
+      匯出報表
+    </t-button>
+  </view>
+</view>

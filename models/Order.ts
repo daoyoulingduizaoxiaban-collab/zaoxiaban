@@ -1,4 +1,5 @@
 import { OrderStatus, getOrderStatusTextByValue } from "~/enum/OrderStatus";
+import { OrderItem } from '~/models/OrderItem'
 
 export class Order {
   id: number;
@@ -7,7 +8,7 @@ export class Order {
   totalAmount: number;
   orderStatus: OrderStatus;
   orderStatusText: string;
-  items: Order[] = []; // 訂單內的商品明細
+  items: OrderItem[] = []; // 訂單內的商品明細
 
   constructor(data: Partial<Order> = {}) {
     this.id = data.id ?? 0;
