@@ -27,40 +27,40 @@
   <!-- TODO iterator錯誤 -->
   <view class="section-title">訂單明細</view>
 
-  <block wx:for="{{itinerary.itineraryOrders}}" wx:key="id" wx:for-item="order">
+  <block wx:for="{{itinerary.customerOrderList}}" wx:key="id" wx:for-item="customerDetail">
     <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" hover-class="card-hover">
 
       <view class="order-header">
-        <text class="order-no">訂單編號：#{{order.id}}</text>
-        <text class="order-status {{order.itineraryOrderstatus === 1 ? 'status-done' : 'status-pending'}}">
-          {{order.itineraryOrderstatus === 1 ? '已完成' : '待付款'}}
+        <text class="order-no">訂單編號：#{{customerDetail.id}}</text>
+        <text class="order-status {{customerDetail.customerOrdertatus === 1 ? 'status-done' : 'status-pending'}}">
+          {{customerDetail.customerOrdertatus === 1 ? '已完成' : '待付款'}}
         </text>
       </view>
 
       <view class="order-body">
         <view class="info-item">
           <text class="label">客戶 ID：</text>
-          <text class="value">{{order.customerId}}</text>
+          <text class="value">{{customerDetail.customerId}}</text>
         </view>
         <view class="info-item">
           <text class="label">商品數量：</text>
-          <text class="value">{{order.items.length || 0}} 件</text>
+          <text class="value">{{customerDetail.length || 0}} 件</text>
         </view>
         <view class="info-item">
           <text class="label">應付總額：</text>
-          <text class="value price">￥{{order.totalAmount}}</text>
+          <text class="value price">￥{{customerDetail.totalAmount}}</text>
         </view>
       </view>
     </view>
   </block>
 
-  <view wx:if="{{itinerary.itineraryOrders.length === 0}}" class="empty-msg">
+  <view wx:if="{{itinerary.customerOrder.length === 0}}" class="empty-msg">
     目前尚無訂購資料
   </view>
 
   <view class="footer-action-bar">
     <t-button theme="primary" size="large" block bind:tap="onExportReport"
-      disabled="{{itinerary.itineraryOrders.length === 0 }}">
+      disabled="{{itinerary.customerOrder.length === 0 }}">
       匯出報表
     </t-button>
   </view>
@@ -71,11 +71,13 @@
     <view class="popup-header">訂單明細 (#{{selectedOrder.id}})</view>
 
     <scroll-view scroll-y class="details-content">
-      <view class="item-row" wx:for="{{selectedOrder.items}}" wx:key="goodsId">
-        <view class="item-name">{{item.title}}</view>
-        <view class="item-info">
-          <text class="item-price">￥{{utils.formatNumber(item.price)}} x {{item.quantity}}</text>
-          <text class="item-subtotal">￥{{utils.formatNumber(item.price * item.quantity)}}</text>
+      <view class="item-row" wx:for="{{selectedOrder.customerGoodsList}}" wx:key="goodsId">
+        <view class="item-main">
+          <text class="item-name">商品 ID: {{item.goodsId}}</text>
+          <text class="item-spec">數量: {{item.amount}}</text>
+        </view>
+        <view class="item-price-info">
+          <text class="item-subtotal">￥{{utils.formatNumber(item.totalPrice)}}</text>
         </view>
       </view>
     </scroll-view>
@@ -85,7 +87,7 @@
         <text>應付總額</text>
         <text class="total-price">￥{{utils.formatNumber(selectedOrder.totalPrice)}}</text>
       </view>
-      <t-button theme="light" block size="large" bindtap="onCloseDetails">關閉</t-button>
+      <t-button theme="primary" block size="large" bindtap="onCloseDetails">關閉</t-button>
     </view>
   </view>
 </t-popup>

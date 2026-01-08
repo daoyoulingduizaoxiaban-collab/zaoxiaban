@@ -37,7 +37,7 @@ Component({
         const {
           value
         } = e.detail;
-        console.log(value)
+
         let url = '/pages/home/index'
 
         switch (value) {
@@ -49,9 +49,11 @@ Component({
             url = `/pages/${value}/index`
             break;
         }
+        
         wx.switchTab({
           url: url
         });
+
       } catch (error) {
         console.log(error)
       }

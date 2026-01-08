@@ -1,6 +1,6 @@
-import { ItineraryOrder } from '~/models/ItineraryOrder';
 import { CustomerOrder } from '~/models/CustomerOrder';
 import { CustomerGoods } from '~/models/CustomerGoods';
+import { OrderItemStatus } from '~/enum/OrderItemStatus'
 import {
   Itinerary
 } from '../../models/Itinerary';
@@ -18,23 +18,17 @@ const MOCK_LIST = [
     totalReceivable: 10000,
     totalReceived: 500,
     totalCustomers: 20,
-    itineraryOrders: [
-      new ItineraryOrder({
+    customerOrderList: [
+      new CustomerOrder({
+        itineraryId: 1,
         id: 1,
-        customerId: 1,
-        scheduleId: 1,
-        totalAmount: 2,
-        orderStatus: 0,
-        customerOrder: [new CustomerOrder({
-          id: 1,
-          itineraryOrderId: 1,
-          goodsList: [new CustomerGoods({
-            goodsId: 1,
-            amount: 1,
-            totalPrice: 1000
-          })],
-          snapshotPrice: 30,
-        })],
+        status: OrderItemStatus.UNPAID,
+        totalPrice: 1000,
+        customerGoodsList: [new CustomerGoods({
+          goodsId: 1,
+          amount: 5,
+          totalPrice: 2000,
+        })]
       }),
     ]
   }),
@@ -46,20 +40,46 @@ const MOCK_LIST = [
     description: '我靜靜的看你要打什麼',
     totalReceivable: 10000,
     totalReceived: 500,
-    totalCustomers: 20, itineraryOrders: [
-      new ItineraryOrder({
-        id: 1,
-        customerId: 1,
-        scheduleId: 1,
-        totalAmount: 2,
-        orderStatus: 0,
-        customerOrder: [new CustomerOrder({
-          id: 1,
-          itineraryOrderId: 1,
-          goodsList: [],
-          snapshotPrice: 30,
-        })],
-      })
+    totalCustomers: 20,
+    customerOrderList: [
+      new CustomerOrder({
+        itineraryId: 2,
+        id: 2,
+        status: OrderItemStatus.UNPAID,
+        totalPrice: 500,
+        customerGoodsList: [
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 4,
+            totalPrice: 20,
+          }),
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 6,
+            totalPrice: 40,
+          }),
+        ]
+
+      }),
+      new CustomerOrder({
+        itineraryId: 2,
+        id: 2,
+        status: OrderItemStatus.UNPAID,
+        totalPrice: 500,
+        customerGoodsList: [
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 4,
+            totalPrice: 20,
+          }),
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 6,
+            totalPrice: 40,
+          }),
+        ]
+
+      }),
     ]
   }),
   new Itinerary({
@@ -70,15 +90,57 @@ const MOCK_LIST = [
     description: 'say something',
     totalReceivable: 10000,
     totalReceived: 500,
-    totalCustomers: 20, itineraryOrders: [
-      new ItineraryOrder({
+    totalCustomers: 20,
+    customerOrderList: [
+      new CustomerOrder({
+        itineraryId: 1,
         id: 1,
-        customerId: 1,
-        scheduleId: 1,
-        totalAmount: 2,
-        orderStatus: 0,
-        customerOrder: [],
-      })
+        status: OrderItemStatus.UNPAID,
+        totalPrice: 1000,
+        customerGoodsList: [new CustomerGoods({
+          goodsId: 1,
+          amount: 5,
+          totalPrice: 2000,
+        })]
+      }),
+      new CustomerOrder({
+        itineraryId: 2,
+        id: 2,
+        status: OrderItemStatus.UNPAID,
+        totalPrice: 500,
+        customerGoodsList: [
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 4,
+            totalPrice: 20,
+          }),
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 6,
+            totalPrice: 40,
+          }),
+        ]
+
+      }),
+      new CustomerOrder({
+        itineraryId: 2,
+        id: 2,
+        status: OrderItemStatus.UNPAID,
+        totalPrice: 500,
+        customerGoodsList: [
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 4,
+            totalPrice: 20,
+          }),
+          new CustomerGoods({
+            goodsId: 2,
+            amount: 6,
+            totalPrice: 40,
+          }),
+        ]
+
+      }),
     ]
   }),
 ];
@@ -101,7 +163,7 @@ export const ItineraryMock = {
     return new Promise(resolve => setTimeout(() => resolve({
       code: 200,
       data: data || new Itinerary({
-        itineraryOrders: []
+        customerOrderList: []
       })
     }), 300));
   },

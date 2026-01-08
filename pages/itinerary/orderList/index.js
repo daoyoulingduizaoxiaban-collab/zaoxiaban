@@ -10,12 +10,12 @@ Page({
     pageTitle: '',
     itinerary: new Itinerary(),
     showDetails: false, // 補上這個
-    selectedOrder: {} // 補上這個
+    selectedCustomerOrder: {} // 補上這個
   },
 
   onLoad(options) {
     //todo 測試假資料
-    let id = 1 ?? options.id;
+    let id = options.id;
 
     if (id) {
       this.setData({
@@ -100,22 +100,20 @@ Page({
   },
 
   onShowOrderDetails(e) {
-    try {
-      const {
-        index
-      } = e.currentTarget.dataset;
-     
-      const order = this.data.itinerary.itineraryOrders[index];
-
-      // 如果狀態是未付款，可以決定是否要擋住（或是照樣顯示明細但提示未付）
+    // 從 data-index 取得目前點擊的索引
+    const { index } = e.currentTarget.dataset;
+    
+    // 依照你的資料結構，從 itinerary 裡的 customerOrderList 抓取物件
+    const selectedOrder = this.data.itinerary.customerOrderList[index];
+  
+    if (selectedOrder) {
       this.setData({
-        selectedOrder: order,
+        selectedOrder: selectedOrder,
         showDetails: true
       });
-    } catch (error) {
-      console.log(error)
+    } else {
+      console.error("找不到對應的訂單資料", index);
     }
-
   },
 
   onCloseDetails() {
