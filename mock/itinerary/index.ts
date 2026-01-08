@@ -38,9 +38,9 @@ const MOCK_LIST = [
     status: ItineraryStatus.OPEN,
     statusText: getStatusTextByValue(ItineraryStatus.OPEN),
     description: '我靜靜的看你要打什麼',
-    totalReceivable: 10000,
-    totalReceived: 500,
-    totalCustomers: 20,
+    totalReceivable: 4000,
+    totalReceived: 1000,
+    totalCustomers: 12,
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 2,
@@ -88,9 +88,9 @@ const MOCK_LIST = [
     status: ItineraryStatus.STOPPED,
     statusText: getStatusTextByValue(ItineraryStatus.STOPPED),
     description: 'say something',
-    totalReceivable: 10000,
-    totalReceived: 500,
-    totalCustomers: 20,
+    totalReceivable: 300,
+    totalReceived: 0,
+    totalCustomers: 1,
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 1,
@@ -126,7 +126,7 @@ const MOCK_LIST = [
         itineraryId: 2,
         id: 2,
         status: OrderItemStatus.UNPAID,
-        totalPrice: 500,
+        totalPrice: 2500,
         customerGoodsList: [
           new CustomerGoods({
             goodsId: 2,

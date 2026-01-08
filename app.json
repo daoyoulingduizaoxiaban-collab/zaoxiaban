@@ -1,7 +1,6 @@
 {
   "pages": [
-      "pages/itinerary/list/index",
-  "pages/itinerary/orderList/index",
+    "pages/itinerary/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
     "pages/customerOrders/index",
@@ -18,6 +17,13 @@
     "t-toast": "tdesign-miniprogram/toast/toast"
   },
   "subpackages": [
+    {
+      "root": "sub-pages",
+      "name": "itinerary",
+      "pages": [
+        "itinerary/orderList/index"
+      ]
+    },
     {
       "root": "pages/search",
       "name": "search",
@@ -88,7 +94,7 @@
         "text": "首頁"
       },
       {
-        "pagePath": "pages/itinerary/list/index",
+        "pagePath": "pages/itinerary/index",
         "text": "行程"
       },
       {

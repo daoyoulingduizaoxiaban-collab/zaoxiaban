@@ -37,21 +37,9 @@ Component({
         const {
           value
         } = e.detail;
-
-        let url = '/pages/home/index'
-
-        switch (value) {
-          case "itinerary":
-            url = `/pages/itinerary/list/index`
-            break;
-
-          default:
-            url = `/pages/${value}/index`
-            break;
-        }
         
         wx.switchTab({
-          url: url
+          url: `/pages/${value}/index`
         });
 
       } catch (error) {

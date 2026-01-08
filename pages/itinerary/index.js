@@ -56,7 +56,7 @@ Page({
     } = e.currentTarget.dataset;
     wx.navigateTo({
       // 跳轉時攜帶 id，方便詳情頁請求對應數據
-      url: `/pages/itinerary/orderList/index?id=${id}&readonly=1`,
+      url: `/sub-pages/itinerary/orderList/index?id=${id}&readonly=1`,
       fail: (err) => {
         console.error("跳轉詳情頁失敗：", err);
       }

@@ -25,7 +25,7 @@
     </view>
   </view>
   <!-- TODO iterator錯誤 -->
-  <view class="section-title">訂單明細</view>
+  <view class="section-title">客戶訂單</view>
 
   <block wx:for="{{itinerary.customerOrderList}}" wx:key="id" wx:for-item="customerDetail">
     <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" hover-class="card-hover">
