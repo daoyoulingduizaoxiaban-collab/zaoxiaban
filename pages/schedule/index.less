@@ -13,20 +13,75 @@
 }
 
 /* 狀態顏色區分 */
-.status-ongoing {
-  color: #0052d9 !important;
+.status-0 {
+  // 關閉
+  color: #abb0b8 !important;
+}
+
+.status-1 {
+  // 啟用
+  color: #23bd20 !important;
   font-weight: bold;
 }
 
-.status-pending {
-  color: #ed7b2f !important;
-}
-
-.status-completed {
-  color: #abb0b8 !important;
-}
 
 .empty-state {
   padding-top: 200rpx;
   background: #f6f6f6;
+}
+
+.empty-wrapper {
+  padding-top: 240rpx; // 根據你的頁頭高度調整
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  .empty-text {
+    color: #999999;
+    font-size: 28rpx;
+    margin-top: 16rpx;
+  }
+}
+
+
+.schedule-container {
+  padding-top: 20rpx; // 與篩選區保持間距
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 16rpx 24rpx;
+  gap: 16rpx;
+  /* 確保容器本身不換行 */
+  flex-wrap: nowrap; 
+
+  /* 修正：針對組件標籤本身以及其內部的渲染容器 */
+  t-search {
+    flex: 1 !important; 
+    width: 0; // 這是一個 Flex 技巧，確保它能縮減並重新撐開佔滿剩餘空間
+    
+    :deep(.t-search) {
+      padding: 0 !important; // 移除 TDesign 預設可能存在的內距
+    }
+  }
+
+  t-dropdown-menu {
+    flex-shrink: 0; // 強制不被壓縮，保持內容寬度
+    width: auto !important; 
+
+    :deep(.t-dropdown-menu__bar) {
+      box-shadow: none !important; 
+      border-bottom: none !important;
+      background: transparent !important;
+      width: auto !important; // 關鍵：讓 Bar 不要撐滿 100%
+    }
+
+    :deep(.t-dropdown-item__label) {
+      justify-content: flex-end !important; 
+      min-width: 100rpx; // 給一個最小寬度確保「狀態」二字不換行
+    }
+  }
 }

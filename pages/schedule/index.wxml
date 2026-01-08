@@ -1,19 +1,41 @@
 <nav nav-type="schedule" titleText="{{titleText}}" />
+<view class="filter-section">
+  <t-search 
+    value="{{searchKeyword}}" 
+    placeholder="搜尋名稱或描述" 
+    bind:change="onSearchChange" 
+    t-class="search-bar"
+  />
+  <t-dropdown-menu t-class="dropdown-custom">
+    <t-dropdown-item 
+      options="{{statusOptions}}" 
+      value="{{currentStatus}}" 
+      bind:change="onStatusChange" 
+    />
+  </t-dropdown-menu>
+</view>
 
 <view class="schedule-container">
   <t-cell-group theme="card">
     <block wx:for="{{ scheduleList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="出發日期：{{ item.date }}" hover arrow
-        bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-        <t-icon slot="left-icon" name="calendar" size="48rpx" color="#0052d9" />
+      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
+        bind:tap="viewSchedule" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
+        <!-- <t-icon slot="left-icon" name="calendar" size="48rpx" color="#0052d9" /> -->
       </t-cell>
     </block>
   </t-cell-group>
 
-  <view wx:if="{{ scheduleList.length === 0 }}" class="empty-state">
-    <t-empty icon="info-circle" description="暫無行程安排" />
+  <view wx:if="{{ scheduleList.length === 0 }}" class="empty-wrapper">
+    <t-empty icon="info-circle" description="暫無行程安排" t-class-description="empty-text">
+      <view slot="action">
+        <t-button theme="primary" variant="outline" size="small">
+          暂无行程
+        </t-button>
+      </view>
+    </t-empty>
   </view>
 
-  <t-fab icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增行程" style="right: 32rpx; bottom: 180rpx;" />
+  <t-fab icon="add" bind:click="addSchedule" bind:tap="addSchedule" aria-label="新增行程"
+    style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

@@ -53,11 +53,12 @@ Component({
       // 模擬獲取角色（實際開發中可從 app.globalData 或 wx.getStorageSync 獲取）
       const userRole = wx.getStorageSync('role') || 'user';
 
-      let menu = [{
-          icon: 'home',
-          value: 'home',
-          label: '首頁'
-        },
+      let menu = [
+        // {
+        //   icon: 'home',
+        //   value: 'home',
+        //   label: '首頁'
+        // },
         {
           icon: 'home',
           value: 'schedule',

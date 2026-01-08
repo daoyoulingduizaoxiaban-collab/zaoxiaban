@@ -1,0 +1,30 @@
+<sub-nav title="{{ pageTitle }}" />
+
+<view class="edit-container">
+  <t-cell-group theme="card">
+    <t-input label="行程名稱" placeholder="請輸入1~20個字元" value="{{ formData.title }}" />
+    <t-input label="行程狀態" value="{{ formData.statusText }}" />
+    <t-input label="描述" value="{{ formData.description }}" />
+    <!-- <t-cell title="出發日期" note="{{ formData.date || '請選擇' }}" arrow bind:tap="showDatePicker" /> -->
+  </t-cell-group>
+  
+<!-- TODO iterator錯誤 -->
+  <block wx:if="{{ formData.goods }}" wx:for="{{ formData.goods || [] }}" wx:key="index">
+    <view class="card-item">
+      <t-cell-group theme="card">
+        <t-input label="價錢" value="{{ (item.price === null || item.price === undefined) ? '' : (item.price ) }}"
+          placeholder="請輸入地點" bind:change="onInputUpdate" data-field="location" data-index="{{ index }}" />
+        <t-input label="amountMin"
+          value="{{ (item.amountMin === null || item.amountMin === undefined) ? '' : (item.amountMin ) }}"
+          placeholder="請輸入地點" bind:change="onInputUpdate" data-field="location" data-index="{{ index }}" />
+        <t-input label="amountMax"
+          value="{{ (item.amountMin === null || item.amountMin === undefined) ? '' : (item.amountMin ) }}"
+          placeholder="請輸入地點" bind:change="onInputUpdate" data-field="location" data-index="{{ index }}" />
+      </t-cell-group>
+    </view>
+  </block>
+
+  <view class="submit-bar">
+    <t-button theme="primary" size="large" block bind:tap="onSave">保存行程</t-button>
+  </view>
+</view>
