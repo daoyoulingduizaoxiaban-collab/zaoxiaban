@@ -1,0 +1,62 @@
+<sub-nav title="新增商品" />
+
+<view class="add-container">
+  <t-cell-group theme="card" title="基本資訊">
+    <t-input 
+      label="*名稱" 
+      placeholder="請輸入商品名稱" 
+      value="{{product.title}}" 
+      bindchange="onInput" 
+      data-field="title" 
+    />
+    <t-textarea 
+      label="商品描述" 
+      placeholder="請輸入描述..." 
+      value="{{product.description}}" 
+      bindchange="onInput" 
+      data-field="description" 
+    />
+  </t-cell-group>
+
+  <t-cell-group theme="card" title="商品圖片">
+    <view style="padding: 24rpx;">
+      <t-image-uploader 
+        files="{{fileList}}" 
+        bind:add="onAddImage" 
+        bind:remove="onRemoveImage" 
+      />
+    </view>
+  </t-cell-group>
+
+  <t-cell-group theme="card" title="*階梯定價設定">
+    <view wx:for="{{product.priceSetting}}" wx:key="index" style="padding: 20rpx; border-bottom: 1rpx solid #eee;">
+      <view style="display: flex; justify-content: space-between; margin-bottom: 10rpx;">
+        <text style="font-size: 24rpx; color: #999;">門檻 {{index + 1}}</text>
+        <text style="font-size: 24rpx; color: #0052d9;" bindtap="removePriceSetting" data-index="{{index}}" wx:if="{{product.priceSetting.length > 1}}">刪除</text>
+      </view>
+      
+      <view style="display: flex; gap: 20rpx;">
+        <t-input label="起購數" type="number" suffix="件" value="{{item.minQuantity}}" 
+          bindchange="onPriceFieldChange" data-index="{{index}}" data-field="minQuantity" />
+        <t-input label="單價" type="number" suffix="元" value="{{item.unitPrice}}" 
+          bindchange="onPriceFieldChange" data-index="{{index}}" data-field="unitPrice" />
+      </view>
+      
+      <t-input label="優惠描述" placeholder="例：滿5件打折" value="{{item.description}}" 
+        bindchange="onPriceFieldChange" data-index="{{index}}" data-field="description" />
+      
+      <view style="text-align: right; font-size: 22rpx; color: #ff5000; margin-top: 10rpx;">
+        該門檻總價：¥{{item.totalPrice}}
+      </view>
+    </view>
+
+    <view class="add-goods-btn-wrap" bindtap="addPriceSetting" style="display: flex; justify-content: center; padding: 30rpx;">
+      <t-icon name="add" size="40rpx" color="#0052d9" />
+      <text style="color: #0052d9; margin-left: 10rpx;">新增價格門檻</text>
+    </view>
+  </t-cell-group>
+
+  <view class="footer" style="padding: 30rpx;">
+    <t-button theme="primary" size="large" block bindtap="onSave">儲存商品</t-button>
+  </view>
+</view>

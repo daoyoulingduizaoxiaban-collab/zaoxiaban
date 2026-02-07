@@ -1,15 +1,13 @@
 /* 商品設定檔 */
-export class GoodsSetting {
+export class Product {
   id: number;
-  prividerId:number;
   title: string;
   pictureUrls: string[];
   priceSetting: PriceSetting[];
   description: string;
 
-  constructor(data: Partial<GoodsSetting> = {}) {
+  constructor(data: Partial<Product> = {}) {
     this.id = data.id ?? 0;
-    this.prividerId = data.prividerId ?? 0;
     this.title = data.title ?? '';
     this.pictureUrls = data.pictureUrls ?? [];
     this.priceSetting = data.priceSetting ?? [];
@@ -20,7 +18,7 @@ export class GoodsSetting {
 export class PriceSetting {
   /** 最小購買數量觸發門檻 */
   minQuantity: number;
-  
+
   /** 該門檻下的單件價格 (Unit Price) */
   unitPrice: number;
 
@@ -33,7 +31,7 @@ export class PriceSetting {
   constructor(data: Partial<PriceSetting> = {}) {
     this.minQuantity = data.minQuantity ?? 1;
     this.unitPrice = data.unitPrice ?? 0;
-    this.totalPrice = data.totalPrice;
+    this.totalPrice = data.totalPrice ?? 0;
     this.description = data.description ?? '';
   }
 }

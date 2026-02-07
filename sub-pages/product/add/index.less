@@ -1,0 +1,104 @@
+.add-container {
+  padding-top: 10rpx;
+  padding-bottom: 200rpx;
+  background-color: #f6f6f6;
+  min-height: 100vh;
+  box-sizing: border-box;
+
+  .upload-wrapper {
+    padding: 24rpx;
+  }
+
+  .price-setting-list {
+    padding: 0 24rpx;
+    
+    .price-setting-item {
+      padding: 20rpx 0;
+      border-bottom: 1rpx solid #eee;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16rpx;
+        
+        .item-index {
+          font-size: 24rpx;
+          color: #999;
+          background: #f0f0f0;
+          padding: 4rpx 12rpx;
+          border-radius: 4rpx;
+        }
+
+        .remove-link {
+          color: #d54941;
+          font-size: 24rpx;
+        }
+      }
+
+      .input-row {
+        display: flex;
+        gap: 20rpx;
+        
+        t-input {
+          flex: 1;
+          --td-input-vertical-padding: 12rpx;
+        }
+      }
+    }
+  }
+
+  .add-goods-btn-wrap {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 32rpx;
+    border-top: 1rpx solid #eee;
+
+    .add-text {
+      margin-left: 8rpx;
+      color: #0052d9;
+      font-size: 28rpx;
+      font-weight: 500;
+    }
+  }
+
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20rpx 32rpx env(safe-area-inset-bottom);
+    background: #fff;
+    box-shadow: 0 -2rpx 10rpx rgba(0,0,0,0.05);
+  }
+}.price-item {
+  padding: 24rpx;
+  border-bottom: 1rpx solid #eee;
+
+  .item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 24rpx;
+    color: #666;
+    margin-bottom: 16rpx;
+
+    .total-hint {
+      color: #ff5000; // 突出總價
+      font-weight: bold;
+    }
+  }
+
+  .del-btn {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    color: #d54941;
+    font-size: 24rpx;
+    margin-top: 16rpx;
+  }
+}
