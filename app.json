@@ -1,7 +1,6 @@
 {
   "pages": [
     "sub-pages/product/list/index",
-    "pages/itinerary/index",
     "sub-pages/product/add/index",
     "sub-pages/itinerary/add/index",
     "pages/itinerary/index",
