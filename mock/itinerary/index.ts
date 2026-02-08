@@ -18,7 +18,7 @@ const MOCK_LIST = [
     totalReceivable: 10000,
     totalReceived: 500,
     totalCustomers: 20,
-    qrCodeUrl: "https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
+    qrCodeUrl:"https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 1,
@@ -75,7 +75,6 @@ const MOCK_LIST = [
     totalReceivable: 4000,
     totalReceived: 1000,
     totalCustomers: 12,
-    qrCodeUrl: "https://quickchart.io/qr?text=HelloWeChat&size=200&margin=1",
     customerOrderList: [
       new CustomerOrder({
         itineraryId: 2,
@@ -126,7 +125,7 @@ const MOCK_LIST = [
     totalReceivable: 300,
     totalReceived: 0,
     totalCustomers: 1,
-    customerOrderList: [
+    productList: [
       new CustomerOrder({
         itineraryId: 1,
         id: 1,
@@ -198,7 +197,7 @@ export const ItineraryMock = {
     return new Promise(resolve => setTimeout(() => resolve({
       code: 200,
       data: data || new Itinerary({
-        customerOrderList: []
+        productList: []
       })
     }), 300));
   },

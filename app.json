@@ -1,6 +1,9 @@
 {
   "pages": [
-    "sub-pages/itinerary/detail/index",
+    "sub-pages/product/list/index",
+    "pages/itinerary/index",
+    "sub-pages/product/add/index",
+    "sub-pages/itinerary/add/index",
     "pages/itinerary/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
@@ -25,7 +28,6 @@
         "index"
       ]
     },
-   
     {
       "root": "pages/my/info-edit",
       "name": "edit",
