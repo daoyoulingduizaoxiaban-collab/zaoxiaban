@@ -3,74 +3,78 @@
 
 <view class="edit-container">
   <t-cell-group theme="card">
-    <t-input label="行程名稱" placeholder="請輸入1~20個字元" value="{{ itinerary.title }}" />
-    <t-input label="行程狀態" value="{{ itinerary.statusText }}" />
-    <t-input label="描述" value="{{ itinerary.description }}" />
-    <!-- <t-cell title="出發日期" note="{{ itinerary.date || '請選擇' }}" arrow bind:tap="showDatePicker" /> -->
+    <t-input label="行程名稱" placeholder="請輸入1~20個字元" value="{{ groupOrder.title }}" />
+    <t-input label="行程狀態" value="{{ groupOrder.statusText }}" />
+    <t-input label="描述" value="{{ groupOrder.description }}" />
+    <!-- <t-cell title="出發日期" note="{{ groupOrder.date || '請選擇' }}" arrow bind:tap="showDatePicker" /> -->
     <view class="qr-container" bindtap="previewQR">
-      <image class="qr-image" src="{{ itinerary.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
+      <image class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
         show-menu-by-longpress />
-      <view class="qr-label">點一下放大</view>
+      <view class="qr-label">點一下放大 長按以分享</view>
     </view>
   </t-cell-group>
 
   <view class="statistics-card">
     <view class="stat-item">
       <text class="stat-label">應收總金額</text>
-      <text class="stat-value">￥{{ utils.formatNumber(itinerary.totalReceivable)}}</text>
+      <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceivable)}}</text>
     </view>
     <view class="stat-item">
       <text class="stat-label">已收總金額</text>
-      <text class="stat-value">￥{{ utils.formatNumber(itinerary.totalReceived)}}</text>
+      <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceived)}}</text>
     </view>
     <view class="stat-divider"></view>
     <view class="stat-item">
       <text class="stat-label">總下單人數</text>
-      <text class="stat-value">{{ utils.formatNumber(itinerary.totalCustomers)}}人</text>
+      <text class="stat-value">{{ utils.formatNumber(groupOrder.totalmembers)}}人</text>
     </view>
   </view>
   <!-- TODO iterator錯誤 -->
 
   <view class="section-title">客戶訂單</view>
-  <block wx:for="{{itinerary.customerOrderList}}" wx:key="id" wx:for-item="customerDetail">
+  <block wx:for="{{groupOrder.memberOrderList}}" wx:key="id" wx:for-item="memberOrder">
     <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}"
-      data-customerId="customerDetail.customerId" hover-class="card-hover">
+      data-memberId="memberOrder.memberId" hover-class="card-hover">
 
       <view class="order-header">
-        <text class="order-no">訂單編號：#{{customerDetail.id}}</text>
+        <text class="order-no">訂單編號：#{{memberOrder.id}}</text>
         <text
-          class="order-status {{utils.customerOrderHelper.getStatusClass(customerDetail.status)}}">{{utils.customerOrderHelper.getStatusText(customerDetail.status)}}</text>
+          class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
       </view>
 
       <view class="order-body">
         <view class="info-item">
           <text class="label">客戶 ID：</text>
-          <text class="value">{{customerDetail.customerId}}</text>
+          <text class="value">{{memberOrder.userId}}</text>
         </view>
         <view class="info-item">
           <text class="label">商品數量：</text>
-          <text class="value">{{customerDetail.length || 0}} 件</text>
+          <text class="value">{{memberOrder.productList.length || 0}} 件</text>
         </view>
         <view class="info-item">
           <text class="label">應付總額：</text>
-          <text class="value price">￥{{customerDetail.totalAmount}}</text>
+          <text class="value price">￥{{memberOrder.totalPrice}}</text>
         </view>
-        <view class="action-section" wx:if="{{customerDetail.status === 1}}">
+        <view class="action-section" wx:if="{{memberOrder.status === 1}}">
           <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
-            data-id="{{customerDetail.id}}">確認已到帳</t-button>
+            data-id="{{memberOrder.id}}">確認已到帳</t-button>
         </view>
       </view>
     </view>
   </block>
 
-  <view wx:if="{{itinerary.customerOrder.length === 0}}" class="empty-msg">
+  <view wx:if="{{groupOrder.memberOrder.length === 0}}" class="empty-msg">
     目前尚無訂購資料
   </view>
 
   <view class="footer-action-bar">
-    <t-button theme="primary" size="large" block bind:tap="onExportReport"
-      disabled="{{itinerary.customerOrder.length === 0 }}">
+    <t-button theme="primary" class="btn-primary" size="large" block bind:tap="onExportReport"
+      disabled="{{groupOrder.memberOrder.length === 0 }}">
       匯出報表
+    </t-button>
+    <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onManageProducts"
+      disabled="{{groupOrder.memberOrder.length === 0 }}">
+      商品管理
     </t-button>
   </view>
 </view>
@@ -80,7 +84,7 @@
     <view class="popup-header">訂單明細 (#{{selectedOrder.id}})</view>
 
     <scroll-view scroll-y class="details-content">
-      <view class="item-row" wx:for="{{selectedOrder.customerGoodsList}}" wx:key="goodsId">
+      <view class="item-row" wx:for="{{selectedOrder.memberGoodsList}}" wx:key="goodsId">
         <view class="item-main">
           <text class="item-name">商品 ID: {{item.goodsId}}</text>
           <text class="item-spec">數量: {{item.amount}}</text>

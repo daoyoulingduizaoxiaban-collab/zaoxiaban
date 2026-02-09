@@ -1,3 +1,5 @@
+@import '/variable.less';
+
 /* 頁面容器 */
 .edit-container {
   padding-top: 10rpx;
@@ -253,6 +255,9 @@
   backdrop-filter: blur(10px);
   border-top: 1rpx solid #f0f0f0;
   z-index: 100;
+  display: flex;
+  gap: 20rpx;
+  /* 設定按鈕之間的間距 */
 }
 
 .footer-action-bar t-button {
@@ -260,6 +265,23 @@
   --td-button-border-radius: 16rpx;
   --td-button-font-weight: 600;
   height: 96rpx;
+  display: flex;
+
+}
+
+/* 商品管理（次要按鈕）的配色優化 */
+.btn-secondary {
+  --td-button-default-color: @brand7-normal;
+  /* 藍色文字 */
+  --td-button-default-border-color: @brand7-normal;
+  /* 藍色邊框 */
+  --td-button-default-bg-color: #ffffff;
+  /* 白色背景 */
+}
+
+/* 匯出報表（主要按鈕）保持原樣 */
+.btn-primary {
+  /* 使用 TDesign 預設 primary 即可 */
 }
 
 .empty-msg {

@@ -1,7 +1,10 @@
+import { ProductStatus } from '../enum/ProductStatus'
+
 /* 商品設定檔 */
 export class Product {
   id: number;
-  prividerId:number;
+  status: ProductStatus;
+  prividerId: number;
   title: string;
   pictureUrls: string[];
   priceSetting: PriceSetting[];
@@ -9,6 +12,7 @@ export class Product {
 
   constructor(data: Partial<Product> = {}) {
     this.id = data.id ?? 0;
+    this.status = data.status ?? 0;
     this.prividerId = data.prividerId ?? 0;
     this.title = data.title ?? '';
     this.pictureUrls = data.pictureUrls ?? [];
@@ -20,7 +24,7 @@ export class Product {
 export class PriceSetting {
   /** 最小購買數量觸發門檻 */
   minQuantity: number;
-  
+
   /** 該門檻下的單件價格 (Unit Price) */
   unitPrice: number;
 

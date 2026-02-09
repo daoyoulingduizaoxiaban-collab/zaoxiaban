@@ -67,7 +67,7 @@ Component({
         // },
         {
           icon: 'home',
-          value: 'itinerary',
+          value: 'groupOrder',
           label: '行程'
         },
         {

@@ -1,9 +1,10 @@
 {
   "pages": [
+    "sub-pages/groupOrder/detail/index",
+    "pages/groupOrder/index",
     "sub-pages/product/list/index",
     "sub-pages/product/add/index",
-    "sub-pages/itinerary/add/index",
-    "pages/itinerary/index",
+    "sub-pages/groupOrder/add/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
     "pages/customerOrders/index",
@@ -14,7 +15,8 @@
     "pages/profile/edit/index",
     "pages/home/index",
     "pages/message/index",
-    "pages/my/index"
+    "pages/my/index",
+    "sub-pages/groupOrder/productManage/index"
   ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast"
@@ -90,7 +92,7 @@
         "text": "首頁"
       },
       {
-        "pagePath": "pages/itinerary/index",
+        "pagePath": "pages/groupOrder/index",
         "text": "行程"
       },
       {

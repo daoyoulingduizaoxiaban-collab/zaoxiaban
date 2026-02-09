@@ -1,31 +1,31 @@
 import {
-  Itinerary
-} from '~/models/Itinerary';
+  GroupOrder
+} from '~/models/GroupOrder';
 import {
-  ItineraryMock
-} from '../../../mock/itinerary/index';
+  GroupOrderMock
+} from '../../../mock/groupOrder/index';
 
-//todo 測試假資料
-const g_id = 1;
 
 Page({
   data: {
     pageTitle: '',
-    itinerary: new Itinerary(),
+    groupOrder: new GroupOrder(),
     showDetails: false,
-    selectedCustomerOrder: {},
+    selectedMemberOrder: {},
     showConfirmDialog: false,
-    selectedOrderId: 0
+    selectedMemberOrderId: 0,
+    groupOrderId: null,
   },
 
   onLoad(options) {
-    let id = g_id;
-
+    //  let id = options.id;
+    let id = 1;
     if (id) {
       this.setData({
         pageTitle: '查看行程',
+        groupOrderId: id,
       });
-      this.fetchItineraryDetail(id);
+      this.fetchGroupOrderDetail(id);
     } else {
       this.setData({
         pageTitle: '新增行程',
@@ -33,13 +33,14 @@ Page({
     }
   },
 
-  async fetchItineraryDetail(id) {
+  async fetchGroupOrderDetail() {
+   
     try {
-      const res = await ItineraryMock.fetchById(id)
-
+      const res = await GroupOrderMock.fetchById(this.data.groupOrderId)
+     
       if (res.code === 200) {
         this.setData({
-          itinerary: res.data
+          groupOrder: res.data
         });
       }
 
@@ -104,13 +105,11 @@ Page({
   },
 
   onShowOrderDetails(e) {
-    // 從 data-index 取得目前點擊的索引
     const {
       index
     } = e.currentTarget.dataset;
 
-    // 依照你的資料結構，從 itinerary 裡的 customerOrderList 抓取物件
-    const selectedOrder = this.data.itinerary.customerOrderList[index];
+    const selectedOrder = this.data.groupOrder.memberOrderList[index];
 
     if (selectedOrder) {
       this.setData({
@@ -129,8 +128,8 @@ Page({
   },
   previewQR() {
     wx.previewImage({
-      urls: [this.data.itinerary.qrCodeUrl],
-      current: this.data.itinerary.qrCodeUrl
+      urls: [this.data.groupOrder.qrCodeUrl],
+      current: this.data.groupOrder.qrCodeUrl
     });
   },
 
@@ -140,7 +139,7 @@ Page({
     } = e.detail;
     const {
       qrCodeUrl
-    } = this.data.itinerary.qrCodeUrl;
+    } = this.data.groupOrder.qrCodeUrl;
 
     console.error('【圖片加載失敗】:', errMsg);
     console.error('【當前錯誤路徑】:', qrCodeUrl);
@@ -156,7 +155,7 @@ Page({
 
     // 可選：載入失敗時給用戶一個預設圖
     this.setData({
-      'itinerary.qrCodeUrl': '/assets/images/error-qr.png'
+      'groupOrder.qrCodeUrl': '/assets/images/error-qr.png'
     });
 
     wx.showToast({
@@ -171,7 +170,7 @@ Page({
     } = e.currentTarget.dataset;
     this.setData({
       showConfirmDialog: true,
-      selectedOrderId: id
+      selectedMemberOrderId: id
     });
 
     console.log(id)
@@ -187,7 +186,7 @@ Page({
 
   // 彈窗點擊確認
   async handleDialogConfirm() {
-    const id = this.data.selectedOrderId;
+    const id = this.data.selectedMemberOrderId;
 
     wx.showLoading({
       title: '處理中...'
@@ -206,8 +205,35 @@ Page({
       });
 
       //TODO 模擬刷新資料
-      this.fetchItineraryDetail(2);
+      this.fetchGroupOrderDetail(2);
 
     }, 800);
+  },
+
+  onManageProducts(e) {
+    let id = this.data.groupOrderId;
+    //let id = null
+    if (id) {
+      wx.navigateTo({
+        url: `/sub-pages/groupOrder/productManage/index?id=${id}`,
+        fail: (err) => {
+          console.error("跳轉商品管理頁面失敗：", err);
+        }
+      });
+    } else {
+      const app = getApp();
+      wx.showModal({
+        title: '提示',
+        content: '很抱歉，系統發生錯誤',
+        showCancel: false,
+        confirmText: '我知道了',
+        confirmColor: app.globalData.themeColor,
+        success(res) {
+          if (res.confirm) {
+            //TODO 寫LOG
+          }
+        }
+      })
+    }
   }
 });

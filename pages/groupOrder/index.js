@@ -1,20 +1,20 @@
 import {
-  Itinerary
-} from '~/models/Itinerary';
+  GroupOrder
+} from '~/models/GroupOrder';
 import {
-  ItineraryMock
-} from '~/mock/itinerary/index';
+  GroupOrderMock
+} from '~/mock/groupOrder/index';
 import {
-  getItineraryStatusList,
-  getStatusTextByValue
-} from '~/enum/ItineraryStatus'
+  getGroupOrderStatusList,
+  getGroupOrderStatusTextByValue
+} from '~/enum/GroupOrderStatus'
 
 Page({
   data: {
     titleText: '行程',
     // 模擬數據：行程名稱、狀態、日期
     itineraryList: [],
-    statusOptions: getItineraryStatusList(),
+    statusOptions: getGroupOrderStatusList(),
     currentStatus: 0,
   },
 
@@ -30,12 +30,12 @@ Page({
     });
 
     try {
-      const res = await ItineraryMock.fetchItineraryListMock();
+      const res = await GroupOrderMock.fetchItineraryListMock();
       if (res.code === 200) {
 
         const list = res.data.map(item => ({
           ...item,
-          statusText: getStatusTextByValue(item.status)
+          statusText: getGroupOrderStatusTextByValue(item.status)
         }));
 
         this.setData({
@@ -56,7 +56,7 @@ Page({
     } = e.currentTarget.dataset;
     wx.navigateTo({
       // 跳轉時攜帶 id，方便詳情頁請求對應數據
-      url: `/sub-pages/itinerary/detail/index?id=${id}&readonly=1`,
+      url: `/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`,
       fail: (err) => {
         console.error("跳轉詳情頁失敗：", err);
       }
@@ -67,19 +67,19 @@ Page({
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
-        value: 'itinerary'
+        value: 'GroupOrder'
       });
     }
   },
 
   addItinerary(e) {
-    const url = '/sub-pages/itinerary/add/index';
+    const url = '/sub-pages/groupOrder/add/index';
 
     wx.navigateTo({
       url: url,
       success: () => console.log('跳轉成功'),
       fail: (err) => {
-        console.error('跳轉失敗原因:', err); 
+        console.error('跳轉失敗原因:', err);
         if (err.errMsg.includes('tabbar')) {
           wx.switchTab({
             url
@@ -111,7 +111,7 @@ Page({
     } = this.data;
 
     // 呼叫 Mock API，同時傳入兩個條件
-    const res = await ItineraryMock.filterItineraryList(searchKeyword, currentStatus);
+    const res = await GroupOrderMock.filterItineraryList(searchKeyword, currentStatus);
 
     this.setData({
       // 確保畫面更新的是篩選後的結果
