@@ -1,11 +1,12 @@
 {
   "pages": [
-    "sub-pages/groupOrder/productManage/index",
     "sub-pages/groupOrder/detail/index",
+    "sub-pages/groupOrder/productList/index",
+    "sub-pages/groupOrder/product-picker/index",
+    "sub-pages/product/add/index",
     "sub-pages/groupOrder/add/index",
     "pages/groupOrder/index",
     "sub-pages/product/list/index",
-    "sub-pages/product/add/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
     "pages/customerOrders/index",
@@ -19,7 +20,8 @@
     "pages/my/index"
   ],
   "usingComponents": {
-    "t-toast": "tdesign-miniprogram/toast/toast"
+    "t-toast": "tdesign-miniprogram/toast/toast",
+    "t-icon": "tdesign-miniprogram/icon/icon"
   },
   "subpackages": [
     {

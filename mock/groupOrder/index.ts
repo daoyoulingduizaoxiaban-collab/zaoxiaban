@@ -1,5 +1,5 @@
 import { PriceSetting, Product } from '~/models/Product';
-import { CustomerProduct, MemberOrder } from '~/models/MemberOrder';
+import { MemberProduct, MemberOrder } from '~/models/MemberOrder';
 import { MemberOrderStatus } from '~/enum/MemberOrderStatus'
 import { ProductStatus } from '~/enum/ProductStatus'
 import { GroupOrder } from '../../models/GroupOrder';
@@ -90,7 +90,7 @@ const MOCK_LIST = [
         memberRemark: "客人寫的備註",
         hostRemark: "開團人寫的備註",
         productList: [
-          new CustomerProduct({
+          new MemberProduct({
             productId: 1,
             amount: 4,
             totalPrice: 100,
@@ -99,6 +99,88 @@ const MOCK_LIST = [
             adjustmentCount: 2,
             lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
           }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          new MemberProduct({
+            productId: 1,
+            amount: 4,
+            totalPrice: 100,
+            originalTotalPrice: 120,
+            isAdjusted: true,
+            adjustmentCount: 2,
+            lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
+          }),
+          
         ]
       })
     ]
@@ -186,7 +268,7 @@ const MOCK_LIST = [
         memberRemark: "客人寫的備註",
         hostRemark: "開團人寫的備註",
         productList: [
-          new CustomerProduct({
+          new MemberProduct({
             productId: 1,
             amount: 4,
             totalPrice: 100,
@@ -207,7 +289,7 @@ const MOCK_LIST = [
         memberRemark: "客人寫的備註",
         hostRemark: "開團人寫的備註",
         productList: [
-          new CustomerProduct({
+          new MemberProduct({
             productId: 1,
             amount: 4,
             totalPrice: 100,
@@ -228,7 +310,7 @@ const MOCK_LIST = [
         memberRemark: "客人寫的備註",
         hostRemark: "開團人寫的備註",
         productList: [
-          new CustomerProduct({
+          new MemberProduct({
             productId: 1,
             amount: 4,
             totalPrice: 100,
@@ -324,7 +406,7 @@ const MOCK_LIST = [
         memberRemark: "yooooo",
         hostRemark: "hihihihihi",
         productList: [
-          new CustomerProduct({
+          new MemberProduct({
             productId: 1,
             amount: 4,
             totalPrice: 100,
@@ -333,7 +415,7 @@ const MOCK_LIST = [
             adjustmentCount: 2,
             lastAdjustmentTime: new Date(2026, 2, 9, 14, 52, 46)
           }),
-          new CustomerProduct({
+          new MemberProduct({
             productId: 2,
             amount: 1,
             totalPrice: 10,
@@ -354,7 +436,7 @@ const MOCK_LIST = [
         memberRemark: "yooooo",
         hostRemark: "hihihihihi",
         productList: [
-          new CustomerProduct({
+          new MemberProduct({
             productId: 1,
             amount: 4,
             totalPrice: 100,

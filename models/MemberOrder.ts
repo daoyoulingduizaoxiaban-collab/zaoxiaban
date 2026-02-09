@@ -8,7 +8,7 @@ export class MemberOrder {
   status: MemberOrderStatus = MemberOrderStatus.UNPAID;
   totalPrice: number = -1;
   originalTotalPrice: number = 0;
-  productList: CustomerProduct[] = [];
+  productList: MemberProduct[] = [];
   memberRemark: string = "";
   hostRemark: string = "";
 
@@ -16,7 +16,7 @@ export class MemberOrder {
     Object.assign(this, data);
 
     if (data.productList) {
-      this.productList = data.productList.map(item => new CustomerProduct(item));
+      this.productList = data.productList.map(item => new MemberProduct(item));
     }
   }
 
@@ -27,7 +27,7 @@ export class MemberOrder {
 }
 
 /* 客戶買的商品 */
-export class CustomerProduct {
+export class MemberProduct {
   productId: number = -1;
   amount: number = 0;
   totalPrice: number = 0;
@@ -38,7 +38,7 @@ export class CustomerProduct {
   adjustmentCount: number = 0;
   lastAdjustmentTime?: Date;
 
-  constructor(data: Partial<CustomerProduct> = {}) {
+  constructor(data: Partial<MemberProduct> = {}) {
     // 自動對應
     Object.assign(this, data);
 

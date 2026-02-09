@@ -9,7 +9,6 @@ Component({
     onBack() {
       // 統一處理返回邏輯
       const pages = getCurrentPages();
-console.log(pages)
 
       if (pages.length > 1) {
         wx.navigateBack({ delta: 1 });

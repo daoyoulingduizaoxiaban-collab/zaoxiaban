@@ -1,6 +1,7 @@
 import {
   GroupOrder
 } from '~/models/GroupOrder';
+import { MemberOrder } from '~/models/MemberOrder';
 import {
   GroupOrderMock
 } from '../../../mock/groupOrder/index';
@@ -8,23 +9,18 @@ import {
 
 Page({
   data: {
-    pageTitle: '',
+    pageTitle: '查看行程',
     groupOrder: new GroupOrder(),
     showDetails: false,
-    selectedMemberOrder: {},
+    selectedMemberOrder: new MemberOrder(),
     showConfirmDialog: false,
     selectedMemberOrderId: 0,
-    groupOrderId: null,
   },
 
   onLoad(options) {
     //  let id = options.id;
     let id = 1;
     if (id) {
-      this.setData({
-        pageTitle: '查看行程',
-        groupOrderId: id,
-      });
       this.fetchGroupOrderDetail(id);
     } else {
       this.setData({
@@ -33,14 +29,13 @@ Page({
     }
   },
 
-  async fetchGroupOrderDetail() {
-   
+  async fetchGroupOrderDetail(id) {
+
     try {
-      const res = await GroupOrderMock.fetchById(this.data.groupOrderId)
-     
+      const res = await GroupOrderMock.fetchById(id)
       if (res.code === 200) {
         this.setData({
-          groupOrder: res.data
+          groupOrder: res.data,
         });
       }
 
@@ -109,11 +104,11 @@ Page({
       index
     } = e.currentTarget.dataset;
 
-    const selectedOrder = this.data.groupOrder.memberOrderList[index];
+    const selectedMemberOrder = this.data.groupOrder.memberOrderList[index];
 
-    if (selectedOrder) {
+    if (selectedMemberOrder) {
       this.setData({
-        selectedOrder: selectedOrder,
+        selectedMemberOrder: selectedMemberOrder,
         showDetails: true
       });
     } else {
@@ -173,8 +168,8 @@ Page({
       selectedMemberOrderId: id
     });
 
-    console.log(id)
-    console.log(e)
+    // console.log(id)
+    // console.log(e)
   },
 
   // 彈窗點擊取消
@@ -215,7 +210,7 @@ Page({
     //let id = null
     if (id) {
       wx.navigateTo({
-        url: `/sub-pages/groupOrder/productManage/index?id=${id}`,
+        url: `/sub-pages/groupOrder/productList/index?id=${id}`,
         fail: (err) => {
           console.error("跳轉商品管理頁面失敗：", err);
         }
