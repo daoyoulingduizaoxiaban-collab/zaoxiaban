@@ -1,10 +1,11 @@
 {
   "pages": [
+    "sub-pages/groupOrder/productManage/index",
     "sub-pages/groupOrder/detail/index",
+    "sub-pages/groupOrder/add/index",
     "pages/groupOrder/index",
     "sub-pages/product/list/index",
     "sub-pages/product/add/index",
-    "sub-pages/groupOrder/add/index",
     "pages/tourGuides/index",
     "pages/tourGuides/edit/index",
     "pages/customerOrders/index",
@@ -15,8 +16,7 @@
     "pages/profile/edit/index",
     "pages/home/index",
     "pages/message/index",
-    "pages/my/index",
-    "sub-pages/groupOrder/productManage/index"
+    "pages/my/index"
   ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast"

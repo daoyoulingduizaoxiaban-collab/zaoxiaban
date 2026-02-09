@@ -1,15 +1,11 @@
 export class Member {
-  id: number;
-  openid: string;
-  name: string;
-  email: string;
-  phone: string;
+  id: number = 0;
+  openid: string = '';
+  name: string = '';
+  email: string = '';
+  phone: string = '';
 
   constructor(data: Partial<Member> = {}) {
-    this.id = data.id ?? 0;
-    this.openid = data.openid ?? '';
-    this.name = data.name ?? '';
-    this.email = data.email ?? '';
-    this.phone = data.phone ?? '';
+    Object.assign(this, data);
   }
 }

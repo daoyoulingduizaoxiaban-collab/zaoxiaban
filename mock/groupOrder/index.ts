@@ -19,7 +19,7 @@ const MOCK_LIST = [
       new Product({
         id: 1,
         status: ProductStatus.PUBLISHED,
-        prividerId: 1,
+        providerId: 1,
         title: "1號商品",
         pictureUrls: [
           "https://img.freepik.com/free-photo/3d-monsoon-season-sale_23-2150472588.jpg?semt=ais_user_personalization&w=740&q=80",
@@ -50,7 +50,7 @@ const MOCK_LIST = [
       new Product({
         id: 2,
         status: ProductStatus.PUBLISHED,
-        prividerId: 2,
+        providerId: 2,
         title: "2號商品",
         pictureUrls: [
           "https://moozphoto.huhu.tw/wp-content/uploads/2024/05/0524-1-%E6%8B%B7%E8%B2%9D-34-600x900.jpg",
@@ -115,7 +115,7 @@ const MOCK_LIST = [
       new Product({
         id: 1,
         status: ProductStatus.PUBLISHED,
-        prividerId: 1,
+        providerId: 1,
         title: "1號商品",
         pictureUrls: [
           "https://img.freepik.com/free-photo/3d-monsoon-season-sale_23-2150472588.jpg?semt=ais_user_personalization&w=740&q=80",
@@ -146,7 +146,7 @@ const MOCK_LIST = [
       new Product({
         id: 2,
         status: ProductStatus.PUBLISHED,
-        prividerId: 2,
+        providerId: 2,
         title: "2號商品",
         pictureUrls: [
           "https://moozphoto.huhu.tw/wp-content/uploads/2024/05/0524-1-%E6%8B%B7%E8%B2%9D-34-600x900.jpg",
@@ -253,7 +253,7 @@ const MOCK_LIST = [
       new Product({
         id: 1,
         status: ProductStatus.PUBLISHED,
-        prividerId: 1,
+        providerId: 1,
         title: "1號商品",
         pictureUrls: [
           "https://img.freepik.com/free-photo/3d-monsoon-season-sale_23-2150472588.jpg?semt=ais_user_personalization&w=740&q=80",
@@ -284,7 +284,7 @@ const MOCK_LIST = [
       new Product({
         id: 2,
         status: ProductStatus.PUBLISHED,
-        prividerId: 2,
+        providerId: 2,
         title: "2號商品",
         pictureUrls: [
           "https://moozphoto.huhu.tw/wp-content/uploads/2024/05/0524-1-%E6%8B%B7%E8%B2%9D-34-600x900.jpg",

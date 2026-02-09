@@ -1,2 +1,1 @@
-<!--sub-pages/groupOrder/productManage/index.wxml-->
-<text>sub-pages/groupOrder/productManage/index.wxml</text>
+<sub-nav title="{{ pageTitle }}" />

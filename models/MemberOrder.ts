@@ -1,49 +1,63 @@
-import { MemberOrderStatus } from '~/enum/MemberOrderStatus'
-export class MemberOrder {
-  id: number;
-  userId: number;
-  groupOrderId: number;
-  status: MemberOrderStatus;
-  totalPrice: number;
-  originalTotalPrice: number;
-  productList: CustomerProduct[] = [];
-  memberRemark: string; // 客戶寫的備註
-  hostRemark: string; // 導遊寫的備註
+import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 
+export class MemberOrder {
+  // 1. 屬性宣告與預設值
+  id: number = -1;
+  userId: number = -1;
+  groupOrderId: number = -1;
+  status: MemberOrderStatus = MemberOrderStatus.UNPAID;
+  totalPrice: number = -1;
+  originalTotalPrice: number = 0;
+  productList: CustomerProduct[] = [];
+  memberRemark: string = "";
+  hostRemark: string = "";
 
   constructor(data: Partial<MemberOrder> = {}) {
-    this.id = data.id ?? -1;
-    this.userId = data.userId ?? -1;
-    this.groupOrderId = data.groupOrderId ?? -1;
-    this.status = data.status ?? MemberOrderStatus.UNPAID;
-    this.totalPrice = data.totalPrice ?? -1;
-    this.originalTotalPrice = data.originalTotalPrice ?? -1;
-    this.productList = data.productList ?? [];
-    this.memberRemark = data.memberRemark ?? "";
-    this.hostRemark = data.hostRemark ?? "";
+    Object.assign(this, data);
+
+    if (data.productList) {
+      this.productList = data.productList.map(item => new CustomerProduct(item));
+    }
+  }
+
+  // 既然要轉型為「團訂」，可以增加一個判斷是否已支付的方法
+  get isPaid(): boolean {
+    return this.status === MemberOrderStatus.PAID;
   }
 }
 
 /* 客戶買的商品 */
 export class CustomerProduct {
-  productId: number;
-  amount: number;
-  totalPrice: number;
-  originalTotalPrice: number;
+  productId: number = -1;
+  amount: number = 0;
+  totalPrice: number = 0;
+  originalTotalPrice: number = 0;
 
   // 修改歷程欄位
-  isAdjusted: boolean;
-  adjustmentCount: number;
+  isAdjusted: boolean = false;
+  adjustmentCount: number = 0;
   lastAdjustmentTime?: Date;
 
-
   constructor(data: Partial<CustomerProduct> = {}) {
-    this.productId = data.productId ?? -1;
-    this.amount = data.amount ?? -1;
-    this.totalPrice = data.totalPrice ?? -1;
-    this.originalTotalPrice = data.originalTotalPrice ?? -1;
-    this.isAdjusted = data.isAdjusted ?? false;
-    this.adjustmentCount = data.adjustmentCount ?? 0;
-    this.lastAdjustmentTime = data.lastAdjustmentTime;
+    // 自動對應
+    Object.assign(this, data);
+
+    // 處理日期格式轉換 (如果是從 JSON 讀取，Date 會變成 string)
+    if (data.lastAdjustmentTime) {
+      this.lastAdjustmentTime = new Date(data.lastAdjustmentTime);
+    }
+  }
+
+  /**
+   * 業務邏輯：手動調整金額
+   * 封裝後，你在 Page.ts 呼叫時會非常簡潔
+   */
+  adjustPrice(newPrice: number): void {
+    if (newPrice !== this.totalPrice) {
+      this.totalPrice = newPrice;
+      this.isAdjusted = true; // 標記已修改
+      this.adjustmentCount++; // 累加修改次數
+      this.lastAdjustmentTime = new Date(); // 更新修改時間
+    }
   }
 }
