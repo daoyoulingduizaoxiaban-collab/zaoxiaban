@@ -17,7 +17,8 @@
     "pages/profile/edit/index",
     "pages/home/index",
     "pages/message/index",
-    "pages/my/index"
+    "pages/my/index",
+    "pages/productManagement/index"
   ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast",
@@ -90,28 +91,16 @@
     "custom": true,
     "list": [
       {
-        "pagePath": "pages/home/index",
-        "text": "首頁"
+        "pagePath": "pages/groupOrder/index"
       },
       {
-        "pagePath": "pages/groupOrder/index",
-        "text": "行程"
+        "pagePath": "pages/customerOrders/index"
       },
       {
-        "pagePath": "pages/tourGuides/index",
-        "text": "導遊管理"
+        "pagePath": "pages/productManagement/index"
       },
       {
-        "pagePath": "pages/customerOrders/index",
-        "text": "客戶訂單"
-      },
-      {
-        "pagePath": "pages/providers/index",
-        "text": "供應管理"
-      },
-      {
-        "pagePath": "pages/profile/index",
-        "text": "我的"
+        "pagePath": "pages/my/index"
       }
     ]
   },
