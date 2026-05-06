@@ -4,7 +4,7 @@ import { ProductStatus } from '../enum/ProductStatus';
 export class Product {
   id: number = 0;
   status: ProductStatus = 0;
-  providerId: number = 0; 
+  //providerId: number = 0; 
   title: string = '';
   pictureUrls: string[] = [];
   priceSetting: PriceSetting[] = [];

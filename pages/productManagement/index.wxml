@@ -1,2 +1,44 @@
-<!--pages/productManagement/index.wxml-->
-<text>pages/productManagement/index.wxml</text>
+<nav nav-type="productManagement" titleText="{{titleText}}" />
+
+<view class="container">
+  <view class="search-section">
+    <t-search value="{{searchKeyword}}" placeholder="搜尋名稱或描述" bind:change="onSearchInput" t-class="search-bar" />
+    <t-dropdown-menu t-class="dropdown-custom">
+      <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
+    </t-dropdown-menu>
+  </view>
+
+  <scroll-view scroll-y="true" class="product-list">
+    <view class="empty-container" wx:if="{{productList.length === 0}}">
+      <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
+      <text class="empty-text">目前還沒有商品喔</text>
+      <text class="empty-tips">點擊右下角「+」開始新增第一個商品吧！</text>
+    </view>
+
+    <block wx:for="{{productList}}" wx:key="id">
+      <view class="product-card">
+        <view class="product-card-body">
+          <image class="product-img" src="{{item.pictureUrls[0] || ''}}" mode="aspectFill"></image>
+          <view class="product-info">
+            <view class="title-row">
+              <text class="title">{{item.title}}</text>
+              <text
+                class="status-tag {{item.status === 1 ? 'online' : 'offline'}}">{{item.status === 1 ? '已下架' : '開放下單'}}</text>
+            </view>
+            <text class="description">{{item.description || '暫無描述'}}</text>
+          </view>
+        </view>
+        <view class="action-bar">
+          <button size="mini" type="warn" plain bindtap="onDelete" data-id="{{item.id}}">刪除</button>
+          <button size="mini" plain bindtap="onToggleStatus" data-id="{{item.id}}">
+            {{item.status === 1 ? '下架' : '上架'}}
+          </button>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <view class="fab-btn" bindtap="onAddProduct">
+    <text class="plus">+</text>
+  </view>
+</view>

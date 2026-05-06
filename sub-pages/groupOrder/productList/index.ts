@@ -1,8 +1,13 @@
+import { Product } from "~/models/Product";
+import {
+  GroupOrderMock
+} from '~/mock/groupOrder/index';
+
 Page({
   data: {
     searchQuery: '',
-    rawList: [],    // 原始完整列表
-    displayList: [] // 搜尋過濾後的列表
+    rawList: [] as Product[],    // 原始完整列表
+    displayList: [] as Product[] // 搜尋過濾後的列表
   },
 
   onShow() {
@@ -11,12 +16,10 @@ Page({
   },
 
   // 1. 載入本團商品
-  loadGroupProducts() {
+  async loadGroupProducts() {
     // 模擬：從後端 API 取得
-    const mockData = [
-      { id: 101, title: '手工餅乾 (原味)', priceDisplay: '$100', soldCount: 5, pictureUrls: [],description:"dddd" },
-      { id: 103, title: '有機冷泡茶', priceDisplay: '$60', soldCount: 12, pictureUrls: [] ,description:"aaaaa" }
-    ];
+    var groupOrderList = (await GroupOrderMock.fetchItineraryListMock()).data;
+    const mockData = groupOrderList[0].productList;
 
     this.setData({
       rawList: mockData,
@@ -57,7 +60,7 @@ Page({
   // 4. 刪除商品
   onDelete(e) {
     const { index, id } = e.currentTarget.dataset;
-    
+
     wx.showModal({
       title: '移除商品',
       content: '確定要從本團移除此商品嗎？',
@@ -66,16 +69,16 @@ Page({
         if (res.confirm) {
           // 呼叫後端 API 刪除
           // wx.request({ url: 'deleteUrl', method: 'POST', data: { id } ... })
-          
+
           // 前端先移除
           const newList = [...this.data.displayList];
           newList.splice(index, 1);
-          
+
           // 同步更新 rawList (略過複雜邏輯，建議重新 fetch)
           this.setData({
             displayList: newList
           });
-          
+
           wx.showToast({ title: '已移除', icon: 'none' });
         }
       }
@@ -87,7 +90,7 @@ Page({
     //TODO
     //const existingIds = this.data.rawList.map(item => item.id);
     const existingIds = [1]
-    
+
     wx.navigateTo({
       url: `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
       fail: (err) => {

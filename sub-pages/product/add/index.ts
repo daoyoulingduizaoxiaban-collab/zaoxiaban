@@ -135,8 +135,12 @@ Page({
     this.setData({ productList: list });
   },
 
-  submitGroup() {
-    console.log('提交 Payload:', this.data.productList);
+  addProduct() {
+    let eventChannel = this.getOpenerEventChannel();
+    eventChannel.emit('refreshList', { success: true }); // 觸發上一頁的監聽
+    wx.navigateBack(); // 返回上一頁
+    
+    //console.log('提交 Payload:', this.data.productList);
     // 這裡提交的資料結構就會完全符合你的 Product 與 PriceSetting 定義
   }
 });
