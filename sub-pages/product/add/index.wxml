@@ -1,62 +1,97 @@
-<sub-nav title="新增商品" />
+<sub-nav title="{{ pageTitle }}" />
 
-<view class="add-container">
-  <t-cell-group theme="card" title="基本資訊">
-    <t-input 
-      label="*名稱" 
-      placeholder="請輸入商品名稱" 
-      value="{{product.title}}" 
-      bindchange="onInput" 
-      data-field="title" 
-    />
-    <t-textarea 
-      label="商品描述" 
-      placeholder="請輸入描述..." 
-      value="{{product.description}}" 
-      bindchange="onInput" 
-      data-field="description" 
-    />
-  </t-cell-group>
+<view class="page-container">
+  <!-- <view class="header-section">
+    <text class="main-title">開團商品設定</text>
+    <text class="sub-title">設定商品資訊與階梯價格</text>
+  </view> -->
 
-  <t-cell-group theme="card" title="商品圖片">
-    <view style="padding: 24rpx;">
-      <t-image-uploader 
-        files="{{fileList}}" 
-        bind:add="onAddImage" 
-        bind:remove="onRemoveImage" 
-      />
-    </view>
-  </t-cell-group>
-
-  <t-cell-group theme="card" title="*階梯定價設定">
-    <view wx:for="{{product.priceSetting}}" wx:key="index" style="padding: 20rpx; border-bottom: 1rpx solid #eee;">
-      <view style="display: flex; justify-content: space-between; margin-bottom: 10rpx;">
-        <text style="font-size: 24rpx; color: #999;">門檻 {{index + 1}}</text>
-        <text style="font-size: 24rpx; color: #0052d9;" bindtap="removePriceSetting" data-index="{{index}}" wx:if="{{product.priceSetting.length > 1}}">刪除</text>
+  <view class="content-scroll">
+    <view class="card">
+      <view class="form-group">
+        <text class="label">商品名稱 <text class="required">*</text></text>
+        <input class="input-box" placeholder="例如：手工餅乾" data-field="title" value="{{currentProduct.title}}" bindinput="onProductInput" />
       </view>
-      
-      <view style="display: flex; gap: 20rpx;">
-        <t-input label="起購數" type="number" suffix="件" value="{{item.minQuantity}}" 
-          bindchange="onPriceFieldChange" data-index="{{index}}" data-field="minQuantity" />
-        <t-input label="單價" type="number" suffix="元" value="{{item.unitPrice}}" 
-          bindchange="onPriceFieldChange" data-index="{{index}}" data-field="unitPrice" />
+
+      <view class="form-group">
+        <text class="label">商品描述</text>
+        <textarea class="textarea-box" placeholder="請輸入商品介紹、成分、保存期限..." data-field="description" value="{{currentProduct.description}}" bindinput="onProductInput" disable-default-padding />
       </view>
-      
-      <t-input label="優惠描述" placeholder="例：滿5件打折" value="{{item.description}}" 
-        bindchange="onPriceFieldChange" data-index="{{index}}" data-field="description" />
-      
-      <view style="text-align: right; font-size: 22rpx; color: #ff5000; margin-top: 10rpx;">
-        該門檻總價：¥{{item.totalPrice}}
+
+      <view class="form-group">
+        <text class="label">商品圖片 ({{currentProduct.pictureUrls.length}}/3)</text>
+        <view class="image-grid">
+          <block wx:for="{{currentProduct.pictureUrls}}" wx:key="*this">
+            <view class="img-wrap">
+              <image src="{{item}}" mode="aspectFill" class="uploaded-img"></image>
+              <view class="btn-remove" catchtap="removeImage" data-index="{{index}}">×</view>
+            </view>
+          </block>
+          <view class="upload-btn" bindtap="chooseImage" wx:if="{{currentProduct.pictureUrls.length < 3}}">
+            <text class="plus-icon">+</text>
+          </view>
+        </view>
       </view>
     </view>
 
-    <view class="add-goods-btn-wrap" bindtap="addPriceSetting" style="display: flex; justify-content: center; padding: 30rpx;">
-      <t-icon name="add" size="40rpx" color="#0052d9" />
-      <text style="color: #0052d9; margin-left: 10rpx;">新增價格門檻</text>
-    </view>
-  </t-cell-group>
+    <view class="card">
+      <view class="card-header">
+        <text class="label">價格設定 (至少一組) <text class="required">*</text></text>
+      </view>
 
-  <view class="footer" style="padding: 30rpx;">
-    <t-button theme="primary" size="large" block bindtap="onSave">儲存商品</t-button>
+      <view class="price-list" wx:if="{{currentProduct.priceSetting.length > 0}}">
+        <view class="price-item" wx:for="{{currentProduct.priceSetting}}" wx:key="index">
+          <view class="p-info">
+            <text class="p-qty">滿 {{item.minQuantity}} 件</text>
+            <text class="p-val">${{item.unitPrice}}</text>
+            <text class="p-desc" wx:if="{{item.description}}">({{item.description}})</text>
+          </view>
+          <view class="p-del" bindtap="removePriceRule" data-index="{{index}}">刪除</view>
+        </view>
+      </view>
+
+      <view class="price-input-row">
+        <view class="col-small">
+          <text class="sub-label">起訂量</text>
+          <input type="number" class="input-box small" placeholder="1" value="{{tempPriceSetting.minQuantity}}" data-field="minQuantity" bindinput="onPriceInput"/>
+        </view>
+        
+        <view class="col-small">
+          <text class="sub-label">單價($)</text>
+          <input type="digit" class="input-box small" placeholder="0" value="{{tempPriceSetting.unitPrice}}" data-field="unitPrice" bindinput="onPriceInput"/>
+        </view>
+        
+        <view class="col-large">
+          <text class="sub-label">說明(選填)</text>
+          <input class="input-box small" placeholder="如:團購價" value="{{tempPriceSetting.description}}" data-field="description" bindinput="onPriceInput"/>
+        </view>
+        
+        <view class="col-btn">
+          <view class="btn-add-rule" bindtap="addPriceRule">+</view>
+        </view>
+      </view>
+
+      <button class="btn-save-product" bindtap="addProductToList">儲存此商品</button>
+    </view>
+
+    <view class="list-section">
+      <view class="list-header">已設定商品 ({{productList.length}})</view>
+      <view class="empty-tip" wx:if="{{productList.length === 0}}">尚未加入任何商品</view>
+      
+      <block wx:else>
+        <view class="product-preview-item" wx:for="{{productList}}" wx:key="id">
+          <image src="{{item.pictureUrls[0]}}" class="preview-img" mode="aspectFill"></image>
+          <view class="preview-info">
+            <text class="preview-title">{{item.title}}</text>
+            <text class="preview-price">{{item.priceDisplay}}</text>
+          </view>
+          <view class="preview-del" bindtap="removeProduct" data-index="{{index}}">×</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="footer-bar">
+    <button class="btn-submit" bindtap="addProduct">新增</button>
   </view>
 </view>

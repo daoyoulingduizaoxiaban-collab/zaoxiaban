@@ -1,0 +1,47 @@
+<sub-nav title="從商品庫選擇" placeholder />
+
+<view class="container">
+  <view class="search-box">
+    <view class="search-inner">
+      <t-icon name="search" size="40rpx" color="#bbb" />
+      <input class="search-input" placeholder="搜尋商品名稱" bindinput="onSearch" />
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="product-list">
+    <block wx:for="{{products}}" wx:key="id">
+      <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}" 
+            bindtap="{{!item.disabled ? 'toggleSelect' : ''}}" 
+            data-index="{{index}}">
+        
+        <view class="checkbox">
+          <t-icon wx:if="{{item.selected}}" name="check" size="32rpx" color="#fff" />
+          <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
+        </view>
+
+        <image class="p-img" src="{{item.pictureUrls[0] || ''}}" mode="aspectFill"></image>
+
+        <view class="p-info">
+          <text class="p-title">{{item.title}}</text>
+          <text class="p-desc">{{item.description || '暫無描述'}}</text>
+          <view class="p-price-row">
+             <text class="p-price">${{item.priceSetting[0].unitPrice}}</text>
+            <text class="p-unit" wx:if="{{item.priceSetting[0].minQuantity > 1}}">起</text>
+          </view>
+        </view>
+        
+      </view>
+    </block>
+    
+    <view class="footer-spacer"></view>
+  </scroll-view>
+
+  <view class="footer-bar">
+    <view class="selected-info">
+      已選擇 <text class="count">{{selectedCount}}</text> 項
+    </view>
+    <button class="btn-confirm {{selectedCount > 0 ? '' : 'disabled'}}" bindtap="confirmAdd">
+      確認加入
+    </button>
+  </view>
+</view>

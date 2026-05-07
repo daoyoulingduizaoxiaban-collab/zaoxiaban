@@ -1,39 +1,47 @@
+import { ProductStatus } from '../enum/ProductStatus';
+
 /* 商品設定檔 */
 export class Product {
-  id: number;
-  prividerId:number;
-  title: string;
-  pictureUrls: string[];
-  priceSetting: PriceSetting[];
-  description: string;
+  id: number = 0;
+  status: ProductStatus = 0;
+  //providerId: number = 0; 
+  title: string = '';
+  pictureUrls: string[] = [];
+  priceSetting: PriceSetting[] = [];
+  description: string = '';
 
   constructor(data: Partial<Product> = {}) {
-    this.id = data.id ?? 0;
-    this.prividerId = data.prividerId ?? 0;
-    this.title = data.title ?? '';
-    this.pictureUrls = data.pictureUrls ?? [];
-    this.priceSetting = data.priceSetting ?? [];
-    this.description = data.description ?? '';
+    // 2. 自動對應原始資料
+    Object.assign(this, data);
+
+    // 3. 處理深層物件實例化，確保能使用 PriceSetting 的方法 (如有)
+    if (data.priceSetting) {
+      this.priceSetting = data.priceSetting.map(item => new PriceSetting(item));
+    }
   }
 }
 
 export class PriceSetting {
   /** 最小購買數量觸發門檻 */
-  minQuantity: number;
-  
-  /** 該門檻下的單件價格 (Unit Price) */
-  unitPrice: number;
+  minQuantity: number = 1;
 
-  /** 選填：該組合的總價 (如買5個共230元，方便直接顯示) */
+  /** 該門檻下的單件價格 (Unit Price) */
+  unitPrice: number = 0;
+
+  /** 選填：該組合的總價 */
   totalPrice?: number;
 
-  /** 優惠描述 (例如：滿5件打92折) */
-  description?: string;
+  /** 優惠描述 */
+  description: string = '';
 
   constructor(data: Partial<PriceSetting> = {}) {
-    this.minQuantity = data.minQuantity ?? 1;
-    this.unitPrice = data.unitPrice ?? 0;
-    this.totalPrice = data.totalPrice;
-    this.description = data.description ?? '';
+    // 自動對應
+    Object.assign(this, data);
+  }
+  
+  // 既然你是 C# 背景，這裡可以加一個邏輯方法，方便 UI 顯示
+  // 例如：自動生成「滿 5 件，單價 $46」的文字
+  get label(): string {
+    return `滿 ${this.minQuantity} 件，單價 $${this.unitPrice}`;
   }
 }

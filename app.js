@@ -55,6 +55,7 @@ App({
     userInfo: null,
     unreadNum: 0, // 未读消息数量
     socket: null, // SocketTask 对象
+    themeColor: '#0052d9' // 統一管理你的品牌色
   },
 
   /** 全局自定義函數：可以被各個頁面調用 */

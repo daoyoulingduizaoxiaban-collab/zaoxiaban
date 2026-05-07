@@ -9,11 +9,11 @@ Component({
     onBack() {
       // 統一處理返回邏輯
       const pages = getCurrentPages();
+
       if (pages.length > 1) {
         wx.navigateBack({ delta: 1 });
       } else {
-        // 如果是直接打開子頁面（無歷史記錄），則返回首頁
-        wx.reLaunch({ url: '/pages/home/index' });
+        wx.reLaunch({ url: '/pages/groupOrder/index' });
       }
     }
   }

@@ -1,0 +1,197 @@
+page {
+  background-color: #f7f8fa;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  // padding-top: 1 80rpx; /* 避開 sub-nav */
+}
+
+/* 搜尋區塊 */
+.search-section {
+  padding: 0 24rpx 20rpx;
+  background: #f7f8fa;
+  /* 與背景同色 */
+}
+
+.search-bar {
+  background: #fff;
+  height: 80rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  padding: 0 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.03);
+}
+
+.search-input {
+  flex: 1;
+  margin-left: 16rpx;
+  font-size: 28rpx;
+  height: 100%;
+}
+
+.clear-icon {
+  width: 40rpx;
+  height: 40rpx;
+  line-height: 38rpx;
+  text-align: center;
+  background: #eee;
+  color: #999;
+  border-radius: 50%;
+  font-size: 24rpx;
+}
+
+/* 列表區 */
+.product-list {
+  flex: 1;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+}
+
+.product-card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 20rpx;
+  display: flex;
+  align-items: center;
+  position: relative;
+  /* 為了可能的定位 */
+}
+
+.p-img {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 12rpx;
+  background: #eee;
+  flex-shrink: 0;
+}
+
+.p-info {
+  flex: 1;
+  margin-left: 24rpx;
+  margin-right: 20rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 130rpx;
+}
+
+.p-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.p-price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.p-price {
+  color: #ff5000;
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.p-description {
+  color: #918f8f;
+  font-size: 24rpx;
+}
+
+.p-sold {
+  font-size: 22rpx;
+  color: #999;
+  margin-left: 10rpx;
+}
+
+/* 刪除按鈕區塊 */
+.p-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-left: 20rpx;
+  border-left: 1px solid #f0f0f0;
+  height: 100rpx;
+  width: 80rpx;
+}
+
+.btn-delete-icon {
+  font-size: 36rpx;
+  margin-bottom: 4rpx;
+}
+
+.txt-del {
+  font-size: 20rpx;
+  color: #ff4d4f;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 150rpx;
+  color: #999;
+}
+
+.empty-img {
+  width: 200rpx;
+  height: 200rpx;
+  margin-bottom: 20rpx;
+  opacity: 0.5;
+}
+
+.sub-text {
+  font-size: 24rpx;
+  margin-top: 10rpx;
+  opacity: 0.7;
+}
+
+.list-spacer {
+  height: 160rpx;
+}
+
+/* 底部按鈕 */
+.footer-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
+  z-index: 100;
+}
+
+.btn-add-new {
+  background: #333;
+  color: #fff;
+  border-radius: 50rpx;
+  font-size: 32rpx;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plus {
+  font-size: 40rpx;
+  margin-right: 10rpx;
+  margin-top: -6rpx;
+}

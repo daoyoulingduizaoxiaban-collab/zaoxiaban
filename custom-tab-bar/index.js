@@ -1,3 +1,7 @@
+import {
+  BOTTOM_BAR_LIST
+} from '../config'
+
 const app = getApp();
 
 Component({
@@ -7,37 +11,77 @@ Component({
     list: [],
   },
   lifetimes: {
+    attached() {
+      // TODO 依據權限控制選項
+      const userRole = wx.getStorageSync('role') || 'user';
+      this.setData({
+        list: BOTTOM_BAR_LIST
+      });
+    },
     ready() {
       const pages = getCurrentPages();
       const curPage = pages[pages.length - 1];
 
       if (curPage) {
-        const nameRe = /pages\/(\w+)\/index/.exec(curPage.route);
-        if (nameRe === null) return;
-        if (nameRe[1] && nameRe) {
+        // 優化後的正則：直接匹配 /pages/之後的第一個單字
+        const match = curPage.route.match(/pages\/([^\/]+)/);
+        if (match && match[1]) {
           this.setData({
-            value: nameRe[1],
+            value: match[1]
           });
         }
       }
+      // const pages = getCurrentPages();
+      // const curPage = pages[pages.length - 1];
+
+      // if (curPage) {
+      //   const nameRe = /pages\/(\w+)\/index/.exec(curPage.route);
+      //   if (nameRe === null) return;
+      //   if (nameRe[1] && nameRe) {
+      //     this.setData({
+      //       value: nameRe[1],
+      //     });
+      //   }
+      // }
 
       // // 同步全局未读消息数量
       // this.setUnreadNum(app.globalData.unreadNum);
       // app.eventBus.on('unread-num-change', (unreadNum) => {
       //   this.setUnreadNum(unreadNum);
       // });
-    },
-    attached() {
-      this.initTabBar()
     }
+    // attached() {
+    //   this.initTabBar()
+    // }
   },
   methods: {
+    onChange(e) {
+      const targetValue = e.detail;
+      const item = this.data.list.find(i => i.value === targetValue);
+      if (item) {
+        wx.switchTab({
+          url: item.path
+        });
+      }
+    },
     handleChange(e) {
+      console.log('in handleChange')
       try {
         const {
           value
         } = e.detail;
+        const item = this.data.list.find(i => i.value === value);
         
+        console.log(item)
+        if (item) {
+          wx.switchTab({
+            url: item.path
+          });
+        }
+
+        return;
+        console.log(value)
+
         wx.switchTab({
           url: `/pages/${value}/index`
         });
@@ -59,6 +103,7 @@ Component({
       // 模擬獲取角色（實際開發中可從 app.globalData 或 wx.getStorageSync 獲取）
       const userRole = wx.getStorageSync('role') || 'user';
 
+      //TODO 依照權限控制下方BAR項目
       let menu = [
         // {
         //   icon: 'home',
@@ -67,7 +112,7 @@ Component({
         // },
         {
           icon: 'home',
-          value: 'itinerary',
+          value: 'groupOrder',
           label: '行程'
         },
         {
