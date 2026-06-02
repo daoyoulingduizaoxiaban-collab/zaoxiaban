@@ -10,9 +10,9 @@
 
   <scroll-view scroll-y class="product-list">
     <block wx:for="{{products}}" wx:key="id">
-      <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}" 
-            bindtap="{{!item.disabled ? 'toggleSelect' : ''}}" 
-            data-index="{{index}}">
+      <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}"
+            bindtap="toggleSelect"
+            data-id="{{item.id}}">
         
         <view class="checkbox">
           <t-icon wx:if="{{item.selected}}" name="check" size="32rpx" color="#fff" />

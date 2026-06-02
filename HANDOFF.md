@@ -1,20 +1,20 @@
 # DaoYouLingDuiZaoXiaBan Handoff
 
 ## Last Updated
-- 2026-06-03 01:55 CST
+- 2026-06-03 02:02 CST
 
 ## Repo State
 - Project path: `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan`
 - Branch: `codex`
-- HEAD: `a13ac84 Merge branch 'before--ai' into dev`
-- `origin/dev` and local `dev` point at the same commit as current HEAD.
+- HEAD before this cleanup commit: `4b0656c 接續商品管理與交接文件`
+- `origin/dev` and local `dev` still point at `a13ac84`; branch `codex` is ahead locally.
 - `git stash list` is empty.
-- Working tree is dirty and not committed: 15 modified source/config files plus new `HANDOFF.md`.
+- Working tree is dirty with the current cleanup changes until committed.
 
 ## Current Focus
 - Continue the WeChat mini program work around `groupOrder`, product management, and group-order product setup.
 - The prior README was still the upstream TDesign template; there was no project-specific handoff before this file.
-- The current working tree is dirty with local fixes from this session and has not been committed.
+- Current cleanup focus: make the group-order product library flow less hard-coded and remove obvious debug code.
 
 ## Completed
 - Created a dedicated Codex handoff skill for this project only: `/Users/admin/.codex/skills/dao-you-ling-handoff`.
@@ -27,10 +27,15 @@
 - Aligned product status behavior with `enum/ProductStatus.ts`: `1 = 已下架`, `2 = 開放下單`.
 - Fixed the product management WXML status tag/button text to use the enum-aligned status values.
 - Cleaned lint-blocking legacy JS issues in tab-bar and old management pages: removed `console`, replaced optional chaining in JS files, removed unreachable tab-bar code, and fixed spacing/comment issues.
+- Reworked `sub-pages/groupOrder/productList/index.ts` to read `options.id`, load the selected group order with `GroupOrderMock.fetchById`, derive `existingIds` from `rawList`, and keep `rawList` / `displayList` synchronized after delete/add.
+- Reworked `sub-pages/groupOrder/product-picker/index.ts` to preserve selections across search, count selected items from `allProducts`, and return selected products through `EventChannel` instead of mutating the previous page instance.
+- Removed stale `groupOrderList[0]`, `existingIds = [1]`, `console.*`, and the broken `models/itinerary` import from the group-order flow.
+- Fixed `sub-pages/groupOrder/detail/index.ts` QR image error handling so it reads `groupOrder.qrCodeUrl` correctly and does not call `indexOf` on an empty value.
 
 ## Verification
 - `npm run lint` passed.
 - `git diff --check` passed.
+- `rg -n "groupOrderList\\[0\\]|existingIds = \\[1\\]|console\\.|models/itinerary|//TODO|// TODO" pages/groupOrder sub-pages/groupOrder -g '*.ts' -g '*.js'` found no matches after cleanup.
 - `python3 /Users/admin/.codex/skills/.system/skill-creator/scripts/quick_validate.py /Users/admin/.codex/skills/dao-you-ling-handoff` passed.
 - YAML parse scan for all discovered skills under `/Users/admin/.codex` and `/Users/admin/.agents` passed: `YAML_PARSE_INVALID: 0`.
 - `npx tsc --noEmit` could not run because the project does not have `typescript` installed; `npx` returned the TypeScript package guidance message.
@@ -44,20 +49,24 @@
 - `pages/productManagement/index.wxml`: enum-aligned product status display and action button text.
 - `sub-pages/product/add/index.ts`: defaults new products to `status: 2`, requires at least one saved product, emits products back to caller.
 - `sub-pages/groupOrder/detail/index.ts`: stores `groupOrderId` from route options for product management navigation.
+- `pages/groupOrder/index.ts`: removed debug logs and replaced failure logs with user-visible toast.
+- `sub-pages/groupOrder/add/index.ts`: removed deleted itinerary model import and submit debug log.
+- `sub-pages/groupOrder/productList/index.ts`: now loads by route group-order id, derives product exclusion IDs, syncs raw/display lists, and computes `priceDisplay`.
+- `sub-pages/groupOrder/product-picker/index.ts`: now owns selection state in `allProducts`, keeps selection through search, and emits selected products back to the opener.
+- `sub-pages/groupOrder/product-picker/index.wxml`: simplified tap binding to always call `toggleSelect` and let page logic ignore disabled products.
 - `pages/customerOrders/*`, `pages/profile/*`, `pages/providers/*`, `pages/tourGuides/*`, `pages/home/index.js`: lint cleanup only.
 - `/Users/admin/.codex/skills/dao-you-ling-handoff/SKILL.md`: new project-only handoff skill, scoped away from counting/Mind Steward/video projects.
 - `/Users/admin/.codex/skills/dao-you-ling-handoff/agents/openai.yaml`: skill UI metadata; default prompt now correctly includes `$dao-you-ling-handoff`.
 
 ## Known Issues / Next Steps
-- Highest-priority continuation: finish the group-order product library flow.
+- Highest-priority continuation: persist group-order product add/remove to a real API or a shared mock store; current add/remove is local page state only.
 - Install and configure TypeScript tooling if stronger validation is needed: add `typescript` and a TypeScript-aware ESLint parser/config.
 - Product and group-order data is still mock/local only; add real API integration when backend endpoints are ready.
-- `sub-pages/groupOrder/productList/index.ts` still hard-codes `existingIds = [1]` and loads `groupOrderList[0]`; continue by reading route `id` and deriving existing product IDs from the selected group order.
-- `sub-pages/groupOrder/product-picker/index.ts` should be checked next to complete the "choose products from library" flow.
+- `sub-pages/groupOrder/product-picker/index.ts` still uses local mock product-library data; consider moving it to `mock/product/index.ts` or a real product API.
 - Consider replacing the template README with project-specific setup notes after the product/group-order flow stabilizes.
 
 ## Notes
 - Do not mix this handoff with `counting-handoff`, `mind-steward-handoff`, or `video-asset-manager`; this project path is `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan`.
 - Referenced `/Users/admin/.codex/skills/counting-handoff/SKILL.md` for handoff style only; did not edit the line-counting project.
 - Latest commit before this work: `a13ac84 Merge branch 'before--ai' into dev`.
-- No commit was created for this handoff because this project's handoff skill says not to commit unless explicitly requested.
+- Previous commit before this cleanup: `4b0656c 接續商品管理與交接文件`.

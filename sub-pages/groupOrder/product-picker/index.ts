@@ -3,6 +3,7 @@ Page({
     excludeIds: [], // 已經存在於團購中的商品ID
     allProducts: [], // 原始資料
     products: [],    // 顯示資料 (含 selected/disabled 狀態)
+    searchQuery: '',
     selectedCount: 0
   },
 
@@ -13,7 +14,10 @@ Page({
         const ids = JSON.parse(options.excludeIds);
         this.setData({ excludeIds: ids });
       } catch (e) {
-        console.error('解析 excludeIds 失敗', e);
+        wx.showToast({
+          title: '商品參數錯誤',
+          icon: 'none'
+        });
       }
     }
 
@@ -51,67 +55,89 @@ Page({
   // 搜尋功能
   onSearch(e) {
     const keyword = e.detail.value;
+    this.setData({
+      searchQuery: keyword,
+      products: this.filterProducts(this.data.allProducts, keyword)
+    });
+  },
+
+  filterProducts(products, keyword) {
     if (!keyword) {
-      this.setData({ products: this.data.allProducts });
-      return;
+      return products;
     }
-    const filtered = this.data.allProducts.filter(p => p.title.includes(keyword));
-    this.setData({ products: filtered });
+
+    const normalizedKeyword = keyword.toLowerCase();
+    return products.filter(product =>
+      product.title.toLowerCase().includes(normalizedKeyword) ||
+      product.description.toLowerCase().includes(normalizedKeyword)
+    );
+  },
+
+  syncProducts() {
+    this.setData({
+      products: this.filterProducts(this.data.allProducts, this.data.searchQuery)
+    });
+  },
+
+  setProductSelected(id, selected) {
+    const allProducts = this.data.allProducts.map(product => {
+      if (product.id !== id) {
+        return product;
+      }
+
+      return {
+        ...product,
+        selected
+      };
+    });
+
+    this.setData({
+      allProducts
+    }, () => {
+      this.syncProducts();
+      this.calculateCount();
+    });
   },
 
   // 切換選中狀態
   toggleSelect(e) {
-    const index = e.currentTarget.dataset.index;
-    const item = this.data.products[index];
+    const { id } = e.currentTarget.dataset;
+    const item = this.data.allProducts.find(product => product.id === id);
 
     // 防呆
-    if (item.disabled) return;
+    if (!item || item.disabled) {
+      return;
+    }
 
-    // 更新狀態
-    const key = `products[${index}].selected`;
-    this.setData({
-      [key]: !item.selected
-    });
-
-    this.calculateCount();
+    this.setProductSelected(id, !item.selected);
   },
 
   calculateCount() {
-    const count = this.data.products.filter(p => p.selected).length;
+    const count = this.data.allProducts.filter(p => p.selected).length;
     this.setData({ selectedCount: count });
   },
 
   // 確認加入
   confirmAdd() {
-    const selectedItems = this.data.products.filter(p => p.selected);
+    const selectedItems = this.data.allProducts.filter(p => p.selected);
 
     if (selectedItems.length === 0) return;
 
     wx.showLoading({ title: '加入中...' });
 
-    // 這裡通常有兩種做法：
-    // 1. 呼叫後端 API 把這些商品 ID 加入該團購，成功後返回刷新。
-    // 2. (簡單版) 直接透過 EventChannel 把資料傳回上一頁。
-
-    // 模擬 API 呼叫延遲
     setTimeout(() => {
-      // 假設我們呼叫後端成功了
-      // 這裡我們直接獲取上一頁的實例來更新資料 (或是返回後讓 onShow 更新)
-      
-      const pages = getCurrentPages();
-      const prevPage = pages[pages.length - 2]; // 上一頁
-      
-      if (prevPage) {
-        // 更新上一頁的資料 (把新選的加進去)
-        // 注意：實際上這裡應該是讓上一頁重新 fetch API
-        const newDisplayList = [...prevPage.data.displayList, ...selectedItems];
-        prevPage.setData({
-          displayList: newDisplayList
-        });
-      }
-
       wx.hideLoading();
-      wx.navigateBack(); // 返回
+
+      const eventChannel = this.getOpenerEventChannel();
+      eventChannel.emit('selectedProducts', {
+        products: selectedItems.map(item => ({
+          ...item,
+          selected: false,
+          disabled: false
+        }))
+      });
+
+      wx.navigateBack();
     }, 500);
   }
 });

@@ -19,8 +19,7 @@ Page({
   },
 
   // 初始化
-  async onLoad(options) {
-    //console.log('頁面載入，參數為：', options);
+  async onLoad() {
     await this.fetchItineraryList();
   },
 
@@ -43,7 +42,10 @@ Page({
         });
       }
     } catch (err) {
-      console.error('抓取行程清單失敗', err);
+      wx.showToast({
+        title: '抓取行程失敗',
+        icon: 'none'
+      });
     } finally {
       wx.hideLoading();
     }
@@ -57,8 +59,11 @@ Page({
     wx.navigateTo({
       // 跳轉時攜帶 id，方便詳情頁請求對應數據
       url: `/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`,
-      fail: (err) => {
-        console.error("跳轉詳情頁失敗：", err);
+      fail: () => {
+        wx.showToast({
+          title: '跳轉詳情頁失敗',
+          icon: 'none'
+        });
       }
     });
   },
@@ -77,12 +82,15 @@ Page({
 
     wx.navigateTo({
       url: url,
-      success: () => console.log('跳轉成功'),
       fail: (err) => {
-        console.error('跳轉失敗原因:', err);
         if (err.errMsg.includes('tabbar')) {
           wx.switchTab({
             url
+          });
+        } else {
+          wx.showToast({
+            title: '跳轉新增頁失敗',
+            icon: 'none'
           });
         }
       }

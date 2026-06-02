@@ -1,6 +1,3 @@
-// sub-pages/itinerary/add/index.ts
-import { Itinerary } from '../../../models/itinerary'; 
-
 Page({
   data: {
     // 初始化完全對照資料結構
@@ -45,8 +42,6 @@ Page({
       id: Date.now(), // 臨時 ID
       qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?data=${formData.title}`
     };
-
-    console.log('提交的數據：', newItinerary);
 
     setTimeout(() => {
       wx.hideLoading();

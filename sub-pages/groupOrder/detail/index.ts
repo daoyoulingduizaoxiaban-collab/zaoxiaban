@@ -43,7 +43,10 @@ Page({
       }
 
     } catch (err) {
-      console.error('抓取行程清單失敗', err);
+      wx.showToast({
+        title: '抓取行程失敗',
+        icon: 'none'
+      });
     } finally {
       wx.hideLoading();
     }
@@ -68,9 +71,11 @@ Page({
   onExportReport() {
     wx.showActionSheet({
       itemList: ['匯出為 PDF', '匯出為 Excel', '發送到電子郵件'],
-      success: (res) => {
-        console.log('選擇匯出方式：', res.tapIndex);
-        // 這裡可以串接你的後端 API
+      success: () => {
+        wx.showToast({
+          title: '匯出功能尚未串接',
+          icon: 'none'
+        });
       }
     });
   },
@@ -81,7 +86,10 @@ Page({
     const orderId = e.currentTarget.dataset.id;
 
     if (!orderId) {
-      console.error("未找到訂單 ID");
+      wx.showToast({
+        title: '未找到訂單 ID',
+        icon: 'none'
+      });
       return;
     }
 
@@ -89,11 +97,7 @@ Page({
     // 路徑對應你截圖中的 pages/order/index
     wx.navigateTo({
       url: `/pages/order/index?id=${orderId}`,
-      success: () => {
-        console.log(`正在進入訂單 #${orderId} 的詳情頁`);
-      },
-      fail: (err) => {
-        console.error("跳轉失敗：", err);
+      fail: () => {
         wx.showToast({
           title: '頁面跳轉失敗',
           icon: 'none'
@@ -115,7 +119,10 @@ Page({
         showDetails: true
       });
     } else {
-      console.error("找不到對應的訂單資料", index);
+      wx.showToast({
+        title: '找不到訂單資料',
+        icon: 'none'
+      });
     }
   },
 
@@ -131,24 +138,21 @@ Page({
     });
   },
 
-  onImageError(e) {
-    const {
-      errMsg
-    } = e.detail;
+  onImageError() {
     const {
       qrCodeUrl
-    } = this.data.groupOrder.qrCodeUrl;
-
-    console.error('【圖片加載失敗】:', errMsg);
-    console.error('【當前錯誤路徑】:', qrCodeUrl);
-
-    // 快速診斷建議
-    if (qrCodeUrl.indexOf('http://') === 0) {
-      console.warn('⚠️ 錯誤提示：微信小程序正式環境要求使用 https，請檢查連結協定。');
-    }
+    } = this.data.groupOrder;
 
     if (!qrCodeUrl || qrCodeUrl === '') {
-      console.warn('⚠️ 錯誤提示：qrCodeUrl 為空，請檢查 API 回傳數據。');
+      wx.showToast({
+        title: 'QR Code 路徑為空',
+        icon: 'none'
+      });
+    } else if (qrCodeUrl.indexOf('http://') === 0) {
+      wx.showToast({
+        title: '請使用 HTTPS 圖片',
+        icon: 'none'
+      });
     }
 
     // 可選：載入失敗時給用戶一個預設圖
@@ -171,8 +175,6 @@ Page({
       selectedMemberOrderId: id
     });
 
-    // console.log(id)
-    // console.log(e)
   },
 
   // 彈窗點擊取消
@@ -184,8 +186,6 @@ Page({
 
   // 彈窗點擊確認
   async handleDialogConfirm() {
-    const id = this.data.selectedMemberOrderId;
-
     wx.showLoading({
       title: '處理中...'
     });
@@ -202,20 +202,21 @@ Page({
         icon: 'success'
       });
 
-      //TODO 模擬刷新資料
-      this.fetchGroupOrderDetail(2);
+      this.fetchGroupOrderDetail(this.data.groupOrderId);
 
     }, 800);
   },
 
-  onManageProducts(e) {
-    let id = this.data.groupOrderId;
-    //let id = null
+  onManageProducts() {
+    const id = this.data.groupOrderId;
     if (id) {
       wx.navigateTo({
         url: `/sub-pages/groupOrder/productList/index?id=${id}`,
-        fail: (err) => {
-          console.error("跳轉商品管理頁面失敗：", err);
+        fail: () => {
+          wx.showToast({
+            title: '跳轉商品管理失敗',
+            icon: 'none'
+          });
         }
       });
     } else {
@@ -225,12 +226,7 @@ Page({
         content: '很抱歉，系統發生錯誤',
         showCancel: false,
         confirmText: '我知道了',
-        confirmColor: app.globalData.themeColor,
-        success(res) {
-          if (res.confirm) {
-            //TODO 寫LOG
-          }
-        }
+        confirmColor: app.globalData.themeColor
       })
     }
   }
