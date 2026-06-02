@@ -10,8 +10,8 @@ Page({
       description: '',
       pictureUrls: [],
       priceSetting: [], // 這裡存放已加入的價格規則物件
-      providerId: 0, 
-      status: 0
+      providerId: 0,
+      status: 2
     },
 
     // 暫存：正在輸入的那一組價格規則 (對應你的 PriceSetting Class)
@@ -122,7 +122,7 @@ Page({
       currentProduct: {
         id: 0, title: '', description: '', 
         pictureUrls: [], // 確保這裡重置為空陣列
-        priceSetting: [], providerId: 123, status: 0
+        priceSetting: [], providerId: 123, status: 2
       },
       tempPriceSetting: { minQuantity: 1, unitPrice: '', description: '' }
     });
@@ -136,11 +136,16 @@ Page({
   },
 
   addProduct() {
-    let eventChannel = this.getOpenerEventChannel();
-    eventChannel.emit('refreshList', { success: true }); // 觸發上一頁的監聽
-    wx.navigateBack(); // 返回上一頁
-    
-    //console.log('提交 Payload:', this.data.productList);
-    // 這裡提交的資料結構就會完全符合你的 Product 與 PriceSetting 定義
+    if (this.data.productList.length === 0) {
+      wx.showToast({ title: '請先儲存至少一個商品', icon: 'none' });
+      return;
+    }
+
+    const eventChannel = this.getOpenerEventChannel();
+    eventChannel.emit('refreshList', {
+      success: true,
+      products: this.data.productList
+    });
+    wx.navigateBack();
   }
 });

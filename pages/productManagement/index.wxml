@@ -23,7 +23,7 @@
             <view class="title-row">
               <text class="title">{{item.title}}</text>
               <text
-                class="status-tag {{item.status === 1 ? 'online' : 'offline'}}">{{item.status === 1 ? '已下架' : '開放下單'}}</text>
+                class="status-tag {{item.status === 2 ? 'online' : 'offline'}}">{{productStatusTextMap[item.status]}}</text>
             </view>
             <text class="description">{{item.description || '暫無描述'}}</text>
           </view>
@@ -31,7 +31,7 @@
         <view class="action-bar">
           <button size="mini" type="warn" plain bindtap="onDelete" data-id="{{item.id}}">刪除</button>
           <button size="mini" plain bindtap="onToggleStatus" data-id="{{item.id}}">
-            {{item.status === 1 ? '下架' : '上架'}}
+            {{item.status === 2 ? '下架' : '上架'}}
           </button>
         </view>
       </view>

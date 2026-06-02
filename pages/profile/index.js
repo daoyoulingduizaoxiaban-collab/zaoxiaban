@@ -15,8 +15,11 @@ Page({
     wx.navigateTo({
       // 跳轉時攜帶 id，方便詳情頁請求對應數據
       url: `/pages/profile/detail?id=${id}`,
-      fail: (err) => {
-        console.error("跳轉詳情頁失敗：", err);
+      fail: () => {
+        wx.showToast({
+          title: '跳轉詳情頁失敗',
+          icon: 'none'
+        });
       }
     });
   },
@@ -31,14 +34,12 @@ Page({
   },
 
   onGoToEdit(e) {
-    const id = e.currentTarget?.dataset?.id;
+    const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/profile/edit/index?id=${id}` : '/pages/profile/edit/index';
 
     wx.navigateTo({
       url: url,
-      success: () => console.log('跳轉成功'),
       fail: (err) => {
-        console.error('跳轉失敗原因:', err); // 💡 這行會告訴你為什麼沒換畫面
         if (err.errMsg.includes('tabbar')) {
           wx.switchTab({ url });
         }

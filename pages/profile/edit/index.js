@@ -22,7 +22,6 @@ Page({
 
   fetchprofileDetail(id) {
     // 模擬從資料庫讀取資料
-    console.log('正在讀取我的 ID:', id);
     this.setData({
       'formData.title': '東京五日遊 (已讀取)',
       'formData.date': '2026-01-07'

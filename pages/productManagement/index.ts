@@ -16,6 +16,10 @@ Page({
     titleText: 'Product Management',
     statusOptions: getProductStatusList(),
     currentStatus: 0,
+    productStatusTextMap: {
+      1: getProductStatusTextByValue(1),
+      2: getProductStatusTextByValue(2)
+    },
   },
 
   onLoad() {
@@ -56,13 +60,17 @@ Page({
       events: {
         // 為指定事件添加一個監聽器，接收下一頁傳回來的資料
         refreshList: (data) => {
-          //TODO 抓資料         
-          let list = [...this.data.allProducts];
-          list.push(new Product({ id: 3, title: '韓國面膜', status: 1, description: '韓國面膜', pictureUrls: [], priceSetting: [] }))
+          const returnedProducts = (data.products || []).map(item => new Product(item));
+          if (returnedProducts.length === 0) return;
+
+          const list = [...this.data.allProducts, ...returnedProducts];
 
           this.setData({
             allProducts: list,
-            productList: list
+          }, () => this.updateLocalData(list));
+          wx.showToast({
+            title: '新增成功',
+            icon: 'success'
           });
         }
       }
@@ -88,10 +96,10 @@ Page({
     const id = e.currentTarget.dataset.id;
     const updated = this.data.allProducts.map(item => {
       if (item.id === id) {
-        // 切換狀態 (1 變 0, 0 變 1)
-        const newStatus = item.status === 1 ? 0 : 1;
+        // 切換狀態：1=下架、2=開放下單
+        const newStatus = item.status === 2 ? 1 : 2;
         wx.showToast({
-          title: newStatus === 1 ? '已上架' : '已下架',
+          title: getProductStatusTextByValue(newStatus),
           icon: 'none'
         });
         return { ...item, status: newStatus };
@@ -122,8 +130,13 @@ Page({
   // 統一更新本地狀態
   updateLocalData(newList: Product[]) {
 
-    if (this.data.searchQuery) {
-      newList = newList.filter(item => item.title.includes(this.data.searchQuery))
+    const query = this.data.searchQuery.toLowerCase();
+
+    if (query) {
+      newList = newList.filter(item =>
+        item.title.toLowerCase().includes(query) ||
+        item.description.toLowerCase().includes(query)
+      )
     }
 
     if (this.data.currentStatus) {

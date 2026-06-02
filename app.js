@@ -49,7 +49,7 @@ App({
     // });
 
     this.getUnreadNum();
-    //this.connect();
+    // this.connect();
   },
   globalData: {
     userInfo: null,

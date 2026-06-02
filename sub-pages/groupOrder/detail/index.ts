@@ -11,6 +11,7 @@ Page({
   data: {
     pageTitle: '查看行程',
     groupOrder: new GroupOrder(),
+    groupOrderId: 0,
     showDetails: false,
     selectedMemberOrder: new MemberOrder(),
     showConfirmDialog: false,
@@ -18,9 +19,11 @@ Page({
   },
 
   onLoad(options) {
-    //  let id = options.id;
-    let id = 1;
+    const id = Number(options.id || 1);
     if (id) {
+      this.setData({
+        groupOrderId: id
+      });
       this.fetchGroupOrderDetail(id);
     } else {
       this.setData({

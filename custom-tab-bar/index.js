@@ -24,7 +24,7 @@ Component({
 
       if (curPage) {
         // 優化後的正則：直接匹配 /pages/之後的第一個單字
-        const match = curPage.route.match(/pages\/([^\/]+)/);
+        const match = curPage.route.match(/pages\/([^/]+)/);
         if (match && match[1]) {
           this.setData({
             value: match[1]
@@ -65,29 +65,22 @@ Component({
       }
     },
     handleChange(e) {
-      console.log('in handleChange')
       try {
         const {
           value
         } = e.detail;
         const item = this.data.list.find(i => i.value === value);
-        
-        console.log(item)
+
         if (item) {
           wx.switchTab({
             url: item.path
           });
         }
-
-        return;
-        console.log(value)
-
-        wx.switchTab({
-          url: `/pages/${value}/index`
-        });
-
       } catch (error) {
-        console.log(error)
+        wx.showToast({
+          title: '頁面切換失敗',
+          icon: 'none'
+        });
       }
     },
 
@@ -103,8 +96,8 @@ Component({
       // 模擬獲取角色（實際開發中可從 app.globalData 或 wx.getStorageSync 獲取）
       const userRole = wx.getStorageSync('role') || 'user';
 
-      //TODO 依照權限控制下方BAR項目
-      let menu = [
+      // TODO 依照權限控制下方BAR項目
+      const menu = [
         // {
         //   icon: 'home',
         //   value: 'home',
@@ -137,8 +130,7 @@ Component({
         },
       ];
 
-      //TODO 判斷權限
-      // 
+      // TODO 判斷權限
 
       this.setData({
         list: menu

@@ -88,12 +88,17 @@ Page({
         a: 10,
         b: 20
       },
-      success: res => {
-        console.log('後端回傳：', res.result)
-        // 你會看到：{ result: 30, msg: "這是從雲端後端計算出來的結果" }
+      success: () => {
+        wx.showToast({
+          title: '後端連線成功',
+          icon: 'success'
+        });
       },
-      fail: err => {
-        console.error('後端出錯：', err)
+      fail: () => {
+        wx.showToast({
+          title: '後端連線失敗',
+          icon: 'none'
+        });
       }
     })
   }
