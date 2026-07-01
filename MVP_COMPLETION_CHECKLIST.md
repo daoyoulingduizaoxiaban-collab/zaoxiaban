@@ -38,32 +38,32 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 如果以上任一步只能靠 mock、只在單頁存在、或重開後消失，都不能宣稱「真人可用」。
 
 ## Phase 0 - 接手與防失憶
-- [ ] 讀完本文件全文。
-- [ ] 讀完 `PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。
-- [ ] 執行 `git status --short --branch`，確認只有自己要改的檔案會被提交。
-- [ ] 確認 `CURRENT_TASKS.md` 有本輪明確任務；若沒有，先更新或請示，不要自行一口氣開做整份 MVP。
-- [ ] 不要提交 `resume/preview-info.json`、`resume/preview-qr.png`。
-- [ ] 不要啟動或重開微信 DevTools，除非使用者明確要求。
-- [ ] 不要使用 `automator.launch(...)`。
-- [ ] 不要推送遠端、部署、刪除正式資料、安裝新套件或使用網路，除非使用者明確要求。
-- [ ] 若上下文被壓縮或開始不確定，立刻停止憑記憶操作，重新讀本文件和上述 5 份文件。
+- [x] 讀完本文件全文。
+- [x] 讀完 `PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。
+- [x] 執行 `git status --short --branch`，確認只有自己要改的檔案會被提交。
+- [x] 確認 `CURRENT_TASKS.md` 有本輪明確任務；若沒有，先更新或請示，不要自行一口氣開做整份 MVP。
+- [x] 不要提交 `resume/preview-info.json`、`resume/preview-qr.png`。
+- [x] 不要啟動或重開微信 DevTools，除非使用者明確要求。
+- [x] 不要使用 `automator.launch(...)`。
+- [x] 不要推送遠端、部署、刪除正式資料、安裝新套件或使用網路，除非使用者明確要求。
+- [x] 若上下文被壓縮或開始不確定，立刻停止憑記憶操作，重新讀本文件和上述 5 份文件。
 
 ## Phase 0.5 - 先修 blocking defects
 以下是已知會讓後續 GUI 測試或 MVP 實作歪掉的阻塞缺陷。CLI agent 在做正式資料層、GUI smoke test、或宣稱流程穩定前，必須先修這些問題，並把結果寫回 `CURRENT_TASKS.md` 或 `HANDOFF.md`。
 
-- [ ] 修正 eventChannel 使用防護：`sub-pages/groupOrder/product-picker/index.ts`、`sub-pages/product/add/index.ts` 等使用 `getOpenerEventChannel()` 的地方，必須處理沒有 opener、沒有 listener、直接進頁、返回失敗等情境，不可因單獨打開頁面而崩潰。
-- [ ] 修正 QR 空字串處理：`sub-pages/groupOrder/detail/index.ts` 在 `qrCodeUrl` 為空或非法時，不可直接呼叫 `wx.previewImage` 預覽空字串；要先顯示「暂无团单二维码」或 fallback 狀態。
-- [ ] 修正客戶訂單 id 型別比對：`pages/customerOrders/index.js` 等從 `dataset` 取得的 id 可能是字串，seed/model 裡可能是數字；查找前要統一型別，避免點擊訂單卻顯示「未找到订单资料」。
-- [ ] 修正商品搜尋與狀態篩選一致性：`pages/productManagement/index.ts` 的搜尋、上下架、刪除、狀態篩選都必須走同一個 filter/update 路徑，不能搜尋後丟失狀態篩選，或狀態切換後丟失搜尋結果。
-- [ ] 修完以上缺陷後，至少跑 `npm run lint`、`git diff --check`，並用可行方式驗證相關頁面不再因已知問題阻塞 GUI。
+- [x] 修正 eventChannel 使用防護：`sub-pages/groupOrder/product-picker/index.ts`、`sub-pages/product/add/index.ts` 等使用 `getOpenerEventChannel()` 的地方，必須處理沒有 opener、沒有 listener、直接進頁、返回失敗等情境，不可因單獨打開頁面而崩潰。
+- [x] 修正 QR 空字串處理：`sub-pages/groupOrder/detail/index.ts` 在 `qrCodeUrl` 為空或非法時，不可直接呼叫 `wx.previewImage` 預覽空字串；要先顯示「暂无团单二维码」或 fallback 狀態。
+- [x] 修正客戶訂單 id 型別比對：`pages/customerOrders/index.js` 等從 `dataset` 取得的 id 可能是字串，seed/model 裡可能是數字；查找前要統一型別，避免點擊訂單卻顯示「未找到订单资料」。
+- [x] 修正商品搜尋與狀態篩選一致性：`pages/productManagement/index.ts` 的搜尋、上下架、刪除、狀態篩選都必須走同一個 filter/update 路徑，不能搜尋後丟失狀態篩選，或狀態切換後丟失搜尋結果。
+- [x] 修完以上缺陷後，至少跑 `npm run lint`、`git diff --check`，並用可行方式驗證相關頁面不再因已知問題阻塞 GUI。
 
 ## Phase 1 - 資料模型與儲存閉環
-- [ ] 先做正式資料層方案比較與建議，不要直接自行選型實作。比較至少包含：微信雲開發資料庫、明確後端 API；要寫清楚成本、開發速度、登入/OpenID 整合、資料權限、部署維運、未來擴充風險。
-- [ ] 把建議方案寫入 `CURRENT_TASKS.md` 或新的架構決策文件，等待使用者確認或有明確授權後，才開始實作正式資料層。
+- [x] 先做正式資料層方案比較與建議，不要直接自行選型實作。比較至少包含：微信雲開發資料庫、明確後端 API；要寫清楚成本、開發速度、登入/OpenID 整合、資料權限、部署維運、未來擴充風險。
+- [x] 把建議方案寫入 `CURRENT_TASKS.md` 或新的架構決策文件，等待使用者確認或有明確授權後，才開始實作正式資料層。
 - [ ] 使用者確認後，決定 MVP 使用的正式資料層。不要同時做兩套。
-- [ ] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
-- [ ] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
-- [ ] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
+- [x] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
+- [x] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
+- [x] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
 - [ ] 建立資料存取層，讓頁面不要直接散落呼叫 storage/mock/API。
 - [ ] 所有 create/update/delete 操作要回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態。
 - [ ] 重開小程序後，已建立的团单、商品、客户订单、收款状态仍能讀回。
