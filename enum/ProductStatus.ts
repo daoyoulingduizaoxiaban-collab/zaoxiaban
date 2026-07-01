@@ -7,7 +7,7 @@ export enum ProductStatus {
 export const ProductStatusText = Object.freeze({
   [ProductStatus.All]: '全部',
   [ProductStatus.UNPUBLISHED]: '已下架',
-  [ProductStatus.PUBLISHED]: '開放下單'
+  [ProductStatus.PUBLISHED]: '已上架'
 });
 
 /**

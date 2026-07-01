@@ -1,6 +1,6 @@
 Page({
   data: {
-    pageTitle:'商品管理',
+    pageTitle: '新增商品',
     productList: [], // 最終提交的大清單
 
     // 當前正在編輯的商品
@@ -44,10 +44,10 @@ Page({
 
     // 驗證
     if (!minQuantity || minQuantity < 1) {
-      return wx.showToast({ title: '起訂量需大於0', icon: 'none' });
+      return wx.showToast({ title: '起订量需大于 0', icon: 'none' });
     }
     if (!unitPrice || unitPrice < 0) {
-      return wx.showToast({ title: '請輸入有效單價', icon: 'none' });
+      return wx.showToast({ title: '请输入有效单价', icon: 'none' });
     }
 
     // 建立新的規則物件 (符合你的 TypeScript 定義)
@@ -101,8 +101,8 @@ Page({
   addProductToList() {
     const p = this.data.currentProduct;
     
-    if (!p.title) return wx.showToast({ title: '請輸入商品名稱', icon: 'none' });
-    if (p.priceSetting.length === 0) return wx.showToast({ title: '請至少設定一組價格', icon: 'none' });
+    if (!p.title) return wx.showToast({ title: '请输入商品名称', icon: 'none' });
+    if (p.priceSetting.length === 0) return wx.showToast({ title: '请至少设置一组价格', icon: 'none' });
   
     // 價格顯示字串計算
     const prices = p.priceSetting.map(x => x.unitPrice);
@@ -137,7 +137,7 @@ Page({
 
   addProduct() {
     if (this.data.productList.length === 0) {
-      wx.showToast({ title: '請先儲存至少一個商品', icon: 'none' });
+      wx.showToast({ title: '请先保存至少一个商品', icon: 'none' });
       return;
     }
 

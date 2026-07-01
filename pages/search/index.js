@@ -176,6 +176,6 @@ Page({
     this.setData({
       searchValue: '',
     });
-    wx.switchTab({ url: '/pages/home/index' });
+    wx.reLaunch({ url: '/pages/groupOrder/index' });
   },
 });

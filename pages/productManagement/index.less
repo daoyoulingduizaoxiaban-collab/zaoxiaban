@@ -2,16 +2,11 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden; /* 防止外層溢出 */
+  overflow: hidden;
+  background: #f5f7fa;
 }
 .search-section {
-  /* 方案 A：如果你不需要滾動時吸頂，改用 relative 最安全 */
   position: relative; 
-  
-  /* 方案 B：如果要吸頂，top 必須避開導航欄高度 */
-  /* 假設導航欄高度是 88rpx，top 就要設 88rpx */
-  /* position: sticky; */
-  /* top: 88rpx; */ 
 
   width: 100%;
   display: flex;
@@ -22,25 +17,20 @@
   box-sizing: border-box;
   z-index: 100;
 }
-/* 2. 搜尋框 - 讓它自動佔滿左側 */
 .search-bar {
   flex: 1 !important; 
   padding: 0 !important; 
-  /* TDesign 搜尋框背景色，可依喜好調整 */
   --td-search-bg-color: #f5f5f5; 
   --td-search-height: 72rpx;
 }
 
-/* 3. 下拉選單 - 修正「顯示不正常」與「寬度」 */
 .dropdown-custom {
-  width: 220rpx !important; /* 給予明確寬度 */
-  height: 72rpx !important; /* 與搜尋框高度保持一致 */
+  width: 220rpx !important;
+  height: 72rpx !important;
   margin-left: 16rpx;
-  /* 移除 TDesign 預設底線，這條線常導致樣式看起來髒髒的 */
   --td-dropdown-menu-border-color: transparent;
 }
 
-/* 4. 穿透修改下拉選單文字，解決看不見搜尋條件的問題 */
 .dropdown-custom :deep(.t-dropdown-menu__item) {
   font-size: 26rpx !important;
   color: #333 !important;
@@ -50,16 +40,16 @@
 .product-list {
   flex: 1; /* 自動佔滿剩餘高度 */
   width: 100%;
-  background-color: #f7f7f7;
+  background-color: #f5f7fa;
   overflow-y: auto;
 }
 
 .product-card {
   background: #fff;
-  border-radius: 16rpx;
+  border-radius: 8rpx;
   padding: 30rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+  margin: 0 24rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 /* 新增：卡片上半部的主體容器，負責左右排列 */
@@ -163,9 +153,8 @@
   /* 這裡要根據你的 TabBar 高度調整，確保不被擋住 */
   width: 100rpx;
   height: 100rpx;
-  background-color: #07c160;
-  /* 微信標誌綠色 */
-  border-radius: 50%;
+  background-color: #0052d9;
+  border-radius: 8rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,7 +167,7 @@
 .fab-btn:active {
   transform: scale(0.9);
   /* 點擊縮小回饋 */
-  background-color: #06ad56;
+  background-color: #003cab;
 }
 
 .plus {
@@ -193,7 +182,7 @@
 .product-list {
   height: calc(100vh - 100rpx);
   /* 扣除搜尋框高度 */
-  background-color: #f7f7f7;
+  background-color: #f5f7fa;
 }
 
 
@@ -234,8 +223,8 @@
   /* 根據有無 TabBar 調整 */
   width: 110rpx;
   height: 110rpx;
-  background-color: #07c160;
-  border-radius: 50%;
+  background-color: #0052d9;
+  border-radius: 8rpx;
   display: flex;
   align-items: center;
   justify-content: center;

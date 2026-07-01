@@ -8,8 +8,8 @@ export enum MemberOrderStatus {
 
 export const MemberOrderStatusText = Object.freeze({
   [MemberOrderStatus.UNPAID]: '未付款',
-  [MemberOrderStatus.PAID]: '客戶付款',
-  [MemberOrderStatus.CONFIRMED]: '已確認',
+  [MemberOrderStatus.PAID]: '客户付款',
+  [MemberOrderStatus.CONFIRMED]: '已确认',
   [MemberOrderStatus.CANCELLED]: '已取消'
 });
 

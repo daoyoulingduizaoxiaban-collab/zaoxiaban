@@ -15,13 +15,13 @@ Component({
   data: {
     visible: false,
     sidebar: [{
-        title: '首页',
-        url: 'pages/home/index',
+        title: '团单',
+        url: 'pages/groupOrder/index',
         isSidebar: true,
       },
       {
-        title: '供應商管理',
-        url: 'pages/providerManagement/index',
+        title: '供应商管理',
+        url: 'pages/providers/index',
         isSidebar: false,
       },
       {
@@ -95,19 +95,16 @@ Component({
       if (isSidebar) {
         wx.switchTab({
           url: `/${url}`,
-        }).then(() => {
-          // 防止点回tab时，sidebar依旧是展开模式
-          that.setData({
-            visible: false,
-          });
+          success: () => that.setData({ visible: false }),
+          fail: () => wx.reLaunch({ url: '/pages/groupOrder/index' }),
         });
       } else {
         wx.navigateTo({
           url: `/${url}`,
-        }).then(() => {
-          that.setData({
-            visible: false,
-          });
+          success: () => that.setData({ visible: false }),
+          fail: () => {
+            wx.showToast({ title: '页面暂未开放', icon: 'none' });
+          },
         });
       }
     },

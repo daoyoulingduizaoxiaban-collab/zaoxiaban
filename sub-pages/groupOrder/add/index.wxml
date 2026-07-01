@@ -1,14 +1,12 @@
-<sub-nav title="開團" />
+<sub-nav title="开团" />
 
 <view class="add-container">
-  <t-cell-group theme="card" title="基本資訊">
-    <t-input label="*名稱" placeholder="最多20個字" maxlength="20" bindchange="onInput" data-field="title" />
-    <!-- <t-input label="應收總額" type="number" placeholder="0" suffix="元" bindchange="onInput" data-field="totalReceivable" />
-    <t-input label="下單人數" type="number" placeholder="0" suffix="人" bindchange="onInput" data-field="totalCustomers" /> -->
-    <t-textarea label="行程描述" placeholder="最多200個字" bindchange="onInput" maxlength="200" 
+  <t-cell-group theme="card" title="基本信息">
+    <t-input label="*名称" placeholder="最多20个字" maxlength="20" bindchange="onInput" data-field="title" />
+    <t-textarea label="团单描述" placeholder="最多200个字" bindchange="onInput" maxlength="200"
       data-field="description" />
   </t-cell-group>
-  <t-cell-group theme="card" title="*商品設定">
+  <t-cell-group theme="card" title="*商品设置">
     <view class="goods-list" wx:if="{{selectedGoods.length > 0}}">
       <view class="goods-item" wx:for="{{selectedGoods}}" wx:key="id">
         <image class="goods-thumb" src="{{item.pictureUrls[0]}}" mode="aspectFill" />
@@ -28,11 +26,11 @@
 
     <view class="add-goods-btn-wrap" bindtap="onSelectGoods">
       <t-icon name="add" size="48rpx" color="#0052d9" />
-      <text class="add-text">添加行程商品</text>
+      <text class="add-text">添加团单商品</text>
     </view>
   </t-cell-group>
 
   <view class="footer">
-    <t-button theme="primary" size="large" block bindtap="onSave">新增</t-button>
+    <t-button theme="primary" size="large" block bindtap="onSave">新建团单</t-button>
   </view>
 </view>

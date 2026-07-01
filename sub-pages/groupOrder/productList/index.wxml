@@ -1,10 +1,10 @@
-<sub-nav title="本團商品管理" />
+<sub-nav title="本团商品" />
 
 <view class="container">
   <view class="search-section">
     <view class="search-bar">
       <icon type="search" size="16" color="#999" />
-      <input class="search-input" placeholder="搜尋本團商品..." bindinput="onSearchInput" value="{{searchQuery}}" />
+      <input class="search-input" placeholder="搜索本团商品" bindinput="onSearchInput" value="{{searchQuery}}" />
       <view class="clear-icon" wx:if="{{searchQuery}}" bindtap="clearSearch">×</view>
     </view>
   </view>
@@ -22,7 +22,7 @@
             <!-- <text class="p-sold">已售 {{item.soldCount || 0}}</text> -->
           </view>
           <view class="p-price-row">
-            <text class="p-price">{{item.priceDisplay}}</text>
+          <text class="p-price">{{item.priceDisplay}}</text>
             <!-- <text class="p-sold">已售 {{item.soldCount || 0}}</text> -->
           </view>
         </view>
@@ -30,7 +30,7 @@
         <view class="p-action" catchtap="onDelete" data-index="{{index}}" data-id="{{item.id}}">
           <view class="btn-delete-icon">
             <text class="icon-trash">🗑️</text> </view>
-          <text class="txt-del">刪除</text>
+          <text class="txt-del">移除</text>
         </view>
 
       </view>
@@ -38,8 +38,8 @@
 
     <view wx:else class="empty-state">
       <image src="/static/icon_map.png" class="empty-img" mode="aspectFit" />
-      <text>本團目前沒有商品</text>
-      <text class="sub-text">點擊下方按鈕從商品庫加入</text>
+      <text>本团当前没有商品</text>
+      <text class="sub-text">点击下方按钮从商品库加入</text>
     </view>
     
     <view class="list-spacer"></view>
@@ -47,7 +47,7 @@
 
   <view class="footer-bar">
     <button class="btn-add-new" bindtap="goToLibrary">
-      <text class="plus">+</text> 從商品庫新增商品
+      <text class="plus">+</text> 从商品库加入
     </button>
   </view>
 </view>

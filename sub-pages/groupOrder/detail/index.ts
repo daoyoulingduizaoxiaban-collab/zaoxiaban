@@ -9,7 +9,7 @@ import {
 
 Page({
   data: {
-    pageTitle: '查看行程',
+    pageTitle: '团单详情',
     groupOrder: new GroupOrder(),
     groupOrderId: 0,
     showDetails: false,
@@ -27,7 +27,7 @@ Page({
       this.fetchGroupOrderDetail(id);
     } else {
       this.setData({
-        pageTitle: '新增行程',
+        pageTitle: '新建团单',
       });
     }
   },
@@ -39,12 +39,13 @@ Page({
       if (res.code === 200) {
         this.setData({
           groupOrder: res.data,
+          pageTitle: res.data.title ? '团单详情' : '团单未找到',
         });
       }
 
     } catch (err) {
       wx.showToast({
-        title: '抓取行程失敗',
+        title: '加载团单失败',
         icon: 'none'
       });
     } finally {
@@ -58,22 +59,18 @@ Page({
   },
 
   onSave() {
-    const action = this.data.isEdit ? '更新' : '創建';
     wx.showToast({
-      title: `${action}成功`,
-      icon: 'success'
+      title: 'QA 展示模式，暂未保存',
+      icon: 'none'
     });
-    setTimeout(() => wx.navigateBack(), 1500);
-    // 保存邏輯...
   },
 
-  // 2. 匯出報表
   onExportReport() {
     wx.showActionSheet({
-      itemList: ['匯出為 PDF', '匯出為 Excel', '發送到電子郵件'],
+      itemList: ['导出为 PDF', '导出为 Excel', '发送到邮箱'],
       success: () => {
         wx.showToast({
-          title: '匯出功能尚未串接',
+          title: 'QA 展示模式，暂未导出',
           icon: 'none'
         });
       }
@@ -81,28 +78,19 @@ Page({
   },
 
   goToOrderDetail(e) {
-    // 1. 從 WXML 的 data-id 獲取訂單 ID
-    // 注意：如果是點擊 card 觸發，ID 會在 currentTarget 中
     const orderId = e.currentTarget.dataset.id;
 
     if (!orderId) {
       wx.showToast({
-        title: '未找到訂單 ID',
+        title: '未找到订单 ID',
         icon: 'none'
       });
       return;
     }
 
-    // 2. 執行跳轉
-    // 路徑對應你截圖中的 pages/order/index
-    wx.navigateTo({
-      url: `/pages/order/index?id=${orderId}`,
-      fail: () => {
-        wx.showToast({
-          title: '頁面跳轉失敗',
-          icon: 'none'
-        });
-      }
+    wx.showToast({
+      title: '订单详情页暂未开发',
+      icon: 'none'
     });
   },
 
@@ -120,7 +108,7 @@ Page({
       });
     } else {
       wx.showToast({
-        title: '找不到訂單資料',
+        title: '找不到订单资料',
         icon: 'none'
       });
     }
@@ -145,23 +133,22 @@ Page({
 
     if (!qrCodeUrl || qrCodeUrl === '') {
       wx.showToast({
-        title: 'QR Code 路徑為空',
+        title: '暂无团单二维码',
         icon: 'none'
       });
     } else if (qrCodeUrl.indexOf('http://') === 0) {
       wx.showToast({
-        title: '請使用 HTTPS 圖片',
+        title: '请使用 HTTPS 图片',
         icon: 'none'
       });
     }
 
-    // 可選：載入失敗時給用戶一個預設圖
     this.setData({
-      'groupOrder.qrCodeUrl': '/assets/images/error-qr.png'
+      'groupOrder.qrCodeUrl': '/static/logo/zaoxiaban.png'
     });
 
     wx.showToast({
-      title: '圖片載入失敗',
+      title: '图片加载失败',
       icon: 'none'
     });
   },
@@ -187,10 +174,9 @@ Page({
   // 彈窗點擊確認
   async handleDialogConfirm() {
     wx.showLoading({
-      title: '處理中...'
+      title: '处理中...'
     });
 
-    // 這裡模擬 API 請求，將狀態改為 2 (已確認)
     setTimeout(() => {
       wx.hideLoading();
       this.setData({
@@ -198,8 +184,8 @@ Page({
       });
 
       wx.showToast({
-        title: '款項已確認',
-        icon: 'success'
+        title: 'QA 展示模式，暂未保存',
+        icon: 'none'
       });
 
       this.fetchGroupOrderDetail(this.data.groupOrderId);

@@ -3,92 +3,89 @@
 
 <view class="edit-container">
   <t-cell-group theme="card">
-    <t-input label="行程名稱" placeholder="請輸入1~20個字元" value="{{ groupOrder.title }}" />
-    <t-input label="行程狀態" value="{{ groupOrder.statusText }}" />
+    <t-input label="团单名称" placeholder="请输入1~20个字符" value="{{ groupOrder.title }}" />
+    <t-input label="收单状态" value="{{ groupOrder.statusText }}" />
     <t-input label="描述" value="{{ groupOrder.description }}" />
-    <!-- <t-cell title="出發日期" note="{{ groupOrder.date || '請選擇' }}" arrow bind:tap="showDatePicker" /> -->
     <view class="qr-container" bindtap="previewQR">
       <image class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
         show-menu-by-longpress />
-      <view class="qr-label">點一下放大 長按以分享</view>
+      <view class="qr-label">点一下放大，长按分享</view>
     </view>
   </t-cell-group>
 
   <view class="statistics-card">
     <view class="stat-item">
-      <text class="stat-label">應收總金額</text>
+      <text class="stat-label">应收总金额</text>
       <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceivable)}}</text>
     </view>
     <view class="stat-item">
-      <text class="stat-label">已收總金額</text>
+      <text class="stat-label">已收总金额</text>
       <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceived)}}</text>
     </view>
     <view class="stat-divider"></view>
     <view class="stat-item">
-      <text class="stat-label">總下單人數</text>
-      <text class="stat-value">{{ utils.formatNumber(groupOrder.totalmembers)}}人</text>
+      <text class="stat-label">下单人数</text>
+      <text class="stat-value">{{ utils.formatNumber(groupOrder.totalCustomers)}}人</text>
     </view>
   </view>
-  <!-- TODO iterator錯誤 -->
-
-  <view class="section-title">客戶訂單</view>
+  <view class="section-title">客户订单</view>
   <block wx:if="{{groupOrder && groupOrder.memberOrderList}}" wx:for="{{groupOrder.memberOrderList}}" wx:key="id"
     wx:for-item="memberOrder">
     <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" data-memberId="memberOrder.memberId"
       hover-class="card-hover">
 
       <view class="order-header">
-        <text class="order-no">訂單編號：#{{memberOrder.id}}</text>
+        <text class="order-no">订单编号：#{{memberOrder.id}}</text>
         <text
           class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
       </view>
 
       <view class="order-body">
         <view class="info-item">
-          <text class="label">客戶 ID：</text>
+          <text class="label">客户 ID：</text>
           <text class="value">{{memberOrder.userId}}</text>
         </view>
         <view class="info-item">
-          <text class="label">商品數量：</text>
+          <text class="label">商品数量：</text>
           <text class="value">{{memberOrder.productList.length || 0}} 件</text>
         </view>
         <view class="info-item">
-          <text class="label">應付總額：</text>
+          <text class="label">应付总额：</text>
           <text class="value price">￥{{memberOrder.totalPrice}}</text>
         </view>
         <view class="action-section" wx:if="{{memberOrder.status === 1}}">
           <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
-            data-id="{{memberOrder.id}}">確認已到帳</t-button>
+            data-id="{{memberOrder.id}}">确认已到账</t-button>
         </view>
       </view>
     </view>
   </block>
 
-  <view wx:if="{{groupOrder.memberOrder.length === 0}}" class="empty-msg">
-    目前尚無訂購資料
+  <view wx:if="{{groupOrder.memberOrderList.length === 0}}" class="empty-msg">
+    当前团单暂无客户订单
   </view>
 
   <view class="footer-action-bar">
     <t-button theme="primary" class="btn-primary" size="large" block bind:tap="onExportReport"
-      disabled="{{groupOrder.memberOrder.length === 0 }}">
-      匯出報表
+      disabled="{{groupOrder.memberOrderList.length === 0 }}">
+      导出报表
     </t-button>
     <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onManageProducts"
-      disabled="{{groupOrder.memberOrder.length === 0 }}">
-      商品管理
+      disabled="{{!groupOrderId}}">
+      本团商品
     </t-button>
   </view>
 </view>
 
 <t-popup visible="{{showDetails}}" bind:visible-change="onCloseDetails" placement="center">
   <view class="details-popup">
-    <view class="popup-header">訂單明細 (#{{selectedMemberOrder.id}})</view>
+    <view class="popup-header">订单明细 (#{{selectedMemberOrder.id}})</view>
 
     <scroll-view scroll-y class="details-content" wx:if="{{selectedMemberOrder && selectedMemberOrder.productList}}">
       <view class="item-row" wx:for="{{selectedMemberOrder.productList}}" wx:key="productId">
         <view class="item-main">
           <text class="item-name">商品 ID: {{item.productId}}</text>
-          <text class="item-spec">數量: {{item.amount}}</text>
+          <text class="item-spec">数量: {{item.amount}}</text>
         </view>
         <view class="item-price-info">
           <text class="item-subtotal">￥{{utils.formatNumber(item.totalPrice)}}</text>
@@ -98,13 +95,13 @@
 
     <view class="popup-footer">
       <view class="total-bar">
-        <text>應付總額</text>
+        <text>应付总额</text>
         <text class="total-price">￥{{utils.formatNumber(selectedMemberOrder.totalPrice)}}</text>
       </view>
-      <t-button theme="primary" block size="large" bindtap="onCloseDetails">關閉</t-button>
+      <t-button theme="primary" block size="large" bindtap="onCloseDetails">关闭</t-button>
     </view>
   </view>
 </t-popup>
 
-<t-dialog visible="{{showConfirmDialog}}" title="確認到帳" content="是否確認該筆訂單（編號：#{{selectedMemberOrderId}}）款項已實際入帳？"
-  confirm-btn="確認" cancel-btn="取消" bind:confirm="handleDialogConfirm" bind:cancel="handleDialogClose" />
+<t-dialog visible="{{showConfirmDialog}}" title="确认到账" content="是否确认该笔订单（编号：#{{selectedMemberOrderId}}）款项已实际入账？"
+  confirm-btn="确认" cancel-btn="取消" bind:confirm="handleDialogConfirm" bind:cancel="handleDialogClose" />

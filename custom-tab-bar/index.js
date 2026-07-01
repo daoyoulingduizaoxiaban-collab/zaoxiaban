@@ -2,8 +2,6 @@ import {
   BOTTOM_BAR_LIST
 } from '../config'
 
-const app = getApp();
-
 Component({
   data: {
     value: '', // 初始值设置为空，避免第一次加载时闪烁
@@ -12,8 +10,6 @@ Component({
   },
   lifetimes: {
     attached() {
-      // TODO 依據權限控制選項
-      const userRole = wx.getStorageSync('role') || 'user';
       this.setData({
         list: BOTTOM_BAR_LIST
       });
@@ -23,7 +19,6 @@ Component({
       const curPage = pages[pages.length - 1];
 
       if (curPage) {
-        // 優化後的正則：直接匹配 /pages/之後的第一個單字
         const match = curPage.route.match(/pages\/([^/]+)/);
         if (match && match[1]) {
           this.setData({
@@ -78,7 +73,7 @@ Component({
         }
       } catch (error) {
         wx.showToast({
-          title: '頁面切換失敗',
+          title: '页面切换失败',
           icon: 'none'
         });
       }
@@ -93,10 +88,6 @@ Component({
 
     // 初始化下方BAR
     initTabBar() {
-      // 模擬獲取角色（實際開發中可從 app.globalData 或 wx.getStorageSync 獲取）
-      const userRole = wx.getStorageSync('role') || 'user';
-
-      // TODO 依照權限控制下方BAR項目
       const menu = [
         // {
         //   icon: 'home',
@@ -106,22 +97,22 @@ Component({
         {
           icon: 'home',
           value: 'groupOrder',
-          label: '行程'
+          label: '团单'
         },
         {
           icon: 'home',
           value: 'tourGuides',
-          label: '導遊管理'
+          label: '导游管理'
         },
         {
           icon: 'home',
           value: 'customerOrders',
-          label: '客戶訂單'
+          label: '客户订单'
         },
         {
           icon: 'home',
           value: 'providers',
-          label: '供應管理'
+          label: '供应商'
         },
         {
           icon: 'home',
@@ -129,9 +120,6 @@ Component({
           label: '我的'
         },
       ];
-
-      // TODO 判斷權限
-
       this.setData({
         list: menu
       });

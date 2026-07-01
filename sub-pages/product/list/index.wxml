@@ -1,31 +1,31 @@
-<nav nav-type="itinerary" titleText="{{titleText}}" />
+<nav nav-type="productManagement" titleText="{{titleText}}" />
 <view class="container">
   <view class="filter-section">
     <view class="search-input-wrap">
       <icon type="search" size="16"></icon>
-      <input 
-        class="search-input" 
-        placeholder="搜尋商品標題或描述..." 
-        value="{{searchKeyword}}" 
+      <input
+        class="search-input"
+        placeholder="搜索商品标题或描述"
+        value="{{searchKeyword}}"
         bindinput="onInputKeyword"
       />
-      <text class="clear-btn" wx:if="{{searchKeyword}}" bindtap="onClearSearch">✕</text>
+      <text class="clear-btn" wx:if="{{searchKeyword}}" bindtap="onClearSearch">×</text>
     </view>
 
     <view class="price-filter">
-      <text class="filter-label">起售價區間:</text>
+      <text class="filter-label">起售价区间:</text>
       <input type="number" placeholder="最低" bindinput="onMinPriceInput" />
       <text class="separator">-</text>
       <input type="number" placeholder="最高" bindinput="onMaxPriceInput" />
     </view>
-    
-    <button class="search-confirm-btn" bindtap="executeSearch">搜尋</button>
+
+    <button class="search-confirm-btn" bindtap="executeSearch">搜索</button>
   </view>
 
   <scroll-view scroll-y class="product-list">
     <block wx:for="{{filteredList}}" wx:key="id">
       <view class="product-card">
-        <image class="cover-image" src="{{item.pictureUrls[0]}}" mode="aspectFill"></image>
+        <image class="cover-image" src="{{item.pictureUrls[0] || '/static/icon_map.png'}}" mode="aspectFill"></image>
         <view class="content-area">
           <view class="header">
             <text class="title">{{item.title}}</text>
@@ -34,42 +34,15 @@
           <text class="description">{{item.description}}</text>
           <view class="price-settings">
             <view class="setting-item" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
-              <text class="q-range">滿 {{price.minQuantity}} 件:</text>
+              <text class="q-range">满 {{price.minQuantity}} 件:</text>
               <text class="u-price">¥{{price.unitPrice}}/件</text>
-              <text class="t-price" wx:if="{{price.totalPrice}}">(共¥{{price.totalPrice}})</text>
+              <text class="t-price" wx:if="{{price.totalPrice}}">(共 ¥{{price.totalPrice}})</text>
               <text class="p-desc" wx:if="{{price.description}}">{{price.description}}</text>
             </view>
           </view>
         </view>
       </view>
     </block>
-    <view class="empty-tip" wx:if="{{filteredList.length === 0}}">找不到符合條件的商品</view>
-  </scroll-view>
-</view>
-<view class="container">
-  <scroll-view scroll-y class="product-list">
-    <block wx:for="{{productList}}" wx:key="id">
-      <view class="product-card">
-        <image class="cover-image" src="{{item.pictureUrls[0]}}" mode="aspectFill"></image>
-        
-        <view class="content-area">
-          <view class="header">
-            <text class="title">{{item.title}}</text>
-            <text class="id-tag">ID: {{item.id}}</text>
-          </view>
-          
-          <text class="description">{{item.description}}</text>
-
-          <view class="price-settings">
-            <view class="setting-item" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
-              <text class="q-range">滿 {{price.minQuantity}} 件:</text>
-              <text class="u-price">¥{{price.unitPrice}}/件</text>
-              <text class="t-price" wx:if="{{price.totalPrice}}">(共¥{{price.totalPrice}})</text>
-              <text class="p-desc" wx:if="{{price.description}}">{{price.description}}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </block>
+    <view class="empty-tip" wx:if="{{filteredList.length === 0}}">找不到符合条件的商品</view>
   </scroll-view>
 </view>

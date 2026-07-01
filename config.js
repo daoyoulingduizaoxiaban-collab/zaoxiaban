@@ -9,19 +9,19 @@ export const BOTTOM_BAR_LIST = [
   {
     icon: 'bulletpoint',
     value: 'groupOrder',
-    label: '行程',
+    label: '团单',
     path: '/pages/groupOrder/index'
   },
   {
     icon: 'usergroup',
     value: 'customerOrders',
-    label: '客戶訂單',
+    label: '客户订单',
     path: '/pages/customerOrders/index'
   },
   {
     icon: 'data-display',
     value: 'productManagement',
-    label: '商品管理',
+    label: '商品库',
     path: '/pages/productManagement/index'
   },
   {

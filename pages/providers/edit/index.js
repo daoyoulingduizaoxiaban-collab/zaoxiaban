@@ -1,11 +1,11 @@
 Page({
   data: {
-    pageTitle: '新增供應',
+    pageTitle: '新增供应商',
     isEdit: false,
     formData: {
       title: '',
       date: '',
-      statusText: '進行中'
+      statusText: '可显示资料'
     }
   },
 
@@ -13,7 +13,7 @@ Page({
     if (options.id) {
       // 編輯模式
       this.setData({
-        pageTitle: '編輯供應',
+        pageTitle: '编辑供应商',
         isEdit: true
       });
       this.fetchprovidersDetail(options.id);
@@ -21,17 +21,14 @@ Page({
   },
 
   fetchprovidersDetail(id) {
-    // 模擬從資料庫讀取資料
     this.setData({
-      'formData.title': '東京五日遊 (已讀取)',
+      'formData.title': '杭州伴手礼供应商',
       'formData.date': '2026-01-07'
     });
   },
 
   onSave() {
-    const action = this.data.isEdit ? '更新' : '創建';
-    wx.showToast({ title: `${action}成功`, icon: 'success' });
-    setTimeout(() => wx.navigateBack(), 1500);
+    wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
   },
 
   onBack() {

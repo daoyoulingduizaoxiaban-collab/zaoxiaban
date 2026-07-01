@@ -1,19 +1,19 @@
-<nav nav-type="tourGuides" titleText="{{titleText}}" />
+<nav nav-type="my" titleText="{{titleText}}" />
 
 <view class="tourGuides-container">
   <t-cell-group theme="card">
     <block wx:for="{{ tourGuidesList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="出發日期：{{ item.date }}" hover arrow
+      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
         bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-        <t-icon slot="left-icon" name="calendar" size="48rpx" color="#0052d9" />
+        <t-icon slot="left-icon" name="user" size="48rpx" color="#0052d9" />
       </t-cell>
     </block>
   </t-cell-group>
 
   <view wx:if="{{ tourGuidesList.length === 0 }}" class="empty-state">
-    <t-empty icon="info-circle" description="暫無行程安排" />
+    <t-empty icon="info-circle" description="暂无导游/领队资料" />
   </view>
 
-  <t-fab icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增行程" style="right: 32rpx; bottom: 180rpx;" />
+  <t-fab icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增导游/领队" style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

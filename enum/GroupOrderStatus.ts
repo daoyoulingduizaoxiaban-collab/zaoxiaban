@@ -6,8 +6,8 @@ export enum GroupOrderStatus {
 
 export const GroupOrderStatusText = Object.freeze({
   [GroupOrderStatus.ALL]: '全部',
-  [GroupOrderStatus.OPEN]: '開放收單',
-  [GroupOrderStatus.STOPPED]: '停止收單'
+  [GroupOrderStatus.OPEN]: '开放收单',
+  [GroupOrderStatus.STOPPED]: '停止收单'
 });
 
 export const getGroupOrderStatusList = () => {

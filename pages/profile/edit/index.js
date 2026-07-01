@@ -1,19 +1,18 @@
 Page({
   data: {
-    pageTitle: '新增我的',
+    pageTitle: '新增个人资料',
     isEdit: false,
     formData: {
       title: '',
       date: '',
-      statusText: '進行中'
+      statusText: 'QA 展示资料'
     }
   },
 
   onLoad(options) {
     if (options.id) {
-      // 編輯模式
       this.setData({
-        pageTitle: '編輯我的',
+        pageTitle: '编辑个人资料',
         isEdit: true
       });
       this.fetchprofileDetail(options.id);
@@ -21,17 +20,14 @@ Page({
   },
 
   fetchprofileDetail(id) {
-    // 模擬從資料庫讀取資料
     this.setData({
-      'formData.title': '東京五日遊 (已讀取)',
+      'formData.title': '林秝帆',
       'formData.date': '2026-01-07'
     });
   },
 
   onSave() {
-    const action = this.data.isEdit ? '更新' : '創建';
-    wx.showToast({ title: `${action}成功`, icon: 'success' });
-    setTimeout(() => wx.navigateBack(), 1500);
+    wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
   },
 
   onBack() {

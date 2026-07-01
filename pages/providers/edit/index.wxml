@@ -2,12 +2,12 @@
 
 <view class="edit-container">
   <t-cell-group theme="card">
-    <t-input label="供應名稱" placeholder="請輸入供應名稱" value="{{ formData.title }}" />
-    <t-cell title="出發日期" note="{{ formData.date || '請選擇' }}" arrow bind:tap="showDatePicker" />
-    <t-input label="供應狀態" value="{{ formData.statusText }}" disabled />
+    <t-input label="供应商名称" placeholder="请输入供应商名称" value="{{ formData.title }}" />
+    <t-cell title="最近维护日期" note="{{ formData.date || '请选择' }}" arrow bind:tap="showDatePicker" />
+    <t-input label="供应商状态" value="{{ formData.statusText }}" disabled />
   </t-cell-group>
 
   <view class="submit-bar">
-    <t-button theme="primary" size="large" block bind:tap="onSave">保存供應</t-button>
+    <t-button theme="primary" size="large" block bind:tap="onSave">保存供应商</t-button>
   </view>
 </view>

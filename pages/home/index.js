@@ -6,7 +6,7 @@ import request from '~/api/request';
 
 Page({
   data: {
-    titleText: '首頁',
+    titleText: '工作台',
     enable: false,
     swiperList: [],
     cardInfo: [],
@@ -42,7 +42,7 @@ Page({
       if (option.oper === 'release') {
         content = '发布成功';
       } else if (option.oper === 'save') {
-        content = '保存成功';
+        content = 'QA 展示模式，暂未保存';
       }
       this.showOperMsg(content);
     }

@@ -1,10 +1,10 @@
 @import '/variable.less';
 
 .itinerary-container {
-  background-color: #f6f6f6;
-  padding: 32rpx 0; // 給頂部和底部一點呼吸空間
-  padding-bottom: 150rpx; // 確保內容不被底部的 TabBar 遮住 (120rpx + 緩衝)
-  min-height: calc(100vh - 200rpx); // 確保背景色能鋪滿全螢幕
+  background-color: #f5f7fa;
+  padding: 32rpx 0;
+  padding-bottom: 150rpx;
+  min-height: calc(100vh - 200rpx);
 }
 
 /* 讓 Card 類型的 Cell Group 更好看 */
@@ -19,9 +19,12 @@
 }
 
 .status-1 {
-  // 啟用
-  color: #23bd20 !important;
+  color: #0052d9 !important;
   font-weight: bold;
+}
+
+.status-2 {
+  color: #8c8c8c !important;
 }
 
 
@@ -55,33 +58,32 @@
   background: #fff;
   padding: 16rpx 24rpx;
   gap: 16rpx;
-  /* 確保容器本身不換行 */
   flex-wrap: nowrap; 
 
   /* 修正：針對組件標籤本身以及其內部的渲染容器 */
   t-search {
     flex: 1 !important; 
-    width: 0; // 這是一個 Flex 技巧，確保它能縮減並重新撐開佔滿剩餘空間
+    width: 0;
     
     :deep(.t-search) {
-      padding: 0 !important; // 移除 TDesign 預設可能存在的內距
+      padding: 0 !important;
     }
   }
 
   t-dropdown-menu {
-    flex-shrink: 0; // 強制不被壓縮，保持內容寬度
+    flex-shrink: 0;
     width: 200rpx !important; 
 
     :deep(.t-dropdown-menu__bar) {
       box-shadow: none !important; 
       border-bottom: none !important;
       background: transparent !important;
-      width: 200rpx  !important; // 關鍵：讓 Bar 不要撐滿 100%
+      width: 200rpx  !important;
     }
 
     :deep(.t-dropdown-item__label) {
       justify-content: flex-end !important; 
-      min-width: 100rpx; // 給一個最小寬度確保「狀態」二字不換行
+      min-width: 100rpx;
     }
   }
 }

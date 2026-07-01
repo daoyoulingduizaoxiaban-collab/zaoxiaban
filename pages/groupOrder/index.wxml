@@ -1,8 +1,8 @@
-<nav nav-type="itinerary" titleText="{{titleText}}" />
+<nav nav-type="groupOrder" titleText="{{titleText}}" />
 <view class="filter-section">
   <t-search 
     value="{{searchKeyword}}" 
-    placeholder="搜尋名稱或描述" 
+    placeholder="搜索团单名称或描述"
     bind:change="onSearchChange" 
     t-class="search-bar"
   />
@@ -20,22 +20,22 @@
     <block wx:for="{{ itineraryList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
         bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-        <!-- <t-icon slot="left-icon" name="calendar" size="48rpx" color="#0052d9" /> -->
+        <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
       </t-cell>
     </block>
   </t-cell-group>
 
   <view wx:if="{{ itineraryList.length === 0 }}" class="empty-wrapper">
-    <t-empty icon="info-circle" description="暫無行程安排" t-class-description="empty-text">
+    <t-empty icon="info-circle" description="暂无团单" t-class-description="empty-text">
       <view slot="action">
         <t-button theme="primary" variant="outline" size="small">
-          暂无行程
+          QA 空状态
         </t-button>
       </view>
     </t-empty>
   </view>
 
-  <t-fab icon="add" bind:click="addItinerary" bind:tap="addItinerary" aria-label="新增行程"
+  <t-fab icon="add" bind:click="addItinerary" bind:tap="addItinerary" aria-label="新建团单"
     style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

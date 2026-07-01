@@ -13,7 +13,7 @@ Page({
     productList: [] as Product[], // 頁面顯示的清單
     allProducts: [] as Product[], // 原始完整數據（用於搜尋過濾）
     searchQuery: '',
-    titleText: 'Product Management',
+    titleText: '商品库',
     statusOptions: getProductStatusList(),
     currentStatus: 0,
     productStatusTextMap: {
@@ -28,7 +28,7 @@ Page({
   },
 
   async fetchData() {
-    let mock = await ProductMock.fetchProductListMock();
+    const mock = await ProductMock.fetchProductListMock();
 
     this.setData({
       allProducts: mock.data,
@@ -49,16 +49,16 @@ Page({
     });
   },
 
-  // 3. 新增功能：新增成功後預設為上架 (status = 1)
   onAddProduct() {
     wx.navigateTo({
-      // 跳轉時攜帶 id，方便詳情頁請求對應數據
       url: `/sub-pages/product/add/index`,
-      fail: (err) => {
-        console.error("跳轉詳情頁失敗：", err);
+      fail: () => {
+        wx.showToast({
+          title: '打开商品表单失败',
+          icon: 'none',
+        });
       },
       events: {
-        // 為指定事件添加一個監聽器，接收下一頁傳回來的資料
         refreshList: (data) => {
           const returnedProducts = (data.products || []).map(item => new Product(item));
           if (returnedProducts.length === 0) return;
@@ -69,26 +69,12 @@ Page({
             allProducts: list,
           }, () => this.updateLocalData(list));
           wx.showToast({
-            title: '新增成功',
-            icon: 'success'
+            title: 'QA 展示模式，暂未保存',
+            icon: 'none'
           });
         }
       }
     });
-
-    // const newProduct = new Product();
-    // newProduct.id = Date.now(); // 暫時用時間戳當 ID
-    // newProduct.title = `新商品 ${this.data.allProducts.length + 1}`;
-    // newProduct.description = '請輸入商品描述';
-    // newProduct.status = 1; // 💡 需求：預設為上架
-
-    // const updatedList = [newProduct, ...this.data.allProducts];
-    // this.setData({
-    //   allProducts: updatedList,
-    //   productList: updatedList
-    // });
-
-    // wx.showToast({ title: '新增成功並上架', icon: 'success' });
   },
 
   // 3. 下架/上架切換
@@ -99,7 +85,7 @@ Page({
         // 切換狀態：1=下架、2=開放下單
         const newStatus = item.status === 2 ? 1 : 2;
         wx.showToast({
-          title: getProductStatusTextByValue(newStatus),
+          title: `QA 展示模式：${getProductStatusTextByValue(newStatus)}`,
           icon: 'none'
         });
         return { ...item, status: newStatus };
@@ -116,12 +102,12 @@ Page({
 
     wx.showModal({
       title: '提示',
-      content: '確定要刪除此商品嗎？',
+      content: '确定要从 QA 展示列表移除此商品吗？不会保存到正式数据。',
       success: (res) => {
         if (res.confirm) {
           const updated = this.data.allProducts.filter(item => item.id !== id);
           this.updateLocalData(updated);
-          wx.showToast({ title: '已刪除', icon: 'success' });
+          wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
         }
       }
     });
@@ -129,7 +115,7 @@ Page({
 
   // 統一更新本地狀態
   updateLocalData(newList: Product[]) {
-
+    const allProducts = newList;
     const query = this.data.searchQuery.toLowerCase();
 
     if (query) {
@@ -144,13 +130,14 @@ Page({
     }
 
     this.setData({
+      allProducts,
       productList: newList
     });
   },
 
   // 監聽狀態切換
   async onStatusChange(e) {
-    let list=this.data.allProducts;
+    const list = this.data.allProducts;
     this.setData({
       currentStatus: e.detail.value
     }, () => this.updateLocalData(list));

@@ -11,9 +11,9 @@ import {
 
 Page({
   data: {
-    titleText: '行程',
-    // 模擬數據：行程名稱、狀態、日期
+    titleText: '团单',
     itineraryList: [],
+    searchKeyword: '',
     statusOptions: getGroupOrderStatusList(),
     currentStatus: 0,
   },
@@ -25,7 +25,7 @@ Page({
 
   async fetchItineraryList() {
     wx.showLoading({
-      title: '載入中'
+      title: '加载中'
     });
 
     try {
@@ -43,7 +43,7 @@ Page({
       }
     } catch (err) {
       wx.showToast({
-        title: '抓取行程失敗',
+        title: '加载团单失败',
         icon: 'none'
       });
     } finally {
@@ -51,7 +51,7 @@ Page({
     }
   },
 
-  // 點擊行程跳轉至詳情頁
+  // 点击团单跳转至详情页
   viewItinerary(e) {
     const {
       id
@@ -72,7 +72,7 @@ Page({
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
-        value: 'GroupOrder'
+        value: 'groupOrder'
       });
     }
   },
@@ -89,7 +89,7 @@ Page({
           });
         } else {
           wx.showToast({
-            title: '跳轉新增頁失敗',
+            title: '打开新建团单失败',
             icon: 'none'
           });
         }

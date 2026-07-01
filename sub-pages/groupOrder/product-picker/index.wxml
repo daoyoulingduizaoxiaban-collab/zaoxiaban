@@ -1,10 +1,10 @@
-<sub-nav title="從商品庫選擇" placeholder />
+<sub-nav title="从商品库选择" placeholder />
 
 <view class="container">
   <view class="search-box">
     <view class="search-inner">
       <t-icon name="search" size="40rpx" color="#bbb" />
-      <input class="search-input" placeholder="搜尋商品名稱" bindinput="onSearch" />
+      <input class="search-input" placeholder="搜索商品名称" bindinput="onSearch" />
     </view>
   </view>
 
@@ -23,7 +23,7 @@
 
         <view class="p-info">
           <text class="p-title">{{item.title}}</text>
-          <text class="p-desc">{{item.description || '暫無描述'}}</text>
+          <text class="p-desc">{{item.description || '暂无描述'}}</text>
           <view class="p-price-row">
              <text class="p-price">${{item.priceSetting[0].unitPrice}}</text>
             <text class="p-unit" wx:if="{{item.priceSetting[0].minQuantity > 1}}">起</text>
@@ -38,10 +38,10 @@
 
   <view class="footer-bar">
     <view class="selected-info">
-      已選擇 <text class="count">{{selectedCount}}</text> 項
+      已选择 <text class="count">{{selectedCount}}</text> 项
     </view>
     <button class="btn-confirm {{selectedCount > 0 ? '' : 'disabled'}}" bindtap="confirmAdd">
-      確認加入
+      确认加入
     </button>
   </view>
 </view>

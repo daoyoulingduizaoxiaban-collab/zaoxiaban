@@ -1,70 +1,28 @@
-# TDesign 通用页面模板
+# 导游领队早下班
 
-基于 TDesign 打造的通用页面模板，包含通用的登陆注册、个人中心、设置中心、信息流等等功能。
+微信小程序项目，当前产品方向是面向中国境内使用的导游/领队开团管理工具。
 
-## 模版功能预览
+## 当前主流程
+- 团单列表：`pages/groupOrder/index`
+- 团单详情：`sub-pages/groupOrder/detail/index`
+- 本团商品：`sub-pages/groupOrder/productList/index`
+- 商品库选择：`sub-pages/groupOrder/product-picker/index`
+- 商品库：`pages/productManagement/index`
+- 客户订单：`pages/customerOrders/index`
+- 我的 / QA Seed：`pages/my/index`
 
-### 首页
+## QA Seed
+- 集中式 seed：`mock/qaSeed.ts`
+- 一键加载/重置入口：我的页的「QA Seed 展示模式」区域。
+- 当前 seed 使用 `wx` storage 展示数据，操作类功能只做 QA 展示提示，暂不承诺正式保存。
 
-<div style="display: flex">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/home-1.png">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/home-2.png">
-</div>
-
-### 信息发布
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/publish-1.png">
-
-### 搜索页
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/search-1.png">
-
-### 个人中心
-<div style="display: flex">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/user-1.png">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/user-2.png">
-  <img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/user-3.png">
-</div>
-
-
-### 设置中心
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/setting-1.png">
-
-### 消息中心
-
-<img width="375" alt="image" src="https://tdesign.gtimg.com/miniprogram/template/message-1.png">
-
-
-## 开发预览
-### 目录结构（TODO: 生成目录结构树）
-
-
-### 在开发者工具中预览
-
+## 本地验证
 ```bash
-# 安装项目依赖
-npm install
-
+npm run lint
+git diff --check
 ```
 
-打开[微信开发者工具](https://mp.weixin.qq.com/debug/wxadoc/dev/devtools/download.html)，导入整个项目，构建 npm 包，就可以预览示例了。
+## 开发限制
+请先阅读 `PROJECT_RULES.md`、`QA_SEED_REQUIREMENTS.md`、`ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`。
 
-### 基础库版本
-
-最低基础库版本`^2.6.5`
-
-
-## 贡献成员
-
-<a href="https://github.com/TDesignOteam/tdesign-miniprogram-starter/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=TDesignOteam/tdesign-miniprogram-starter" />
-</a>
-
-## 反馈
-
-有任何问题，建议通过 [Github issues](https://github.com/TDesignOteam/tdesign-miniprogram-starter/issues) 反馈。
-
-## 开源协议
-
-TDesign 遵循 [MIT 协议](https://github.com/TDesignOteam/tdesign-miniprogram-starter/blob/main/LICENSE)。
+本项目禁止在未获明确要求时启动或重开微信开发者工具 GUI、推送远端、部署、删除正式资料、提交 `resume/preview-*`。

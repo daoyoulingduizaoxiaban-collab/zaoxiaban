@@ -1,3 +1,5 @@
+import { ProductMock } from '~/mock/product/index';
+
 Page({
   data: {
     excludeIds: [], // 已經存在於團購中的商品ID
@@ -25,24 +27,14 @@ Page({
     this.loadProductLibrary();
   },
 
-  loadProductLibrary() {
-    // 模擬：從後端 API 獲取使用者的所有商品庫
-    // 實際開發請換成 wx.request
-    const mockApiData = [
-      { id: 101, title: '手工餅乾 (原味)', description: '酥脆好吃', priceSetting: [{unitPrice: 100, minQuantity: 1}], pictureUrls: [] },
-      { id: 102, title: '巧克力布朗尼', description: '75% 黑巧', priceSetting: [{unitPrice: 150, minQuantity: 1}], pictureUrls: [] },
-      { id: 103, title: '有機冷泡茶', description: '阿里山高山茶', priceSetting: [{unitPrice: 60, minQuantity: 10}], pictureUrls: [] },
-      { id: 104, title: '測試商品A', description: '庫存貨', priceSetting: [{unitPrice: 200, minQuantity: 1}], pictureUrls: [] },
-    ];
-
-    // 3. 資料處理：標記 disabled
-    const processedList = mockApiData.map(item => {
-      // 檢查此商品是否已存在於上一頁的清單中
+  async loadProductLibrary() {
+    const res = await ProductMock.fetchProductListMock();
+    const processedList = res.data.map(item => {
       const isExist = this.data.excludeIds.includes(item.id);
       return {
         ...item,
-        disabled: isExist, // 如果存在，禁止選擇
-        selected: false    // 預設未選
+        disabled: isExist,
+        selected: false
       };
     });
 
@@ -121,7 +113,10 @@ Page({
   confirmAdd() {
     const selectedItems = this.data.allProducts.filter(p => p.selected);
 
-    if (selectedItems.length === 0) return;
+    if (selectedItems.length === 0) {
+      wx.showToast({ title: '请先选择商品', icon: 'none' });
+      return;
+    }
 
     wx.showLoading({ title: '加入中...' });
 

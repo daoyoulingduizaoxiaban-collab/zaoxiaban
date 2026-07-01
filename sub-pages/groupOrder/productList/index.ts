@@ -35,7 +35,7 @@ Page({
   async loadGroupProducts() {
     const { groupOrderId } = this.data;
     if (!groupOrderId) {
-      wx.showToast({ title: '缺少團單 ID', icon: 'none' });
+      wx.showToast({ title: '缺少团单 ID', icon: 'none' });
       return;
     }
 
@@ -95,8 +95,9 @@ Page({
   // 3. 跳轉到商品詳情
   goToDetail(e) {
     const id = e.currentTarget.dataset.id;
-    wx.navigateTo({
-      url: `/pages/product-detail/index?id=${id}`,
+    wx.showToast({
+      title: `商品详情暂未开发 #${id}`,
+      icon: 'none',
     });
   },
 
@@ -106,7 +107,7 @@ Page({
 
     wx.showModal({
       title: '移除商品',
-      content: '確定要從本團移除此商品嗎？',
+      content: '确定要从本团移除此商品吗？QA 展示模式不会保存。',
       confirmColor: '#ff4d4f',
       success: (res) => {
         if (res.confirm) {
@@ -121,7 +122,7 @@ Page({
             displayList: this.filterList(rawList, this.data.searchQuery)
           });
 
-          wx.showToast({ title: '已移除', icon: 'none' });
+          wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
         }
       }
     });
@@ -147,6 +148,7 @@ Page({
             rawList,
             displayList: this.filterList(rawList, this.data.searchQuery)
           });
+          wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
         }
       },
       fail: () => {

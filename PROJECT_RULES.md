@@ -1,18 +1,42 @@
-# Project Rules
+# PROJECT_RULES
 
-## WeChat DevTools Testing Policy
+## 产品定位
+- 本项目是面向中国境内真人使用的微信小程序。
+- 产品方向是导游/领队开团管理工具，不再沿用 TDesign starter 的内容发布/信息流定位。
+- 核心业务名词统一为「开团/团单」；主流程围绕团单列表、团单详情、本团商品、商品库、客户订单和我的页。
 
-- Do not repeatedly reopen, refocus, or reinitialize WeChat DevTools while the user is working.
-- Treat `cli open --project ...`, `automator.launch(...)`, and repeated `cli preview ...` as disruptive because they can steal macOS focus and move the user's typing cursor.
-- Default to the already-open WeChat DevTools window and the service port shown by the user. As of 2026-07-02, the known service port is `45512`.
-- Prefer connecting to an existing automation websocket with `automator.connect(...)` over launching DevTools from the SDK.
-- Run `cli auto --port 45512 --auto-port <fixed-port> --trust-project` only when automation is needed and the existing DevTools window is already open.
-- If `automator.connect(...)` hangs or cannot connect, stop the GUI automation attempt and report the blocker. Do not escalate by repeatedly running `cli open`, `automator.launch(...)`, or `preview` unless the user explicitly approves.
-- Only reopen or re-run `cli open` when it is genuinely required: the existing DevTools process is closed, the service port is unavailable, the project is not loaded, and the requested task cannot be completed by lint/build/code inspection.
-- Before any unavoidable reopen/refocus action, tell the user why it is necessary and wait for approval.
+## 角色
+- 领队/导游：创建团单、维护本团商品、查看客户订单和收款状态。
+- 客户：查看团单商品并下单，后续接客户侧页面时再明确权限。
+- 供应商：提供商品或服务资料，当前先做 QA 展示与未完成功能提示。
+- 系统管理员：当前先做 QA 展示与未完成功能提示，权限模型待确认。
 
-## Validation Defaults
+## UI 与文案
+- UI 文案使用简体中文。
+- 风格收敛为工作型工具：清楚、稳定、可扫描，优先使用 TDesign 基础组件。
+- 不做花哨 landing page；页面首屏应直接服务操作或数据查看。
+- 避免继续混用「行程、团购、商品管理」等互相矛盾名词；旧页面逐步改为「开团/团单」语境。
 
-- Non-disruptive checks first: `npm run lint`, `git diff --check`, source inspection, and WeChat CLI commands that do not need to refocus the GUI.
-- `cli build-npm` is acceptable after confirming DevTools service port is available.
-- `cli preview` may refocus DevTools; use it sparingly and only when preview-package validation is needed.
+## QA Seed 策略
+- 集中式 QA seed 位于 `mock/qaSeed.ts`。
+- QA seed 使用 `wx` storage key `dao_you_ling_qa_seed`，并提供一键加载/重置入口：`pages/my/index` 的「QA Seed 展示模式」区域。
+- QA seed 覆盖 3 位写死测试用户，其中 `林秝帆` 代表产品拥有者本人。
+- 团单、商品、客户订单、供应商、系统管理员展示资料从同一份 seed 派生，避免页面各自硬写互相矛盾数据。
+- 当前 QA 展示模式只保证稳定呈现和当前页面内操作反馈；尚未承诺跨页面持久化保存。
+- 操作类功能尚未能安全保存时，必须显示「QA 展示模式，暂未保存」或等价提示，不得造成页面异常。
+
+## 禁止事项
+- 不要启动微信开发者工具 GUI。
+- 不要重开、refocus、反复 preview WeChat DevTools。
+- 不要使用 `automator.launch(...)`。
+- 不要推送远端。
+- 不要部署。
+- 不要删除正式资料。
+- 不要提交 `resume/preview-info.json` 和 `resume/preview-qr.png`，除非使用者明确要求。
+- 不要使用网络。
+- 不要安装新套件。
+
+## 验证默认
+- 默认验证命令：`npm run lint`。
+- 默认 diff 检查：`git diff --check`。
+- GUI 验证只能由后续 Codex App 在不重开 DevTools 的前提下接现有环境执行；本轮不得声称已完成 GUI 测试。
