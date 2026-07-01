@@ -1,9 +1,11 @@
 # MVP_COMPLETION_CHECKLIST
 
 ## 目的
-這份清單是把目前 QA 展示型小程序推進到「真人可用 MVP」的唯一執行清單。
+這份清單是把目前 QA 展示型小程序推進到「真人可用 MVP」的總清單與驗收邊界。
 
 CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。不要只看聊天摘要，不要憑印象補需求。
+
+每一輪實際要做什麼，以 `CURRENT_TASKS.md` 的當前任務為準。本文件只定義整體方向、驗收標準、禁止事項和不能漏掉的工作；不要因為本文件很完整，就一次展開登入、資料庫、GUI、UI、訂單等多個大範圍任務。
 
 ## 不可做歪的產品定義
 - 產品是面向中國境內導遊/領隊使用的微信小程序，不是 TDesign starter 展示站。
@@ -39,14 +41,26 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [ ] 讀完本文件全文。
 - [ ] 讀完 `PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。
 - [ ] 執行 `git status --short --branch`，確認只有自己要改的檔案會被提交。
+- [ ] 確認 `CURRENT_TASKS.md` 有本輪明確任務；若沒有，先更新或請示，不要自行一口氣開做整份 MVP。
 - [ ] 不要提交 `resume/preview-info.json`、`resume/preview-qr.png`。
 - [ ] 不要啟動或重開微信 DevTools，除非使用者明確要求。
 - [ ] 不要使用 `automator.launch(...)`。
 - [ ] 不要推送遠端、部署、刪除正式資料、安裝新套件或使用網路，除非使用者明確要求。
 - [ ] 若上下文被壓縮或開始不確定，立刻停止憑記憶操作，重新讀本文件和上述 5 份文件。
 
+## Phase 0.5 - 先修 blocking defects
+以下是已知會讓後續 GUI 測試或 MVP 實作歪掉的阻塞缺陷。CLI agent 在做正式資料層、GUI smoke test、或宣稱流程穩定前，必須先修這些問題，並把結果寫回 `CURRENT_TASKS.md` 或 `HANDOFF.md`。
+
+- [ ] 修正 eventChannel 使用防護：`sub-pages/groupOrder/product-picker/index.ts`、`sub-pages/product/add/index.ts` 等使用 `getOpenerEventChannel()` 的地方，必須處理沒有 opener、沒有 listener、直接進頁、返回失敗等情境，不可因單獨打開頁面而崩潰。
+- [ ] 修正 QR 空字串處理：`sub-pages/groupOrder/detail/index.ts` 在 `qrCodeUrl` 為空或非法時，不可直接呼叫 `wx.previewImage` 預覽空字串；要先顯示「暂无团单二维码」或 fallback 狀態。
+- [ ] 修正客戶訂單 id 型別比對：`pages/customerOrders/index.js` 等從 `dataset` 取得的 id 可能是字串，seed/model 裡可能是數字；查找前要統一型別，避免點擊訂單卻顯示「未找到订单资料」。
+- [ ] 修正商品搜尋與狀態篩選一致性：`pages/productManagement/index.ts` 的搜尋、上下架、刪除、狀態篩選都必須走同一個 filter/update 路徑，不能搜尋後丟失狀態篩選，或狀態切換後丟失搜尋結果。
+- [ ] 修完以上缺陷後，至少跑 `npm run lint`、`git diff --check`，並用可行方式驗證相關頁面不再因已知問題阻塞 GUI。
+
 ## Phase 1 - 資料模型與儲存閉環
-- [ ] 決定 MVP 使用的正式資料層：微信雲開發資料庫或明確的後端 API。不要同時做兩套。
+- [ ] 先做正式資料層方案比較與建議，不要直接自行選型實作。比較至少包含：微信雲開發資料庫、明確後端 API；要寫清楚成本、開發速度、登入/OpenID 整合、資料權限、部署維運、未來擴充風險。
+- [ ] 把建議方案寫入 `CURRENT_TASKS.md` 或新的架構決策文件，等待使用者確認或有明確授權後，才開始實作正式資料層。
+- [ ] 使用者確認後，決定 MVP 使用的正式資料層。不要同時做兩套。
 - [ ] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
 - [ ] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
 - [ ] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
@@ -109,6 +123,7 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [ ] 驗證：逐頁檢查無舊模板文案、無遮擋、無假入口。
 
 ## Phase 7 - 27 個 route GUI smoke test
+- [ ] GUI smoke test 前，先確認 Phase 0.5 的 blocking defects 已修正或明確標記不阻塞；不要帶著已知阻塞 bug 反覆跑 GUI。
 - [ ] 在微信 DevTools 或真機逐一打開 `app.json` 的 27 個 route。
 - [ ] 每個 route 記錄：可打開、正常資料、空狀態、錯誤/未完成提示。
 - [ ] 驗證底部 tab 狀態在真實小程序環境一致。
