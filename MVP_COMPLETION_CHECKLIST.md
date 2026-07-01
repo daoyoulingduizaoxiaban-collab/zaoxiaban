@@ -68,7 +68,7 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 ## Phase 1 - 資料模型與儲存閉環
 - [x] 先做正式資料層方案比較與建議，不要直接自行選型實作。比較至少包含：微信雲開發資料庫、明確後端 API；要寫清楚成本、開發速度、登入/OpenID 整合、資料權限、部署維運、未來擴充風險。
 - [x] 把建議方案寫入 `CURRENT_TASKS.md` 或新的架構決策文件，等待使用者確認或有明確授權後，才開始實作正式資料層。
-- [ ] 使用者確認後，決定 MVP 使用的正式資料層。不要同時做兩套。
+- [x] 使用者確認後，決定 MVP 使用的正式資料層。不要同時做兩套。
 - [x] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
 - [x] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
 - [x] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
@@ -78,14 +78,16 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [ ] 驗證：用同一個測試導遊建立資料，關閉再打開或重新載入後資料仍存在。
 
 ## Phase 2 - 登入與角色權限
-- [ ] 接入微信登入，取得 openId 或等價身份識別。
-- [ ] 建立 user profile 初始化流程：第一次登入建立使用者，後續登入讀取原資料。
-- [ ] 定義 MVP 角色：guide、customer、owner/admin。供應商角色可暫緩，但不能留下會誤導人的假入口。
-- [ ] 導遊只能看自己建立或被授權管理的团单。
-- [ ] 客戶只能看自己下過的订单，或透過分享進入指定团单下單。
-- [ ] 管理員/owner 入口若未完成，必須顯示未完成提示，不得假裝可管理全站。
-- [ ] 移除或改寫 starter 風格登入文案，例如 TDsign、QQ、企微等不屬於本產品 MVP 的入口。
-- [ ] 驗證：至少用 guide/customer 兩種身份跑一次可見資料範圍。
+- [x] 接入微信登入，取得 openId 或等價身份識別。
+- [x] 建立 user profile 初始化流程：第一次登入建立使用者，後續登入讀取原資料。
+- [x] 定義 MVP 角色：guide、customer、owner/admin。供應商角色可暫緩，但不能留下會誤導人的假入口。
+- [x] 導遊只能看自己建立或被授權管理的团单。
+- [x] 客戶只能看自己下過的订单，或透過分享進入指定团单下單。
+- [x] 管理員/owner 入口若未完成，必須顯示未完成提示，不得假裝可管理全站。
+- [x] 移除或改寫 starter 風格登入文案，例如 TDsign、QQ、企微等不屬於本產品 MVP 的入口。
+- [x] 驗證：至少用 guide/customer 兩種身份跑一次可見資料範圍。
+
+Phase 2 驗證備註：本輪已接 `wx.login` 與 auth adapter；因未配置/未執行微信雲函式，正式 OpenID 換取尚未在微信 DevTools 或真機驗證。可見範圍以本地 mock auth adapter 驗證 guide/customer 角色 scope。
 
 ## Phase 3 - 導遊核心工作流
 - [ ] `pages/groupOrder/index` 顯示導遊自己的团单列表。

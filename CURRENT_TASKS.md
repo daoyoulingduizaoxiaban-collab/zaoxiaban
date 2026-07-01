@@ -1,5 +1,14 @@
 # CURRENT_TASKS
 
+## 本轮任务 - Phase 2 登录与角色权限
+- 使用者已确认资料层方向：MVP 优先采用微信云开发数据库 + 云函数，但页面必须经由 service/repository 边界，不直接散落调用云数据库。
+- 接入 `wx.login` + auth adapter；云环境/云函数未配置时必须使用明确标记的 mock fallback，不可假装已取得正式 OpenID。
+- 建立 user profile 初始化流程，字段对齐 `DATA_MODEL_AND_PERMISSIONS.md` 的 users 初稿。
+- 落地 MVP 角色：guide、customer、owner/admin；provider 暂缓但入口必须提示未完成或不可用。
+- 按当前 user profile 限制团单与客户订单可见范围。
+- 去除 starter 登录文案与 TDsign/QQ/企微等非 MVP 登录入口。
+- 验证：`npm run lint`、`git diff --check`、`git status --short --branch`，并用 guide/customer 验证角色 scope。
+
 ## 本轮任务 - Phase 0/0.5/1
 - Phase 0：按 `MVP_COMPLETION_CHECKLIST.md` 恢复上下文，执行 `git status --short --branch`，确认本轮任务边界，不启动微信 DevTools、不联网、不部署、不推送、不提交 `resume/preview-*`。
 - Phase 0.5：修正 blocking defects：eventChannel 缺 opener/listener 防护、团单二维码空值防护、客户订单 id 字符串/数字比对、商品库搜索与状态筛选一致性。
@@ -8,6 +17,18 @@
 - 验证：必须执行 `npm run lint`、`git diff --check`、`git status --short --branch`，静态检查 blocking defects 修复路径；不声称微信 DevTools GUI 验证。
 
 ## 本轮完成
+- Phase 2 已完成：
+  - `services/auth/authService.js`：调用 `wx.login`，若 `config.cloudEnvId` 与云函数 `authLogin` 可用则换取 OpenID；当前未配置云环境时使用明确标记的 `mock-auth-adapter`。
+  - `services/auth/roleScope.js`：集中定义 guide、customer、owner、admin、provider 角色与可见范围规则。
+  - `repositories/groupOrderRepository.js`、`repositories/customerOrderRepository.js`：页面通过 repository 按当前 profile 过滤资料，不直接用 QA seed 当正式 user profile。
+  - `pages/login/login`：移除 TDsign、QQ、企微、密码/短信入口，改为微信登录与角色初始化。
+  - `pages/loginCode/loginCode`：改为验证码登录停用提示。
+  - `pages/my/index`：从 auth service 读取 profile/session，显示本地 adapter 警示，owner/admin 与 provider 入口只给未完成提示或按权限开放。
+  - `pages/groupOrder/index`：guide 只看自己管理的团单；customer 只看自己订单关联团单；非导游/管理角色不显示新建团单入口。
+  - `pages/customerOrders/index`：guide 只看自己团单下客户订单；customer 只看自己的订单；客户不显示新增订单入口。
+  - `pages/providers/index`：非 owner/admin 不展示供应商管理资料，显示供应商后台暂未开放提示。
+  - `mock/qaSeed.ts`：补齐 OpenID/profile 相关字段、团单 owner/guide 关联和订单 customer/guide 关联，用于本地角色 scope 验证。
+- 使用者确认正式资料层方向已写入 `DATA_LAYER_DECISION.md`，Phase 1「使用者确认后决定正式资料层」已可勾选。
 - Phase 0 已完成：已重新读取 MVP/checklist/rules/tasks/acceptance/handoff/QA seed 文件，执行 `git status --short --branch`，并先补入本轮任务边界。
 - Phase 0.5 blocking defects 已修正：
   - `sub-pages/groupOrder/product-picker/index.ts`：新增 eventChannel 防护、emit 失败提示、navigateBack 失败提示；直接进页不会因没有 opener 崩溃。
@@ -35,9 +56,9 @@
 - 更新 `PROJECT_RULES.md`、`README.md`、`QA_SEED_REQUIREMENTS.md`、`ACCEPTANCE.md`、`HANDOFF.md`。
 
 ## 下一轮优先
-- 请使用者确认正式资料层方向：是否采用 `DATA_LAYER_DECISION.md` 建议的微信云开发数据库 + 云函数，或改走明确后端 API。
-- 使用者确认后，进入 Phase 1 后半段：建立资料存取层接口与 mock/cloud repository 边界，但仍需避免页面直接散落调用 storage/mock/cloud/API。
-- Phase 2 正式登入/OpenID/角色权限需等资料层方向确认后再做，不要提前接登入。
+- 建立微信云开发环境配置与云函数 `authLogin`，用真实 `wx.login` code 换取正式 OpenID，并写入/读取云数据库 `users` 集合。
+- 将 auth repository 从本地 storage/mock fallback 切到 cloud repository，保留现有 service 边界。
+- 正式 OpenID 验证通过后，再进入 Phase 3/4/5 的正式保存与导游核心流程。
 - 用 Codex App 接现有微信 DevTools 环境做 GUI route smoke test，不要重开 DevTools。
 - 逐一打开 `QA_SEED_REQUIREMENTS.md` 的 27 个 route。
 - 重点点击：团单列表 -> 团单详情 -> 本团商品 -> 商品库选择 -> 确认加入。
@@ -45,6 +66,9 @@
 - 继续收敛非主流程旧模板页面：home/message/dataCenter/release/search/login/setting。
 
 ## 未完成与风险
+- 正式 OpenID 尚未验证：本轮未启动微信 DevTools，也未配置/执行云函数 `authLogin`。
+- 云数据库 `users` 集合、云函数、安全规则与云端 profile 初始化尚未创建。
+- 当前 role scope 已用本地 adapter 验证，但仍需微信 DevTools/真机验证登录按钮、storage、页面刷新后的 profile 读取。
 - eventChannel「没有 listener」不能仅靠代码静态检查宣称完成；当前只能确认没有 opener、emit 抛错、返回失败已有防护，listener 回传仍需微信 DevTools GUI 验证。
 - 未实现正式资料层、资料存取层、云函数、数据库集合或后端 API。
 - 未接微信登录、OpenID、user profile 初始化或角色权限代码。

@@ -1,5 +1,23 @@
 # ACCEPTANCE
 
+## Phase 2 登录与角色权限验收
+- [x] 使用者已确认正式资料层方向：MVP 优先采用微信云开发数据库 + 云函数，并通过 service/repository 边界接入。
+- [x] 新增 `services/auth/authService.js`：登录流程会调用 `wx.login`，再尝试云函数 `authLogin` 换取 OpenID；未配置云环境时使用明确标记的本地 auth adapter fallback。
+- [x] 新增 user profile 初始化：profile 存储包含 `openId`、`role`、`displayName`、`phone`、`avatarUrl`、`status`、`createdAt`、`updatedAt`、`authSource`、`isMockOpenId`。
+- [x] 后续登录会按同一 `openId` 读取并更新既有 profile 的 `updatedAt`，保留首次 `createdAt`。
+- [x] MVP 角色已落地：`guide`、`customer`、`owner`、`admin`；`provider` 入口保留未完成/不可用提示，不提供误导性后台操作。
+- [x] `pages/login/login` 已移除 TDsign、QQ、企微、密码/短信等 starter 登录入口，改为微信登录和角色初始化文案。
+- [x] `pages/loginCode/loginCode` 已改为停用提示，不再伪装成可用短信登录。
+- [x] `pages/my/index` 改为从 `AuthService` 读取当前 profile，不再直接用 `mock/qaSeed.ts` owner 当真人登录资料。
+- [x] `pages/groupOrder/index` 通过 `GroupOrderRepository` 按当前 profile 过滤团单：guide 只看自己创建或授权管理的团单，customer 只看自己订单关联团单。
+- [x] `pages/customerOrders/index` 通过 `CustomerOrderRepository` 按当前 profile 过滤客户订单：guide 只看自己团单下订单，customer 只看自己的订单。
+- [x] owner/admin 入口未完成时显示提示，不假装可管理全站。
+- [x] guide/customer 可见范围已用本地 role scope 验证：guide 团单 `1,2`、guide 订单 `5001,5002,5004`；customer 团单 `1`、customer 订单 `5001`。
+- [x] `npm run lint` 通过。
+- [x] `git diff --check` 通过。
+- [ ] 正式微信 OpenID 换取未验证：本轮未启动微信 DevTools，且未配置/执行云函数 `authLogin`。
+- [ ] 云数据库 `users` 集合与云函数未创建：本轮只完成 Phase 2 adapter/service/repository 边界和本地 fallback。
+
 ## Phase 0/0.5/1 本轮验收清单
 - [x] 完整读取 `MVP_COMPLETION_CHECKLIST.md`、`PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。
 - [x] 执行 `git status --short --branch`，并确认 `resume/preview-info.json`、`resume/preview-qr.png` 不纳入提交。
