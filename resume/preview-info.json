@@ -1,0 +1,47 @@
+{
+  "size": {
+    "total": 1881506,
+    "packages": [
+      {
+        "name": "TOTAL",
+        "size": 1881506
+      },
+      {
+        "name": "main",
+        "size": 1841976
+      },
+      {
+        "name": "/pages/chat/",
+        "size": 5664
+      },
+      {
+        "name": "/pages/dataCenter/",
+        "size": 5461
+      },
+      {
+        "name": "/pages/login/",
+        "size": 6111
+      },
+      {
+        "name": "/pages/loginCode/",
+        "size": 2740
+      },
+      {
+        "name": "/pages/my/info-edit/",
+        "size": 8457
+      },
+      {
+        "name": "/pages/release/",
+        "size": 3785
+      },
+      {
+        "name": "/pages/search/",
+        "size": 5941
+      },
+      {
+        "name": "/pages/setting/",
+        "size": 1371
+      }
+    ]
+  }
+}
