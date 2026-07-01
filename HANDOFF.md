@@ -1,7 +1,7 @@
 # DaoYouLingDuiZaoXiaBan Handoff
 
 ## Last Updated
-- 2026-06-03 02:02 CST
+- 2026-07-02 01:20 CST
 
 ## Repo State
 - Project path: `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan`
@@ -12,6 +12,7 @@
 - Working tree is dirty with the current cleanup changes until committed.
 
 ## Current Focus
+- New stable testing rule: do not repeatedly reopen/refocus WeChat DevTools. Use the already-open DevTools service port when possible, and ask before any unavoidable reopen.
 - Continue the WeChat mini program work around `groupOrder`, product management, and group-order product setup.
 - The prior README was still the upstream TDesign template; there was no project-specific handoff before this file.
 - Current cleanup focus: make the group-order product library flow less hard-coded and remove obvious debug code.
@@ -33,6 +34,11 @@
 - Fixed `sub-pages/groupOrder/detail/index.ts` QR image error handling so it reads `groupOrder.qrCodeUrl` correctly and does not call `indexOf` on an empty value.
 
 ## Verification
+- 2026-07-02: `npm run lint` passed.
+- 2026-07-02: WeChat DevTools CLI with service port `45512` passed `islogin`, `open`, `build-npm`, `preview`, and `auto --trust-project`; preview total size was `1,881,506` bytes.
+- 2026-07-02: `miniprogram-automator` connected successfully to existing websocket `ws://127.0.0.1:19512` when run with local network permission. Do not use `automator.launch(...)`.
+- 2026-07-02: No-reopen GUI smoke test passed for all 27 `app.json` page routes via `automator.connect(...)` + `miniProgram.reLaunch(...)`; each route returned visible nodes/buttons/inputs where expected.
+- 2026-07-02: Low-risk interaction checks passed: login method switch button, group-order empty save validation button, product add validation buttons, product-management add entry, and release draft button navigation to `pages/home/index`.
 - `npm run lint` passed.
 - `git diff --check` passed.
 - `rg -n "groupOrderList\\[0\\]|existingIds = \\[1\\]|console\\.|models/itinerary|//TODO|// TODO" pages/groupOrder sub-pages/groupOrder -g '*.ts' -g '*.js'` found no matches after cleanup.
@@ -42,6 +48,7 @@
 - Running eslint with `--ext .js,.ts` is not useful yet because this project lacks a TypeScript-aware ESLint parser; it parses `enum` and type annotations as syntax errors.
 
 ## Changed Files
+- `PROJECT_RULES.md`: added WeChat DevTools testing policy. Key rule: avoid disruptive `cli open`, `automator.launch`, and repeated `preview`; use existing service port `45512`; ask before unavoidable reopen/refocus.
 - `HANDOFF.md`: new project-specific handoff file.
 - `app.js`: comment spacing/newline cleanup for lint.
 - `custom-tab-bar/index.js`: removed debug logs and unreachable fallback, fixed regex/comment style, changed `menu` to `const`.
@@ -66,6 +73,8 @@
 - Consider replacing the template README with project-specific setup notes after the product/group-order flow stabilizes.
 
 ## Notes
+- Important user preference: do not let WeChat DevTools repeatedly steal focus while the user is typing. Reopening/refocusing DevTools is a last resort and requires explanation plus user approval.
+- For GUI tests, prefer `automator.connect(...)` to an already-started automation websocket. If connect hangs, stop and report the blocker instead of retrying with disruptive commands.
 - Do not mix this handoff with `counting-handoff`, `mind-steward-handoff`, or `video-asset-manager`; this project path is `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan`.
 - Referenced `/Users/admin/.codex/skills/counting-handoff/SKILL.md` for handoff style only; did not edit the line-counting project.
 - Latest commit before this work: `a13ac84 Merge branch 'before--ai' into dev`.
