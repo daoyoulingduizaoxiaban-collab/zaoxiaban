@@ -58,7 +58,7 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [x] 修完以上缺陷後，至少跑 `npm run lint`、`git diff --check`，並用可行方式驗證相關頁面不再因已知問題阻塞 GUI。
 
 ## Phase 0.6 - 稽核追加修正
-以下是 2026-07-02 對 Phase 0.5/1 交付的稽核結果。下一位 agent 必須先完成本段，再宣稱 blocking defects 全部關閉或進入 27 route GUI smoke test。
+以下是 2026-07-02 對 Phase 0.5/1 交付的稽核結果與完成狀態。後續 agent 不需重做本段，但在宣稱 blocking defects 全部關閉或進入 27 route GUI smoke test 前，仍必須確認本段狀態沒有被新修改破壞。
 
 - [x] eventChannel listener 缺失不可再寫成已完成：微信 eventChannel API 無法可靠探測「父頁是否真的有 listener」。請在 `ACCEPTANCE.md` / `HANDOFF.md` 保持這項為「已防護 opener/emit/navigateBack，listener 情境仍需 GUI 驗證」，除非真的用微信 DevTools 驗證過父頁有註冊 listener 且回傳資料成功。
 - [x] 修正 `pages/message/index.js` 聊天入口：`wx.navigateTo({ url: \`/pages/chat/index?userId${userId}\` })` 少了 `=`，應避免 GUI smoke 時 route 參數錯誤。
@@ -66,7 +66,7 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [x] 完成稽核追加修正後，必須跑 `npm run lint`、`git diff --check`、`git status --short --branch`，並把結果寫回 `ACCEPTANCE.md` 和 `HANDOFF.md`。
 
 ## Phase 0.7 - 稽核回修與範圍校正
-以下是 2026-07-02 對 Phase 2 超前交付後的稽核結果。下一位 agent 必須先完成本段，再開始 Phase 4 商品庫；不得跳到 Phase 5 客戶下單與訂單管理。
+以下是 2026-07-02 對 Phase 2 超前交付後的稽核結果與完成狀態。Phase 4 商品庫已在後續提交完成本地/QA repository 版本；本段保留為後續回歸檢查依據。不得因本段已完成就跳到 Phase 5 客戶下單與訂單管理。
 
 - [x] 修正 `pages/message/index.js` 與 `pages/chat/index.js` 的 socket null 防護：目前 `app.globalData.socket` 預設為 `null`，`app.js` 未啟動 `connect()`；訊息頁不可在 `socket.onMessage` 或 `socket.send` 因 socket 缺失而崩潰。若聊天功能非本輪重點，應顯示「聊天能力暂未启用」或安全停用。
 - [x] 修正 `pages/groupOrder/index.ts` 篩選後狀態文字不一致：`fetchItineraryList()` 有補 `statusText`，但 `applyFilters()` 直接使用 repository 原資料。搜尋/狀態篩選後仍必須保留 `statusText` 與狀態樣式。
@@ -113,8 +113,8 @@ Phase 2 驗證備註：本輪已完成 auth adapter、mock fallback 與 guide/cu
 - [ ] 驗證：團單列表 -> 詳情 -> 本團商品 -> 商品庫選擇 -> 加入 -> 返回 -> 重開後仍存在。
 
 ## Phase 4 - 商品庫
-- 下一輪若被指定「做到 Phase 4」，範圍只到本段為止；不得實作 Phase 5 客戶下單、客戶訂單正式流程或收款確認閉環。
-- Phase 4 可以依既有 repository/service 邊界建立商品庫正式資料存取層，但不得在使用者未確認前直接建立雲端資源、部署、推送或改外部環境。
+- Phase 4 已完成本地/QA repository 版本；後續若回到商品庫，只能在使用者明確指定範圍內修補或接正式資料層，不得自行擴張到 Phase 5。
+- Phase 4 可以依既有 repository/service 邊界建立商品庫資料存取層；在使用者未確認正式資料層前，不得直接建立雲端資源、部署、推送或改外部環境。
 - [x] `pages/productManagement/index` 顯示導遊可用商品。
 - [x] `sub-pages/product/add/index` 可新增本地/QA 商品，正式雲端商品新增仍未實作。
 - [x] 商品至少包含：名稱、描述、圖片、價格規則、狀態、供應來源或備註。

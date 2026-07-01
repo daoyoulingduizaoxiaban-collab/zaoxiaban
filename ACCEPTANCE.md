@@ -1,5 +1,15 @@
 # ACCEPTANCE
 
+## 2026-07-02 文件治理稽核
+- [x] `CURRENT_TASKS.md` 已整理为唯一当前任务入口，不再同时维护历史完成记录、验收矩阵和后续大清单。
+- [x] 历史完成记录与交接细节统一放入 `HANDOFF.md`。
+- [x] 总 MVP 阶段勾选统一放入 `MVP_COMPLETION_CHECKLIST.md`。
+- [x] 验收结果与未验证项统一放入 `ACCEPTANCE.md`。
+- [x] 已复查容易误导的状态词：未保留并列任务标题或正式资料层已拍板的错误状态。
+- [x] Phase 4 代码静态复查：商品库列表、新增、搜索/状态筛选、上下架、软删除仍走 `ProductService` / `ProductRepository`。
+- [x] Phase 4 范围复查：未发现商品库代码包含 Phase 5 客户下单、正式客户订单流程或收款确认闭环。
+- [ ] 微信 DevTools GUI 验证仍未执行，不能宣称商品库点击流程或视觉状态已通过。
+
 ## Phase 0.7 稽核回修验收
 - [x] `pages/message/index.js` 已在 `app.globalData.socket` 缺失时安全停用 socket listener，并提示「聊天能力暂未启用」。
 - [x] `pages/chat/index.js` 已在 `app.globalData.socket` 缺失时阻止 `socket.send`，并提示「聊天能力暂未启用」。
@@ -25,7 +35,7 @@
 - [ ] 「新增商品 -> 列表看到 -> 加入团单 -> 重开后仍存在」未完整验证：本轮未做 GUI，也未展开 Phase 3 本团商品加入流程。
 
 ## Phase 2 登录与角色权限验收
-- [ ] 正式资料层方向已由使用者确认：当前仍是 `DATA_LAYER_DECISION.md` 建议方案，待使用者确认。
+- [ ] 正式资料层尚未拍板：当前仍是 `DATA_LAYER_DECISION.md` 建议方案，待使用者确认。
 - [x] 新增 `services/auth/authService.js` auth adapter：可替换为 `wx.login` + 云函数 `authLogin`；未配置云环境时使用明确标记的本地 auth adapter fallback。
 - [x] 新增 user profile 初始化：profile 存储包含 `openId`、`role`、`displayName`、`phone`、`avatarUrl`、`status`、`createdAt`、`updatedAt`、`authSource`、`isMockOpenId`。
 - [x] 后续登录会按同一 `openId` 读取并更新既有 profile 的 `updatedAt`，保留首次 `createdAt`。
