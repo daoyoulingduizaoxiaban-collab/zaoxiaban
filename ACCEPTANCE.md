@@ -1,8 +1,32 @@
 # ACCEPTANCE
 
+## Phase 0.7 稽核回修验收
+- [x] `pages/message/index.js` 已在 `app.globalData.socket` 缺失时安全停用 socket listener，并提示「聊天能力暂未启用」。
+- [x] `pages/chat/index.js` 已在 `app.globalData.socket` 缺失时阻止 `socket.send`，并提示「聊天能力暂未启用」。
+- [x] `pages/groupOrder/index.ts` 的 `fetchItineraryList()` 与 `applyFilters()` 已共用 `normalizeGroupOrders()` 补齐 `statusText`。
+- [x] 文件已校正为「微信云开发数据库 + 云函数」仍是建议方案，待使用者确认；未写成已拍板决策。
+- [x] Phase 2 验收已校正为 auth adapter / mock fallback / role scope 已完成；正式 OpenID、云函数 `authLogin`、云端 `users` 集合仍未验证或未建立。
+- [ ] 微信 DevTools GUI 验证未执行：本轮不得启动或重开微信 DevTools。
+- [ ] 正式云端保存未执行：本轮未创建云数据库、云函数或部署。
+- [ ] Phase 5 未执行：本轮不得新增客户下单、客户订单正式流程或收款确认闭环。
+
+## Phase 4 商品库验收
+- [x] 新增 `repositories/productRepository.js`，商品列表、新增、状态更新、软删除统一通过 repository 边界；当前保存模式为 local product repository。
+- [x] 新增 `services/product/productService.js`，集中处理商品必填验证、阶梯价 `totalPrice = minQuantity * unitPrice` 计算、价格显示、创建、上下架、软删除。
+- [x] `pages/productManagement/index` 改为通过 `ProductService.listVisible()` 按当前角色读取可用商品，并显示角色范围和「本地/QA 展示模式，尚未正式保存」提示。
+- [x] `pages/productManagement/index` 搜索、状态筛选、上下架、软删除都走 `ProductService`，不再由页面直接拼接 QA seed 或 storage。
+- [x] `sub-pages/product/add/index` 改为通过 `ProductService.create()` 新增本地/QA 商品；表单包含名称、描述、图片、价格规则、状态、供应来源或备注。
+- [x] 商品表单已有必填验证、提交中状态、成功/失败 toast。
+- [x] 商品删除为软删除：写入 `deletedAt` 并下架，不做硬删除。
+- [x] 商品库有搜索无结果空状态。
+- [x] 静态验证未发现商品库实现包含 Phase 5 客户下单、正式客户订单流程或收款确认闭环。
+- [ ] 微信 DevTools GUI 未验证：未实际点击新增商品、上下架、软删除。
+- [ ] 正式云端保存未实现：未创建云数据库、云函数或 cloud product repository。
+- [ ] 「新增商品 -> 列表看到 -> 加入团单 -> 重开后仍存在」未完整验证：本轮未做 GUI，也未展开 Phase 3 本团商品加入流程。
+
 ## Phase 2 登录与角色权限验收
-- [x] 使用者已确认正式资料层方向：MVP 优先采用微信云开发数据库 + 云函数，并通过 service/repository 边界接入。
-- [x] 新增 `services/auth/authService.js`：登录流程会调用 `wx.login`，再尝试云函数 `authLogin` 换取 OpenID；未配置云环境时使用明确标记的本地 auth adapter fallback。
+- [ ] 正式资料层方向已由使用者确认：当前仍是 `DATA_LAYER_DECISION.md` 建议方案，待使用者确认。
+- [x] 新增 `services/auth/authService.js` auth adapter：可替换为 `wx.login` + 云函数 `authLogin`；未配置云环境时使用明确标记的本地 auth adapter fallback。
 - [x] 新增 user profile 初始化：profile 存储包含 `openId`、`role`、`displayName`、`phone`、`avatarUrl`、`status`、`createdAt`、`updatedAt`、`authSource`、`isMockOpenId`。
 - [x] 后续登录会按同一 `openId` 读取并更新既有 profile 的 `updatedAt`，保留首次 `createdAt`。
 - [x] MVP 角色已落地：`guide`、`customer`、`owner`、`admin`；`provider` 入口保留未完成/不可用提示，不提供误导性后台操作。
@@ -15,7 +39,7 @@
 - [x] guide/customer 可见范围已用本地 role scope 验证：guide 团单 `1,2`、guide 订单 `5001,5002,5004`；customer 团单 `1`、customer 订单 `5001`。
 - [x] `npm run lint` 通过。
 - [x] `git diff --check` 通过。
-- [ ] 正式微信 OpenID 换取未验证：本轮未启动微信 DevTools，且未配置/执行云函数 `authLogin`。
+- [ ] 正式微信 OpenID 换取未验证：未启动微信 DevTools，且未配置/执行云函数 `authLogin`。
 - [ ] 云数据库 `users` 集合与云函数未创建：本轮只完成 Phase 2 adapter/service/repository 边界和本地 fallback。
 
 ## Phase 0/0.5/1 本轮验收清单

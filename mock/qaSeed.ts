@@ -10,6 +10,8 @@ const QA_STORAGE_KEY = 'dao_you_ling_qa_seed';
 const buildProducts = () => [
   new Product({
     id: 101,
+    ownerUserId: 2,
+    providerId: 'P001',
     status: ProductStatus.PUBLISHED,
     title: '黄山团单伴手礼礼盒',
     pictureUrls: ['/static/home/card0.png'],
@@ -19,9 +21,12 @@ const buildProducts = () => [
       new PriceSetting({ minQuantity: 30, unitPrice: 68, totalPrice: 2040, description: '大团批量价' }),
     ],
     description: '适合华东线路收单展示的本地伴手礼，包含长描述用于 QA 检查多行省略、卡片高度和详情展示。',
+    sourceNote: '杭州伴手礼供应商，导游可用于团单收单。',
   }),
   new Product({
     id: 102,
+    ownerUserId: 2,
+    providerId: 'P001',
     status: ProductStatus.PUBLISHED,
     title: '西湖龙井茶叶小罐装',
     pictureUrls: ['/static/home/card1.png'],
@@ -30,9 +35,12 @@ const buildProducts = () => [
       new PriceSetting({ minQuantity: 6, unitPrice: 118, totalPrice: 708, description: '满 6 罐优惠' }),
     ],
     description: '有图片、上架、阶梯价格商品，用于本团商品和商品库选择测试。',
+    sourceNote: '供应商供货，适合作为可售商品。',
   }),
   new Product({
     id: 103,
+    ownerUserId: 2,
+    providerId: 'P001',
     status: ProductStatus.UNPUBLISHED,
     title: '无图片雨具应急包',
     pictureUrls: [],
@@ -40,9 +48,12 @@ const buildProducts = () => [
       new PriceSetting({ minQuantity: 1, unitPrice: 35, totalPrice: 35, description: '单份价' }),
     ],
     description: '下架且无图片商品，用于空图片兜底、下架状态和搜索过滤测试。',
+    sourceNote: '导游自建应急商品，下架状态。',
   }),
   new Product({
     id: 104,
+    ownerUserId: 2,
+    providerId: 'P002',
     status: ProductStatus.PUBLISHED,
     title: '景区无线讲解器租赁',
     pictureUrls: ['/static/home/card2.png'],
@@ -51,6 +62,7 @@ const buildProducts = () => [
       new PriceSetting({ minQuantity: 30, unitPrice: 10, description: '30 台以上' }),
     ],
     description: '供应商服务型商品，用于验证商品库中非实物商品的展示。',
+    sourceNote: '景区讲解器供应商，服务型商品。',
   }),
 ];
 

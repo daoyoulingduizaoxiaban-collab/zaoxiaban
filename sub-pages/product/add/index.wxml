@@ -2,6 +2,8 @@
 
 <view class="page-container">
   <view class="content-scroll">
+    <view class="mode-banner">{{saveModeText}}</view>
+
     <view class="card">
       <view class="form-group">
         <text class="label">商品名称 <text class="required">*</text></text>
@@ -9,8 +11,18 @@
       </view>
 
       <view class="form-group">
-        <text class="label">商品描述</text>
+        <text class="label">商品描述 <text class="required">*</text></text>
         <textarea class="textarea-box" placeholder="请输入商品介绍、规格、交付说明..." data-field="description" value="{{currentProduct.description}}" bindinput="onProductInput" disable-default-padding />
+      </view>
+
+      <view class="form-group">
+        <text class="label">供应来源或备注 <text class="required">*</text></text>
+        <input class="input-box" placeholder="例如：杭州伴手礼供应商 / 导游自建商品" data-field="sourceNote" value="{{currentProduct.sourceNote}}" bindinput="onProductInput" />
+      </view>
+
+      <view class="form-group">
+        <text class="label">商品状态</text>
+        <button class="btn-status" bindtap="toggleStatus">{{currentProduct.status === 2 ? '已上架，点击下架' : '已下架，点击上架'}}</button>
       </view>
 
       <view class="form-group">
@@ -66,27 +78,11 @@
         </view>
       </view>
 
-      <button class="btn-save-product" bindtap="addProductToList">保存此商品</button>
-    </view>
-
-    <view class="list-section">
-      <view class="list-header">已设置商品 ({{productList.length}})</view>
-      <view class="empty-tip" wx:if="{{productList.length === 0}}">尚未加入任何商品</view>
-      
-      <block wx:else>
-        <view class="product-preview-item" wx:for="{{productList}}" wx:key="id">
-          <image src="{{item.pictureUrls[0]}}" class="preview-img" mode="aspectFill"></image>
-          <view class="preview-info">
-            <text class="preview-title">{{item.title}}</text>
-            <text class="preview-price">{{item.priceDisplay}}</text>
-          </view>
-          <view class="preview-del" bindtap="removeProduct" data-index="{{index}}">×</view>
-        </view>
-      </block>
+      <button class="btn-save-product" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="addProductToList">保存到本地商品库</button>
     </view>
   </view>
 
   <view class="footer-bar">
-    <button class="btn-submit" bindtap="addProduct">新增到 QA 列表</button>
+    <button class="btn-submit" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="addProductToList">保存商品</button>
   </view>
 </view>

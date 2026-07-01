@@ -1,32 +1,33 @@
 # CURRENT_TASKS
 
-## 下一轮指定任务 - Phase 0.7 + Phase 4 商品库
-- 先完成 `MVP_COMPLETION_CHECKLIST.md` 的 `Phase 0.7 - 稽核回修與範圍校正`，再開始商品庫。
-- 本轮只做到 `Phase 4 - 商品庫`；不得實作 `Phase 5 - 客戶下單與訂單管理`，不得建立客戶下單、客戶訂單正式流程或收款確認閉環。
-- 必修回修：
+## 当前状态 - Phase 4 商品库已完成，等待稽核
+- 当前没有新的开发任务可自行展开；下一位 agent 必须先稽核 Phase 0.7 与 Phase 4 的完成度，再依使用者新指令继续。
+- Phase 0.7 与 Phase 4 已由上一轮写入「已完成记录」；若稽核发现缺漏，只能修补 Phase 0.7 / Phase 4 范围内的问题。
+- 不得继续实作 `Phase 5 - 客户下单与订单管理`，不得建立客户下单、客户订单正式流程或收款确认闭环。
+- Phase 0.7 稽核回修范围：
   - `pages/message/index.js` / `pages/chat/index.js`：補 socket null 防護；聊天能力未啟用時要安全提示或停用，不能崩潰。
   - `pages/groupOrder/index.ts`：修正搜尋/狀態篩選後 `statusText` 遺失或狀態樣式不一致。
   - `DATA_LAYER_DECISION.md`、`ACCEPTANCE.md`、`MVP_COMPLETION_CHECKLIST.md`、`HANDOFF.md`：把「使用者已確認微信雲開發」校正為「建議方案，待使用者確認」。
   - Phase 2 相關勾選/驗收：改成 auth adapter、mock fallback、role scope 已完成；正式 OpenID、`authLogin` 雲函式、雲端 `users` 集合仍未驗證/未建立。
-- Phase 4 商品庫目標：
+- Phase 4 商品库完成范围：
   - 商品庫列表只顯示目前角色可用商品；guide/customer/owner/admin/provider 的可見邊界要清楚。
   - 商品新增、上下架、刪除/軟刪除要走同一個商品 repository/service 邊界，不要讓頁面散落直接操作 QA seed/storage。
   - 商品表單至少包含名稱、描述、圖片、價格規則、狀態、供應來源或備註；必填驗證、提交中、成功、失敗、空狀態都要有。
   - 階梯價格要有明確計算規則，不可只存顯示字串。
   - 若正式資料層尚未確認，商品保存可先走明確標記的 local/mock repository，但 UI 必須提示「本地/QA 展示模式，尚未正式保存」，不得假裝雲端保存完成。
   - 不得新增 Phase 5 客戶下單入口或正式客戶訂單功能。
-- 驗證：
+- 稽核验证：
   - 必跑 `npm run lint`。
   - 必跑 `git diff --check`。
   - 必跑 `git status --short --branch`。
   - 靜態驗證 Phase 0.7 回修項；商品庫至少驗證新增商品資料流、狀態篩選/搜尋、上下架、刪除/軟刪除在同一 repository/service 路徑下不互相打架。
-- 文件回寫：
+- 文件回写：
   - 更新 `MVP_COMPLETION_CHECKLIST.md`，只勾完成且已驗證的項目。
   - 更新 `ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`，明確標示未做 GUI、未做正式雲端保存、未做 Phase 5。
   - 只提交本輪相關檔案，不提交 `resume/preview-info.json`、`resume/preview-qr.png`。
 
-## 本轮任务 - Phase 2 登录与角色权限
-- 使用者已确认资料层方向：MVP 优先采用微信云开发数据库 + 云函数，但页面必须经由 service/repository 边界，不直接散落调用云数据库。
+## 历史任务 - Phase 2 登录与角色权限（已完成，仍有正式化未验证项）
+- 正式资料层方向仍是建议方案，待使用者确认：MVP 建议优先采用微信云开发数据库 + 云函数，但页面必须经由 service/repository 边界，不直接散落调用云数据库。
 - 接入 `wx.login` + auth adapter；云环境/云函数未配置时必须使用明确标记的 mock fallback，不可假装已取得正式 OpenID。
 - 建立 user profile 初始化流程，字段对齐 `DATA_MODEL_AND_PERMISSIONS.md` 的 users 初稿。
 - 落地 MVP 角色：guide、customer、owner/admin；provider 暂缓但入口必须提示未完成或不可用。
@@ -34,16 +35,29 @@
 - 去除 starter 登录文案与 TDsign/QQ/企微等非 MVP 登录入口。
 - 验证：`npm run lint`、`git diff --check`、`git status --short --branch`，并用 guide/customer 验证角色 scope。
 
-## 本轮任务 - Phase 0/0.5/1
+## 历史任务 - Phase 0/0.5/1（已完成）
 - Phase 0：按 `MVP_COMPLETION_CHECKLIST.md` 恢复上下文，执行 `git status --short --branch`，确认本轮任务边界，不启动微信 DevTools、不联网、不部署、不推送、不提交 `resume/preview-*`。
 - Phase 0.5：修正 blocking defects：eventChannel 缺 opener/listener 防护、团单二维码空值防护、客户订单 id 字符串/数字比对、商品库搜索与状态筛选一致性。
 - Phase 1：只做正式资料层方案比较、资料模型与权限边界文件，不接正式数据库、云函数或后端 API。
 - 文档回写：更新 `MVP_COMPLETION_CHECKLIST.md`、`CURRENT_TASKS.md`、`HANDOFF.md`，新增或更新资料层设计文件。
 - 验证：必须执行 `npm run lint`、`git diff --check`、`git status --short --branch`，静态检查 blocking defects 修复路径；不声称微信 DevTools GUI 验证。
 
-## 本轮完成
+## 已完成记录
+- Phase 4 商品库已完成本地/QA repository 版本：
+  - `repositories/productRepository.js`：商品列表、新增、状态更新、软删除统一走 repository；当前保存到 `dao_you_ling_local_products` local storage，未接云端。
+  - `services/product/productService.js`：集中处理必填验证、阶梯价 `totalPrice = minQuantity * unitPrice`、价格显示、创建、上下架、软删除。
+  - `pages/productManagement/index`：按当前角色显示可用商品，显示 role scope 和「本地/QA 展示模式，尚未正式保存」；搜索、状态筛选、上下架、软删除都走 `ProductService`。
+  - `sub-pages/product/add/index`：新增商品表单包含名称、描述、图片、价格规则、状态、供应来源或备注；保存走 `ProductService.create()`。
+  - `models/Product.ts` 与 `mock/qaSeed.ts` 补齐商品 owner/provider/sourceNote/deletedAt 等字段，用于本地权限和软删除边界。
+  - 本轮没有新增客户下单入口、客户订单正式流程或收款确认闭环。
+- Phase 0.7 稽核回修已完成：
+  - `pages/message/index.js`：`app.globalData.socket` 缺失时不注册 `socket.onMessage`，显示「聊天能力暂未启用」并安全返回。
+  - `pages/chat/index.js`：发送消息前检查 `socket.send`，聊天能力未启用时显示「聊天能力暂未启用」且不崩溃。
+  - `pages/groupOrder/index.ts`：`fetchItineraryList()` 与 `applyFilters()` 共用 `normalizeGroupOrders()`，筛选后仍补齐 `statusText`。
+  - `DATA_LAYER_DECISION.md`、`ACCEPTANCE.md`、`MVP_COMPLETION_CHECKLIST.md`、`CURRENT_TASKS.md`、`HANDOFF.md` 已改回「建议方案，待使用者确认」，不再写成微信云开发已拍板。
+  - Phase 2 只标为 auth adapter / mock fallback / role scope 已完成；正式 OpenID、`authLogin` 云函数、云端 `users` 集合仍未验证/未建立。
 - Phase 2 已完成：
-  - `services/auth/authService.js`：调用 `wx.login`，若 `config.cloudEnvId` 与云函数 `authLogin` 可用则换取 OpenID；当前未配置云环境时使用明确标记的 `mock-auth-adapter`。
+  - `services/auth/authService.js`：提供 auth adapter / mock fallback 边界；当前未配置云环境时使用明确标记的 `mock-auth-adapter`，不得视为正式 OpenID。
   - `services/auth/roleScope.js`：集中定义 guide、customer、owner、admin、provider 角色与可见范围规则。
   - `repositories/groupOrderRepository.js`、`repositories/customerOrderRepository.js`：页面通过 repository 按当前 profile 过滤资料，不直接用 QA seed 当正式 user profile。
   - `pages/login/login`：移除 TDsign、QQ、企微、密码/短信入口，改为微信登录与角色初始化。
@@ -53,7 +67,7 @@
   - `pages/customerOrders/index`：guide 只看自己团单下客户订单；customer 只看自己的订单；客户不显示新增订单入口。
   - `pages/providers/index`：非 owner/admin 不展示供应商管理资料，显示供应商后台暂未开放提示。
   - `mock/qaSeed.ts`：补齐 OpenID/profile 相关字段、团单 owner/guide 关联和订单 customer/guide 关联，用于本地角色 scope 验证。
-- 使用者确认正式资料层方向已写入 `DATA_LAYER_DECISION.md`，Phase 1「使用者确认后决定正式资料层」已可勾选。
+- `DATA_LAYER_DECISION.md` 仍是建议方案；Phase 1「使用者确认后决定正式资料层」不得勾选，需等待明确确认。
 - Phase 0 已完成：已重新读取 MVP/checklist/rules/tasks/acceptance/handoff/QA seed 文件，执行 `git status --short --branch`，并先补入本轮任务边界。
 - Phase 0.5 blocking defects 已修正：
   - `sub-pages/groupOrder/product-picker/index.ts`：新增 eventChannel 防护、emit 失败提示、navigateBack 失败提示；直接进页不会因没有 opener 崩溃。
@@ -80,9 +94,10 @@
 - tab 文案统一为：团单、客户订单、商品库、我的。
 - 更新 `PROJECT_RULES.md`、`README.md`、`QA_SEED_REQUIREMENTS.md`、`ACCEPTANCE.md`、`HANDOFF.md`。
 
-## 下一轮优先
-- 建立微信云开发环境配置与云函数 `authLogin`，用真实 `wx.login` code 换取正式 OpenID，并写入/读取云数据库 `users` 集合。
+## 后续候选任务（需使用者另行指定）
+- 先由使用者确认正式资料层方向；若确认采用微信云开发，再建立微信云开发环境配置与云函数 `authLogin`，用真实 `wx.login` code 换取正式 OpenID，并写入/读取云数据库 `users` 集合。
 - 将 auth repository 从本地 storage/mock fallback 切到 cloud repository，保留现有 service 边界。
+- 若继续 Phase 4，可把 `ProductRepository` 的 cloud 实作接入微信云开发集合；正式接云前不要勾正式保存。
 - 正式 OpenID 验证通过后，再进入 Phase 3/4/5 的正式保存与导游核心流程。
 - 用 Codex App 接现有微信 DevTools 环境做 GUI route smoke test，不要重开 DevTools。
 - 逐一打开 `QA_SEED_REQUIREMENTS.md` 的 27 个 route。
@@ -91,6 +106,10 @@
 - 继续收敛非主流程旧模板页面：home/message/dataCenter/release/search/login/setting。
 
 ## 未完成与风险
+- Phase 4 仅完成本地/QA repository 保存，未实现云端商品集合、云函数、安全规则或正式保存。
+- 商品库未做微信 DevTools GUI 验证；新增/上下架/软删除目前只通过 lint、静态检查和数据流检查验证。
+- 未执行「新增商品 -> 列表看到 -> 加入团单 -> 重开后仍存在」完整 GUI/真机流程；本轮也未展开 Phase 3 本团商品加入流程。
+- Phase 5 完全未做：未新增客户下单、客户订单正式流程或收款确认闭环。
 - 正式 OpenID 尚未验证：本轮未启动微信 DevTools，也未配置/执行云函数 `authLogin`。
 - 云数据库 `users` 集合、云函数、安全规则与云端 profile 初始化尚未创建。
 - 当前 role scope 已用本地 adapter 验证，但仍需微信 DevTools/真机验证登录按钮、storage、页面刷新后的 profile 读取。

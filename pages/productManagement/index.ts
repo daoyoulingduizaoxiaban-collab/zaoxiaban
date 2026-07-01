@@ -1,7 +1,6 @@
-// 引入你圖片中的 Product 類別定義
-// 假設你定義在 models/product.ts
 import { Product } from '../../models/Product';
-import { ProductMock } from '../../mock/product/index';
+import { ProductService } from '~/services/product/productService';
+import { AuthService } from '~/services/auth/authService';
 import {
   getProductStatusList,
   getProductStatusTextByValue
@@ -16,6 +15,9 @@ Page({
     titleText: '商品库',
     statusOptions: getProductStatusList(),
     currentStatus: 0,
+    roleScopeText: '',
+    saveModeText: '本地/QA 展示模式，尚未正式保存',
+    isLoading: false,
     productStatusTextMap: {
       1: getProductStatusTextByValue(1),
       2: getProductStatusTextByValue(2)
@@ -23,26 +25,58 @@ Page({
   },
 
   onLoad() {
-    // 模擬從 API 獲取資料
+    this.fetchData();
+  },
+
+  onShow() {
     this.fetchData();
   },
 
   async fetchData() {
-    const mock = await ProductMock.fetchProductListMock();
+    this.setData({ isLoading: true });
+    const res = await ProductService.listVisible({
+      keyword: this.data.searchQuery,
+      status: this.data.currentStatus,
+    });
+
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
+      this.setData({ isLoading: false });
+      return;
+    }
 
     this.setData({
-      allProducts: mock.data
-    }, () => this.updateLocalData(mock.data));
+      allProducts: res.data,
+      productList: res.data,
+      roleScopeText: this.getRoleScopeText(),
+      isLoading: false,
+    });
   },
 
   // 2. 搜尋條件區塊邏輯
   onSearchInput(e: any) {
     this.setData({
       searchQuery: e.detail.value
-    }, () => this.updateLocalData(this.data.allProducts));
+    }, () => this.fetchData());
+  },
+
+  getRoleScopeText() {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile) return '未登录，仅显示空列表';
+    if (profile.role === 'guide') return '仅显示你可管理或可使用的商品';
+    if (profile.role === 'customer') return '客户角色暂不开放商品库管理';
+    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看 QA 范围内商品';
+    if (profile.role === 'provider') return '仅显示你提供的商品';
+    return '当前角色暂无商品库权限';
   },
 
   onAddProduct() {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile || profile.role === 'customer') {
+      wx.showToast({ title: '当前角色不能新增商品', icon: 'none' });
+      return;
+    }
+
     wx.navigateTo({
       url: `/sub-pages/product/add/index`,
       fail: () => {
@@ -52,17 +86,10 @@ Page({
         });
       },
       events: {
-        refreshList: (data) => {
-          const returnedProducts = (data.products || []).map(item => new Product(item));
-          if (returnedProducts.length === 0) return;
-
-          const list = [...this.data.allProducts, ...returnedProducts];
-
-          this.setData({
-            allProducts: list,
-          }, () => this.updateLocalData(list));
+        refreshList: () => {
+          this.fetchData();
           wx.showToast({
-            title: 'QA 展示模式，暂未保存',
+            title: '本地/QA 展示模式，尚未正式保存',
             icon: 'none'
           });
         }
@@ -71,22 +98,25 @@ Page({
   },
 
   // 3. 下架/上架切換
-  onToggleStatus(e: any) {
+  async onToggleStatus(e: any) {
     const id = String(e.currentTarget.dataset.id);
-    const updated = this.data.allProducts.map(item => {
-      if (String(item.id) === id) {
-        // 切換狀態：1=下架、2=開放下單
-        const newStatus = item.status === 2 ? 1 : 2;
-        wx.showToast({
-          title: `QA 展示模式：${getProductStatusTextByValue(newStatus)}`,
-          icon: 'none'
-        });
-        return { ...item, status: newStatus };
-      }
-      return item;
-    });
+    const item = this.data.allProducts.find(product => String(product.id) === id);
+    if (!item) {
+      wx.showToast({ title: '未找到商品', icon: 'none' });
+      return;
+    }
 
-    this.updateLocalData(updated);
+    const res = await ProductService.toggleStatus(item);
+    if (!res.success) {
+      wx.showToast({ title: res.error || '更新商品状态失败', icon: 'none' });
+      return;
+    }
+
+    await this.fetchData();
+    wx.showToast({
+      title: `本地/QA：${getProductStatusTextByValue(res.data.status)}`,
+      icon: 'none'
+    });
   },
 
   // 3. 刪除功能
@@ -95,38 +125,18 @@ Page({
 
     wx.showModal({
       title: '提示',
-      content: '确定要从 QA 展示列表移除此商品吗？不会保存到正式数据。',
-      success: (res) => {
-        if (res.confirm) {
-          const updated = this.data.allProducts.filter(item => String(item.id) !== id);
-          this.updateLocalData(updated);
-          wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
+      content: '确定要软删除此商品吗？本地/QA 展示模式，尚未正式保存到云端。',
+      success: async (modalRes) => {
+        if (modalRes.confirm) {
+          const res = await ProductService.softDelete(id);
+          if (!res.success) {
+            wx.showToast({ title: res.error || '删除商品失败', icon: 'none' });
+            return;
+          }
+          await this.fetchData();
+          wx.showToast({ title: '本地/QA 展示模式，尚未正式保存', icon: 'none' });
         }
       }
-    });
-  },
-
-  // 統一更新本地狀態
-  updateLocalData(newList: Product[]) {
-    const allProducts = newList;
-    const productList = this.applyProductFilters(allProducts);
-
-    this.setData({
-      allProducts,
-      productList
-    });
-  },
-
-  applyProductFilters(list: Product[]) {
-    const query = (this.data.searchQuery || '').trim().toLowerCase();
-    const currentStatus = Number(this.data.currentStatus || 0);
-
-    return list.filter(item => {
-      const title = (item.title || '').toLowerCase();
-      const description = (item.description || '').toLowerCase();
-      const matchesQuery = !query || title.includes(query) || description.includes(query);
-      const matchesStatus = !currentStatus || Number(item.status) === currentStatus;
-      return matchesQuery && matchesStatus;
     });
   },
 
@@ -134,6 +144,6 @@ Page({
   async onStatusChange(e) {
     this.setData({
       currentStatus: e.detail.value
-    }, () => this.updateLocalData(this.data.allProducts));
+    }, () => this.fetchData());
   },
 });

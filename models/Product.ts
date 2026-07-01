@@ -3,12 +3,18 @@ import { ProductStatus } from '../enum/ProductStatus';
 /* 商品設定檔 */
 export class Product {
   id: number = 0;
+  ownerUserId: number = 0;
+  providerId: string | number = '';
   status: ProductStatus = 0;
-  //providerId: number = 0; 
   title: string = '';
   pictureUrls: string[] = [];
   priceSetting: PriceSetting[] = [];
   description: string = '';
+  sourceNote: string = '';
+  priceDisplay: string = '';
+  createdAt: string = '';
+  updatedAt: string = '';
+  deletedAt: string = '';
 
   constructor(data: Partial<Product> = {}) {
     // 2. 自動對應原始資料

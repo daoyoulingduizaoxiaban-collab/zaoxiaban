@@ -68,16 +68,16 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 ## Phase 0.7 - 稽核回修與範圍校正
 以下是 2026-07-02 對 Phase 2 超前交付後的稽核結果。下一位 agent 必須先完成本段，再開始 Phase 4 商品庫；不得跳到 Phase 5 客戶下單與訂單管理。
 
-- [ ] 修正 `pages/message/index.js` 與 `pages/chat/index.js` 的 socket null 防護：目前 `app.globalData.socket` 預設為 `null`，`app.js` 未啟動 `connect()`；訊息頁不可在 `socket.onMessage` 或 `socket.send` 因 socket 缺失而崩潰。若聊天功能非本輪重點，應顯示「聊天能力暂未启用」或安全停用。
-- [ ] 修正 `pages/groupOrder/index.ts` 篩選後狀態文字不一致：`fetchItineraryList()` 有補 `statusText`，但 `applyFilters()` 直接使用 repository 原資料。搜尋/狀態篩選後仍必須保留 `statusText` 與狀態樣式。
-- [ ] 校正所有文件中「使用者已確認正式資料層採微信雲開發」的說法：目前只能寫成「建議方案，待使用者確認」。不得把 `DATA_LAYER_DECISION.md` 的建議寫成已拍板決策。
-- [ ] 校正 Phase 2 checklist 與驗收說法：本輪只能標為 auth adapter / mock fallback / role scope 已完成；正式 OpenID、雲函式 `authLogin`、雲端 `users` 集合仍未驗證或未建立，不得打勾成正式登入閉環。
-- [ ] 回修後必須更新 `ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`，並跑 `npm run lint`、`git diff --check`、`git status --short --branch`。
+- [x] 修正 `pages/message/index.js` 與 `pages/chat/index.js` 的 socket null 防護：目前 `app.globalData.socket` 預設為 `null`，`app.js` 未啟動 `connect()`；訊息頁不可在 `socket.onMessage` 或 `socket.send` 因 socket 缺失而崩潰。若聊天功能非本輪重點，應顯示「聊天能力暂未启用」或安全停用。
+- [x] 修正 `pages/groupOrder/index.ts` 篩選後狀態文字不一致：`fetchItineraryList()` 有補 `statusText`，但 `applyFilters()` 直接使用 repository 原資料。搜尋/狀態篩選後仍必須保留 `statusText` 與狀態樣式。
+- [x] 校正所有文件中「使用者已確認正式資料層採微信雲開發」的說法：目前只能寫成「建議方案，待使用者確認」。不得把 `DATA_LAYER_DECISION.md` 的建議寫成已拍板決策。
+- [x] 校正 Phase 2 checklist 與驗收說法：本輪只能標為 auth adapter / mock fallback / role scope 已完成；正式 OpenID、雲函式 `authLogin`、雲端 `users` 集合仍未驗證或未建立，不得打勾成正式登入閉環。
+- [x] 回修後必須更新 `ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`，並跑 `npm run lint`、`git diff --check`、`git status --short --branch`。
 
 ## Phase 1 - 資料模型與儲存閉環
 - [x] 先做正式資料層方案比較與建議，不要直接自行選型實作。比較至少包含：微信雲開發資料庫、明確後端 API；要寫清楚成本、開發速度、登入/OpenID 整合、資料權限、部署維運、未來擴充風險。
 - [x] 把建議方案寫入 `CURRENT_TASKS.md` 或新的架構決策文件，等待使用者確認或有明確授權後，才開始實作正式資料層。
-- [x] 使用者確認後，決定 MVP 使用的正式資料層。不要同時做兩套。
+- [ ] 使用者確認後，決定 MVP 使用的正式資料層。不要同時做兩套。
 - [x] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
 - [x] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
 - [x] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
@@ -87,8 +87,10 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [ ] 驗證：用同一個測試導遊建立資料，關閉再打開或重新載入後資料仍存在。
 
 ## Phase 2 - 登入與角色權限
-- [x] 接入微信登入，取得 openId 或等價身份識別。
-- [x] 建立 user profile 初始化流程：第一次登入建立使用者，後續登入讀取原資料。
+- [x] 接入 auth adapter / mock fallback，建立可替換為 `wx.login` + 雲函式的登入邊界。
+- [ ] 接入微信登入並取得正式 OpenID 或等價正式身份識別。
+- [x] 建立本地 user profile 初始化流程：第一次登入建立使用者，後續登入讀取原資料。
+- [ ] 建立雲端 `users` profile 初始化流程：第一次登入建立雲端使用者，後續登入讀取原資料。
 - [x] 定義 MVP 角色：guide、customer、owner/admin。供應商角色可暫緩，但不能留下會誤導人的假入口。
 - [x] 導遊只能看自己建立或被授權管理的团单。
 - [x] 客戶只能看自己下過的订单，或透過分享進入指定团单下單。
@@ -96,7 +98,7 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [x] 移除或改寫 starter 風格登入文案，例如 TDsign、QQ、企微等不屬於本產品 MVP 的入口。
 - [x] 驗證：至少用 guide/customer 兩種身份跑一次可見資料範圍。
 
-Phase 2 驗證備註：本輪已接 `wx.login` 與 auth adapter；因未配置/未執行微信雲函式，正式 OpenID 換取尚未在微信 DevTools 或真機驗證。可見範圍以本地 mock auth adapter 驗證 guide/customer 角色 scope。
+Phase 2 驗證備註：本輪已完成 auth adapter、mock fallback 與 guide/customer role scope 驗證；因未配置/未執行微信雲函式，正式 OpenID 換取尚未在微信 DevTools 或真機驗證，雲端 `users` 集合也尚未建立。
 
 ## Phase 3 - 導遊核心工作流
 - [ ] `pages/groupOrder/index` 顯示導遊自己的团单列表。
@@ -113,14 +115,16 @@ Phase 2 驗證備註：本輪已接 `wx.login` 與 auth adapter；因未配置/�
 ## Phase 4 - 商品庫
 - 下一輪若被指定「做到 Phase 4」，範圍只到本段為止；不得實作 Phase 5 客戶下單、客戶訂單正式流程或收款確認閉環。
 - Phase 4 可以依既有 repository/service 邊界建立商品庫正式資料存取層，但不得在使用者未確認前直接建立雲端資源、部署、推送或改外部環境。
-- [ ] `pages/productManagement/index` 顯示導遊可用商品。
-- [ ] `sub-pages/product/add/index` 可新增正式商品。
-- [ ] 商品至少包含：名稱、描述、圖片、價格規則、狀態、供應來源或備註。
-- [ ] 階梯價格要有明確計算規則，不能只顯示字串。
-- [ ] 商品上下架要能保存。
-- [ ] 商品刪除或移除要有確認；若只做軟刪除，要在資料模型寫清楚。
-- [ ] 商品搜索無結果要有空狀態。
+- [x] `pages/productManagement/index` 顯示導遊可用商品。
+- [x] `sub-pages/product/add/index` 可新增本地/QA 商品，正式雲端商品新增仍未實作。
+- [x] 商品至少包含：名稱、描述、圖片、價格規則、狀態、供應來源或備註。
+- [x] 階梯價格要有明確計算規則，不能只顯示字串。
+- [x] 商品上下架要能保存到本地/QA repository，正式雲端保存仍未實作。
+- [x] 商品刪除或移除要有確認；若只做軟刪除，要在資料模型寫清楚。
+- [x] 商品搜索無結果要有空狀態。
 - [ ] 驗證：新增商品 -> 列表看到 -> 加入团单 -> 重開後仍存在。
+
+Phase 4 驗證備註：本輪以靜態檢查驗證新增、搜尋/狀態篩選、上下架、軟刪除都走 `ProductService` / `ProductRepository`；未做微信 DevTools GUI，因此「新增商品 -> 列表看到 -> 加入团单 -> 重開後仍存在」未勾。正式雲端保存未實作。
 
 ## Phase 5 - 客戶下單與訂單管理
 - [ ] 明確定義客戶如何進入团单：分享連結、二维码、或指定 route 參數。

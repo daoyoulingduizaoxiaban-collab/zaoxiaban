@@ -8,11 +8,16 @@
     </t-dropdown-menu>
   </view>
 
+  <view class="mode-banner">
+    <text>{{roleScopeText}}</text>
+    <text>{{saveModeText}}</text>
+  </view>
+
   <scroll-view scroll-y="true" class="product-list">
     <view class="empty-container" wx:if="{{productList.length === 0}}">
       <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
       <text class="empty-text">当前没有商品</text>
-      <text class="empty-tips">可点击右下角新增，QA 模式暂不持久保存</text>
+      <text class="empty-tips">可点击右下角新增，本地/QA 模式尚未正式保存</text>
     </view>
 
     <block wx:for="{{productList}}" wx:key="id">
@@ -26,6 +31,7 @@
                 class="status-tag {{item.status === 2 ? 'online' : 'offline'}}">{{productStatusTextMap[item.status]}}</text>
             </view>
             <text class="description">{{item.description || '暂无描述'}}</text>
+            <text class="description">{{item.sourceNote || '暂无供应来源备注'}}</text>
           </view>
         </view>
         <view class="action-bar">

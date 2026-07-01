@@ -1,7 +1,12 @@
+import { ProductStatus } from '~/enum/ProductStatus';
+import { ProductService } from '~/services/product/productService';
+
 Page({
   data: {
     pageTitle: '新增商品',
     productList: [], // 最終提交的大清單
+    isSubmitting: false,
+    saveModeText: '本地/QA 展示模式，尚未正式保存',
 
     // 當前正在編輯的商品
     currentProduct: {
@@ -10,8 +15,9 @@ Page({
       description: '',
       pictureUrls: [],
       priceSetting: [], // 這裡存放已加入的價格規則物件
-      providerId: 0,
-      status: 2
+      providerId: '',
+      status: ProductStatus.PUBLISHED,
+      sourceNote: ''
     },
 
     // 暫存：正在輸入的那一組價格規則 (對應你的 PriceSetting Class)
@@ -67,7 +73,7 @@ Page({
       minQuantity: parseInt(minQuantity), // 轉為數字
       unitPrice: parseFloat(unitPrice),   // 轉為數字
       description: description || '',
-      // totalPrice: (選填，前端可以不傳，或自動計算 minQuantity * unitPrice)
+      totalPrice: parseInt(minQuantity) * parseFloat(unitPrice)
     };
 
     const updatedPriceSettings = [...this.data.currentProduct.priceSetting, newRule];
@@ -79,6 +85,15 @@ Page({
       'currentProduct.priceSetting': updatedPriceSettings,
       // 清空輸入框，但起訂量可以預設回 1
       tempPriceSetting: { minQuantity: 1, unitPrice: '', description: '' }
+    });
+  },
+
+  toggleStatus() {
+    const nextStatus = this.data.currentProduct.status === ProductStatus.PUBLISHED
+      ? ProductStatus.UNPUBLISHED
+      : ProductStatus.PUBLISHED;
+    this.setData({
+      'currentProduct.status': nextStatus
     });
   },
 
@@ -109,70 +124,40 @@ Page({
     this.setData({ 'currentProduct.pictureUrls': urls });
   },
 
-  // 4. 按下「儲存此商品」
-  addProductToList() {
+  // 4. 按下「储存此商品」
+  async addProductToList() {
     const p = this.data.currentProduct;
-    
-    if (!p.title) return wx.showToast({ title: '请输入商品名称', icon: 'none' });
-    if (p.priceSetting.length === 0) return wx.showToast({ title: '请至少设置一组价格', icon: 'none' });
-  
-    // 價格顯示字串計算
-    const prices = p.priceSetting.map(x => x.unitPrice);
-    const minP = Math.min(...prices);
-    const maxP = Math.max(...prices);
-    const priceDisplay = (minP === maxP) ? `$${minP}` : `$${minP} ~ $${maxP}`;
-  
-    const newProduct = {
-      ...p,
-      id: Date.now(),
-      priceDisplay: priceDisplay
-    };
-  
+    const error = ProductService.validateProduct(p);
+    if (error) return wx.showToast({ title: error, icon: 'none' });
+
     this.setData({
-      productList: [...this.data.productList, newProduct],
-      // 清空表單
-      currentProduct: {
-        id: 0, title: '', description: '', 
-        pictureUrls: [], // 確保這裡重置為空陣列
-        priceSetting: [], providerId: 123, status: 2
-      },
-      tempPriceSetting: { minQuantity: 1, unitPrice: '', description: '' }
+      isSubmitting: true
     });
-  },
 
-  removeProduct(e) {
-    const idx = e.currentTarget.dataset.index;
-    const list = this.data.productList;
-    list.splice(idx, 1);
-    this.setData({ productList: list });
-  },
-
-  addProduct() {
-    if (this.data.productList.length === 0) {
-      wx.showToast({ title: '请先保存至少一个商品', icon: 'none' });
+    const res = await ProductService.create(p);
+    this.setData({ isSubmitting: false });
+    if (!res.success) {
+      wx.showToast({ title: res.error || '保存商品失败', icon: 'none' });
       return;
     }
 
     const eventChannel = this.getSafeEventChannel();
-    if (!eventChannel) {
-      wx.showToast({ title: '请从商品库进入新增商品', icon: 'none' });
-      return;
+    if (eventChannel) {
+      try {
+        eventChannel.emit('refreshList', {
+          success: true,
+          product: res.data
+        });
+      } catch (err) {
+        wx.showToast({ title: '商品已保存，返回刷新失败', icon: 'none' });
+      }
     }
 
-    try {
-      eventChannel.emit('refreshList', {
-        success: true,
-        products: this.data.productList
-      });
-    } catch (err) {
-      wx.showToast({ title: '返回商品资料失败', icon: 'none' });
-      return;
-    }
-
+    wx.showToast({ title: '本地/QA 展示模式，尚未正式保存', icon: 'none' });
     wx.navigateBack({
       fail: () => {
         wx.showToast({ title: '返回商品库失败', icon: 'none' });
       }
     });
-  }
+  },
 });

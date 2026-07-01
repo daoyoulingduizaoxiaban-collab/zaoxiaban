@@ -74,3 +74,35 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
 
   return [];
 };
+
+export const filterProductsByRole = (products, profile) => {
+  if (!profile) return [];
+  const activeProducts = products.filter(product => !product.deletedAt);
+  if (isOwnerOrAdmin(profile)) return activeProducts;
+
+  if (profile.role === AUTH_ROLES.GUIDE) {
+    return activeProducts.filter(product => (
+      !product.ownerUserId
+      || sameId(product.ownerUserId, profile.id)
+      || product.visibility === 'public'
+    ));
+  }
+
+  if (profile.role === AUTH_ROLES.PROVIDER) {
+    return activeProducts.filter(product => sameId(product.providerId, profile.providerId || profile.id));
+  }
+
+  return [];
+};
+
+export const canManageProduct = (product, profile) => {
+  if (!profile || !product) return false;
+  if (isOwnerOrAdmin(profile)) return true;
+  if (profile.role === AUTH_ROLES.GUIDE) {
+    return !product.ownerUserId || sameId(product.ownerUserId, profile.id);
+  }
+  if (profile.role === AUTH_ROLES.PROVIDER) {
+    return sameId(product.providerId, profile.providerId || profile.id);
+  }
+  return false;
+};
