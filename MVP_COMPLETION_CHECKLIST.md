@@ -1,0 +1,154 @@
+# MVP_COMPLETION_CHECKLIST
+
+## 目的
+這份清單是把目前 QA 展示型小程序推進到「真人可用 MVP」的唯一執行清單。
+
+CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。不要只看聊天摘要，不要憑印象補需求。
+
+## 不可做歪的產品定義
+- 產品是面向中國境內導遊/領隊使用的微信小程序，不是 TDesign starter 展示站。
+- 核心業務是「導遊/領隊開團管理」。
+- 核心名詞固定使用簡體中文：「开团」、「团单」、「本团商品」、「商品库」、「客户订单」、「收款状态」。
+- 第一個真人可用版本只做導遊/領隊工作流，不要擴張成完整商城、社群、內容發布、CRM 或聊天產品。
+- 客戶側、供應商側、系統管理員側只在導遊 MVP 需要時補最小能力；不要先做大後台。
+- 任何還不能正式保存的操作，不可以偽裝成已保存；必須有明確提示或禁用狀態。
+- 每完成一項都要自己驗證，不能只改程式碼就打勾。
+
+## 目前狀態基線
+- 現在是 QA 展示模式，不是可營運系統。
+- 目前 `config.js` 是 `isMock: true` 且 `baseUrl: ''`。
+- 目前主流程資料來自 `mock/qaSeed.ts` 和 `wx` storage。
+- 目前商品加入/移除主要是頁面內狀態或 QA 提示，未完成跨頁正式保存。
+- 目前登入、OpenID、角色權限、正式資料庫、雲函式/API 尚未形成可用閉環。
+- 目前 27 個 `app.json` route 有頁面檔案，但尚未完成微信 DevTools/真機逐頁 GUI 驗證。
+
+## 完整 MVP 的定義
+真人可用 MVP 必須讓一位導遊/領隊完成以下閉環：
+
+1. 登入小程序。
+2. 建立或編輯一個团单。
+3. 從商品库選商品加入本团商品。
+4. 分享或展示該团单給客戶下單。
+5. 看到客户订单。
+6. 更新或確認收款状态。
+7. 關閉小程序再打開後，資料仍存在且狀態正確。
+
+如果以上任一步只能靠 mock、只在單頁存在、或重開後消失，都不能宣稱「真人可用」。
+
+## Phase 0 - 接手與防失憶
+- [ ] 讀完本文件全文。
+- [ ] 讀完 `PROJECT_RULES.md`、`CURRENT_TASKS.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`QA_SEED_REQUIREMENTS.md`。
+- [ ] 執行 `git status --short --branch`，確認只有自己要改的檔案會被提交。
+- [ ] 不要提交 `resume/preview-info.json`、`resume/preview-qr.png`。
+- [ ] 不要啟動或重開微信 DevTools，除非使用者明確要求。
+- [ ] 不要使用 `automator.launch(...)`。
+- [ ] 不要推送遠端、部署、刪除正式資料、安裝新套件或使用網路，除非使用者明確要求。
+- [ ] 若上下文被壓縮或開始不確定，立刻停止憑記憶操作，重新讀本文件和上述 5 份文件。
+
+## Phase 1 - 資料模型與儲存閉環
+- [ ] 決定 MVP 使用的正式資料層：微信雲開發資料庫或明確的後端 API。不要同時做兩套。
+- [ ] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
+- [ ] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
+- [ ] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
+- [ ] 建立資料存取層，讓頁面不要直接散落呼叫 storage/mock/API。
+- [ ] 所有 create/update/delete 操作要回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態。
+- [ ] 重開小程序後，已建立的团单、商品、客户订单、收款状态仍能讀回。
+- [ ] 驗證：用同一個測試導遊建立資料，關閉再打開或重新載入後資料仍存在。
+
+## Phase 2 - 登入與角色權限
+- [ ] 接入微信登入，取得 openId 或等價身份識別。
+- [ ] 建立 user profile 初始化流程：第一次登入建立使用者，後續登入讀取原資料。
+- [ ] 定義 MVP 角色：guide、customer、owner/admin。供應商角色可暫緩，但不能留下會誤導人的假入口。
+- [ ] 導遊只能看自己建立或被授權管理的团单。
+- [ ] 客戶只能看自己下過的订单，或透過分享進入指定团单下單。
+- [ ] 管理員/owner 入口若未完成，必須顯示未完成提示，不得假裝可管理全站。
+- [ ] 移除或改寫 starter 風格登入文案，例如 TDsign、QQ、企微等不屬於本產品 MVP 的入口。
+- [ ] 驗證：至少用 guide/customer 兩種身份跑一次可見資料範圍。
+
+## Phase 3 - 導遊核心工作流
+- [ ] `pages/groupOrder/index` 顯示導遊自己的团单列表。
+- [ ] 團單列表支援：正常資料、空狀態、載入中、載入失敗、搜尋/篩選無結果。
+- [ ] `sub-pages/groupOrder/add/index` 可建立正式团单。
+- [ ] `sub-pages/groupOrder/detail/index` 可讀取正式团单詳情。
+- [ ] 團單詳情顯示：狀態、描述、本团商品數、客户订单數、收款統計、分享/二维码入口。
+- [ ] `sub-pages/groupOrder/productList/index` 顯示該团单已加入商品。
+- [ ] `sub-pages/groupOrder/product-picker/index` 可從商品库加入商品到指定团单，且跨頁保存。
+- [ ] 可從本团商品移除商品，移除前要有確認。
+- [ ] 不存在或無權限的团单 ID 要顯示錯誤/返回策略，不可白屏或崩潰。
+- [ ] 驗證：團單列表 -> 詳情 -> 本團商品 -> 商品庫選擇 -> 加入 -> 返回 -> 重開後仍存在。
+
+## Phase 4 - 商品庫
+- [ ] `pages/productManagement/index` 顯示導遊可用商品。
+- [ ] `sub-pages/product/add/index` 可新增正式商品。
+- [ ] 商品至少包含：名稱、描述、圖片、價格規則、狀態、供應來源或備註。
+- [ ] 階梯價格要有明確計算規則，不能只顯示字串。
+- [ ] 商品上下架要能保存。
+- [ ] 商品刪除或移除要有確認；若只做軟刪除，要在資料模型寫清楚。
+- [ ] 商品搜索無結果要有空狀態。
+- [ ] 驗證：新增商品 -> 列表看到 -> 加入团单 -> 重開後仍存在。
+
+## Phase 5 - 客戶下單與訂單管理
+- [ ] 明確定義客戶如何進入团单：分享連結、二维码、或指定 route 參數。
+- [ ] 客戶可查看团单商品與價格。
+- [ ] 客戶可選商品與數量並提交订单。
+- [ ] 建立正式 customerOrder 記錄。
+- [ ] `pages/customerOrders/index` 顯示導遊可管理的客户订单。
+- [ ] 客户订单至少支援狀態：未付款、客户付款、已确认、已取消。
+- [ ] 導遊可確認收款或取消訂單，操作要保存並可追溯。
+- [ ] 訂單詳情不能只用 modal 代替；MVP 至少要能看完整商品明細、客戶資料、金額與狀態。
+- [ ] 驗證：客戶下單 -> 導遊看到訂單 -> 更新付款狀態 -> 重開後狀態仍正確。
+
+## Phase 6 - UI 收斂與去 starter 化
+- [ ] 移除或改寫與產品無關的 starter 頁面內容：home、message、dataCenter、release、search、login、setting。
+- [ ] 如果某頁 MVP 不需要，從可見入口移除；若 route 保留，必須有清楚的未完成提示。
+- [ ] 全部主流程文案使用簡體中文，且一致使用「开团/团单」語境。
+- [ ] 不要混用「行程、团购、内容发布、TDsign」等舊模板語境。
+- [ ] 底部 tab 固定為：团单、客户订单、商品库、我的，除非產品文件明確改動。
+- [ ] 每個表單要有必填驗證、錯誤提示、提交中狀態、提交成功/失敗回饋。
+- [ ] 每個列表要有正常、空、載入、錯誤狀態。
+- [ ] 驗證：逐頁檢查無舊模板文案、無遮擋、無假入口。
+
+## Phase 7 - 27 個 route GUI smoke test
+- [ ] 在微信 DevTools 或真機逐一打開 `app.json` 的 27 個 route。
+- [ ] 每個 route 記錄：可打開、正常資料、空狀態、錯誤/未完成提示。
+- [ ] 驗證底部 tab 狀態在真實小程序環境一致。
+- [ ] 驗證 toast、modal、floating button、底部 tab 不互相遮擋。
+- [ ] 驗證表單輸入、返回、重新進入不造成資料錯亂。
+- [ ] 把 GUI 驗證結果寫回 `ACCEPTANCE.md` 和 `HANDOFF.md`。
+
+## Phase 8 - 發布前最低品質門檻
+- [ ] `npm run lint` 通過。
+- [ ] `git diff --check` 通過。
+- [ ] 沒有未處理的 console error、白屏、路由找不到。
+- [ ] 沒有將 mock/QA seed 當成正式資料。
+- [ ] 沒有把 secrets、token、preview QR、local cache、臨時截圖提交。
+- [ ] 使用者可從冷啟動完成導遊核心閉環。
+- [ ] README 或 HANDOFF 寫清楚如何啟動、如何驗證、哪些功能還沒做。
+
+## 完成定義
+只有當以下全部成立，才可以說「MVP 可真人使用」：
+
+- [ ] 導遊核心工作流可完整跑通。
+- [ ] 所有核心操作都正式保存。
+- [ ] 登入身份與基本權限可用。
+- [ ] 客戶下單與導遊確認收款閉環可用。
+- [ ] 27 個 route 完成 GUI smoke test。
+- [ ] `npm run lint` 與 `git diff --check` 通過。
+- [ ] 未完成項清楚留在 `CURRENT_TASKS.md`/`HANDOFF.md`，沒有用假功能掩蓋。
+
+## 每次提交前規則
+- [ ] 只提交本次任務相關檔案。
+- [ ] 先跑 `git status --short --branch`。
+- [ ] 先跑 `npm run lint`。
+- [ ] 先跑 `git diff --check`.
+- [ ] 不提交 `resume/preview-info.json`、`resume/preview-qr.png`。
+- [ ] 提交訊息要具體，例如 `Document MVP completion checklist`、`Implement group order persistence`。
+
+## CLI agent 壓縮失憶處理
+CLI agent 必須假設上下文可能被壓縮導致失憶，並使用以下恢復流程：
+
+1. 每完成一個小階段，就更新 `CURRENT_TASKS.md` 或 `HANDOFF.md`，寫清楚完成、驗證、未驗證、下一步。
+2. 若對產品方向、禁止事項、資料模型、驗收標準不確定，不要猜；重新讀本文件和 5 份專案文件。
+3. 每次開始新回合，都先用 `git status --short --branch` 檢查工作區，再讀本文件。
+4. 不要依賴上一段聊天記憶來判斷完成度；完成度只以本文件、`ACCEPTANCE.md`、實際驗證結果為準。
+5. 如果上下文壓縮前來不及完成，至少要把當前狀態寫入 `HANDOFF.md`，再停下。
