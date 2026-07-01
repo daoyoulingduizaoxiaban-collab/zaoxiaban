@@ -1,156 +1,156 @@
 # MVP_COMPLETION_CHECKLIST
 
-## Purpose
-This is the roadmap from the current QA/demo mini program to a real-user MVP. It is not the current task list.
+## 文件用途
+本文件是从当前 QA/demo 小程序推进到真人可用 MVP 的总路线图。它不是当前执行任务单。
 
-For what to do next, read `CURRENT_TASKS.md`.
+下一位 agent 要先看 `CURRENT_TASKS.md`，确认本轮使用者指定范围后，再回到本文件对照阶段与勾选状态。
 
-This file is the canonical backlog for completed, partially completed, and missing MVP work.
+本文件是已完成项、半成品、未完成项的主清单。不要把 MVP backlog 分散到 `CURRENT_TASKS.md`。
 
-## Product Definition
-- Product: WeChat mini program for China-based guides/tour leaders.
-- Core workflow: group orders, group-order products, product library, customer orders, payment status.
-- Required language: Simplified Chinese in product UI.
-- Do not expand into marketplace, social feed, CRM, chat, or full admin backend unless explicitly requested.
-- Any operation that is not formally persisted must clearly say local/QA/demo mode.
+## 产品定义
+- 产品：面向中国导游/领队的微信小程序。
+- 核心流程：团单、本团商品、商品库、客户订单、收款状态。
+- 产品 UI 必须使用简体中文。
+- 不要擅自扩展到 marketplace、社交 feed、CRM、聊天或完整后台，除非使用者明确要求。
+- 任何没有正式保存的操作，都必须清楚标示为本地/QA/demo 模式。
 
-## Current Baseline
-- QA/local mode is active.
-- Formal data layer is not confirmed.
-- Formal OpenID login is not verified.
-- Product library has a local/QA repository implementation.
-- Phase 5 customer ordering/payment workflow is not implemented.
-- WeChat DevTools GUI smoke test has not been run.
+## 当前基线
+- 当前仍是 QA/local mode。
+- 正式资料层尚未确认。
+- 正式 OpenID 登录尚未验证。
+- 商品库已有 local/QA repository 实作。
+- Phase 5 客户下单与收款闭环尚未实现。
+- 微信 DevTools GUI smoke test 尚未执行。
 
-## Completion Rules
-- Only check an item when it is implemented and validated.
-- Local/mock/QA implementation does not count as formal cloud persistence.
-- Static checks do not count as GUI validation.
-- A later phase being partly implemented does not imply earlier formalization gaps are complete.
-- If an item is partly done, leave the formal checkbox unchecked and add a follow-up checkbox for the missing work.
-- Do not move incomplete work into `CURRENT_TASKS.md`; keep MVP backlog gaps in this checklist.
+## 勾选规则
+- 只有已经实作且有验证信号的项目才能打勾。
+- local/mock/QA 实作不等于正式云端保存。
+- 静态检查不等于 GUI 验证。
+- 后面阶段局部完成，不代表前面正式化缺口已经完成。
+- 如果项目只做了一半，正式项保持未勾，并新增后续补完项。
+- 未完成 backlog 必须留在本文件，不要移到 `CURRENT_TASKS.md`。
 
-## Partially Completed Work To Finish
-These items already have local/QA or design work, but still need formal completion before real-user MVP.
+## 已做一半，后续要补完
+这些项目已有 local/QA 或设计基础，但还不能算真人可用 MVP 完成。
 
-- [ ] Phase 1 data layer: recommendation and model are documented; user confirmation, cloud/API repository implementation, and formal persistence verification are still missing.
-- [ ] Phase 2 auth: local adapter, mock fallback, profile initialization, and local role scope exist; real OpenID exchange, `authLogin`, cloud `users`, and real-session role verification are still missing.
-- [ ] Phase 3 group orders: QA/local display and partial repository boundaries exist; formal create/edit/detail/product binding and reopen persistence are still missing.
-- [ ] Phase 4 product library: local/QA product repository is implemented; formal cloud persistence, GUI validation, and formal add-to-group-order persistence are still missing.
-- [ ] Phase 6 UI cleanup: some login/business copy is cleaned; starter pages and unfinished entries still need full product cleanup.
-- [ ] Phase 7 GUI smoke test: static checks have passed before; actual WeChat DevTools/device route and interaction validation is still missing.
+- [ ] Phase 1 资料层：建议方案和资料模型已写完；使用者确认、cloud/API repository 实作、正式持久化验证仍缺。
+- [ ] Phase 2 登录：local adapter、mock fallback、profile 初始化、本地角色 scope 已有；真实 OpenID 换取、`authLogin`、云端 `users`、真实 session 角色验证仍缺。
+- [ ] Phase 3 团单：已有 QA/local 展示与部分 repository 边界；正式新增/编辑/详情/商品绑定/重开后持久化仍缺。
+- [ ] Phase 4 商品库：local/QA product repository 已实作；正式云端保存、GUI 验证、正式加入团单并持久化仍缺。
+- [ ] Phase 6 UI 收敛：登录与部分业务文案已清理；starter 页面和未完成入口仍需完整产品化。
+- [ ] Phase 7 GUI smoke test：静态检查曾通过；微信 DevTools/真机 route、点击、返回、表单、toast/modal、底部 tab 仍未验证。
 
-## Not Started Or Not Formalized
-These are explicit remaining backlog items. Do not start them unless the user scopes that phase.
+## 尚未开始或尚未正式化
+这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。
 
-- [ ] Create formal WeChat cloud environment/configuration, cloud functions, collections, and permission rules.
-- [ ] Implement cloud/API repository variants behind existing service/repository boundaries.
-- [ ] Implement formal guide group-order workflow persistence.
-- [ ] Implement Phase 5 customer ordering and customer order management.
-- [ ] Implement payment status confirmation and status history.
-- [ ] Finish full starter-page removal/rewrite.
-- [ ] Run and document full 27-route GUI smoke test.
-- [ ] Pass the full real-user MVP gate in Phase 8.
+- [ ] 建立正式微信云开发环境/配置、云函数、集合、权限规则。
+- [ ] 在既有 service/repository 边界后面实作 cloud/API repository。
+- [ ] 实作正式导游团单工作流持久化。
+- [ ] 实作 Phase 5 客户下单与客户订单管理。
+- [ ] 实作收款状态确认与状态历史。
+- [ ] 完成 starter 页面全量删除或重写。
+- [ ] 执行并记录完整 27-route GUI smoke test。
+- [ ] 通过 Phase 8 真人可用 MVP gate。
 
-## Phase 0 - Handoff Discipline
-- [x] Project docs exist and define scope, rules, acceptance, tasks, and handoff.
-- [x] Default validation commands are documented.
-- [x] Forbidden actions are documented.
-- [ ] Documentation is kept clean after every future task.
+## Phase 0 - 交接纪律
+- [x] 项目文件已存在，并定义范围、规则、验收、任务与交接。
+- [x] 默认验证命令已记录。
+- [x] 禁止事项已记录。
+- [ ] 每次后续任务结束后，文件都保持干净、同步、可接手。
 
-## Phase 0.5-0.7 - Blocking Defect Fixes
-- [x] eventChannel opener/emit/navigation failure guards.
-- [x] QR empty/invalid preview guard.
-- [x] customer order id string/number comparison guard.
-- [x] product library search/status path consistency.
-- [x] message/chat socket null guard.
-- [x] group order filter preserves `statusText`.
-- [ ] eventChannel listener success verified in WeChat DevTools.
+## Phase 0.5-0.7 - Blocking Defect 修复
+- [x] eventChannel opener/emit/navigation 失败防护。
+- [x] 二维码为空或非法时不预览空图。
+- [x] 客户订单 id 字符串/数字比对防护。
+- [x] 商品库搜索与状态筛选路径一致。
+- [x] message/chat socket null 防护。
+- [x] 团单筛选后保留 `statusText`。
+- [ ] eventChannel listener 成功路径已在微信 DevTools 验证。
 
-## Phase 1 - Data Layer Decision And Model
-- [x] Data-layer recommendation documented.
-- [x] Data model and permission draft documented.
-- [x] `mock/qaSeed.ts` documented as QA/test data only.
-- [ ] User confirms formal data-layer choice.
-- [ ] Cloud/API repository implementation exists.
-- [ ] Formal persistence is verified after app reopen/reload.
-- [ ] Page/service/repository boundary is completed for all business flows, not only auth/product/customer-order subsets.
+## Phase 1 - 资料层决策与模型
+- [x] 资料层建议方案已记录。
+- [x] 资料模型与权限边界初稿已记录。
+- [x] `mock/qaSeed.ts` 已记录为 QA/test 资料来源。
+- [ ] 使用者确认正式资料层选择。
+- [ ] Cloud/API repository 实作完成。
+- [ ] 正式持久化经过 app 重新打开/重新载入验证。
+- [ ] 所有业务流程都完成 page/service/repository 边界，不只 auth/product/customer-order 子集。
 
-## Phase 2 - Auth And Roles
-- [x] Auth adapter / mock fallback exists.
-- [x] Local profile initialization exists.
-- [x] MVP roles defined: `guide`, `customer`, `owner/admin`; `provider` is constrained.
-- [x] Local role scope exists for guide/customer/admin visibility.
-- [x] Starter login copy and irrelevant login options removed from main login page.
-- [ ] Formal `wx.login` -> OpenID exchange verified.
-- [ ] Cloud function `authLogin` exists.
-- [ ] Cloud `users` profile initialization exists.
-- [ ] Role scope verified in WeChat DevTools with real sessions.
-- [ ] Owner/admin entry is either implemented with real boundaries or clearly shown as unfinished.
-- [ ] Provider entry is either hidden or clearly shown as unavailable until scoped.
+## Phase 2 - 登录与角色权限
+- [x] Auth adapter / mock fallback 已存在。
+- [x] 本地 profile 初始化已存在。
+- [x] MVP 角色已定义：`guide`、`customer`、`owner/admin`；`provider` 已受限。
+- [x] guide/customer/admin 本地可见范围已存在。
+- [x] 主登录页已移除 starter 文案与无关登录入口。
+- [ ] 正式 `wx.login` -> OpenID 换取已验证。
+- [ ] `authLogin` 云函数已存在。
+- [ ] 云端 `users` profile 初始化已存在。
+- [ ] 真实 session 下的角色可见范围已在微信 DevTools 验证。
+- [ ] owner/admin 入口已按真实边界实现，或清楚显示未完成。
+- [ ] provider 入口已隐藏，或清楚显示暂不可用。
 
-## Phase 3 - Guide Group Order Workflow
-- [ ] Guide group-order repository is backed by formal data source, not only QA/local seed.
-- [ ] Guide sees only owned or authorized group orders from formal data source.
-- [ ] Group order list supports loading, empty, error, search/filter no-result states.
-- [ ] Formal group order create/edit exists.
-- [ ] Formal group order detail exists.
-- [ ] Formal group-order product list exists.
-- [ ] Formal add/remove group-order products exists.
-- [ ] Missing or unauthorized group order shows safe error/return state.
-- [ ] Full guide flow persists after reopen/reload.
+## Phase 3 - 导游团单工作流
+- [ ] 导游团单 repository 使用正式资料来源，不只 QA/local seed。
+- [ ] 导游只能从正式资料来源看到自己创建或被授权管理的团单。
+- [ ] 团单列表支持 loading、空状态、错误状态、搜索/筛选无结果状态。
+- [ ] 正式团单新增/编辑已存在。
+- [ ] 正式团单详情已存在。
+- [ ] 正式本团商品列表已存在。
+- [ ] 正式加入/移除本团商品已存在。
+- [ ] 缺失或未授权团单显示安全错误/返回状态。
+- [ ] 完整导游流程在重新打开/重新载入后仍能保持。
 
-## Phase 4 - Product Library
-- [x] Product list is role scoped in local/QA mode.
-- [x] Product create uses product service/repository boundary.
-- [x] Product has title, description, images, price rules, status, and source note.
-- [x] Price rules compute numeric totals, not only display strings.
-- [x] Status toggle uses product service/repository boundary.
-- [x] Soft delete uses product service/repository boundary.
-- [x] Search and status filter use the same service/repository path.
-- [x] Required validation, loading/submitting, success, failure, and empty states exist.
-- [ ] Product repository is switched from local storage / QA seed fallback to confirmed formal data layer.
-- [ ] Formal cloud-backed product persistence exists.
-- [ ] Product library GUI flow verified in WeChat DevTools.
-- [ ] Product can be formally added to a group order and persist after reopen/reload.
+## Phase 4 - 商品库
+- [x] 商品列表在 local/QA 模式下已有角色范围。
+- [x] 新增商品走 product service/repository 边界。
+- [x] 商品包含名称、描述、图片、价格规则、状态、来源备注。
+- [x] 价格规则计算数值总价，不只保存显示字串。
+- [x] 上下架走 product service/repository 边界。
+- [x] 软删除走 product service/repository 边界。
+- [x] 搜索与状态筛选走同一条 service/repository 路径。
+- [x] 必填验证、loading/submitting、成功、失败、空状态已存在。
+- [ ] Product repository 从 local storage / QA seed fallback 切到已确认的正式资料层。
+- [ ] 正式云端商品保存已存在。
+- [ ] 商品库 GUI 流程已在微信 DevTools 验证。
+- [ ] 商品可正式加入团单，并在重新打开/重新载入后保持。
 
-## Phase 5 - Customer Ordering And Order Management
-- [ ] Phase 5 is explicitly scoped by user before implementation starts.
-- [ ] Customer entry path is defined: share link, QR code, or route params.
-- [ ] Customer can view group-order products and pricing.
-- [ ] Customer can select products and quantities.
-- [ ] Formal customer order creation exists.
-- [ ] Guide sees customer orders for managed group orders.
-- [ ] Customer sees only own orders.
-- [ ] Payment statuses exist: unpaid, customer paid, confirmed, cancelled.
-- [ ] Guide can confirm payment or cancel order.
-- [ ] Payment status changes are traceable.
-- [ ] Full customer order/payment flow persists after reopen/reload.
+## Phase 5 - 客户下单与订单管理
+- [ ] 使用者已明确指定开始 Phase 5。
+- [ ] 客户入口已定义：分享链接、二维码或 route params。
+- [ ] 客户可以查看本团商品与价格。
+- [ ] 客户可以选择商品和数量。
+- [ ] 正式客户订单创建已存在。
+- [ ] 导游可以查看自己管理团单下的客户订单。
+- [ ] 客户只能查看自己的订单。
+- [ ] 收款状态已存在：未付款、客户已付款、已确认、已取消。
+- [ ] 导游可以确认收款或取消订单。
+- [ ] 收款状态变化可追溯。
+- [ ] 完整客户下单/收款流程在重新打开/重新载入后仍能保持。
 
-## Phase 6 - UI Cleanup
-- [ ] Starter pages are removed or rewritten: home, message, dataCenter, release, search, login, setting.
-- [ ] Visible navigation only exposes MVP-ready or clearly marked unfinished entries.
-- [ ] Main-flow copy consistently uses group-order terminology.
-- [ ] Forms have validation and submission states.
-- [ ] Lists have loading, empty, error, normal, and no-result states.
-- [ ] Local/QA/demo mode prompts are visible wherever data is not formally persisted.
+## Phase 6 - UI 收敛
+- [ ] starter 页面已删除或重写：home、message、dataCenter、release、search、login、setting。
+- [ ] 可见导航只暴露 MVP 已就绪入口，或清楚标示未完成入口。
+- [ ] 主流程文案一致使用团单业务语境。
+- [ ] 表单都有验证与提交状态。
+- [ ] 列表都有 loading、空状态、错误状态、正常状态、无结果状态。
+- [ ] 未正式持久化的数据位置都有本地/QA/demo 模式提示。
 
 ## Phase 7 - GUI Smoke Test
-- [ ] All routes in `app.json` opened in WeChat DevTools or device.
-- [ ] Bottom tab state verified.
-- [ ] Toast/modal/floating button/tab layout verified.
-- [ ] Form input, back navigation, and re-entry verified.
-- [ ] Results written to `ACCEPTANCE.md` and `HANDOFF.md`.
+- [ ] `app.json` 内所有 route 已在微信 DevTools 或真机打开。
+- [ ] 底部 tab 状态已验证。
+- [ ] toast/modal/floating button/tab 布局已验证。
+- [ ] 表单输入、返回导航、重新进入已验证。
+- [ ] 结果已写入 `ACCEPTANCE.md` 与 `HANDOFF.md`。
 
-## Phase 8 - Real-User MVP Gate
-All must be true before claiming real-user MVP:
+## Phase 8 - 真人可用 MVP Gate
+声明真人可用 MVP 前，以下项目必须全部成立：
 
-- [ ] Formal data layer selected and implemented.
-- [ ] Formal login/OpenID and basic permissions verified.
-- [ ] Guide core workflow persists.
-- [ ] Product library persists.
-- [ ] Customer ordering and payment status workflow persists.
-- [ ] 27-route GUI smoke test passes.
-- [ ] `npm run lint` passes.
-- [ ] `git diff --check` passes.
-- [ ] No mock/local fallback is presented as production behavior.
+- [ ] 正式资料层已选择并实作。
+- [ ] 正式登录/OpenID 与基础权限已验证。
+- [ ] 导游核心工作流可持久化。
+- [ ] 商品库可持久化。
+- [ ] 客户下单与收款状态流程可持久化。
+- [ ] 27-route GUI smoke test 通过。
+- [ ] `npm run lint` 通过。
+- [ ] `git diff --check` 通过。
+- [ ] 没有把 mock/local fallback 包装成 production 行为。
