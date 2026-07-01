@@ -18,11 +18,11 @@
 3. 执行 `npm run lint` 与 `git diff --check`，确认既有提交没有基础质量问题。
 4. 等待使用者明确指定下一轮范围；不要自行从后续候选任务中挑一个开做。
 
-## 最新稽核状态
-- Phase 0.7 稽核回修已完成并提交：socket null 防护、团单筛选 `statusText`、资料层「建议方案，待使用者确认」等状态已校正。
-- Phase 4 商品库已完成本地/QA repository 版本并提交：列表、新增、搜索/状态筛选、上下架、软删除走 `ProductService` / `ProductRepository`。
-- `MVP_COMPLETION_CHECKLIST.md` 上方仍有未勾项是正常状态：那些是正式资料层、正式 OpenID、云端保存、Phase 3 团单正式保存或 GUI 验证缺口，不代表 Phase 4 商品库本地/QA 版本漏做。
-- 本次复查未发现 Phase 4 商品库代码含 Phase 5 客户下单、正式客户订单流程或收款确认闭环。
+## 当前状态
+- Blocking defects currently known in the docs are fixed in code: socket null guards, group-order filter `statusText`, QR empty guard, eventChannel guards, product filter consistency.
+- Phase 4 product library exists as local/QA repository implementation: list, create, search/status filter, status toggle, and soft delete go through `ProductService` / `ProductRepository`.
+- `MVP_COMPLETION_CHECKLIST.md` contains global MVP gaps. Unchecked items there usually mean formal data layer, formal OpenID, cloud persistence, Phase 3 group-order persistence, or GUI validation is still missing.
+- Current product library code must stay separate from Phase 5 customer ordering, formal customer-order workflow, and payment confirmation.
 - 尚未做微信 DevTools GUI 验证；不能宣称视觉、点击路径或真机流程已通过。
 - 尚未实现正式云端商品保存；当前商品保存是 local storage / QA 模式。
 - 正式资料层仍未由使用者拍板；`DATA_LAYER_DECISION.md` 只是建议，不是已确认架构。

@@ -1,42 +1,61 @@
 # PROJECT_RULES
 
-## 产品定位
-- 本项目是面向中国境内真人使用的微信小程序。
-- 产品方向是导游/领队开团管理工具，不再沿用 TDesign starter 的内容发布/信息流定位。
-- 核心业务名词统一为「开团/团单」；主流程围绕团单列表、团单详情、本团商品、商品库、客户订单和我的页。
+## Read Order For Every New Work Session
+1. `CURRENT_TASKS.md`
+2. `PROJECT_RULES.md`
+3. `MVP_COMPLETION_CHECKLIST.md`
+4. `ACCEPTANCE.md`
+5. `HANDOFF.md`
+6. `DATA_LAYER_DECISION.md`
+7. `DATA_MODEL_AND_PERMISSIONS.md`
+8. `QA_SEED_REQUIREMENTS.md`
 
-## 角色
-- 领队/导游：创建团单、维护本团商品、查看客户订单和收款状态。
-- 客户：查看团单商品并下单，后续接客户侧页面时再明确权限。
-- 供应商：提供商品或服务资料，当前先做 QA 展示与未完成功能提示。
-- 系统管理员：当前先做 QA 展示与未完成功能提示，权限模型待确认。
+Do not rely on chat memory.
 
-## UI 与文案
-- UI 文案使用简体中文。
-- 风格收敛为工作型工具：清楚、稳定、可扫描，优先使用 TDesign 基础组件。
-- 不做花哨 landing page；页面首屏应直接服务操作或数据查看。
-- 避免继续混用「行程、团购、商品管理」等互相矛盾名词；旧页面逐步改为「开团/团单」语境。
+## Product Definition
+- WeChat mini program for China-based guides/tour leaders.
+- Core terms: `开团`, `团单`, `本团商品`, `商品库`, `客户订单`, `收款状态`.
+- First real MVP focuses on guide/tour-leader workflow only.
+- Customer, supplier, and admin capabilities stay minimal until explicitly scoped.
 
-## QA Seed 策略
-- 集中式 QA seed 位于 `mock/qaSeed.ts`。
-- QA seed 使用 `wx` storage key `dao_you_ling_qa_seed`，并提供一键加载/重置入口：`pages/my/index` 的「QA Seed 展示模式」区域。
-- QA seed 覆盖 3 位写死测试用户，其中 `林秝帆` 代表产品拥有者本人。
-- 团单、商品、客户订单、供应商、系统管理员展示资料从同一份 seed 派生，避免页面各自硬写互相矛盾数据。
-- 当前 QA 展示模式只保证稳定呈现和当前页面内操作反馈；尚未承诺跨页面持久化保存。
-- 操作类功能尚未能安全保存时，必须显示「QA 展示模式，暂未保存」或等价提示，不得造成页面异常。
+## Current Technical Truth
+- The app is still in QA/local mode.
+- `config.js` has `isMock: true`, `baseUrl: ''`, and empty `cloudEnvId`.
+- Formal data layer is not confirmed.
+- Formal OpenID is not verified.
+- Product library persistence is local/QA only.
+- Phase 5 customer ordering/payment workflow is not implemented.
 
-## 禁止事项
-- 不要启动微信开发者工具 GUI。
-- 不要重开、refocus、反复 preview WeChat DevTools。
-- 不要使用 `automator.launch(...)`。
-- 不要推送远端。
-- 不要部署。
-- 不要删除正式资料。
-- 不要提交 `resume/preview-info.json` 和 `resume/preview-qr.png`，除非使用者明确要求。
-- 不要使用网络。
-- 不要安装新套件。
+## Architecture Rules
+- Pages call services/repositories, not raw storage, cloud database, cloud functions, or `mock/qaSeed.ts` for business operations.
+- `mock/qaSeed.ts` is QA/test data only.
+- Local/mock fallback must be visibly labeled as local/QA/demo mode.
+- Do not present local storage as formal persistence.
+- Do not present auth adapter/mock OpenID as formal WeChat OpenID.
 
-## 验证默认
-- 默认验证命令：`npm run lint`。
-- 默认 diff 检查：`git diff --check`。
-- GUI 验证只能由后续 Codex App 在不重开 DevTools 的前提下接现有环境执行；本轮不得声称已完成 GUI 测试。
+## UI And Copy
+- UI copy uses Simplified Chinese.
+- Keep the interface work-focused and operational.
+- Avoid TDesign starter wording and unrelated concepts.
+- Unfinished entries must show a clear unfinished/local/QA prompt.
+
+## Forbidden Without Explicit User Request
+- Start, restart, refocus, or preview WeChat DevTools.
+- Use `automator.launch(...)`.
+- Push remote branches.
+- Deploy.
+- Create cloud resources.
+- Delete production data.
+- Install new packages.
+- Use network.
+- Submit `resume/preview-info.json` or `resume/preview-qr.png`.
+- Begin Phase 5 customer ordering/payment work.
+
+## Required Validation
+```bash
+git status --short --branch
+npm run lint
+git diff --check
+```
+
+GUI validation must only be claimed after actual WeChat DevTools or device testing.

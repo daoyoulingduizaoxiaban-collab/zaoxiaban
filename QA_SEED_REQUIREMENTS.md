@@ -60,7 +60,7 @@
 | `pages/my/index` | QA Seed 数量、测试用户 | seed 重置后仍可显示 | 管理员/未完成入口提示 |
 | `pages/search/index` | 搜索页可打开 | 空搜索 | 取消回到团单 tab |
 | `pages/my/info-edit/index` | 个人资料编辑可打开 | 空表单 | 保存待后续收敛 |
-| `pages/chat/index` | 聊天页可打开 | 空消息 | 聊天能力非本轮主流程 |
+| `pages/chat/index` | 聊天页可打开 | 空消息 | 聊天能力暂未启用 |
 | `pages/login/login` | 登录页可打开 | 空输入 | 表单校验/跳转需 GUI 验证 |
 | `pages/loginCode/loginCode` | 验证码页可打开 | 空输入 | 表单校验/跳转需 GUI 验证 |
 | `pages/dataCenter/index` | 数据中心旧 mock 可打开 | 空图表 | 后续改为团单数据看板 |

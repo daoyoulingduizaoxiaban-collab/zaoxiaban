@@ -1,28 +1,43 @@
 # 导游领队早下班
 
-微信小程序项目，当前产品方向是面向中国境内使用的导游/领队开团管理工具。
+微信小程序项目，目标是为中国境内导游/领队提供开团、团单商品、商品库、客户订单和收款状态管理工具。
 
-## 当前主流程
-- 团单列表：`pages/groupOrder/index`
-- 团单详情：`sub-pages/groupOrder/detail/index`
-- 本团商品：`sub-pages/groupOrder/productList/index`
-- 商品库选择：`sub-pages/groupOrder/product-picker/index`
-- 商品库：`pages/productManagement/index`
-- 客户订单：`pages/customerOrders/index`
-- 我的 / QA Seed：`pages/my/index`
+## Start Here
+Current work is controlled by `CURRENT_TASKS.md`.
 
-## QA Seed
-- 集中式 seed：`mock/qaSeed.ts`
-- 一键加载/重置入口：我的页的「QA Seed 展示模式」区域。
-- 当前 seed 使用 `wx` storage 展示数据，操作类功能只做 QA 展示提示，暂不承诺正式保存。
+Before coding, read:
+1. `CURRENT_TASKS.md`
+2. `PROJECT_RULES.md`
+3. `MVP_COMPLETION_CHECKLIST.md`
+4. `ACCEPTANCE.md`
+5. `HANDOFF.md`
 
-## 本地验证
+## Current State
+- QA/local mode, not production.
+- Formal data layer not confirmed.
+- Formal OpenID login not verified.
+- Product library has local/QA repository implementation.
+- Phase 5 customer ordering/payment workflow is not implemented.
+- WeChat DevTools GUI validation has not been run.
+
+## Main Routes
+- Group orders: `pages/groupOrder/index`
+- Group order detail: `sub-pages/groupOrder/detail/index`
+- Group order products: `sub-pages/groupOrder/productList/index`
+- Product picker: `sub-pages/groupOrder/product-picker/index`
+- Product library: `pages/productManagement/index`
+- Customer orders: `pages/customerOrders/index`
+- My / QA Seed: `pages/my/index`
+
+## Validation
 ```bash
+git status --short --branch
 npm run lint
 git diff --check
 ```
 
-## 开发限制
-请先阅读 `PROJECT_RULES.md`、`QA_SEED_REQUIREMENTS.md`、`ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`。
-
-本项目禁止在未获明确要求时启动或重开微信开发者工具 GUI、推送远端、部署、删除正式资料、提交 `resume/preview-*`。
+## Important Restrictions
+- Do not start or restart WeChat DevTools unless explicitly asked.
+- Do not push, deploy, create cloud resources, install packages, or use network unless explicitly asked.
+- Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
+- Do not describe QA/local fallback as production behavior.
