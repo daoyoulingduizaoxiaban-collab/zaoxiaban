@@ -1,5 +1,30 @@
 # CURRENT_TASKS
 
+## 下一轮指定任务 - Phase 0.7 + Phase 4 商品库
+- 先完成 `MVP_COMPLETION_CHECKLIST.md` 的 `Phase 0.7 - 稽核回修與範圍校正`，再開始商品庫。
+- 本轮只做到 `Phase 4 - 商品庫`；不得實作 `Phase 5 - 客戶下單與訂單管理`，不得建立客戶下單、客戶訂單正式流程或收款確認閉環。
+- 必修回修：
+  - `pages/message/index.js` / `pages/chat/index.js`：補 socket null 防護；聊天能力未啟用時要安全提示或停用，不能崩潰。
+  - `pages/groupOrder/index.ts`：修正搜尋/狀態篩選後 `statusText` 遺失或狀態樣式不一致。
+  - `DATA_LAYER_DECISION.md`、`ACCEPTANCE.md`、`MVP_COMPLETION_CHECKLIST.md`、`HANDOFF.md`：把「使用者已確認微信雲開發」校正為「建議方案，待使用者確認」。
+  - Phase 2 相關勾選/驗收：改成 auth adapter、mock fallback、role scope 已完成；正式 OpenID、`authLogin` 雲函式、雲端 `users` 集合仍未驗證/未建立。
+- Phase 4 商品庫目標：
+  - 商品庫列表只顯示目前角色可用商品；guide/customer/owner/admin/provider 的可見邊界要清楚。
+  - 商品新增、上下架、刪除/軟刪除要走同一個商品 repository/service 邊界，不要讓頁面散落直接操作 QA seed/storage。
+  - 商品表單至少包含名稱、描述、圖片、價格規則、狀態、供應來源或備註；必填驗證、提交中、成功、失敗、空狀態都要有。
+  - 階梯價格要有明確計算規則，不可只存顯示字串。
+  - 若正式資料層尚未確認，商品保存可先走明確標記的 local/mock repository，但 UI 必須提示「本地/QA 展示模式，尚未正式保存」，不得假裝雲端保存完成。
+  - 不得新增 Phase 5 客戶下單入口或正式客戶訂單功能。
+- 驗證：
+  - 必跑 `npm run lint`。
+  - 必跑 `git diff --check`。
+  - 必跑 `git status --short --branch`。
+  - 靜態驗證 Phase 0.7 回修項；商品庫至少驗證新增商品資料流、狀態篩選/搜尋、上下架、刪除/軟刪除在同一 repository/service 路徑下不互相打架。
+- 文件回寫：
+  - 更新 `MVP_COMPLETION_CHECKLIST.md`，只勾完成且已驗證的項目。
+  - 更新 `ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`，明確標示未做 GUI、未做正式雲端保存、未做 Phase 5。
+  - 只提交本輪相關檔案，不提交 `resume/preview-info.json`、`resume/preview-qr.png`。
+
 ## 本轮任务 - Phase 2 登录与角色权限
 - 使用者已确认资料层方向：MVP 优先采用微信云开发数据库 + 云函数，但页面必须经由 service/repository 边界，不直接散落调用云数据库。
 - 接入 `wx.login` + auth adapter；云环境/云函数未配置时必须使用明确标记的 mock fallback，不可假装已取得正式 OpenID。
