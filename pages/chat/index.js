@@ -1,6 +1,5 @@
 // pages/chat/index.js
 const app = getApp();
-const { socket } = app.globalData; // 获取已连接的socketTask
 
 Page({
   /** 页面的初始数据 */
@@ -74,10 +73,23 @@ Page({
     this.setData({ input: event.detail.value });
   },
 
+  getSocket() {
+    const socket = app.globalData && app.globalData.socket;
+    if (!socket || typeof socket.send !== 'function') {
+      return null;
+    }
+    return socket;
+  },
+
   /** 发送消息 */
   sendMessage() {
     const { userId, messages, input: content } = this.data;
     if (!content) return;
+    const socket = this.getSocket();
+    if (!socket) {
+      wx.showToast({ title: '聊天能力暂未启用', icon: 'none' });
+      return;
+    }
     const message = { messageId: null, from: 0, content, time: Date.now(), read: true };
     messages.push(message);
     this.setData({ input: '', messages });

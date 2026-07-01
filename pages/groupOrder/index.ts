@@ -24,6 +24,13 @@ Page({
     await this.fetchItineraryList();
   },
 
+  normalizeGroupOrders(list) {
+    return list.map(item => ({
+      ...item,
+      statusText: getGroupOrderStatusTextByValue(item.status)
+    }));
+  },
+
   async fetchItineraryList() {
     wx.showLoading({
       title: '加载中'
@@ -33,10 +40,7 @@ Page({
       const res = await GroupOrderRepository.listVisible();
       if (res.success) {
 
-        const list = res.data.map(item => ({
-          ...item,
-          statusText: getGroupOrderStatusTextByValue(item.status)
-        }));
+        const list = this.normalizeGroupOrders(res.data);
 
         this.setData({
           itineraryList: list,
@@ -148,7 +152,7 @@ Page({
 
     this.setData({
       // 確保畫面更新的是篩選後的結果
-      itineraryList: res.data
+      itineraryList: this.normalizeGroupOrders(res.data)
     });
   }
 

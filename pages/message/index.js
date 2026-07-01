@@ -2,7 +2,6 @@
 import { fetchMessageList, markMessagesRead } from '~/mock/chat';
 
 const app = getApp();
-const { socket } = app.globalData; // 获取已连接的 socketTask
 let currentUser = null; // 当前打开的聊天用户 { userId, eventChannel }
 
 Page({
@@ -15,6 +14,13 @@ Page({
   /** 生命周期函数--监听页面加载 */
   onLoad(options) {
     this.getMessageList();
+
+    const socket = this.getSocket();
+    if (!socket) {
+      wx.showToast({ title: '聊天能力暂未启用', icon: 'none' });
+      return;
+    }
+
     // 处理接收到的数据
     socket.onMessage((data) => {
       data = JSON.parse(data);
@@ -67,6 +73,14 @@ Page({
     fetchMessageList().then(({ data }) => {
       this.setData({ messageList: data, loading: false });
     });
+  },
+
+  getSocket() {
+    const socket = app.globalData && app.globalData.socket;
+    if (!socket || typeof socket.onMessage !== 'function') {
+      return null;
+    }
+    return socket;
   },
 
   /** 通过 userId 获取 user 对象和下标 */
