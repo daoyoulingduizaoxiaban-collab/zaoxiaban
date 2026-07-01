@@ -21,12 +21,17 @@ Page({
       if (data.type === 'message') {
         const { userId, message } = data.data;
         const { user, index } = this.getUserById(userId);
+        if (!user || index < 0) {
+          wx.showToast({ title: '未找到聊天用户', icon: 'none' });
+          return;
+        }
+
         this.data.messageList.splice(index, 1);
         this.data.messageList.unshift(user);
         user.messages.push(message);
-        if (currentUser && userId === currentUser.userId) {
+        if (currentUser && String(userId) === String(currentUser.userId)) {
           this.setMessagesRead(userId);
-          currentUser.eventChannel.emit('update', user);
+          this.safeEmitChatUpdate(currentUser.eventChannel, user);
         }
         this.setData({ messageList: this.data.messageList });
         app.setUnreadNum(this.computeUnreadNum());
@@ -67,12 +72,28 @@ Page({
   /** 通过 userId 获取 user 对象和下标 */
   getUserById(userId) {
     let index = 0;
+    const normalizedUserId = String(userId);
     while (index < this.data.messageList.length) {
       const user = this.data.messageList[index];
-      if (user.userId === userId) return { user, index };
+      if (String(user.userId) === normalizedUserId) return { user, index };
       index += 1;
     }
-    // TODO：处理 userId 在列表中不存在的情况（）
+    return { user: null, index: -1 };
+  },
+
+  safeEmitChatUpdate(eventChannel, user) {
+    if (!eventChannel || typeof eventChannel.emit !== 'function') {
+      wx.showToast({ title: '聊天页暂未连接', icon: 'none' });
+      return false;
+    }
+
+    try {
+      eventChannel.emit('update', user);
+      return true;
+    } catch (err) {
+      wx.showToast({ title: '同步聊天资料失败', icon: 'none' });
+      return false;
+    }
   },
 
   /** 计算未读消息数量 */
@@ -87,10 +108,22 @@ Page({
   /** 打开对话页 */
   toChat(event) {
     const { userId } = event.currentTarget.dataset;
-    wx.navigateTo({ url: `/pages/chat/index?userId${userId}` }).then(({ eventChannel }) => {
-      currentUser = { userId, eventChannel };
-      const { user } = this.getUserById(userId);
-      eventChannel.emit('update', user);
+    const { user } = this.getUserById(userId);
+
+    if (!user) {
+      wx.showToast({ title: '未找到聊天用户', icon: 'none' });
+      return;
+    }
+
+    wx.navigateTo({
+      url: `/pages/chat/index?userId=${encodeURIComponent(String(userId))}`,
+      success: ({ eventChannel }) => {
+        currentUser = { userId, eventChannel };
+        this.safeEmitChatUpdate(eventChannel, user);
+      },
+      fail: () => {
+        wx.showToast({ title: '打开聊天页失败', icon: 'none' });
+      }
     });
     this.setMessagesRead(userId);
   },
@@ -98,6 +131,11 @@ Page({
   /** 将用户的所有消息标记为已读 */
   setMessagesRead(userId) {
     const { user } = this.getUserById(userId);
+    if (!user) {
+      wx.showToast({ title: '未找到聊天用户', icon: 'none' });
+      return;
+    }
+
     user.messages.forEach((message) => {
       message.read = true;
     });

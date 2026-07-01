@@ -17,6 +17,13 @@
 - [ ] 微信 DevTools GUI 验证：本轮未执行，因使用者要求不要启动或重开 DevTools。
 - [ ] 正式资料层实现：本轮按要求未接正式数据库、云函数或 API。
 
+## Phase 0.6 稽核追加验收
+- [x] `pages/message/index.js` 聊天入口 URL 参数正确传递 `userId`，不可保留 `?userId${userId}` 这种缺少 `=` 的 query。
+- [x] `pages/message/index.js` 在 `getUserById` 找不到 user/index 时不会崩溃，并给出 toast 或安全返回。
+- [x] `pages/message/index.js` 所有 eventChannel emit 都有缺失/失败防护，不因 eventChannel 不存在或 emit 抛错造成页面崩溃。
+- [ ] eventChannel listener/回传资料成功仍需微信 DevTools GUI 验证；静态检查不能证明父页 listener 存在或回传成功。
+- [x] 稽核追加修正后通过 `npm run lint`、`git diff --check`、`git status --short --branch`。
+
 ## 本轮验收清单
 - [x] 建立集中式 `mock/qaSeed.ts`。
 - [x] QA Seed 可在「我的」页一键加载/重置。

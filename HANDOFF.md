@@ -21,6 +21,13 @@
 - Phase 1 设计建议记录在 `DATA_LAYER_DECISION.md`：MVP 建议优先采用微信云开发数据库 + 云函数，但必须先建立资料存取层接口，等待使用者确认后才能实现。
 - 资料模型与权限边界记录在 `DATA_MODEL_AND_PERMISSIONS.md`：`mock/qaSeed.ts` 只能作为测试资料来源，不可作为正式操作唯一资料来源。
 
+## 2026-07-02 稽核追加
+- `Phase 0.6 - 稽核追加修正` 已完成代码修补：
+  - `pages/message/index.js` 聊天入口 URL 已改为 `/pages/chat/index?userId=...`。
+  - `getUserById` 找不到 user/index 时安全返回并提示，不再继续操作缺失资料。
+  - `currentUser.eventChannel.emit('update', user)` 与聊天页打开后的 `eventChannel.emit('update', user)` 已统一走 `safeEmitChatUpdate`，防护 eventChannel 缺失与 emit 抛错。
+- eventChannel「没有 listener」不能仅靠静态检查宣称完成；当前只能写成已防护没有 opener、emit 抛错、navigateBack 失败。父页 listener/回传资料成功仍需微信 DevTools GUI 验证。
+
 ## 本轮修改文件
 - `MVP_COMPLETION_CHECKLIST.md`
 - `ACCEPTANCE.md`
@@ -28,6 +35,7 @@
 - `HANDOFF.md`
 - `DATA_LAYER_DECISION.md`
 - `DATA_MODEL_AND_PERMISSIONS.md`
+- `pages/message/index.js`
 - `pages/chat/index.js`
 - `pages/customerOrders/index.js`
 - `pages/productManagement/index.ts`
@@ -70,9 +78,14 @@
   - `sub-pages/groupOrder/detail/index.ts` 已先判断 `qrCodeUrl` 非空且为可预览路径，再调用 `wx.previewImage`。
   - `pages/customerOrders/index.js` 已用 `String(order.id) === String(dataset.id)` 查找订单。
   - `pages/productManagement/index.ts` 已将搜索、状态筛选、上下架、删除统一收敛到 `updateLocalData` / `applyProductFilters`。
-- 最终 `git status --short --branch`：`## codex...origin/codex [ahead 2]`，无未提交文件。
+  - `pages/message/index.js` 已通过静态检查确认没有 `?userId${userId}`，并防护 `getUserById` 找不到 user/index、eventChannel 缺失、emit 抛错。
+- `Phase 0.6` 验证：
+  - `npm run lint`：通过。
+  - `git diff --check`：通过。
+  - `git status --short --branch`：提交前为 `## codex...origin/codex [ahead 2]`，仅有 `ACCEPTANCE.md`、`CURRENT_TASKS.md`、`HANDOFF.md`、`MVP_COMPLETION_CHECKLIST.md`、`pages/message/index.js` 修改；未包含 `resume/preview-*`。
 
 ## 未完成
+- eventChannel listener 成功回传尚未 GUI 验证，不可写成完全完成。
 - 未做微信 DevTools GUI 验证。
 - QA seed 尚未正式持久化业务操作。
 - 角色权限、供应商管理、系统管理员功能仍待产品确认。

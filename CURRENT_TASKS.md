@@ -19,6 +19,11 @@
 - Phase 1 设计文件已完成：
   - `DATA_LAYER_DECISION.md`：比较微信云开发数据库与明确后端 API，并建议 MVP 先采用微信云开发数据库 + 云函数，但需以资料存取层隔离。
   - `DATA_MODEL_AND_PERMISSIONS.md`：定义 users、groupOrders、products、groupOrderProducts、customerOrders、payments、paymentStatusHistory 初稿与 owner/guide/customer/provider/admin 权限边界。
+- Phase 0.6 稽核追加已修正：
+  - `pages/message/index.js` 聊天入口 URL 已改为 `/pages/chat/index?userId=...`。
+  - `getUserById` 找不到 user/index 时会安全返回并提示，不再继续 `splice`、`messages` 或 emit。
+  - `currentUser.eventChannel.emit('update', user)` 与聊天页打开后的 `eventChannel.emit('update', user)` 已统一走 `safeEmitChatUpdate`，防护 eventChannel 缺失与 emit 抛错。
+  - 静态检查只确认 eventChannel 缺失/emit 抛错防护；父页 listener/回传资料成功仍需微信 DevTools GUI 验证，不能写成已完成。
 - 已明确记录 `mock/qaSeed.ts` 只保留为测试资料来源，不可作为正式操作唯一资料来源。
 - 建立 `mock/qaSeed.ts`，集中管理 QA 用户、团单、商品、客户订单、供应商、系统管理员资料。
 - 团单/商品 mock 改为从 QA seed 派生。
@@ -40,6 +45,7 @@
 - 继续收敛非主流程旧模板页面：home/message/dataCenter/release/search/login/setting。
 
 ## 未完成与风险
+- eventChannel「没有 listener」不能仅靠代码静态检查宣称完成；当前只能确认没有 opener、emit 抛错、返回失败已有防护，listener 回传仍需微信 DevTools GUI 验证。
 - 未实现正式资料层、资料存取层、云函数、数据库集合或后端 API。
 - 未接微信登录、OpenID、user profile 初始化或角色权限代码。
 - `DATA_LAYER_DECISION.md` 的建议方案仍需使用者确认，不能直接勾选「使用者确认后决定正式资料层」。

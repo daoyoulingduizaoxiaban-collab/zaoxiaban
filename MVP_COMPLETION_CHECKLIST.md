@@ -51,11 +51,19 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 ## Phase 0.5 - 先修 blocking defects
 以下是已知會讓後續 GUI 測試或 MVP 實作歪掉的阻塞缺陷。CLI agent 在做正式資料層、GUI smoke test、或宣稱流程穩定前，必須先修這些問題，並把結果寫回 `CURRENT_TASKS.md` 或 `HANDOFF.md`。
 
-- [x] 修正 eventChannel 使用防護：`sub-pages/groupOrder/product-picker/index.ts`、`sub-pages/product/add/index.ts` 等使用 `getOpenerEventChannel()` 的地方，必須處理沒有 opener、沒有 listener、直接進頁、返回失敗等情境，不可因單獨打開頁面而崩潰。
+- [x] 修正 eventChannel 使用防護：`sub-pages/groupOrder/product-picker/index.ts`、`sub-pages/product/add/index.ts` 等使用 `getOpenerEventChannel()` 的地方，已處理沒有 opener、直接進頁、emit 拋錯、返回失敗等情境，不可因單獨打開頁面而崩潰。
 - [x] 修正 QR 空字串處理：`sub-pages/groupOrder/detail/index.ts` 在 `qrCodeUrl` 為空或非法時，不可直接呼叫 `wx.previewImage` 預覽空字串；要先顯示「暂无团单二维码」或 fallback 狀態。
 - [x] 修正客戶訂單 id 型別比對：`pages/customerOrders/index.js` 等從 `dataset` 取得的 id 可能是字串，seed/model 裡可能是數字；查找前要統一型別，避免點擊訂單卻顯示「未找到订单资料」。
 - [x] 修正商品搜尋與狀態篩選一致性：`pages/productManagement/index.ts` 的搜尋、上下架、刪除、狀態篩選都必須走同一個 filter/update 路徑，不能搜尋後丟失狀態篩選，或狀態切換後丟失搜尋結果。
 - [x] 修完以上缺陷後，至少跑 `npm run lint`、`git diff --check`，並用可行方式驗證相關頁面不再因已知問題阻塞 GUI。
+
+## Phase 0.6 - 稽核追加修正
+以下是 2026-07-02 對 Phase 0.5/1 交付的稽核結果。下一位 agent 必須先完成本段，再宣稱 blocking defects 全部關閉或進入 27 route GUI smoke test。
+
+- [x] eventChannel listener 缺失不可再寫成已完成：微信 eventChannel API 無法可靠探測「父頁是否真的有 listener」。請在 `ACCEPTANCE.md` / `HANDOFF.md` 保持這項為「已防護 opener/emit/navigateBack，listener 情境仍需 GUI 驗證」，除非真的用微信 DevTools 驗證過父頁有註冊 listener 且回傳資料成功。
+- [x] 修正 `pages/message/index.js` 聊天入口：`wx.navigateTo({ url: \`/pages/chat/index?userId${userId}\` })` 少了 `=`，應避免 GUI smoke 時 route 參數錯誤。
+- [x] 補強 `pages/message/index.js` eventChannel 防護：`currentUser.eventChannel.emit('update', user)`、`eventChannel.emit('update', user)` 需要處理 `eventChannel` 不存在、emit 失敗、`getUserById` 找不到 user 的情境，不可因訊息頁或聊天頁異常而崩潰。
+- [x] 完成稽核追加修正後，必須跑 `npm run lint`、`git diff --check`、`git status --short --branch`，並把結果寫回 `ACCEPTANCE.md` 和 `HANDOFF.md`。
 
 ## Phase 1 - 資料模型與儲存閉環
 - [x] 先做正式資料層方案比較與建議，不要直接自行選型實作。比較至少包含：微信雲開發資料庫、明確後端 API；要寫清楚成本、開發速度、登入/OpenID 整合、資料權限、部署維運、未來擴充風險。
