@@ -12,6 +12,7 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - 本專案目前 Phase 4 已完成的是「本地/QA repository 版本」：商品庫列表、新增、搜尋/狀態篩選、上下架、軟刪除已走 service/repository 邊界。
 - 上方或前置階段若仍有未勾項，代表那些項目需要正式資料層、正式 OpenID、雲端保存、Phase 3 團單正式保存或微信 DevTools GUI 驗證；這些不是 Phase 4 商品庫本地/QA 版本的漏做。
 - 不得為了讓 Phase 4 看起來完整而勾選尚未驗證的正式化項目。只有完成且驗證過，才能打勾。
+- 禁止灰色勾選：若只有某個模組完成，就在該模組所屬 Phase 另列已完成項；全域項目必須等全域完成才打勾。
 - `CURRENT_TASKS.md` 決定下一輪實際任務；本文件的未勾項是總 MVP 缺口，不是自動開工指令。
 
 ## 不可做歪的產品定義
@@ -88,8 +89,8 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [x] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
 - [x] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
 - [x] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
-- [x] 商品庫已建立本地/QA 資料存取層，頁面透過 `ProductService` / `ProductRepository` 操作；其他模組正式資料存取層仍未完成。
-- [x] 商品庫 create/update/delete 已回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態；其他模組仍未完成。
+- [ ] 建立全域資料存取層，讓所有核心頁面不要直接散落呼叫 storage/mock/API。
+- [ ] 所有核心 create/update/delete 操作要回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態。
 - [ ] 重開小程序後，已建立的团单、商品、客户订单、收款状态仍能讀回。
 - [ ] 驗證：用同一個測試導遊建立資料，關閉再打開或重新載入後資料仍存在。
 
@@ -123,9 +124,11 @@ Phase 2 驗證備註：本輪已完成 auth adapter、mock fallback 與 guide/cu
 - Phase 4 已完成本地/QA repository 版本；後續若回到商品庫，只能在使用者明確指定範圍內修補或接正式資料層，不得自行擴張到 Phase 5。
 - Phase 4 可以依既有 repository/service 邊界建立商品庫資料存取層；在使用者未確認正式資料層前，不得直接建立雲端資源、部署、推送或改外部環境。
 - [x] `pages/productManagement/index` 顯示導遊可用商品。
+- [x] 商品庫已建立本地/QA 資料存取層，頁面透過 `ProductService` / `ProductRepository` 操作。
 - [x] `sub-pages/product/add/index` 可新增本地/QA 商品，正式雲端商品新增仍未實作。
 - [x] 商品至少包含：名稱、描述、圖片、價格規則、狀態、供應來源或備註。
 - [x] 階梯價格要有明確計算規則，不能只顯示字串。
+- [x] 商品庫 create/update/delete 會回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態。
 - [x] 商品上下架要能保存到本地/QA repository，正式雲端保存仍未實作。
 - [x] 商品刪除或移除要有確認；若只做軟刪除，要在資料模型寫清楚。
 - [x] 商品搜索無結果要有空狀態。

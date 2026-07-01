@@ -7,6 +7,7 @@
 - [x] 验收结果与未验证项统一放入 `ACCEPTANCE.md`。
 - [x] 已复查容易误导的状态词：未保留并列任务标题或正式资料层已拍板的错误状态。
 - [x] `MVP_COMPLETION_CHECKLIST.md` 已补充勾选规则：做到 Phase 4 只代表商品库本地/QA 版本完成，不代表正式资料层、正式 OpenID、Phase 3、GUI 验证或真人可用闭环都完成。
+- [x] `MVP_COMPLETION_CHECKLIST.md` 已改为二元勾选规则：全域项未全域完成就不打勾，商品库完成项只放在 Phase 4。
 - [x] Phase 4 代码静态复查：商品库列表、新增、搜索/状态筛选、上下架、软删除仍走 `ProductService` / `ProductRepository`。
 - [x] Phase 4 范围复查：未发现商品库代码包含 Phase 5 客户下单、正式客户订单流程或收款确认闭环。
 - [ ] 微信 DevTools GUI 验证仍未执行，不能宣称商品库点击流程或视觉状态已通过。
