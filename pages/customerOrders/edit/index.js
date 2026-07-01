@@ -1,36 +1,123 @@
+import { AuthService } from '~/services/auth/authService';
+import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+
 Page({
   data: {
-    pageTitle: '新增客户订单',
-    isEdit: false,
+    pageTitle: '客户下单',
+    groupOrderId: 0,
+    groupOrder: null,
+    productRows: [],
+    totalPrice: 0,
+    isSubmitting: false,
+    saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
     formData: {
-      title: '',
-      date: '',
-      statusText: '未付款'
-    }
+      customerName: '',
+      customerPhone: '',
+      memberRemark: '',
+    },
   },
 
   onLoad(options) {
-    if (options.id) {
-      this.setData({
-        pageTitle: '编辑客户订单',
-        isEdit: true
-      });
-      this.fetchcustomerOrdersDetail(options.id);
-    }
+    const profile = AuthService.getCurrentProfile();
+    const groupOrderId = Number(options.groupOrderId || options.id || 1);
+
+    this.setData({
+      groupOrderId,
+      'formData.customerName': profile && profile.displayName ? profile.displayName : '',
+      'formData.customerPhone': profile && profile.phone ? profile.phone : '',
+    });
+    this.loadOrderEntry(groupOrderId);
   },
 
-  fetchcustomerOrdersDetail(id) {
+  async loadOrderEntry(groupOrderId) {
+    const res = await CustomerOrderService.getOrderEntry(groupOrderId);
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载团单失败', icon: 'none' });
+      this.setData({ groupOrder: null, productRows: [] });
+      return;
+    }
+
     this.setData({
-      'formData.title': '华东五日团伴手礼收单',
-      'formData.date': '2026-01-07'
+      groupOrder: res.data,
+      pageTitle: res.data.title || '客户下单',
+      productRows: res.data.productList || [],
+      totalPrice: 0,
     });
   },
 
-  onSave() {
-    wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
+  onInputChange(e) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : '';
+    if (!field) return;
+    this.setData({
+      [`formData.${field}`]: value,
+    });
+  },
+
+  onQuantityInput(e) {
+    const productId = e.currentTarget.dataset.id;
+    const quantity = Number(e.detail.value || 0);
+    const productRows = this.data.productRows.map((product) => {
+      if (String(product.id) !== String(productId)) return product;
+      return CustomerOrderService.calculateLine(product, quantity);
+    });
+
+    this.setData({
+      productRows,
+      totalPrice: CustomerOrderService.calculateTotal(productRows),
+    });
+  },
+
+  buildSelectedItems() {
+    return this.data.productRows
+      .filter(product => Number(product.quantity || 0) > 0)
+      .map(product => ({
+        productId: product.id,
+        title: product.title,
+        amount: Number(product.quantity || 0),
+        unitPrice: Number(product.unitPrice || 0),
+        totalPrice: Number(product.lineTotal || 0),
+        originalTotalPrice: Number(product.lineTotal || 0),
+        pictureUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '',
+      }));
+  },
+
+  async onSave() {
+    if (this.data.isSubmitting) return;
+
+    const payload = {
+      groupOrderId: this.data.groupOrderId,
+      customerName: this.data.formData.customerName,
+      customerPhone: this.data.formData.customerPhone,
+      memberRemark: this.data.formData.memberRemark,
+      items: this.buildSelectedItems(),
+      totalPrice: this.data.totalPrice,
+    };
+
+    this.setData({ isSubmitting: true });
+    const res = await CustomerOrderService.create(payload);
+    this.setData({ isSubmitting: false });
+
+    if (!res.success) {
+      wx.showToast({ title: res.error || '提交订单失败', icon: 'none' });
+      return;
+    }
+
+    wx.showModal({
+      title: '下单成功',
+      content: `${this.data.saveModeText}\n订单金额：￥${res.data.totalPrice}`,
+      showCancel: false,
+      confirmText: '查看订单',
+      success: () => {
+        wx.switchTab({
+          url: '/pages/customerOrders/index',
+          fail: () => wx.navigateBack(),
+        });
+      },
+    });
   },
 
   onBack() {
     wx.navigateBack();
-  }
+  },
 });

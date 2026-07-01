@@ -1,6 +1,7 @@
 <nav nav-type="customerOrders" titleText="{{titleText}}" />
 
 <view class="role-scope">{{roleScopeText}}</view>
+<view class="save-mode">{{saveModeText}}</view>
 
 <view class="customerOrders-container">
   <t-cell-group theme="card">
@@ -9,6 +10,10 @@
         bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
         <t-icon slot="left-icon" name="usergroup" size="48rpx" color="#0052d9" />
       </t-cell>
+      <view class="order-actions">
+        <text class="order-meta">商品 {{item.itemCount || 0}} 件｜状态记录 {{item.historyCount || 0}} 条</text>
+        <t-button size="small" variant="outline" theme="primary" bind:tap="onOrderAction" data-id="{{item.id}}">处理订单</t-button>
+      </view>
     </block>
   </t-cell-group>
 
@@ -16,6 +21,6 @@
     <t-empty icon="info-circle" description="暂无客户订单" />
   </view>
 
-  <t-fab wx:if="{{canCreateCustomerOrder}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增客户订单" style="right: 32rpx; bottom: 180rpx;" />
+  <t-fab wx:if="{{canCreateCustomerOrder}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="客户下单" style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

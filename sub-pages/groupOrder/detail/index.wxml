@@ -2,6 +2,8 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
+  <view class="mode-tip">{{saveModeText}}</view>
+
   <t-cell-group theme="card">
     <t-input label="团单名称" placeholder="请输入1~20个字符" value="{{ groupOrder.title }}" />
     <t-input label="收单状态" value="{{ groupOrder.statusText }}" />
@@ -43,11 +45,11 @@
       <view class="order-body">
         <view class="info-item">
           <text class="label">客户 ID：</text>
-          <text class="value">{{memberOrder.userId}}</text>
+          <text class="value">{{memberOrder.customerUserId || memberOrder.userId}}</text>
         </view>
         <view class="info-item">
           <text class="label">商品数量：</text>
-          <text class="value">{{memberOrder.productList.length || 0}} 件</text>
+          <text class="value">{{memberOrder.itemCount || memberOrder.productList.length || 0}} 件</text>
         </view>
         <view class="info-item">
           <text class="label">应付总额：</text>
@@ -56,6 +58,10 @@
         <view class="action-section" wx:if="{{memberOrder.status === 1}}">
           <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
             data-id="{{memberOrder.id}}">确认已到账</t-button>
+        </view>
+        <view class="action-section" wx:if="{{memberOrder.status !== 2 && memberOrder.status !== 3}}">
+          <t-button theme="danger" size="small" block variant="outline" catchtap="onCancelOrder"
+            data-id="{{memberOrder.id}}">取消订单</t-button>
         </view>
       </view>
     </view>
@@ -74,6 +80,10 @@
       disabled="{{!groupOrderId}}">
       本团商品
     </t-button>
+    <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onCustomerOrderEntry"
+      disabled="{{!groupOrderId}}">
+      客户下单入口
+    </t-button>
   </view>
 </view>
 
@@ -84,7 +94,8 @@
     <scroll-view scroll-y class="details-content" wx:if="{{selectedMemberOrder && selectedMemberOrder.productList}}">
       <view class="item-row" wx:for="{{selectedMemberOrder.productList}}" wx:key="productId">
         <view class="item-main">
-          <text class="item-name">商品 ID: {{item.productId}}</text>
+          <text wx:if="{{item.title}}" class="item-name">{{item.title}}</text>
+          <text wx:else class="item-name">商品 ID: {{item.productId}}</text>
           <text class="item-spec">数量: {{item.amount}}</text>
         </view>
         <view class="item-price-info">
@@ -105,3 +116,6 @@
 
 <t-dialog visible="{{showConfirmDialog}}" title="确认到账" content="是否确认该笔订单（编号：#{{selectedMemberOrderId}}）款项已实际入账？"
   confirm-btn="确认" cancel-btn="取消" bind:confirm="handleDialogConfirm" bind:cancel="handleDialogClose" />
+
+<t-dialog visible="{{showCancelDialog}}" title="取消订单" content="是否取消该笔订单（编号：#{{selectedMemberOrderId}}）？"
+  confirm-btn="取消订单" cancel-btn="返回" bind:confirm="handleCancelDialogConfirm" bind:cancel="handleCancelDialogClose" />

@@ -2,9 +2,7 @@ import {
   GroupOrder
 } from '~/models/GroupOrder';
 import { MemberOrder } from '~/models/MemberOrder';
-import {
-  GroupOrderMock
-} from '../../../mock/groupOrder/index';
+import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 
 
 Page({
@@ -16,6 +14,8 @@ Page({
     selectedMemberOrder: new MemberOrder(),
     showConfirmDialog: false,
     selectedMemberOrderId: 0,
+    showCancelDialog: false,
+    saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
   },
 
   onLoad(options) {
@@ -35,11 +35,16 @@ Page({
   async fetchGroupOrderDetail(id) {
 
     try {
-      const res = await GroupOrderMock.fetchById(id)
-      if (res.code === 200) {
+      const res = await CustomerOrderService.getGroupOrderDetail(id)
+      if (res.success) {
         this.setData({
           groupOrder: res.data,
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
+        });
+      } else {
+        wx.showToast({
+          title: res.error || '加载团单失败',
+          icon: 'none'
         });
       }
 
@@ -89,7 +94,7 @@ Page({
     }
 
     wx.showToast({
-      title: '订单详情页暂未开发',
+      title: '请在客户订单页查看详情',
       icon: 'none'
     });
   },
@@ -196,26 +201,94 @@ Page({
     });
   },
 
+  onCancelOrder(e) {
+    const {
+      id
+    } = e.currentTarget.dataset;
+    this.setData({
+      showCancelDialog: true,
+      selectedMemberOrderId: id
+    });
+  },
+
+  handleCancelDialogClose() {
+    this.setData({
+      showCancelDialog: false
+    });
+  },
+
+  async handleCancelDialogConfirm() {
+    wx.showLoading({
+      title: '处理中...'
+    });
+
+    const res = await CustomerOrderService.cancelOrder(this.data.selectedMemberOrderId);
+    wx.hideLoading();
+    this.setData({
+      showCancelDialog: false
+    });
+
+    if (!res.success) {
+      wx.showToast({
+        title: res.error || '取消订单失败',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.showToast({
+      title: this.data.saveModeText,
+      icon: 'none'
+    });
+    this.fetchGroupOrderDetail(this.data.groupOrderId);
+  },
+
   // 彈窗點擊確認
   async handleDialogConfirm() {
     wx.showLoading({
       title: '处理中...'
     });
 
-    setTimeout(() => {
-      wx.hideLoading();
-      this.setData({
-        showConfirmDialog: false
-      });
+    const res = await CustomerOrderService.confirmPayment(this.data.selectedMemberOrderId);
+    wx.hideLoading();
+    this.setData({
+      showConfirmDialog: false
+    });
 
+    if (!res.success) {
       wx.showToast({
-        title: 'QA 展示模式，暂未保存',
+        title: res.error || '确认收款失败',
         icon: 'none'
       });
+      return;
+    }
 
-      this.fetchGroupOrderDetail(this.data.groupOrderId);
+    wx.showToast({
+      title: this.data.saveModeText,
+      icon: 'none'
+    });
+    this.fetchGroupOrderDetail(this.data.groupOrderId);
+  },
 
-    }, 800);
+  onCustomerOrderEntry() {
+    const id = this.data.groupOrderId;
+    if (!id) {
+      wx.showToast({
+        title: '缺少团单 ID',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.navigateTo({
+      url: `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+      fail: () => {
+        wx.showToast({
+          title: '打开客户下单页失败',
+          icon: 'none'
+        });
+      }
+    });
   },
 
   onManageProducts() {

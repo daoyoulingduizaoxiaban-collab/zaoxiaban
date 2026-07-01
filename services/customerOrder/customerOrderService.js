@@ -1,0 +1,166 @@
+import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
+import { ProductStatus } from '~/enum/ProductStatus';
+import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
+
+const normalizeNumber = value => Number(value || 0);
+
+const getBestPriceRule = (priceSetting = [], quantity = 0) => {
+  const count = normalizeNumber(quantity);
+  const sortedRules = [...priceSetting]
+    .map(rule => ({
+      minQuantity: normalizeNumber(rule.minQuantity),
+      unitPrice: normalizeNumber(rule.unitPrice),
+      description: rule.description || '',
+    }))
+    .filter(rule => rule.minQuantity > 0 && rule.unitPrice > 0)
+    .sort((a, b) => b.minQuantity - a.minQuantity);
+
+  return sortedRules.find(rule => count >= rule.minQuantity) || sortedRules[sortedRules.length - 1] || null;
+};
+
+const getProductPriceDisplay = (product) => {
+  const prices = (product.priceSetting || []).map(rule => normalizeNumber(rule.unitPrice)).filter(price => price > 0);
+  if (prices.length === 0) return '未设置价格';
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+  return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
+};
+
+const normalizeOrderListItem = order => ({
+  ...order,
+  status: normalizeNumber(order.status),
+  paymentStatus: normalizeNumber(order.paymentStatus !== undefined ? order.paymentStatus : order.status),
+  itemCount: (order.items || order.productList || []).reduce((sum, item) => sum + normalizeNumber(item.amount || item.quantity), 0),
+  historyCount: (order.paymentHistory || []).length,
+});
+
+const normalizeGroupOrderProducts = groupOrder => (groupOrder.productList || [])
+  .filter(product => Number(product.status) === ProductStatus.PUBLISHED)
+  .map(product => ({
+    ...product,
+    quantity: 0,
+    priceDisplay: getProductPriceDisplay(product),
+    lineTotal: 0,
+    selectedRuleText: '',
+  }));
+
+export const CustomerOrderService = {
+  storageKey: CustomerOrderRepository.storageKey,
+
+  async listVisible() {
+    const result = await CustomerOrderRepository.listVisible();
+    if (!result.success) return result;
+    return {
+      ...result,
+      data: result.data.map(normalizeOrderListItem),
+    };
+  },
+
+  async getById(id) {
+    const result = await CustomerOrderRepository.getById(id);
+    if (!result.success) return result;
+    return {
+      ...result,
+      data: normalizeOrderListItem(result.data),
+    };
+  },
+
+  async getGroupOrderDetail(groupOrderId) {
+    const entryResult = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId);
+    if (!entryResult.success) return entryResult;
+
+    const orderResult = await CustomerOrderRepository.listByGroupOrder(groupOrderId);
+    const memberOrderList = orderResult.success ? orderResult.data.map(normalizeOrderListItem) : [];
+    const totalReceivable = memberOrderList
+      .filter(order => Number(order.status) !== MemberOrderStatus.CANCELLED)
+      .reduce((sum, order) => sum + normalizeNumber(order.totalPrice), 0);
+    const totalReceived = memberOrderList
+      .filter(order => Number(order.status) === MemberOrderStatus.CONFIRMED)
+      .reduce((sum, order) => sum + normalizeNumber(order.totalPrice), 0);
+
+    return {
+      ...entryResult,
+      data: {
+        ...entryResult.data,
+        memberOrderList,
+        totalReceivable,
+        totalReceived,
+        totalCustomers: memberOrderList.length,
+      },
+    };
+  },
+
+  async getOrderEntry(groupOrderId) {
+    const result = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId);
+    if (!result.success) return result;
+
+    return {
+      ...result,
+      data: {
+        ...result.data,
+        productList: normalizeGroupOrderProducts(result.data),
+      },
+    };
+  },
+
+  calculateLine(product, quantity) {
+    const count = normalizeNumber(quantity);
+    if (count <= 0) {
+      return {
+        ...product,
+        quantity: 0,
+        lineTotal: 0,
+        selectedRuleText: '',
+      };
+    }
+
+    const rule = getBestPriceRule(product.priceSetting || [], count);
+    const unitPrice = rule ? rule.unitPrice : 0;
+    return {
+      ...product,
+      quantity: count,
+      unitPrice,
+      lineTotal: count * unitPrice,
+      selectedRuleText: rule ? `按 ${rule.description || `${rule.minQuantity} 件起`}，单价 ¥${unitPrice}` : '未设置有效价格',
+    };
+  },
+
+  calculateTotal(products) {
+    return (products || []).reduce((sum, product) => sum + normalizeNumber(product.lineTotal), 0);
+  },
+
+  validateCreatePayload(payload) {
+    if (!payload.groupOrderId) return '缺少团单 ID';
+    if (!String(payload.customerName || '').trim()) return '请输入客户姓名';
+    if (!String(payload.customerPhone || '').trim()) return '请输入客户手机号';
+    if (!Array.isArray(payload.items) || payload.items.length === 0) return '请至少选择一个商品';
+    const invalidItem = payload.items.find(item => normalizeNumber(item.amount) <= 0 || normalizeNumber(item.totalPrice) <= 0);
+    if (invalidItem) return '商品数量和金额必须大于 0';
+    return '';
+  },
+
+  async create(payload) {
+    const error = this.validateCreatePayload(payload);
+    if (error) return { success: false, error };
+
+    return CustomerOrderRepository.create({
+      ...payload,
+      customerName: String(payload.customerName || '').trim(),
+      customerPhone: String(payload.customerPhone || '').trim(),
+      memberRemark: String(payload.memberRemark || '').trim(),
+      totalPrice: normalizeNumber(payload.totalPrice),
+    });
+  },
+
+  async declarePaid(id) {
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.PAID, '客户声明已付款');
+  },
+
+  async confirmPayment(id) {
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CONFIRMED, '导游确认收款');
+  },
+
+  async cancelOrder(id) {
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CANCELLED, '订单已取消');
+  },
+};

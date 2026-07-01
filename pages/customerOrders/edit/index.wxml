@@ -1,13 +1,54 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
-  <t-cell-group theme="card">
-    <t-input label="客户订单名称" placeholder="请输入客户订单名称" value="{{ formData.title }}" />
-    <t-cell title="下单日期" note="{{ formData.date || '请选择' }}" arrow bind:tap="showDatePicker" />
-    <t-input label="客户订单状态" value="{{ formData.statusText }}" disabled />
+  <view class="mode-tip">{{saveModeText}}</view>
+
+  <view wx:if="{{groupOrder}}" class="group-card">
+    <view class="group-title">{{groupOrder.title}}</view>
+    <view class="group-desc">{{groupOrder.description}}</view>
+    <view class="group-status">收单状态：{{groupOrder.statusText}}</view>
+  </view>
+
+  <view wx:else class="empty-state">
+    未找到可下单团单
+  </view>
+
+  <t-cell-group theme="card" wx:if="{{groupOrder}}">
+    <t-input label="客户姓名" placeholder="请输入客户姓名" value="{{ formData.customerName }}" data-field="customerName" bind:change="onInputChange" />
+    <t-input label="手机号" placeholder="请输入客户手机号" value="{{ formData.customerPhone }}" data-field="customerPhone" bind:change="onInputChange" />
+    <t-input label="备注" placeholder="取货时间、特殊需求等" value="{{ formData.memberRemark }}" data-field="memberRemark" bind:change="onInputChange" />
   </t-cell-group>
 
-  <view class="submit-bar">
-    <t-button theme="primary" size="large" block bind:tap="onSave">保存客户订单</t-button>
+  <view wx:if="{{groupOrder}}" class="section-title">选择本团商品</view>
+
+  <block wx:for="{{productRows}}" wx:key="id">
+    <view class="product-card">
+      <image class="product-image" src="{{item.pictureUrls[0] || '/static/icon_map.png'}}" mode="aspectFill" />
+      <view class="product-main">
+        <view class="product-title">{{item.title}}</view>
+        <view class="product-desc">{{item.description}}</view>
+        <view class="product-price">{{item.priceDisplay}}</view>
+        <view class="rule-text">{{item.selectedRuleText || '输入数量后自动匹配阶梯价格'}}</view>
+      </view>
+      <view class="quantity-box">
+        <input class="quantity-input" type="number" value="{{item.quantity}}" data-id="{{item.id}}" bindinput="onQuantityInput" />
+        <text class="quantity-label">件</text>
+      </view>
+      <view class="line-total">￥{{item.lineTotal || 0}}</view>
+    </view>
+  </block>
+
+  <view wx:if="{{groupOrder && productRows.length === 0}}" class="empty-state">
+    当前团单暂无可下单商品
+  </view>
+
+  <view class="submit-bar" wx:if="{{groupOrder}}">
+    <view class="total-row">
+      <text>合计</text>
+      <text class="total-price">￥{{totalPrice}}</text>
+    </view>
+    <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting || productRows.length === 0}}" bind:tap="onSave">
+      提交客户订单
+    </t-button>
   </view>
 </view>

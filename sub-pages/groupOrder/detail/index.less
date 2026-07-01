@@ -9,6 +9,16 @@
   box-sizing: border-box;
 }
 
+.mode-tip {
+  margin: 16rpx 32rpx 12rpx;
+  padding: 16rpx 20rpx;
+  background: #fff7e6;
+  border: 1rpx solid #ffd591;
+  border-radius: 8rpx;
+  color: #ad5b00;
+  font-size: 24rpx;
+}
+
 /* 統計卡片 */
 .statistics-card {
   margin: 12rpx 32rpx;
@@ -256,11 +266,12 @@
   z-index: 100;
   display: flex;
   gap: 20rpx;
+  flex-wrap: wrap;
   /* 設定按鈕之間的間距 */
 }
 
 .footer-action-bar t-button {
-  width: 100% !important;
+  width: calc(50% - 10rpx) !important;
   --td-button-border-radius: 16rpx;
   --td-button-font-weight: 600;
   height: 96rpx;

@@ -1,12 +1,170 @@
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { filterCustomerOrdersByRole } from '~/services/auth/roleScope';
+import { filterCustomerOrdersByRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
+
+const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
+
+const nowIso = () => new Date().toISOString();
+const sameId = (a, b) => String(a) === String(b);
+
+const safeGetStorage = (key, fallback = null) => {
+  try {
+    return wx.getStorageSync(key) || fallback;
+  } catch (err) {
+    return fallback;
+  }
+};
+
+const safeSetStorage = (key, value) => {
+  wx.setStorageSync(key, value);
+};
+
+const getStatusText = (status) => {
+  const statusMap = {
+    [MemberOrderStatus.UNPAID]: '未付款',
+    [MemberOrderStatus.PAID]: '客户付款',
+    [MemberOrderStatus.CONFIRMED]: '已确认',
+    [MemberOrderStatus.CANCELLED]: '已取消',
+  };
+  return statusMap[Number(status)] || '未知状态';
+};
+
+const getProductMap = () => {
+  const map = {};
+  QaSeedMock.getProducts().forEach((product) => {
+    map[String(product.id)] = product;
+  });
+  return map;
+};
+
+const normalizeOrder = (order) => ({
+  ...order,
+  id: order.id,
+  status: Number(order.status),
+  paymentStatus: Number(order.paymentStatus !== undefined ? order.paymentStatus : order.status),
+  statusText: order.statusText || getStatusText(order.status),
+  items: order.items || order.productList || [],
+  productList: order.productList || order.items || [],
+  paymentHistory: order.paymentHistory || [],
+  customerPhone: order.customerPhone || '',
+  customerName: order.customerName || '客户',
+  totalPrice: Number(order.totalPrice || 0),
+  originalTotalPrice: Number(order.originalTotalPrice || order.totalPrice || 0),
+});
+
+const enrichSeedOrders = () => {
+  const productMap = getProductMap();
+  const groupOrders = QaSeedMock.getGroupOrders();
+  const memberOrders = groupOrders.flatMap(groupOrder => (
+    (groupOrder.memberOrderList || []).map(memberOrder => ({
+      ...memberOrder,
+      groupOrderTitle: groupOrder.title,
+      guideUserId: groupOrder.guideUserId,
+    }))
+  ));
+
+  return QaSeedMock.getCustomerOrders().map((order) => {
+    const memberOrder = memberOrders.find(item => sameId(item.id, order.id));
+    const productList = (memberOrder && memberOrder.productList ? memberOrder.productList : []).map((item) => {
+      const product = productMap[String(item.productId)] || {};
+      return {
+        ...item,
+        productId: item.productId,
+        title: product.title || `商品 #${item.productId}`,
+        unitPrice: Number(item.amount) > 0 ? Number(item.totalPrice || 0) / Number(item.amount) : 0,
+        pictureUrl: (product.pictureUrls && product.pictureUrls[0]) || '',
+      };
+    });
+
+    return normalizeOrder({
+      ...order,
+      paymentStatus: order.status,
+      productList,
+      items: productList,
+      customerPhone: order.customerPhone || '',
+      memberRemark: memberOrder && memberOrder.memberRemark,
+      hostRemark: memberOrder && memberOrder.hostRemark,
+      createdAt: order.createdAt || nowIso(),
+      updatedAt: order.updatedAt || nowIso(),
+      paymentHistory: [
+        {
+          id: `${order.id}-seed`,
+          customerOrderId: order.id,
+          fromStatus: '',
+          toStatus: Number(order.status),
+          actorUserId: order.customerUserId,
+          actorRole: 'customer',
+          note: 'QA seed 初始状态',
+          createdAt: order.createdAt || nowIso(),
+        },
+      ],
+    });
+  });
+};
+
+const getStoredState = () => {
+  const stored = safeGetStorage(CUSTOMER_ORDER_STORAGE_KEY, null);
+  if (stored && stored.mode === 'local-customer-order-repository' && Array.isArray(stored.orders)) {
+    return stored;
+  }
+  const seededState = {
+    mode: 'local-customer-order-repository',
+    updatedAt: nowIso(),
+    orders: enrichSeedOrders(),
+    payments: [],
+  };
+  safeSetStorage(CUSTOMER_ORDER_STORAGE_KEY, seededState);
+  return seededState;
+};
+
+const saveState = (state) => {
+  safeSetStorage(CUSTOMER_ORDER_STORAGE_KEY, {
+    ...state,
+    updatedAt: nowIso(),
+  });
+};
+
+const getAllOrders = () => getStoredState().orders.map(normalizeOrder);
+
+const canManageOrder = (order, groupOrders, profile) => {
+  if (!profile || !order) return false;
+  if (isOwnerOrAdmin(profile)) return true;
+  if (profile.role !== 'guide') return false;
+  const groupOrder = groupOrders.find(item => sameId(item.id, order.groupOrderId));
+  if (!groupOrder) return false;
+  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
+  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
+};
+
+const canViewSharedGroupOrder = (groupOrder, profile) => {
+  if (!groupOrder) return false;
+  if (!profile) return true;
+  if (isOwnerOrAdmin(profile)) return true;
+  if (profile.role === 'customer') return true;
+  if (profile.role !== 'guide') return false;
+  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
+  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
+};
+
+const appendHistory = (order, nextStatus, note, profile) => ({
+  id: `${order.id}-${Date.now()}`,
+  customerOrderId: order.id,
+  fromStatus: Number(order.status),
+  toStatus: Number(nextStatus),
+  actorUserId: profile && profile.id,
+  actorRole: profile && profile.role,
+  note,
+  createdAt: nowIso(),
+});
 
 export const CustomerOrderRepository = {
+  storageKey: CUSTOMER_ORDER_STORAGE_KEY,
+
   async listVisible() {
     const profile = AuthService.getCurrentProfile();
     const groupOrders = QaSeedMock.getGroupOrders();
-    const customerOrders = QaSeedMock.getCustomerOrders();
+    const customerOrders = getAllOrders();
 
     return {
       success: true,
@@ -15,7 +173,177 @@ export const CustomerOrderRepository = {
         role: profile && profile.role,
         authSource: profile && profile.authSource,
         isMockOpenId: Boolean(profile && profile.isMockOpenId),
+        saveMode: 'local-customer-order-repository',
       },
+    };
+  },
+
+  async listByGroupOrder(groupOrderId) {
+    const profile = AuthService.getCurrentProfile();
+    const groupOrders = QaSeedMock.getGroupOrders();
+    const groupOrder = groupOrders.find(item => sameId(item.id, groupOrderId));
+    if (!canViewSharedGroupOrder(groupOrder, profile)) {
+      return { success: false, error: '当前角色不能查看此团单订单' };
+    }
+
+    const orders = getAllOrders().filter(order => sameId(order.groupOrderId, groupOrderId));
+    return {
+      success: true,
+      data: orders,
+      meta: { saveMode: 'local-customer-order-repository' },
+    };
+  },
+
+  async getById(id) {
+    const result = await this.listVisible();
+    const order = result.data.find(item => sameId(item.id, id));
+    if (!order) return { success: false, error: '未找到订单资料' };
+    return { ...result, data: order };
+  },
+
+  async getGroupOrderEntry(groupOrderId) {
+    const profile = AuthService.getCurrentProfile();
+    const groupOrder = QaSeedMock.getGroupOrders().find(item => sameId(item.id, groupOrderId));
+    if (!groupOrder) return { success: false, error: '未找到团单' };
+    if (!canViewSharedGroupOrder(groupOrder, profile)) {
+      return { success: false, error: '当前角色不能进入此团单' };
+    }
+    return {
+      success: true,
+      data: groupOrder,
+      meta: { saveMode: 'local-customer-order-repository' },
+    };
+  },
+
+  async create(orderData) {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile || (profile.role !== 'customer' && !isOwnerOrAdmin(profile))) {
+      return { success: false, error: '当前角色不能提交客户订单' };
+    }
+
+    const groupOrder = QaSeedMock.getGroupOrders().find(item => sameId(item.id, orderData.groupOrderId));
+    if (!groupOrder) return { success: false, error: '未找到团单' };
+    if (Number(groupOrder.status) !== 1) return { success: false, error: '当前团单已停止收单' };
+
+    const state = getStoredState();
+    const createdAt = nowIso();
+    const nextOrder = normalizeOrder({
+      id: Date.now(),
+      groupOrderId: groupOrder.id,
+      guideUserId: groupOrder.guideUserId,
+      customerUserId: profile.id,
+      customerName: orderData.customerName || profile.displayName || '客户',
+      customerPhone: orderData.customerPhone || profile.phone || '',
+      title: `${groupOrder.title} - ${orderData.customerName || profile.displayName || '客户'}`,
+      status: MemberOrderStatus.UNPAID,
+      paymentStatus: MemberOrderStatus.UNPAID,
+      statusText: getStatusText(MemberOrderStatus.UNPAID),
+      totalPrice: orderData.totalPrice,
+      originalTotalPrice: orderData.totalPrice,
+      items: orderData.items,
+      productList: orderData.items,
+      memberRemark: orderData.memberRemark || '',
+      hostRemark: '',
+      createdAt,
+      updatedAt: createdAt,
+      paymentHistory: [
+        {
+          id: `${createdAt}-created`,
+          customerOrderId: '',
+          fromStatus: '',
+          toStatus: MemberOrderStatus.UNPAID,
+          actorUserId: profile.id,
+          actorRole: profile.role,
+          note: '客户提交订单',
+          createdAt,
+        },
+      ],
+    });
+    nextOrder.paymentHistory = nextOrder.paymentHistory.map(item => ({
+      ...item,
+      customerOrderId: nextOrder.id,
+    }));
+
+    saveState({
+      ...state,
+      orders: [...state.orders.map(normalizeOrder), nextOrder],
+    });
+
+    return {
+      success: true,
+      data: nextOrder,
+      meta: { saveMode: 'local-customer-order-repository' },
+    };
+  },
+
+  async updatePaymentStatus(id, nextStatus, note) {
+    const profile = AuthService.getCurrentProfile();
+    const groupOrders = QaSeedMock.getGroupOrders();
+    const state = getStoredState();
+    const orders = state.orders.map(normalizeOrder);
+    const target = orders.find(order => sameId(order.id, id));
+    if (!target) return { success: false, error: '未找到订单资料' };
+
+    const nextStatusValue = Number(nextStatus);
+    const isCustomerOwner = profile && profile.role === 'customer' && sameId(target.customerUserId, profile.id);
+    const isManager = canManageOrder(target, groupOrders, profile);
+    if (nextStatusValue === MemberOrderStatus.PAID && !isCustomerOwner && !isOwnerOrAdmin(profile)) {
+      return { success: false, error: '只有下单客户可以声明已付款' };
+    }
+    if (nextStatusValue === MemberOrderStatus.CONFIRMED && !isManager) {
+      return { success: false, error: '当前角色不能处理此订单' };
+    }
+    if (nextStatusValue === MemberOrderStatus.CANCELLED && !isManager && !isCustomerOwner) {
+      return { success: false, error: '当前角色不能取消此订单' };
+    }
+    if (Number(target.status) === MemberOrderStatus.CONFIRMED && nextStatusValue !== MemberOrderStatus.CONFIRMED) {
+      return { success: false, error: '已确认订单不能再变更状态' };
+    }
+    if (Number(target.status) === MemberOrderStatus.CANCELLED) {
+      return { success: false, error: '已取消订单不能再变更状态' };
+    }
+    if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(target.status) !== MemberOrderStatus.PAID) {
+      return { success: false, error: '只有客户已付款订单才能确认到账' };
+    }
+
+    const historyItem = appendHistory(target, nextStatusValue, note, profile);
+    const updatedOrder = normalizeOrder({
+      ...target,
+      status: nextStatusValue,
+      paymentStatus: nextStatusValue,
+      statusText: getStatusText(nextStatusValue),
+      updatedAt: nowIso(),
+      cancelledAt: nextStatusValue === MemberOrderStatus.CANCELLED ? nowIso() : target.cancelledAt,
+      paymentHistory: [...(target.paymentHistory || []), historyItem],
+    });
+
+    const payments = [...(state.payments || [])];
+    if (nextStatusValue === MemberOrderStatus.CONFIRMED) {
+      payments.push({
+        id: `${target.id}-${Date.now()}`,
+        customerOrderId: target.id,
+        groupOrderId: target.groupOrderId,
+        amount: target.totalPrice,
+        method: 'manual',
+        status: 'confirmed',
+        confirmedByUserId: profile && profile.id,
+        confirmedAt: nowIso(),
+        note: note || '导游确认收款',
+        createdAt: nowIso(),
+        updatedAt: nowIso(),
+      });
+    }
+
+    saveState({
+      ...state,
+      orders: orders.map(order => (sameId(order.id, id) ? updatedOrder : order)),
+      payments,
+    });
+
+    return {
+      success: true,
+      data: updatedOrder,
+      meta: { saveMode: 'local-customer-order-repository' },
     };
   },
 };
