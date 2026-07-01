@@ -1,7 +1,7 @@
 # HANDOFF
 
 ## Current Source Of Truth
-- Current task source: `CURRENT_TASKS.md`.
+- Current task source: `CURRENT_TASKS.md`; it separates partially completed work from not-started backlog items.
 - Product rules: `PROJECT_RULES.md`.
 - MVP roadmap: `MVP_COMPLETION_CHECKLIST.md`.
 - Acceptance status: `ACCEPTANCE.md`.
@@ -52,6 +52,11 @@ git diff --check
 - Customer order and payment confirmation workflow.
 
 ## Recommended Next Step
+Read `CURRENT_TASKS.md` first. It is the active backlog and now lists:
+- partially completed items that need follow-up work;
+- not-started phases that require explicit user scope;
+- forbidden actions.
+
 Do not infer the next development phase from the roadmap. Wait for the user to specify one of:
 - GUI smoke test.
 - Formal data-layer confirmation and cloud setup.
