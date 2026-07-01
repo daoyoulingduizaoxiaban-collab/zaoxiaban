@@ -1,13 +1,17 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { QaSeedMock } from '~/mock/qaSeed';
+import { AuthService } from '~/services/auth/authService';
+import { canUseAdminPortal, canUseProviderPortal } from '~/services/auth/roleScope';
 
 Page({
   behaviors: [useToastBehavior],
 
   data: {
     isLoad: false,
+    isLoggedIn: false,
     service: [],
     personalInfo: {},
+    authSession: {},
     qaSeedInfo: {},
     gridList: [
       {
@@ -37,7 +41,7 @@ Page({
     ],
 
     settingList: [
-      { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
+      { name: '供应商资料', icon: 'shop', type: 'providers' },
       { name: '系统管理员', icon: 'user-setting', type: 'admin' },
       { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
     ],
@@ -48,20 +52,15 @@ Page({
   },
 
   async onShow() {
-    const Token = wx.getStorageSync('access_token');
-    const personalInfo = this.getPersonalInfo();
+    const profile = AuthService.getCurrentProfile();
+    const session = AuthService.getCurrentSession();
 
-    if (Token) {
-      this.setData({
-        isLoad: true,
-        personalInfo,
-      });
-    } else {
-      this.setData({
-        isLoad: true,
-        personalInfo,
-      });
-    }
+    this.setData({
+      isLoad: Boolean(profile),
+      isLoggedIn: Boolean(profile),
+      personalInfo: profile ? this.toPersonalInfo(profile) : {},
+      authSession: session || {},
+    });
   },
 
   loadQaSeed() {
@@ -82,13 +81,13 @@ Page({
     });
   },
 
-  getPersonalInfo() {
-    const owner = QaSeedMock.getUsers()[0];
+  toPersonalInfo(profile) {
     return {
-      name: owner.name,
-      city: owner.city,
-      star: owner.displayRole,
-      image: '/static/avatar1.png',
+      name: profile.displayName,
+      city: profile.city || '未填写城市',
+      star: profile.roleLabel,
+      image: profile.avatarUrl || '/static/avatar1.png',
+      authSourceText: profile.isMockOpenId ? '本地身份验证' : '微信 OpenID 已验证',
     };
   },
 
@@ -108,6 +107,12 @@ Page({
     wx.showToast({ title: 'QA Seed 已重置', icon: 'success' });
   },
 
+  onLogout() {
+    AuthService.logout();
+    this.onShow();
+    wx.showToast({ title: '已退出登录', icon: 'success' });
+  },
+
   onEleClick(e) {
     const { name, url, type } = e.currentTarget.dataset.data;
     if (url) {
@@ -122,12 +127,38 @@ Page({
       return;
     }
     if (type === 'admin') {
+      const profile = AuthService.getCurrentProfile();
+      if (!canUseAdminPortal(profile)) {
+        wx.showModal({
+          title: '系统管理员入口',
+          content: '当前角色无管理员权限。管理员后台尚未完成，不会开放全站管理。',
+          showCancel: false,
+          confirmText: '知道了',
+        });
+        return;
+      }
       const admin = QaSeedMock.getAdmins()[0];
       wx.showModal({
         title: admin.title,
-        content: admin.note,
+        content: `${admin.note}\n\n管理员后台尚未完成，暂不提供全站管理操作。`,
         showCancel: false,
         confirmText: '知道了',
+      });
+      return;
+    }
+    if (type === 'providers') {
+      const profile = AuthService.getCurrentProfile();
+      if (!canUseProviderPortal(profile)) {
+        wx.showModal({
+          title: '供应商资料',
+          content: '供应商后台暂未开放。当前 MVP 只保留最小提示入口，不提供供应商管理操作。',
+          showCancel: false,
+          confirmText: '知道了',
+        });
+        return;
+      }
+      wx.navigateTo({
+        url: '/pages/providers/index',
       });
       return;
     }

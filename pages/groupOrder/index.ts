@@ -1,13 +1,12 @@
 import {
   GroupOrder
 } from '~/models/GroupOrder';
-import {
-  GroupOrderMock
-} from '~/mock/groupOrder/index';
+import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
 import {
   getGroupOrderStatusList,
   getGroupOrderStatusTextByValue
 } from '~/enum/GroupOrderStatus'
+import { AuthService } from '~/services/auth/authService';
 
 Page({
   data: {
@@ -16,6 +15,8 @@ Page({
     searchKeyword: '',
     statusOptions: getGroupOrderStatusList(),
     currentStatus: 0,
+    roleScopeText: '',
+    canCreateGroupOrder: false,
   },
 
   // 初始化
@@ -29,8 +30,8 @@ Page({
     });
 
     try {
-      const res = await GroupOrderMock.fetchItineraryListMock();
-      if (res.code === 200) {
+      const res = await GroupOrderRepository.listVisible();
+      if (res.success) {
 
         const list = res.data.map(item => ({
           ...item,
@@ -38,7 +39,9 @@ Page({
         }));
 
         this.setData({
-          itineraryList: list
+          itineraryList: list,
+          roleScopeText: this.getRoleScopeText(),
+          canCreateGroupOrder: this.canCreateGroupOrder()
         });
       }
     } catch (err) {
@@ -49,6 +52,20 @@ Page({
     } finally {
       wx.hideLoading();
     }
+  },
+
+  getRoleScopeText() {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile) return '未登录，仅显示空列表';
+    if (profile.role === 'guide') return '仅显示你创建或被授权管理的团单';
+    if (profile.role === 'customer') return '仅显示你下过订单关联的团单';
+    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看 QA 范围内团单';
+    return '当前角色暂无团单权限';
+  },
+
+  canCreateGroupOrder() {
+    const profile = AuthService.getCurrentProfile();
+    return Boolean(profile && (profile.role === 'guide' || profile.role === 'owner' || profile.role === 'admin'));
   },
 
   // 点击团单跳转至详情页
@@ -78,6 +95,14 @@ Page({
   },
 
   addItinerary(e) {
+    if (!this.canCreateGroupOrder()) {
+      wx.showToast({
+        title: '当前角色不能新建团单',
+        icon: 'none'
+      });
+      return;
+    }
+
     const url = '/sub-pages/groupOrder/add/index';
 
     wx.navigateTo({
@@ -119,7 +144,7 @@ Page({
     } = this.data;
 
     // 呼叫 Mock API，同時傳入兩個條件
-    const res = await GroupOrderMock.filterItineraryList(searchKeyword, currentStatus);
+    const res = await GroupOrderRepository.filterVisible(searchKeyword, currentStatus);
 
     this.setData({
       // 確保畫面更新的是篩選後的結果

@@ -1,14 +1,27 @@
 import { QaSeedMock } from '~/mock/qaSeed';
+import { AuthService } from '~/services/auth/authService';
+import { canUseProviderPortal } from '~/services/auth/roleScope';
 
 Page({
   data: {
     titleText: '供应商',
-    providersList: []
+    providersList: [],
+    disabledReason: '',
   },
 
   onLoad() {
+    const profile = AuthService.getCurrentProfile();
+    if (!canUseProviderPortal(profile)) {
+      this.setData({
+        providersList: [],
+        disabledReason: '供应商后台暂未开放。当前 MVP 只保留最小提示入口，不提供供应商管理操作。',
+      });
+      return;
+    }
+
     this.setData({
-      providersList: QaSeedMock.getProviders()
+      providersList: QaSeedMock.getProviders(),
+      disabledReason: '',
     });
   },
 

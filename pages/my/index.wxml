@@ -11,6 +11,7 @@
           <view class="tags">
             <t-tag class="tag" variant="light" icon="discount">{{personalInfo.star}}</t-tag>
             <t-tag class="tag" variant="light" icon="location">{{personalInfo.city}}</t-tag>
+            <t-tag class="tag" variant="light" icon="secured">{{personalInfo.authSourceText}}</t-tag>
           </view>
         </view>
         <t-icon slot="right-icon" name="edit" size="40rpx" color="#000000e6" bindtap="onNavigateTo" />
@@ -26,6 +27,12 @@
         <t-avatar slot="left-icon" icon="user" size="128rpx" />
       </t-cell>
     </t-cell-group>
+    <view class="auth-warning" wx:if="{{authSession.isMockOpenId}}">
+      当前使用本地 auth adapter，尚未验证正式微信 OpenID。
+    </view>
+    <view class="auth-actions" wx:if="{{isLoggedIn}}">
+      <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
+    </view>
     <t-divider t-class="divider-class" />
     <t-grid t-class="grid-class">
       <t-grid-item

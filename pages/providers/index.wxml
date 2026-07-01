@@ -11,9 +11,9 @@
   </t-cell-group>
 
   <view wx:if="{{ providersList.length === 0 }}" class="empty-state">
-    <t-empty icon="info-circle" description="暂无供应商资料" />
+    <t-empty icon="info-circle" description="{{disabledReason || '暂无供应商资料'}}" />
   </view>
 
-  <t-fab icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增供应商" style="right: 32rpx; bottom: 180rpx;" />
+  <t-fab wx:if="{{!disabledReason}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增供应商" style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

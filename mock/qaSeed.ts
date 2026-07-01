@@ -115,6 +115,9 @@ const buildGroupOrders = () => {
   const list = [
     new GroupOrder({
       id: 1,
+      ownerUserId: 1,
+      guideUserId: 2,
+      authorizedGuideIds: [],
       title: '华东五日团伴手礼收单',
       status: GroupOrderStatus.OPEN,
       description: '开放收单，有客户订单、有本团商品，用于主流程 QA。',
@@ -124,6 +127,9 @@ const buildGroupOrders = () => {
     }),
     new GroupOrder({
       id: 2,
+      ownerUserId: 1,
+      guideUserId: 2,
+      authorizedGuideIds: [],
       title: '北京研学团补货单',
       status: GroupOrderStatus.STOPPED,
       description: '停止收单，有取消订单，用于状态与禁用动作 QA。',
@@ -133,6 +139,9 @@ const buildGroupOrders = () => {
     }),
     new GroupOrder({
       id: 3,
+      ownerUserId: 1,
+      guideUserId: 99,
+      authorizedGuideIds: [],
       title: '成都周末团空单测试',
       status: GroupOrderStatus.OPEN,
       description: '开放收单但没有客户订单、没有商品，用于空状态 QA。',
@@ -149,17 +158,17 @@ const buildGroupOrders = () => {
 const buildSeed = () => ({
   mode: 'qa',
   users: [
-    { id: 1, role: 'owner', name: '林秝帆', displayRole: '产品拥有者', city: '上海', phone: '13800000001' },
-    { id: 2, role: 'guide', name: '张领队', displayRole: '领队/导游', city: '杭州', phone: '13800000002' },
-    { id: 3, role: 'customer', name: '王客户', displayRole: '客户', city: '南京', phone: '13800000003' },
+    { id: 1, openId: 'mock-openid-owner', role: 'owner', name: '林秝帆', displayName: '林秝帆', displayRole: '产品拥有者', city: '上海', phone: '13800000001', avatarUrl: '/static/avatar1.png', status: 'active' },
+    { id: 2, openId: 'mock-openid-guide', role: 'guide', name: '张领队', displayName: '张领队', displayRole: '领队/导游', city: '杭州', phone: '13800000002', avatarUrl: '/static/avatar1.png', status: 'active' },
+    { id: 3, openId: 'mock-openid-customer', role: 'customer', name: '王客户', displayName: '王客户', displayRole: '客户', city: '南京', phone: '13800000003', avatarUrl: '/static/avatar1.png', status: 'active' },
   ],
   products: buildProducts(),
   groupOrders: buildGroupOrders(),
   customerOrders: [
-    { id: 5001, groupOrderId: 1, title: '华东五日团伴手礼收单 - 王客户', status: MemberOrderStatus.UNPAID, statusText: '未付款', totalPrice: 352, customerName: '王客户' },
-    { id: 5002, groupOrderId: 1, title: '华东五日团伴手礼收单 - 李客户', status: MemberOrderStatus.PAID, statusText: '客户付款', totalPrice: 590, customerName: '李客户' },
-    { id: 5003, groupOrderId: 1, title: '华东五日团伴手礼收单 - 团客代表', status: MemberOrderStatus.CONFIRMED, statusText: '已确认', totalPrice: 2040, customerName: '团客代表' },
-    { id: 5004, groupOrderId: 2, title: '北京研学团补货单 - 取消单', status: MemberOrderStatus.CANCELLED, statusText: '已取消', totalPrice: 0, customerName: '赵客户' },
+    { id: 5001, groupOrderId: 1, customerUserId: 3, guideUserId: 2, title: '华东五日团伴手礼收单 - 王客户', status: MemberOrderStatus.UNPAID, statusText: '未付款', totalPrice: 352, customerName: '王客户' },
+    { id: 5002, groupOrderId: 1, customerUserId: 301, guideUserId: 2, title: '华东五日团伴手礼收单 - 李客户', status: MemberOrderStatus.PAID, statusText: '客户付款', totalPrice: 590, customerName: '李客户' },
+    { id: 5003, groupOrderId: 1, customerUserId: 302, guideUserId: 2, title: '华东五日团伴手礼收单 - 团客代表', status: MemberOrderStatus.CONFIRMED, statusText: '已确认', totalPrice: 2040, customerName: '团客代表' },
+    { id: 5004, groupOrderId: 2, customerUserId: 303, guideUserId: 2, title: '北京研学团补货单 - 取消单', status: MemberOrderStatus.CANCELLED, statusText: '已取消', totalPrice: 0, customerName: '赵客户' },
   ],
   providers: [
     { id: 'P001', title: '杭州伴手礼供应商', contact: '供应联系人 A', statusText: '可显示资料', note: '已接入 QA 展示资料，编辑保存暂未串接。' },

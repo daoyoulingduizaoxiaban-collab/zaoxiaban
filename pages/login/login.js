@@ -1,85 +1,52 @@
-import request from '~/api/request';
+import { AuthService } from '~/services/auth/authService';
+import { AUTH_ROLES } from '~/services/auth/roleScope';
 
 Page({
   data: {
-    phoneNumber: '',
-    isPhoneNumber: false,
-    isCheck: false,
-    isSubmit: false,
-    isPasswordLogin: false,
-    passwordInfo: {
-      account: '',
-      password: '',
-    },
-    radioValue: '',
+    roleOptions: AuthService.roleOptions,
+    selectedRole: AUTH_ROLES.GUIDE,
+    isSubmitting: false,
+    authNotice: '将调用 wx.login；未配置云函数时会使用本地 auth adapter 验证角色范围。',
   },
 
-  /* 自定义功能函数 */
-  changeSubmit() {
-    if (this.data.isPasswordLogin) {
-      if (this.data.passwordInfo.account !== '' && this.data.passwordInfo.password !== '' && this.data.isCheck) {
-        this.setData({ isSubmit: true });
-      } else {
-        this.setData({ isSubmit: false });
-      }
-    } else if (this.data.isPhoneNumber && this.data.isCheck) {
-      this.setData({ isSubmit: true });
-    } else {
-      this.setData({ isSubmit: false });
-    }
-  },
-
-  // 手机号变更
-  onPhoneInput(e) {
-    const isPhoneNumber = /^[1][3,4,5,7,8,9][0-9]{9}$/.test(e.detail.value);
+  onRoleChange(e) {
     this.setData({
-      isPhoneNumber,
-      phoneNumber: e.detail.value,
+      selectedRole: e.detail.value,
     });
-    this.changeSubmit();
-  },
-
-  // 用户协议选择变更
-  onCheckChange(e) {
-    const { value } = e.detail;
-    this.setData({
-      radioValue: value,
-      isCheck: value === 'agree',
-    });
-    this.changeSubmit();
-  },
-
-  onAccountChange(e) {
-    this.setData({ passwordInfo: { ...this.data.passwordInfo, account: e.detail.value } });
-    this.changeSubmit();
-  },
-
-  onPasswordChange(e) {
-    this.setData({ passwordInfo: { ...this.data.passwordInfo, password: e.detail.value } });
-    this.changeSubmit();
-  },
-
-  // 切换登录方式
-  changeLogin() {
-    this.setData({ isPasswordLogin: !this.data.isPasswordLogin, isSubmit: false });
   },
 
   async login() {
-    if (this.data.isPasswordLogin) {
-      const res = await request('/login/postPasswordLogin', 'post', { data: this.data.passwordInfo });
-      if (res.success) {
-        await wx.setStorageSync('access_token', res.data.token);
-        wx.switchTab({
-          url: `/pages/my/index`,
-        });
-      }
-    } else {
-      const res = await request('/login/getSendMessage', 'get');
-      if (res.success) {
-        wx.navigateTo({
-          url: `/pages/loginCode/loginCode?phoneNumber=${this.data.phoneNumber}`,
-        });
-      }
+    if (this.data.isSubmitting) return;
+
+    this.setData({ isSubmitting: true });
+    wx.showLoading({ title: '登录中...' });
+
+    try {
+      const res = await AuthService.login({ role: this.data.selectedRole });
+      const { profile, session } = res.data;
+      const title = session.isMockOpenId ? '已进入本地身份验证' : '登录成功';
+
+      wx.showToast({
+        title,
+        icon: 'none',
+      });
+
+      wx.switchTab({
+        url: '/pages/my/index',
+        fail: () => {
+          wx.navigateTo({ url: '/pages/my/index' });
+        },
+      });
+
+      getApp().globalData.userInfo = profile;
+    } catch (err) {
+      wx.showToast({
+        title: '登录失败，请稍后重试',
+        icon: 'none',
+      });
+    } finally {
+      wx.hideLoading();
+      this.setData({ isSubmitting: false });
     }
   },
 });

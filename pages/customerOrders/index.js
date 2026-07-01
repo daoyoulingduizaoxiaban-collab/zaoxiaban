@@ -1,19 +1,39 @@
-import { QaSeedMock } from '~/mock/qaSeed';
+import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
+import { AuthService } from '~/services/auth/authService';
 
 Page({
   data: {
     titleText: '客户订单',
-    customerOrdersList: []
+    customerOrdersList: [],
+    roleScopeText: '',
+    canCreateCustomerOrder: false,
   },
 
   onLoad() {
     this.loadQaOrders();
   },
 
-  loadQaOrders() {
+  async loadQaOrders() {
+    const res = await CustomerOrderRepository.listVisible();
     this.setData({
-      customerOrdersList: QaSeedMock.getCustomerOrders()
+      customerOrdersList: res.data,
+      roleScopeText: this.getRoleScopeText(),
+      canCreateCustomerOrder: this.canCreateCustomerOrder(),
     });
+  },
+
+  canCreateCustomerOrder() {
+    const profile = AuthService.getCurrentProfile();
+    return Boolean(profile && (profile.role === 'guide' || profile.role === 'owner' || profile.role === 'admin'));
+  },
+
+  getRoleScopeText() {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile) return '未登录，仅显示空列表';
+    if (profile.role === 'guide') return '仅显示你管理团单下的客户订单';
+    if (profile.role === 'customer') return '仅显示你自己的客户订单';
+    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看 QA 范围内客户订单';
+    return '当前角色暂无客户订单权限';
   },
 
   goToDetail(e) {
@@ -35,9 +55,15 @@ Page({
         value: 'customerOrders'
       });
     }
+    this.loadQaOrders();
   },
 
   onGoToEdit(e) {
+    if (!this.canCreateCustomerOrder()) {
+      wx.showToast({ title: '当前角色不能新增客户订单', icon: 'none' });
+      return;
+    }
+
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/customerOrders/edit/index?id=${id}` : '/pages/customerOrders/edit/index';
 

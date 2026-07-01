@@ -1,5 +1,7 @@
 <nav nav-type="customerOrders" titleText="{{titleText}}" />
 
+<view class="role-scope">{{roleScopeText}}</view>
+
 <view class="customerOrders-container">
   <t-cell-group theme="card">
     <block wx:for="{{ customerOrdersList }}" wx:key="id">
@@ -14,6 +16,6 @@
     <t-empty icon="info-circle" description="暂无客户订单" />
   </view>
 
-  <t-fab icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增客户订单" style="right: 32rpx; bottom: 180rpx;" />
+  <t-fab wx:if="{{canCreateCustomerOrder}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增客户订单" style="right: 32rpx; bottom: 180rpx;" />
 
 </view>
