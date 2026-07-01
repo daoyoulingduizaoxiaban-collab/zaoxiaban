@@ -7,6 +7,13 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 
 每一輪實際要做什麼，以 `CURRENT_TASKS.md` 的當前任務為準。本文件只定義整體方向、驗收標準、禁止事項和不能漏掉的工作；不要因為本文件很完整，就一次展開登入、資料庫、GUI、UI、訂單等多個大範圍任務。
 
+## 勾選規則與 Phase 4 狀態說明
+- 「做到 Phase 4」不等於 Phase 1 到 Phase 4 的所有正式化項目都已完成；它只表示本輪被允許做到 Phase 4 的商品庫範圍，且不得擴張到 Phase 5。
+- 本專案目前 Phase 4 已完成的是「本地/QA repository 版本」：商品庫列表、新增、搜尋/狀態篩選、上下架、軟刪除已走 service/repository 邊界。
+- 上方或前置階段若仍有未勾項，代表那些項目需要正式資料層、正式 OpenID、雲端保存、Phase 3 團單正式保存或微信 DevTools GUI 驗證；這些不是 Phase 4 商品庫本地/QA 版本的漏做。
+- 不得為了讓 Phase 4 看起來完整而勾選尚未驗證的正式化項目。只有完成且驗證過，才能打勾。
+- `CURRENT_TASKS.md` 決定下一輪實際任務；本文件的未勾項是總 MVP 缺口，不是自動開工指令。
+
 ## 不可做歪的產品定義
 - 產品是面向中國境內導遊/領隊使用的微信小程序，不是 TDesign starter 展示站。
 - 核心業務是「導遊/領隊開團管理」。
@@ -81,8 +88,8 @@ CLI agent 每次開工都必須先讀本文件，再讀 `PROJECT_RULES.md`、`CU
 - [x] 建立正式資料模型文件，至少包含：users、groupOrders、products、groupOrderProducts、customerOrders、payments 或 paymentStatusHistory。
 - [x] 每個資料表/集合都要寫明 owner/guide/customer/provider/admin 權限邊界。
 - [x] `mock/qaSeed.ts` 保留為測試資料來源，但不能再是正式操作的唯一資料來源。
-- [ ] 建立資料存取層，讓頁面不要直接散落呼叫 storage/mock/API。
-- [ ] 所有 create/update/delete 操作要回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態。
+- [x] 商品庫已建立本地/QA 資料存取層，頁面透過 `ProductService` / `ProductRepository` 操作；其他模組正式資料存取層仍未完成。
+- [x] 商品庫 create/update/delete 已回傳成功/失敗，並在 UI 顯示 loading、成功、失敗狀態；其他模組仍未完成。
 - [ ] 重開小程序後，已建立的团单、商品、客户订单、收款状态仍能讀回。
 - [ ] 驗證：用同一個測試導遊建立資料，關閉再打開或重新載入後資料仍存在。
 

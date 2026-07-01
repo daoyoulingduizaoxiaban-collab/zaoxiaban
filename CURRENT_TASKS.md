@@ -21,6 +21,7 @@
 ## 最新稽核状态
 - Phase 0.7 稽核回修已完成并提交：socket null 防护、团单筛选 `statusText`、资料层「建议方案，待使用者确认」等状态已校正。
 - Phase 4 商品库已完成本地/QA repository 版本并提交：列表、新增、搜索/状态筛选、上下架、软删除走 `ProductService` / `ProductRepository`。
+- `MVP_COMPLETION_CHECKLIST.md` 上方仍有未勾项是正常状态：那些是正式资料层、正式 OpenID、云端保存、Phase 3 团单正式保存或 GUI 验证缺口，不代表 Phase 4 商品库本地/QA 版本漏做。
 - 本次复查未发现 Phase 4 商品库代码含 Phase 5 客户下单、正式客户订单流程或收款确认闭环。
 - 尚未做微信 DevTools GUI 验证；不能宣称视觉、点击路径或真机流程已通过。
 - 尚未实现正式云端商品保存；当前商品保存是 local storage / QA 模式。
