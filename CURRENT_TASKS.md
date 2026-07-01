@@ -22,7 +22,7 @@
 - 项目仍是 QA/local mode，不是 production。
 - 正式资料层未确认，正式 OpenID 未验证，正式云端保存未实现。
 - Phase 4 商品库只有 local/QA repository 版本。
-- Phase 5 客户下单与收款闭环未实现，除非使用者明确指定，否则不要开始。
+- Phase 5 客户下单与收款闭环只有 local/QA repository 版本，正式云端保存未实现。
 - 微信 DevTools GUI smoke test 尚未执行，不能宣称 GUI 通过。
 
 ## 禁止事项

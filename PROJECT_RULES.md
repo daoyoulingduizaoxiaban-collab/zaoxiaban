@@ -24,7 +24,7 @@ Do not rely on chat memory.
 - Formal data layer is not confirmed.
 - Formal OpenID is not verified.
 - Product library persistence is local/QA only.
-- Phase 5 customer ordering/payment workflow is not implemented.
+- Phase 5 customer ordering/payment workflow is implemented only in local/QA repository mode.
 
 ## Architecture Rules
 - Pages call services/repositories, not raw storage, cloud database, cloud functions, or `mock/qaSeed.ts` for business operations.
@@ -49,7 +49,7 @@ Do not rely on chat memory.
 - Install new packages.
 - Use network.
 - Submit `resume/preview-info.json` or `resume/preview-qr.png`.
-- Begin Phase 5 customer ordering/payment work.
+- Extend Phase 5 beyond local/QA mode or connect it to formal cloud/API persistence.
 
 ## Required Validation
 ```bash

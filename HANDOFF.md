@@ -17,7 +17,7 @@
 - Formal data layer: not confirmed by user. `DATA_LAYER_DECISION.md` is only a recommendation.
 - Formal OpenID login: not verified. `authLogin` cloud function and cloud `users` collection do not exist yet.
 - Product library: Phase 4 local/QA repository version is implemented.
-- Phase 5 customer ordering/payment workflow: not implemented.
+- Phase 5 customer ordering/payment workflow: local/QA repository version is implemented.
 - WeChat DevTools GUI validation: not run.
 
 ## Implemented Boundaries
@@ -26,6 +26,8 @@
 - Customer order visibility uses `repositories/customerOrderRepository.js`.
 - Product library uses `services/product/productService.js` and `repositories/productRepository.js`.
 - Product repository currently saves to local storage key `dao_you_ling_local_products`; this is not cloud persistence.
+- Customer ordering uses `services/customerOrder/customerOrderService.js` and `repositories/customerOrderRepository.js`.
+- Customer order repository currently saves to local storage key `dao_you_ling_local_customer_orders`; this is not cloud persistence.
 - QA seed remains in `mock/qaSeed.ts` for test/demo data only.
 
 ## Hard Rules
@@ -34,7 +36,7 @@
 - Do not push, deploy, create cloud resources, delete production data, install packages, or use network unless explicitly asked.
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
-- Do not begin Phase 5 unless the user explicitly asks for Phase 5.
+- Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
 
 ## Validation Commands
 ```bash
@@ -48,8 +50,9 @@ git diff --check
 - Cloud `users`, `products`, `groupOrders`, `customerOrders`, and payment-related collections.
 - WeChat DevTools route smoke test.
 - Product library GUI flow: create -> list refresh -> status toggle -> soft delete.
+- Phase 5 GUI flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
 - Guide full workflow persistence: group order -> product selection -> reopen.
-- Customer order and payment confirmation workflow.
+- Formal cloud-backed customer order and payment confirmation workflow.
 
 ## Recommended Next Step
 Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.

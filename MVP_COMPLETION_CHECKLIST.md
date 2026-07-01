@@ -19,7 +19,7 @@
 - 正式资料层尚未确认。
 - 正式 OpenID 登录尚未验证。
 - 商品库已有 local/QA repository 实作。
-- Phase 5 客户下单与收款闭环尚未实现。
+- Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存尚未实现。
 - 微信 DevTools GUI smoke test 尚未执行。
 
 ## 勾选规则
@@ -46,8 +46,8 @@
 - [ ] 建立正式微信云开发环境/配置、云函数、集合、权限规则。
 - [ ] 在既有 service/repository 边界后面实作 cloud/API repository。
 - [ ] 实作正式导游团单工作流持久化。
-- [ ] 实作 Phase 5 客户下单与客户订单管理。
-- [ ] 实作收款状态确认与状态历史。
+- [x] 实作 Phase 5 local/QA 客户下单与客户订单管理。
+- [x] 实作 local/QA 收款状态确认与状态历史。
 - [ ] 完成 starter 页面全量删除或重写。
 - [ ] 执行并记录完整 27-route GUI smoke test。
 - [ ] 通过 Phase 8 真人可用 MVP gate。
@@ -115,17 +115,21 @@
 - [ ] 商品可正式加入团单，并在重新打开/重新载入后保持。
 
 ## Phase 5 - 客户下单与订单管理
-- [ ] 使用者已明确指定开始 Phase 5。
-- [ ] 客户入口已定义：分享链接、二维码或 route params。
-- [ ] 客户可以查看本团商品与价格。
-- [ ] 客户可以选择商品和数量。
+- [x] 使用者已明确指定开始 Phase 5。
+- [x] 客户入口已定义：route params `/pages/customerOrders/edit/index?groupOrderId=...`。
+- [x] 客户可以查看本团商品与价格。
+- [x] 客户可以选择商品和数量。
+- [x] local/QA 客户订单创建已存在。
+- [x] 导游可以查看自己管理团单下的客户订单。
+- [x] 客户只能查看自己的订单。
+- [x] 收款状态已存在：未付款、客户已付款、已确认、已取消。
+- [x] 导游可以确认收款或取消订单。
+- [x] 收款状态变化可追溯。
+- [x] local/QA 客户下单/收款流程在重新打开/重新载入后仍能保持。
 - [ ] 正式客户订单创建已存在。
-- [ ] 导游可以查看自己管理团单下的客户订单。
-- [ ] 客户只能查看自己的订单。
-- [ ] 收款状态已存在：未付款、客户已付款、已确认、已取消。
-- [ ] 导游可以确认收款或取消订单。
-- [ ] 收款状态变化可追溯。
-- [ ] 完整客户下单/收款流程在重新打开/重新载入后仍能保持。
+- [ ] 正式云端 customerOrders/payments/paymentStatusHistory 保存已存在。
+- [ ] 正式客户下单/收款流程在重新打开/重新载入后仍能保持。
+- [ ] Phase 5 GUI 流程已在微信 DevTools 验证。
 
 ## Phase 6 - UI 收敛
 - [ ] starter 页面已删除或重写：home、message、dataCenter、release、search、login、setting。

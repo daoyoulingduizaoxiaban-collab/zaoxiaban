@@ -19,7 +19,13 @@
   - Product form includes title, description, images, price rules, status, and source note.
   - Price rules compute `totalPrice = minQuantity * unitPrice`.
   - Soft delete writes `deletedAt` and removes deleted products from visible lists.
-- No Phase 5 customer ordering/payment code was added in the product library scope.
+- Phase 5 local/QA customer ordering workflow exists:
+  - Customer entry path is `/pages/customerOrders/edit/index?groupOrderId=...`.
+  - Customer order creation goes through `CustomerOrderService` / `CustomerOrderRepository`.
+  - Order items calculate numeric totals from product price rules and quantities.
+  - Customer order list uses role-scoped visibility from the repository/service boundary.
+  - Customer payment declaration, guide payment confirmation, and order cancellation go through the same service/repository path.
+  - Payment status history is appended on each local/QA status change.
 - Last known validation commands passed:
   - `npm run lint`
   - `git diff --check`
@@ -29,6 +35,8 @@
 - Auth profile initialization.
 - Role-scoped group order and customer order visibility.
 - Product library create/update/delete operations.
+- Customer order create/payment/cancel operations.
+- Payment status history records.
 - QA seed reset and demo data display.
 
 These are not formal cloud-backed features.
@@ -39,17 +47,18 @@ These are not formal cloud-backed features.
 - Cloud function `authLogin`.
 - Cloud `users` collection initialization.
 - Cloud-backed product persistence.
+- Cloud-backed customer order/payment persistence.
 - Reopen/reload persistence for formal business data.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.
+- Phase 5 customer order click flow in GUI.
 
 ### Not Implemented
 - Formal data layer.
 - Formal guide group-order create/edit persistence.
 - Formal group order product add/remove persistence.
-- Customer ordering flow.
-- Customer order formal management workflow.
-- Payment confirmation or payment status history workflow.
+- Formal customer order cloud/API workflow.
+- Formal payment confirmation or payment status history workflow.
 - Production deployment.
 
 ## Validation Rule

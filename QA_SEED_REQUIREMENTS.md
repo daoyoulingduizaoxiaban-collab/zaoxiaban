@@ -40,7 +40,7 @@
 | Route | 正常资料 | 空状态 | 错误/未完成提示 |
 | --- | --- | --- | --- |
 | `pages/productManagement/index` | QA 商品库列表 | 搜索无结果 | 新增/上下架/删除提示暂未保存 |
-| `sub-pages/groupOrder/detail/index` | 团单统计、客户订单、二维码 | 无客户订单团单 | 未找到团单提示 |
+| `sub-pages/groupOrder/detail/index` | 团单统计、客户订单、二维码、客户下单入口 | 无客户订单团单 | 未找到团单提示 |
 | `sub-pages/groupOrder/productList/index` | 本团商品 | 无商品团单 | 缺少团单 ID、商品详情暂未开发、移除暂未保存 |
 | `sub-pages/groupOrder/product-picker/index` | 商品库选择 | 搜索无结果 | 未选择商品提示 |
 | `sub-pages/product/add/index` | 商品表单和价格规则 | 未保存商品列表 | 表单校验、暂未保存 |
@@ -49,8 +49,8 @@
 | `pages/groupOrder/index` | QA 团单列表 | 筛选无结果 | 加载失败 toast |
 | `pages/tourGuides/index` | QA 导游/领队资料 | 无资料 | 详情页暂未开发提示 |
 | `pages/tourGuides/edit/index` | 编辑表单 | 空表单 | 暂未保存 |
-| `pages/customerOrders/index` | QA 客户订单 | 无订单 | 详情页暂未开发提示 |
-| `pages/customerOrders/edit/index` | 编辑表单 | 空表单 | 暂未保存 |
+| `pages/customerOrders/index` | local/QA 客户订单、付款/确认/取消动作 | 无订单 | 角色无权限或操作失败 toast |
+| `pages/customerOrders/edit/index` | 客户通过 `groupOrderId` 下单、商品数量与阶梯价计算 | 无可售商品 | 表单校验、本地/QA 保存提示 |
 | `pages/providers/index` | QA 供应商资料 | 无供应商 | 供应商功能未完成提示 |
 | `pages/providers/edit/index` | 编辑表单 | 空表单 | 暂未保存 |
 | `pages/profile/index` | QA 用户资料 | 无资料 | 详情页暂未开发提示 |
