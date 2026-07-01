@@ -120,9 +120,34 @@ Page({
     });
   },
   previewQR() {
+    const qrCodeUrl = (this.data.groupOrder.qrCodeUrl || '').trim();
+    const canPreview = qrCodeUrl.indexOf('https://') === 0 || qrCodeUrl.indexOf('/') === 0 || qrCodeUrl.indexOf('wxfile://') === 0;
+
+    if (!qrCodeUrl) {
+      wx.showToast({
+        title: '暂无团单二维码',
+        icon: 'none'
+      });
+      return;
+    }
+
+    if (!canPreview) {
+      wx.showToast({
+        title: '暂无团单二维码',
+        icon: 'none'
+      });
+      return;
+    }
+
     wx.previewImage({
-      urls: [this.data.groupOrder.qrCodeUrl],
-      current: this.data.groupOrder.qrCodeUrl
+      urls: [qrCodeUrl],
+      current: qrCodeUrl,
+      fail: () => {
+        wx.showToast({
+          title: '暂无团单二维码',
+          icon: 'none'
+        });
+      }
     });
   },
 

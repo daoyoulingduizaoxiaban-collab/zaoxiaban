@@ -22,6 +22,18 @@ Page({
     }
   },
 
+  getSafeEventChannel() {
+    try {
+      const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
+      if (eventChannel && typeof eventChannel.emit === 'function') {
+        return eventChannel;
+      }
+    } catch (err) {
+      // Direct page entry has no opener event channel.
+    }
+    return null;
+  },
+
   // 1. 處理商品基本資料輸入 (Title, Description)
   onProductInput(e) {
     const field = e.currentTarget.dataset.field;
@@ -141,11 +153,26 @@ Page({
       return;
     }
 
-    const eventChannel = this.getOpenerEventChannel();
-    eventChannel.emit('refreshList', {
-      success: true,
-      products: this.data.productList
+    const eventChannel = this.getSafeEventChannel();
+    if (!eventChannel) {
+      wx.showToast({ title: '请从商品库进入新增商品', icon: 'none' });
+      return;
+    }
+
+    try {
+      eventChannel.emit('refreshList', {
+        success: true,
+        products: this.data.productList
+      });
+    } catch (err) {
+      wx.showToast({ title: '返回商品资料失败', icon: 'none' });
+      return;
+    }
+
+    wx.navigateBack({
+      fail: () => {
+        wx.showToast({ title: '返回商品库失败', icon: 'none' });
+      }
     });
-    wx.navigateBack();
   }
 });

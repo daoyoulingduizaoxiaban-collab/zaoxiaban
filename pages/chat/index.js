@@ -17,7 +17,14 @@ Page({
 
   /** 生命周期函数--监听页面加载 */
   onLoad(options) {
-    this.getOpenerEventChannel().on('update', this.update);
+    try {
+      const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
+      if (eventChannel && typeof eventChannel.on === 'function') {
+        eventChannel.on('update', this.update);
+      }
+    } catch (err) {
+      wx.showToast({ title: '聊天资料暂未加载', icon: 'none' });
+    }
   },
 
   /** 生命周期函数--监听页面初次渲染完成 */

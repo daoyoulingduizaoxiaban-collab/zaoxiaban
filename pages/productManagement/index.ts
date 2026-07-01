@@ -31,22 +31,15 @@ Page({
     const mock = await ProductMock.fetchProductListMock();
 
     this.setData({
-      allProducts: mock.data,
-      productList: mock.data
-    });
+      allProducts: mock.data
+    }, () => this.updateLocalData(mock.data));
   },
 
   // 2. 搜尋條件區塊邏輯
   onSearchInput(e: any) {
-    const query = e.detail.value.toLowerCase();
-    const filtered = this.data.allProducts.filter(item =>
-      item.title.toLowerCase().includes(query) ||
-      item.description.toLowerCase().includes(query)
-    );
     this.setData({
-      searchQuery: query,
-      productList: filtered
-    });
+      searchQuery: e.detail.value
+    }, () => this.updateLocalData(this.data.allProducts));
   },
 
   onAddProduct() {
@@ -79,9 +72,9 @@ Page({
 
   // 3. 下架/上架切換
   onToggleStatus(e: any) {
-    const id = e.currentTarget.dataset.id;
+    const id = String(e.currentTarget.dataset.id);
     const updated = this.data.allProducts.map(item => {
-      if (item.id === id) {
+      if (String(item.id) === id) {
         // 切換狀態：1=下架、2=開放下單
         const newStatus = item.status === 2 ? 1 : 2;
         wx.showToast({
@@ -98,14 +91,14 @@ Page({
 
   // 3. 刪除功能
   onDelete(e: any) {
-    const id = e.currentTarget.dataset.id;
+    const id = String(e.currentTarget.dataset.id);
 
     wx.showModal({
       title: '提示',
       content: '确定要从 QA 展示列表移除此商品吗？不会保存到正式数据。',
       success: (res) => {
         if (res.confirm) {
-          const updated = this.data.allProducts.filter(item => item.id !== id);
+          const updated = this.data.allProducts.filter(item => String(item.id) !== id);
           this.updateLocalData(updated);
           wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
         }
@@ -116,30 +109,31 @@ Page({
   // 統一更新本地狀態
   updateLocalData(newList: Product[]) {
     const allProducts = newList;
-    const query = this.data.searchQuery.toLowerCase();
-
-    if (query) {
-      newList = newList.filter(item =>
-        item.title.toLowerCase().includes(query) ||
-        item.description.toLowerCase().includes(query)
-      )
-    }
-
-    if (this.data.currentStatus) {
-      newList = newList.filter(item => item.status == this.data.currentStatus)
-    }
+    const productList = this.applyProductFilters(allProducts);
 
     this.setData({
       allProducts,
-      productList: newList
+      productList
+    });
+  },
+
+  applyProductFilters(list: Product[]) {
+    const query = (this.data.searchQuery || '').trim().toLowerCase();
+    const currentStatus = Number(this.data.currentStatus || 0);
+
+    return list.filter(item => {
+      const title = (item.title || '').toLowerCase();
+      const description = (item.description || '').toLowerCase();
+      const matchesQuery = !query || title.includes(query) || description.includes(query);
+      const matchesStatus = !currentStatus || Number(item.status) === currentStatus;
+      return matchesQuery && matchesStatus;
     });
   },
 
   // 監聽狀態切換
   async onStatusChange(e) {
-    const list = this.data.allProducts;
     this.setData({
       currentStatus: e.detail.value
-    }, () => this.updateLocalData(list));
+    }, () => this.updateLocalData(this.data.allProducts));
   },
 });

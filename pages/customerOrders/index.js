@@ -18,7 +18,8 @@ Page({
 
   goToDetail(e) {
     const { id } = e.currentTarget.dataset;
-    const item = this.data.customerOrdersList.find(order => order.id === id);
+    const normalizedId = String(id);
+    const item = this.data.customerOrdersList.find(order => String(order.id) === normalizedId);
     wx.showModal({
       title: item ? item.title : '客户订单',
       content: item ? `状态：${item.statusText}\n客户：${item.customerName}\n金额：￥${item.totalPrice}\nQA 展示模式，详情页暂未开发。` : '未找到订单资料。',

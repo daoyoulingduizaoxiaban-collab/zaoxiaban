@@ -9,11 +9,23 @@ Page({
     selectedCount: 0
   },
 
+  getSafeEventChannel() {
+    try {
+      const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
+      if (eventChannel && typeof eventChannel.emit === 'function') {
+        return eventChannel;
+      }
+    } catch (err) {
+      // Direct page entry has no opener event channel.
+    }
+    return null;
+  },
+
   onLoad(options) {
     // 1. 接收參數：要排除的 ID 列表
     if (options.excludeIds) {
       try {
-        const ids = JSON.parse(options.excludeIds);
+        const ids = JSON.parse(options.excludeIds).map(id => String(id));
         this.setData({ excludeIds: ids });
       } catch (e) {
         wx.showToast({
@@ -30,7 +42,7 @@ Page({
   async loadProductLibrary() {
     const res = await ProductMock.fetchProductListMock();
     const processedList = res.data.map(item => {
-      const isExist = this.data.excludeIds.includes(item.id);
+      const isExist = this.data.excludeIds.includes(String(item.id));
       return {
         ...item,
         disabled: isExist,
@@ -72,8 +84,9 @@ Page({
   },
 
   setProductSelected(id, selected) {
+    const normalizedId = String(id);
     const allProducts = this.data.allProducts.map(product => {
-      if (product.id !== id) {
+      if (String(product.id) !== normalizedId) {
         return product;
       }
 
@@ -94,7 +107,7 @@ Page({
   // 切換選中狀態
   toggleSelect(e) {
     const { id } = e.currentTarget.dataset;
-    const item = this.data.allProducts.find(product => product.id === id);
+    const item = this.data.allProducts.find(product => String(product.id) === String(id));
 
     // 防呆
     if (!item || item.disabled) {
@@ -123,16 +136,39 @@ Page({
     setTimeout(() => {
       wx.hideLoading();
 
-      const eventChannel = this.getOpenerEventChannel();
-      eventChannel.emit('selectedProducts', {
-        products: selectedItems.map(item => ({
-          ...item,
-          selected: false,
-          disabled: false
-        }))
-      });
+      const eventChannel = this.getSafeEventChannel();
+      if (!eventChannel) {
+        wx.showToast({
+          title: '请从本团商品页进入',
+          icon: 'none'
+        });
+        return;
+      }
 
-      wx.navigateBack();
+      try {
+        eventChannel.emit('selectedProducts', {
+          products: selectedItems.map(item => ({
+            ...item,
+            selected: false,
+            disabled: false
+          }))
+        });
+      } catch (err) {
+        wx.showToast({
+          title: '返回商品选择结果失败',
+          icon: 'none'
+        });
+        return;
+      }
+
+      wx.navigateBack({
+        fail: () => {
+          wx.showToast({
+            title: '返回本团商品失败',
+            icon: 'none'
+          });
+        }
+      });
     }, 500);
   }
 });
