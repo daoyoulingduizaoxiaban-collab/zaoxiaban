@@ -13,6 +13,7 @@ Page({
     personalInfo: {},
     authSession: {},
     qaSeedInfo: {},
+    qaRoleOptions: AuthService.qaRoleOptions,
     gridList: [
       {
         name: '团单',
@@ -82,12 +83,19 @@ Page({
   },
 
   toPersonalInfo(profile) {
+    let authSourceText = '微信 OpenID 已验证';
+    if (profile.qaOverride) {
+      authSourceText = 'QA 身份切换';
+    } else if (profile.isMockOpenId) {
+      authSourceText = '本地身份验证';
+    }
+
     return {
       name: profile.displayName,
       city: profile.city || '未填写城市',
       star: profile.roleLabel,
       image: profile.avatarUrl || '/static/avatar1.png',
-      authSourceText: profile.isMockOpenId ? '本地身份验证' : '微信 OpenID 已验证',
+      authSourceText,
     };
   },
 
@@ -105,6 +113,22 @@ Page({
     QaSeedMock.resetSeed();
     this.loadQaSeed();
     wx.showToast({ title: 'QA Seed 已重置', icon: 'success' });
+  },
+
+  onQaRoleSwitch(e) {
+    const { role } = e.currentTarget.dataset;
+    const result = AuthService.applyQaOverride({ qaRoleOverride: role });
+    if (!result.success) {
+      wx.showToast({ title: result.error || 'QA 身份切换失败', icon: 'none' });
+      return;
+    }
+
+    getApp().globalData.userInfo = result.data.profile;
+    this.onShow();
+    wx.showToast({
+      title: `已切换：${result.data.profile.roleLabel}`,
+      icon: 'none',
+    });
   },
 
   onLogout() {

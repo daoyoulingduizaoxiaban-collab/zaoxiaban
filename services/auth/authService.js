@@ -31,6 +31,13 @@ const DEFAULT_ROLE_PROFILES = Object.freeze({
     phone: '13800000003',
     city: '南京',
   },
+  [AUTH_ROLES.PROVIDER]: {
+    id: 5,
+    providerId: 'provider-1',
+    displayName: '杭州伴手礼供应商',
+    phone: '13800000005',
+    city: '杭州',
+  },
 });
 
 const safeGetStorage = (key, fallback = null) => {
@@ -83,6 +90,13 @@ const callCloudAuth = (loginCode, requestedRole) => new Promise((resolve) => {
 
 const buildMockOpenId = role => `mock-openid-${role}`;
 
+const ALL_QA_ROLE_OPTIONS = Object.freeze(Object.values(AUTH_ROLES).map(role => ({
+  label: getRoleLabel(role),
+  value: role,
+})));
+
+const normalizeRole = role => (Object.values(AUTH_ROLES).includes(role) ? role : AUTH_ROLES.GUIDE);
+
 const normalizeCloudProfile = (data, requestedRole) => {
   const role = data.role || requestedRole || AUTH_ROLES.GUIDE;
   const defaults = DEFAULT_ROLE_PROFILES[role] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.GUIDE];
@@ -104,14 +118,16 @@ const normalizeCloudProfile = (data, requestedRole) => {
   };
 };
 
-const normalizeMockProfile = role => {
-  const defaults = DEFAULT_ROLE_PROFILES[role] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.GUIDE];
+const normalizeMockProfile = (role, overrides = {}) => {
+  const normalizedRole = normalizeRole(role);
+  const defaults = DEFAULT_ROLE_PROFILES[normalizedRole] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.GUIDE];
   return {
     id: defaults.id,
-    openId: buildMockOpenId(role),
+    providerId: defaults.providerId || '',
+    openId: overrides.openId || buildMockOpenId(normalizedRole),
     unionId: '',
-    role,
-    roleLabel: getRoleLabel(role),
+    role: normalizedRole,
+    roleLabel: getRoleLabel(normalizedRole),
     displayName: defaults.displayName,
     phone: defaults.phone,
     avatarUrl: '/static/avatar1.png',
@@ -119,6 +135,7 @@ const normalizeMockProfile = role => {
     status: 'active',
     authSource: 'mock-auth-adapter',
     isMockOpenId: true,
+    qaOverride: Boolean(overrides.qaOverride),
   };
 };
 
@@ -137,6 +154,7 @@ const mergeProfileTimestamps = (nextProfile) => {
 
 export const AuthService = {
   roleOptions: MVP_ROLE_OPTIONS,
+  qaRoleOptions: ALL_QA_ROLE_OPTIONS,
   storageKey: AUTH_PROFILE_KEY,
   sessionKey: AUTH_SESSION_KEY,
 
@@ -185,6 +203,39 @@ export const AuthService = {
       wxLoginCalled: authStatus.wxLoginCalled,
       wxLoginCodeAvailable: authStatus.wxLoginCodeAvailable,
       fallbackReason: authStatus.fallbackReason,
+      updatedAt: nowIso(),
+    };
+
+    safeSetStorage(AUTH_PROFILE_KEY, profile);
+    safeSetStorage(AUTH_SESSION_KEY, session);
+
+    return { success: true, data: { profile, session } };
+  },
+
+  applyQaOverride({ qaRoleOverride = AUTH_ROLES.GUIDE, qaOpenIdOverride = '' } = {}) {
+    if (!config.isMock) {
+      return {
+        success: false,
+        error: 'QA 身份切换仅允许在 mock/QA 模式使用',
+      };
+    }
+
+    const role = normalizeRole(qaRoleOverride);
+    const profileSource = normalizeMockProfile(role, {
+      openId: qaOpenIdOverride || buildMockOpenId(role),
+      qaOverride: true,
+    });
+    const profile = mergeProfileTimestamps(profileSource);
+    const session = {
+      openId: profile.openId,
+      role: profile.role,
+      authSource: 'qa-role-override',
+      isMockOpenId: true,
+      qaOverride: true,
+      cloudOpenIdVerified: false,
+      wxLoginCalled: false,
+      wxLoginCodeAvailable: false,
+      fallbackReason: 'QA-only 身份切换，未调用正式 wx.login/OpenID',
       updatedAt: nowIso(),
     };
 

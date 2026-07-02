@@ -30,6 +30,9 @@
     <view class="auth-warning" wx:if="{{authSession.isMockOpenId}}">
       当前使用本地 auth adapter，尚未验证正式微信 OpenID。
     </view>
+    <view class="auth-warning auth-warning--qa" wx:if="{{authSession.qaOverride}}">
+      当前为 QA 身份切换，仅用于测试角色可见范围，不代表正式 OpenID。
+    </view>
     <view class="auth-actions" wx:if="{{isLoggedIn}}">
       <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
     </view>
@@ -55,6 +58,20 @@
       <text>团单 {{qaSeedInfo.groupOrderCount}}</text>
       <text>商品 {{qaSeedInfo.productCount}}</text>
       <text>客户订单 {{qaSeedInfo.customerOrderCount}}</text>
+    </view>
+    <view class="qa-panel__role-title">QA 身份切换</view>
+    <view class="qa-panel__roles">
+      <t-button
+        wx:for="{{qaRoleOptions}}"
+        wx:key="value"
+        theme="default"
+        variant="outline"
+        size="small"
+        data-role="{{item.value}}"
+        bindtap="onQaRoleSwitch"
+      >
+        {{item.label}}
+      </t-button>
     </view>
     <t-button theme="primary" size="large" block bindtap="onResetQaSeed">
       一键加载/重置 QA Seed
