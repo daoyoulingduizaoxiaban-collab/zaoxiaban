@@ -11,7 +11,7 @@
 ## 当前任务
 Phase 3 与 Phase 6 的 local/QA 范围已完成。使用者已确认 MVP 正式资料层优先采用微信云开发数据库 + 云函数。当前已完成 Phase 8 的正式登录/OpenID 与核心业务资料云端化：`authLogin`、`businessData` 云函数已部署，DevTools automation targeted flow 验证商品、团单、客户订单、收款状态与状态历史都走 cloud repository。
 
-当前未完成缺口是 Phase 7 GUI 逐 route 互动 smoke test。`QA/QA_BUG_REPORT_202607021815.md` 的复测 GUI 残留已做追加回修，但还需要重新截图/操作验证。owner/admin 正式角色白名单仍需后续配置，但不阻塞 guide/customer MVP 主流程。
+当前未完成缺口是 Phase 7 GUI 逐 route 互动 smoke test。`QA/QA_BUG_REPORT_202607021815.md` 的复测 GUI 残留已做追加回修；资料中心又补了原生 `index.wxss`，还需要重新截图/操作验证。owner/admin 正式角色白名单仍需后续配置，但不阻塞 guide/customer MVP 主流程。
 
 下一位 agent 只能先做以下接手动作：
 

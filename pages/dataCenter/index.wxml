@@ -1,6 +1,7 @@
-<t-navbar title="团单数据看板" left-arrow />
+<t-navbar title="数据中心" left-arrow />
 
 <view class="data-center">
+  <view class="page-title">团单数据看板</view>
   <view class="mode-card">
     <view class="mode-title">当前资料范围</view>
     <view class="mode-desc">{{dataModeText}}</view>

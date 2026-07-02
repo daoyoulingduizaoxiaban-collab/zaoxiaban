@@ -62,7 +62,7 @@
   - Home is now a task-focused workbench with group order, product library, customer order, and data center entry points.
   - Provider page no longer appears blank for non-provider roles; it shows read-only supplier data with an unfinished-provider-backend notice.
   - Search page no longer requests starter search APIs or shows AI/template hot words; it uses local business terms.
-  - Data center layout was simplified into stable summary cards to avoid broken title/navigation layout.
+  - Data center layout was simplified into stable summary cards, title was aligned to `数据中心`, and a native `index.wxss` was added so DevTools applies the layout.
   - Chat page now shows a disabled-state card instead of an active input box when chat is not enabled.
   - Product add primary actions use the same blue operation style as the rest of the MVP.
   - Customer order list role scope now includes the current role label and uses repository metadata when available.
