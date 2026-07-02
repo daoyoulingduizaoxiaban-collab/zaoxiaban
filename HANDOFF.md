@@ -137,6 +137,9 @@ git diff --check
   - BUG-002: product add now separates formal cloud durable image copy from local/QA temporary preview copy, guards unsupported `wx.chooseMedia`, and prevents duplicate submit during image/product save.
   - BUG-004: home/settings/save-mode copy now branches by formal OpenID cloud save, QA override, and mock/local testing state.
   - BUG-006: customer order processing now uses a page-level action panel for payment method, payment remark, confirmed amount, confirmation remark, and cancel reason; local/cloud payment persistence keeps these fields.
+  - BUG-006 follow-up: paid declaration action panel now supports payment proof image selection; service, local repository, and `businessData` reject empty paid declarations and non-positive guide confirmation amounts; formal cloud paths reject direct temporary product/proof image paths.
+  - GUI-006 follow-up: `pages/my` QA Seed panel now has dedicated guide/customer order-isolation check buttons that switch QA role and open `/pages/customerOrders/index`.
+  - README follow-up: `README.md` now points to `HANDOFF.md` / `MVP_COMPLETION_CHECKLIST.md` and no longer states that the formal data layer or Phase 5 are missing.
 - BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
@@ -151,9 +154,10 @@ If continuing QA, use the new plan/result split:
 - First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
 - Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
 - When performing QA from a checklist item, validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
-- For BUG-006, specifically retest the customer order bottom action panel: declare paid requires payment method or remark, guide confirm requires a positive confirmed amount, order detail shows payment fields/history, and local/cloud repository history is preserved after reload.
+- For BUG-006, specifically retest the customer order bottom action panel: declare paid requires payment method, remark, or proof image; guide confirm requires a positive confirmed amount; order detail shows payment fields/proof count/history; and local/cloud repository history is preserved after reload.
 - For BUG-004, compare formal OpenID and QA/mock sessions on home, setting, product library, group-order create/detail, and data center; do not mark it verified from static copy inspection alone.
 - For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
+- For GUI-006, use My -> QA Seed -> `切换导游并查看订单` and `切换客户并查看订单`, then compare role text and visible orders on `/pages/customerOrders/index`.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 
 ## User Assistance Needed For Phase 8

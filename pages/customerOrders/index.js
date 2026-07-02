@@ -18,6 +18,7 @@ Page({
     actionForm: {
       paymentMethod: '',
       paymentRemark: '',
+      paymentProofUrls: [],
       confirmedAmount: '',
       confirmRemark: '',
       cancelRemark: '',
@@ -146,6 +147,7 @@ Page({
       actionForm: {
         paymentMethod: '',
         paymentRemark: '',
+        paymentProofUrls: [],
         confirmedAmount: '',
         confirmRemark: '',
         cancelRemark: '',
@@ -172,23 +174,69 @@ Page({
     this.setData({ [`actionForm.${field}`]: value });
   },
 
+  chooseActionPaymentProof() {
+    if (this.data.isSubmittingAction) return;
+    if (!wx.chooseMedia) {
+      wx.showToast({ title: '当前环境不支持选择图片', icon: 'none' });
+      return;
+    }
+
+    const currentUrls = this.data.actionForm.paymentProofUrls || [];
+    const remainCount = 3 - currentUrls.length;
+    if (remainCount <= 0) {
+      wx.showToast({ title: '最多上传 3 张付款凭证', icon: 'none' });
+      return;
+    }
+
+    wx.chooseMedia({
+      count: remainCount,
+      mediaType: ['image'],
+      success: (res) => {
+        const paths = (res.tempFiles || []).map(file => file.tempFilePath).filter(Boolean);
+        if (!paths.length) {
+          wx.showToast({ title: '未选择可用图片', icon: 'none' });
+          return;
+        }
+        this.setData({
+          'actionForm.paymentProofUrls': [...currentUrls, ...paths].slice(0, 3),
+        });
+      },
+      fail: (err) => {
+        const message = err && err.errMsg && err.errMsg.includes('cancel')
+          ? '已取消选择图片'
+          : '选择付款凭证失败，请重试';
+        wx.showToast({ title: message, icon: 'none' });
+      },
+    });
+  },
+
+  removeActionPaymentProof(e) {
+    if (this.data.isSubmittingAction) return;
+    const index = Number(e.currentTarget.dataset.index);
+    const paymentProofUrls = (this.data.actionForm.paymentProofUrls || [])
+      .filter((_, itemIndex) => itemIndex !== index);
+    this.setData({ 'actionForm.paymentProofUrls': paymentProofUrls });
+  },
+
   buildActionPayload() {
     const { actionType, actionForm } = this.data;
     const paymentMethod = String(actionForm.paymentMethod || '').trim();
     const paymentRemark = String(actionForm.paymentRemark || '').trim();
+    const paymentProofUrls = actionForm.paymentProofUrls || [];
     const confirmedAmountText = String(actionForm.confirmedAmount || '').trim();
     const confirmRemark = String(actionForm.confirmRemark || '').trim();
     const cancelRemark = String(actionForm.cancelRemark || '').trim();
 
     if (actionType === 'declarePaid') {
-      if (!paymentMethod && !paymentRemark) {
-        return { error: '请填写付款方式或付款备注' };
+      if (!paymentMethod && !paymentRemark && paymentProofUrls.length === 0) {
+        return { error: '请填写付款方式、付款备注或上传付款凭证' };
       }
       return {
         data: {
           paymentMethod,
           paymentRemark,
-          note: `客户声明已付款：${[paymentMethod, paymentRemark].filter(Boolean).join('｜')}`,
+          paymentProofUrls,
+          note: `客户声明已付款：${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
         },
       };
     }

@@ -41,6 +41,7 @@ const STATUS_TEXT = {
 
 const nowIso = () => new Date().toISOString();
 const sameId = (a, b) => String(a) === String(b);
+const trimText = value => String(value || '').trim();
 const getCollection = name => db.collection(name);
 const toId = doc => ({ ...doc, id: doc.id || doc._id });
 const toUpdateData = (doc) => {
@@ -160,6 +161,12 @@ const filterKeyword = (list, keyword, fields) => {
   return list.filter(item => fields.some(field => String(item[field] || '').toLowerCase().includes(query)));
 };
 
+const isDurableAssetUrl = url => (
+  !url || /^cloud:\/\//.test(String(url)) || /^https:\/\//.test(String(url))
+);
+
+const hasOnlyDurableAssetUrls = urls => (urls || []).every(isDurableAssetUrl);
+
 const normalizeProductPayload = (payload, profile, existing = {}) => ({
   ...existing,
   ...payload,
@@ -189,6 +196,9 @@ const productActions = {
   async create(payload, profile) {
     assertProfile(profile);
     if (!['guide', 'owner', 'admin', 'provider'].includes(profile.role)) return failure('当前角色不能新增商品');
+    if (!hasOnlyDurableAssetUrls(payload.pictureUrls || [])) {
+      return failure('正式云端商品图片必须先上传为持久图片');
+    }
     const createdAt = nowIso();
     const product = normalizeProductPayload({
       ...payload,
@@ -438,6 +448,9 @@ const customerOrderActions = {
   async create(payload, profile) {
     assertProfile(profile);
     if (profile.role !== 'customer' && !isOwnerOrAdmin(profile)) return failure('当前角色不能提交客户订单');
+    if (!hasOnlyDurableAssetUrls(payload.paymentProofUrls || [])) {
+      return failure('正式云端付款凭证必须先上传为持久图片');
+    }
     const groupOrder = await getById('groupOrders', payload.groupOrderId);
     if (!groupOrder) return failure('未找到团单');
     if (Number(groupOrder.status) !== GROUP_ORDER_STATUS.OPEN) return failure('当前团单已停止收单');
@@ -509,6 +522,15 @@ const customerOrderActions = {
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(target.status) !== MEMBER_ORDER_STATUS.PAID) {
       return failure('只有客户已付款订单才能确认到账');
     }
+    if (nextStatusValue === MEMBER_ORDER_STATUS.PAID) {
+      const hasPaymentNote = trimText(paymentMethod) || trimText(paymentRemark);
+      const hasProof = Array.isArray(paymentProofUrls) && paymentProofUrls.length > 0;
+      if (!hasPaymentNote && !hasProof) return failure('请填写付款方式、付款备注或上传付款凭证');
+      if (!hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('正式云端付款凭证必须先上传为持久图片');
+    }
+    if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {
+      return failure('请填写有效实收金额');
+    }
 
     const updatedAt = nowIso();
     const history = await appendPaymentHistory(target, nextStatusValue, note, profile);
@@ -519,12 +541,12 @@ const customerOrderActions = {
       statusText: STATUS_TEXT[nextStatusValue],
       updatedAt,
       cancelledAt: nextStatusValue === MEMBER_ORDER_STATUS.CANCELLED ? updatedAt : target.cancelledAt,
-      paymentMethod: paymentMethod || target.paymentMethod || '',
-      paymentRemark: paymentRemark || target.paymentRemark || '',
+      paymentMethod: trimText(paymentMethod) || target.paymentMethod || '',
+      paymentRemark: trimText(paymentRemark) || target.paymentRemark || '',
       paymentProofUrls: paymentProofUrls || target.paymentProofUrls || [],
       confirmedAmount: confirmedAmount || target.confirmedAmount || '',
-      confirmRemark: confirmRemark || target.confirmRemark || '',
-      cancelRemark: cancelRemark || target.cancelRemark || '',
+      confirmRemark: trimText(confirmRemark) || target.confirmRemark || '',
+      cancelRemark: trimText(cancelRemark) || target.cancelRemark || '',
       paymentHistory: [...(target.paymentHistory || []), history],
     });
 

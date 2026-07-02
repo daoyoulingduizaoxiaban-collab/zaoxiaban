@@ -4,6 +4,7 @@ import { CustomerOrderRepository } from '~/repositories/customerOrderRepository'
 import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
 
 const normalizeNumber = value => Number(value || 0);
+const trimText = value => String(value || '').trim();
 
 const getBestPriceRule = (priceSetting = [], quantity = 0) => {
   const count = normalizeNumber(quantity);
@@ -166,14 +167,55 @@ export const CustomerOrderService = {
   },
 
   async declarePaid(id, payload = {}) {
-    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.PAID, payload.note || '客户声明已付款', payload);
+    const paymentMethod = trimText(payload.paymentMethod);
+    const paymentRemark = trimText(payload.paymentRemark);
+    let paymentProofUrls = payload.paymentProofUrls || [];
+
+    if (!paymentMethod && !paymentRemark && paymentProofUrls.length === 0) {
+      return { success: false, error: '请填写付款方式、付款备注或上传付款凭证' };
+    }
+
+    if (isCloudBusinessEnabled() && paymentProofUrls.length) {
+      const uploadResult = await uploadCloudFiles(paymentProofUrls, 'payment-proofs');
+      if (!uploadResult.success) {
+        return { success: false, error: uploadResult.error || '付款凭证上传失败，已停止提交' };
+      }
+      paymentProofUrls = uploadResult.data;
+    }
+
+    const nextPayload = {
+      ...payload,
+      paymentMethod,
+      paymentRemark,
+      paymentProofUrls,
+      note: payload.note || `客户声明已付款：${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
+    };
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.PAID, nextPayload.note, nextPayload);
   },
 
   async confirmPayment(id, payload = {}) {
-    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CONFIRMED, payload.note || '导游确认收款', payload);
+    const confirmedAmount = normalizeNumber(payload.confirmedAmount);
+    if (confirmedAmount <= 0) {
+      return { success: false, error: '请填写有效实收金额' };
+    }
+
+    const confirmRemark = trimText(payload.confirmRemark);
+    const nextPayload = {
+      ...payload,
+      confirmedAmount,
+      confirmRemark,
+      note: payload.note || `导游确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
+    };
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CONFIRMED, nextPayload.note, nextPayload);
   },
 
   async cancelOrder(id, payload = {}) {
-    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CANCELLED, payload.note || '订单已取消', payload);
+    const cancelRemark = trimText(payload.cancelRemark);
+    const nextPayload = {
+      ...payload,
+      cancelRemark,
+      note: payload.note || (cancelRemark ? `订单已取消：${cancelRemark}` : '订单已取消'),
+    };
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CANCELLED, nextPayload.note, nextPayload);
   },
 };

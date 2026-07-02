@@ -41,7 +41,19 @@
         <text class="action-label">付款备注</text>
         <textarea class="action-textarea" placeholder="填写流水尾号、代付人或其他核对信息" value="{{actionForm.paymentRemark}}" data-field="paymentRemark" bindinput="onActionInput" />
       </view>
-      <view class="action-hint">付款凭证可在客户下单页上传；这里补充声明付款时的核对资料。</view>
+      <view class="action-proof">
+        <view class="action-proof__header">
+          <text class="action-label">付款凭证</text>
+          <button size="mini" plain bindtap="chooseActionPaymentProof" disabled="{{isSubmittingAction}}">上传</button>
+        </view>
+        <view class="action-proof__list" wx:if="{{actionForm.paymentProofUrls.length}}">
+          <view class="action-proof__item" wx:for="{{actionForm.paymentProofUrls}}" wx:key="*this">
+            <image src="{{item}}" mode="aspectFill" />
+            <text bindtap="removeActionPaymentProof" data-index="{{index}}">移除</text>
+          </view>
+        </view>
+      </view>
+      <view class="action-hint">请至少填写付款方式、付款备注或上传一张付款凭证。</view>
     </view>
 
     <view wx:elif="{{actionType === 'confirmPayment'}}" class="action-form">

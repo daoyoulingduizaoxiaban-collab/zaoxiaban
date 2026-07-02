@@ -60,6 +60,8 @@
   - Customer order phone validation enforces 11-digit mainland China mobile format.
   - Customer payment method/remark/proof images and guide confirmed amount/remark are saved into order/payment history.
   - Customer order processing now uses a page-level action panel instead of a single text modal, separating payment method, payment remark, confirmed amount, confirmation remark, and cancel reason.
+  - Customer paid declaration now supports proof image selection in the action panel, and service/repository/cloud-function paths reject empty paid declarations or non-positive guide confirmation amounts.
+  - Formal cloud product images and payment proof images are guarded against direct temporary local paths; they must be uploaded to durable `cloud://` or `https://` URLs before cloud persistence.
   - Customer order local/cloud payment records preserve the submitted payment method instead of always writing a generic manual method.
   - Group-order product list opens a read-only product detail modal instead of unfinished toast.
 - QA retest follow-up GUI fixes:
@@ -70,7 +72,10 @@
   - Chat page now shows a disabled-state card instead of an active input box when chat is not enabled.
   - Product add primary actions use the same blue operation style as the rest of the MVP.
   - Customer order list role scope now includes the current role label and uses repository metadata when available.
+  - My / QA Seed panel now includes dedicated guide/customer order-isolation check buttons that switch QA role and open the customer-order tab, reducing stale-tab/manual-navigation ambiguity during GUI retest.
   - Home and setting save-mode copy now separates formal OpenID cloud save, QA override, and mock/local testing states by reading the current auth session.
+- Documentation hygiene:
+  - `README.md` now reflects the current source-of-truth workflow, confirmed WeChat Cloud data layer, implemented Phase 5 workflow, and remaining GUI gate.
 - Phase 6 UI cleanup is complete for the scoped starter pages:
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
@@ -110,10 +115,10 @@ These are not formal cloud-backed features.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.
-- Phase 5 customer order click flow in GUI, including the new payment action panel.
+- Phase 5 customer order click flow in GUI, including the new payment action panel and proof-image upload interaction.
 - Formal OpenID vs QA/mock save-mode copy comparison across home, setting, product library, group-order create/detail, and data center.
 - Phase 3 guide group-order click flow in GUI.
-- QA-only role switching UI in `pages/my` is visible in DevTools, but customer click-through and guide/customer order isolation are not verified because stale webview clicks returned to product library.
+- QA-only role switching UI in `pages/my` is visible in DevTools, and dedicated order-isolation check buttons now exist, but actual guide/customer click-through and order isolation are not verified because no fresh stable DevTools/device GUI run has been completed.
 
 ### Not Implemented
 - Production deployment.

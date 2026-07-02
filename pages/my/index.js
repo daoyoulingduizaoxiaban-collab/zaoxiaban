@@ -14,6 +14,10 @@ Page({
     authSession: {},
     qaSeedInfo: {},
     qaRoleOptions: AuthService.qaRoleOptions,
+    qaIsolationActions: [
+      { label: '切换导游并查看订单', role: 'guide' },
+      { label: '切换客户并查看订单', role: 'customer' },
+    ],
     gridList: [
       {
         name: '团单',
@@ -115,19 +119,41 @@ Page({
     wx.showToast({ title: 'QA Seed 已重置', icon: 'success' });
   },
 
-  onQaRoleSwitch(e) {
-    const { role } = e.currentTarget.dataset;
+  applyQaRole(role) {
     const result = AuthService.applyQaOverride({ qaRoleOverride: role });
     if (!result.success) {
       wx.showToast({ title: result.error || 'QA 身份切换失败', icon: 'none' });
-      return;
+      return null;
     }
 
     getApp().globalData.userInfo = result.data.profile;
     this.onShow();
+    return result.data.profile;
+  },
+
+  onQaRoleSwitch(e) {
+    const { role } = e.currentTarget.dataset;
+    const profile = this.applyQaRole(role);
+    if (!profile) return;
+
     wx.showToast({
-      title: `已切换：${result.data.profile.roleLabel}`,
+      title: `已切换：${profile.roleLabel}`,
       icon: 'none',
+    });
+  },
+
+  onQaIsolationCheck(e) {
+    const { role } = e.currentTarget.dataset;
+    const profile = this.applyQaRole(role);
+    if (!profile) return;
+
+    wx.showToast({
+      title: `已切换：${profile.roleLabel}`,
+      icon: 'none',
+    });
+    wx.switchTab({
+      url: '/pages/customerOrders/index',
+      fail: () => wx.showToast({ title: '打开客户订单失败', icon: 'none' }),
     });
   },
 

@@ -73,6 +73,20 @@
         {{item.label}}
       </t-button>
     </view>
+    <view class="qa-panel__role-title">订单隔离验证</view>
+    <view class="qa-panel__checks">
+      <t-button
+        wx:for="{{qaIsolationActions}}"
+        wx:key="role"
+        theme="primary"
+        variant="outline"
+        size="small"
+        data-role="{{item.role}}"
+        bindtap="onQaIsolationCheck"
+      >
+        {{item.label}}
+      </t-button>
+    </view>
     <t-button theme="primary" size="large" block bindtap="onResetQaSeed">
       一键加载/重置 QA Seed
     </t-button>

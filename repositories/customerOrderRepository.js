@@ -9,6 +9,7 @@ const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
 
 const nowIso = () => new Date().toISOString();
 const sameId = (a, b) => String(a) === String(b);
+const trimText = value => String(value || '').trim();
 
 const safeGetStorage = (key, fallback = null) => {
   try {
@@ -363,6 +364,16 @@ export const CustomerOrderRepository = {
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(target.status) !== MemberOrderStatus.PAID) {
       return { success: false, error: '只有客户已付款订单才能确认到账' };
     }
+    if (nextStatusValue === MemberOrderStatus.PAID) {
+      const hasPaymentNote = trimText(payload.paymentMethod) || trimText(payload.paymentRemark);
+      const hasProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
+      if (!hasPaymentNote && !hasProof) {
+        return { success: false, error: '请填写付款方式、付款备注或上传付款凭证' };
+      }
+    }
+    if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) <= 0) {
+      return { success: false, error: '请填写有效实收金额' };
+    }
 
     const historyItem = appendHistory(target, nextStatusValue, note, profile);
     const updatedOrder = normalizeOrder({
@@ -372,12 +383,12 @@ export const CustomerOrderRepository = {
       statusText: getStatusText(nextStatusValue),
       updatedAt: nowIso(),
       cancelledAt: nextStatusValue === MemberOrderStatus.CANCELLED ? nowIso() : target.cancelledAt,
-      paymentMethod: payload.paymentMethod || target.paymentMethod || '',
-      paymentRemark: payload.paymentRemark || target.paymentRemark || '',
+      paymentMethod: trimText(payload.paymentMethod) || target.paymentMethod || '',
+      paymentRemark: trimText(payload.paymentRemark) || target.paymentRemark || '',
       paymentProofUrls: payload.paymentProofUrls || target.paymentProofUrls || [],
       confirmedAmount: payload.confirmedAmount || target.confirmedAmount || '',
-      confirmRemark: payload.confirmRemark || target.confirmRemark || '',
-      cancelRemark: payload.cancelRemark || target.cancelRemark || '',
+      confirmRemark: trimText(payload.confirmRemark) || target.confirmRemark || '',
+      cancelRemark: trimText(payload.cancelRemark) || target.cancelRemark || '',
       paymentHistory: [...(target.paymentHistory || []), historyItem],
     });
 

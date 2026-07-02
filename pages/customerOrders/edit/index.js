@@ -132,16 +132,37 @@ Page({
   },
 
   choosePaymentProof() {
+    if (this.data.isSubmitting) return;
+    if (!wx.chooseMedia) {
+      wx.showToast({ title: '当前环境不支持选择图片', icon: 'none' });
+      return;
+    }
+    const currentUrls = this.data.formData.paymentProofUrls || [];
+    const remainCount = 3 - currentUrls.length;
+    if (remainCount <= 0) {
+      wx.showToast({ title: '最多上传 3 张付款凭证', icon: 'none' });
+      return;
+    }
+
     wx.chooseMedia({
-      count: 3,
+      count: remainCount,
       mediaType: ['image'],
       success: (res) => {
-        const paths = res.tempFiles.map(file => file.tempFilePath);
+        const paths = (res.tempFiles || []).map(file => file.tempFilePath).filter(Boolean);
+        if (!paths.length) {
+          wx.showToast({ title: '未选择可用图片', icon: 'none' });
+          return;
+        }
         this.setData({
-          'formData.paymentProofUrls': [...this.data.formData.paymentProofUrls, ...paths],
+          'formData.paymentProofUrls': [...currentUrls, ...paths].slice(0, 3),
         });
       },
-      fail: () => wx.showToast({ title: '选择付款凭证失败', icon: 'none' }),
+      fail: (err) => {
+        const message = err && err.errMsg && err.errMsg.includes('cancel')
+          ? '已取消选择图片'
+          : '选择付款凭证失败，请重试';
+        wx.showToast({ title: message, icon: 'none' });
+      },
     });
   },
 
