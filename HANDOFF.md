@@ -131,6 +131,9 @@ git diff --check
 - The report is not a work-item manager. Development/QA work items must be tracked in `MVP_COMPLETION_CHECKLIST.md`; this report records BUG evidence, retest result, status, suspected area, and next action.
 - Fixed BUG-001/003/005/007 and GUI-001/002/003/005 are currently closed; all other listed Partial/Blocked/Needs GUI Retest items remain open until QA changes them to `Fixed - Verified`.
 - Added follow-up fixes for retest GUI residuals: home workbench, provider non-blank state, search starter hot words, data center layout/native wxss, chat disabled state, product add button style, and customer order role-scope text.
+- 2026-07-03 follow-up code fixes:
+  - BUG-004: home/settings/save-mode copy now branches by formal OpenID cloud save, QA override, and mock/local testing state.
+  - BUG-006: customer order processing now uses a page-level action panel for payment method, payment remark, confirmed amount, confirmation remark, and cancel reason; local/cloud payment persistence keeps these fields.
 - BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
@@ -145,6 +148,8 @@ If continuing QA, use the new plan/result split:
 - First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
 - Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
 - When performing QA from a checklist item, validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
+- For BUG-006, specifically retest the customer order bottom action panel: declare paid requires payment method or remark, guide confirm requires a positive confirmed amount, order detail shows payment fields/history, and local/cloud repository history is preserved after reload.
+- For BUG-004, compare formal OpenID and QA/mock sessions on home, setting, product library, group-order create/detail, and data center; do not mark it verified from static copy inspection alone.
 - For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 

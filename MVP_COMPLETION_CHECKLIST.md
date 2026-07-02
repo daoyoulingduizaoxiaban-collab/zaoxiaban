@@ -41,8 +41,8 @@
 
 - [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但 2026-07-02 细测时 automation websocket 不可连接。目前只有商品库主页面与 My/QA Seed 面板截图，逐页点击/返回/表单仍未完整验证。
 - [ ] BUG-002 商品真图片上传：用 `wx.chooseMedia` 选择真实本地/相册图片，保存 durable fileID/URL，重开后图片仍显示。
-- [ ] BUG-004 正式/QA 文案分流：用正式 OpenID 与 mock/local 身份分别验证首页、设置、商品库、开团、资料看板的保存模式文案不误导真人使用者。
-- [ ] BUG-006 付款闭环 GUI：客户声明付款、导游确认收款、实收金额、备注、付款历史在真实 GUI 流程中可见且可追溯。
+- [ ] BUG-004 正式/QA 文案分流：程式已补首页、设置页与通用保存模式文案，仍需用正式 OpenID 与 mock/local 身份分别验证首页、设置、商品库、开团、资料看板的保存模式文案不误导真人使用者。
+- [ ] BUG-006 付款闭环 GUI：程式已补客户声明付款/导游确认收款/取消订单的页内表单与保存字段，仍需验证实收金额、备注、付款历史在真实 GUI 流程中可见且可追溯。
 - [ ] BUG-008 本团商品详情 GUI：从本团商品列表点击商品后显示只读详情面板，包含图片、描述、价格、来源、状态，不再是未完成提示。
 - [ ] GUI-004 资料中心 GUI：通过 workflow entry 截图确认 navbar/title/cards 不裁切、不破版。
 - [ ] GUI-006 角色与订单隔离：QA/mock role switch 可点击切换，guide/customer 订单列表文案与数据隔离正确；正式 OpenID 隔离另行标记验证状态。

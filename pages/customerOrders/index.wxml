@@ -24,3 +24,47 @@
   <t-fab wx:if="{{canCreateCustomerOrder}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="客户下单" style="right: 32rpx; bottom: 180rpx;" />
 
 </view>
+
+<view wx:if="{{actionPanelVisible}}" class="action-mask" catchtap="closeActionPanel">
+  <view class="action-panel" catchtap="stopPanelTap">
+    <view class="action-panel__header">
+      <text class="action-panel__title">{{actionPanelTitle}}</text>
+      <text class="action-panel__close" bind:tap="closeActionPanel">关闭</text>
+    </view>
+
+    <view wx:if="{{actionType === 'declarePaid'}}" class="action-form">
+      <view class="action-field">
+        <text class="action-label">付款方式</text>
+        <input class="action-input" placeholder="微信/支付宝/现金/转账" value="{{actionForm.paymentMethod}}" data-field="paymentMethod" bindinput="onActionInput" />
+      </view>
+      <view class="action-field">
+        <text class="action-label">付款备注</text>
+        <textarea class="action-textarea" placeholder="填写流水尾号、代付人或其他核对信息" value="{{actionForm.paymentRemark}}" data-field="paymentRemark" bindinput="onActionInput" />
+      </view>
+      <view class="action-hint">付款凭证可在客户下单页上传；这里补充声明付款时的核对资料。</view>
+    </view>
+
+    <view wx:elif="{{actionType === 'confirmPayment'}}" class="action-form">
+      <view class="action-field">
+        <text class="action-label">实收金额</text>
+        <input class="action-input" type="digit" placeholder="请输入实际到账金额" value="{{actionForm.confirmedAmount}}" data-field="confirmedAmount" bindinput="onActionInput" />
+      </view>
+      <view class="action-field">
+        <text class="action-label">确认备注</text>
+        <textarea class="action-textarea" placeholder="例：已核对微信到账，少付/多付说明" value="{{actionForm.confirmRemark}}" data-field="confirmRemark" bindinput="onActionInput" />
+      </view>
+    </view>
+
+    <view wx:else class="action-form">
+      <view class="action-field">
+        <text class="action-label">取消原因</text>
+        <textarea class="action-textarea" placeholder="选填，方便后续追踪" value="{{actionForm.cancelRemark}}" data-field="cancelRemark" bindinput="onActionInput" />
+      </view>
+    </view>
+
+    <view class="action-panel__footer">
+      <t-button size="large" variant="outline" bind:tap="closeActionPanel" disabled="{{isSubmittingAction}}">取消</t-button>
+      <t-button size="large" theme="primary" loading="{{isSubmittingAction}}" bind:tap="submitActionPanel">{{actionSubmitText}}</t-button>
+    </view>
+  </view>
+</view>

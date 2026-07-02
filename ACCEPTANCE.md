@@ -58,6 +58,8 @@
   - Login role picker exposes guide/customer only; owner/admin remains cloud-function allowlist controlled.
   - Customer order phone validation enforces 11-digit mainland China mobile format.
   - Customer payment method/remark/proof images and guide confirmed amount/remark are saved into order/payment history.
+  - Customer order processing now uses a page-level action panel instead of a single text modal, separating payment method, payment remark, confirmed amount, confirmation remark, and cancel reason.
+  - Customer order local/cloud payment records preserve the submitted payment method instead of always writing a generic manual method.
   - Group-order product list opens a read-only product detail modal instead of unfinished toast.
 - QA retest follow-up GUI fixes:
   - Home is now a task-focused workbench with group order, product library, customer order, and data center entry points.
@@ -67,6 +69,7 @@
   - Chat page now shows a disabled-state card instead of an active input box when chat is not enabled.
   - Product add primary actions use the same blue operation style as the rest of the MVP.
   - Customer order list role scope now includes the current role label and uses repository metadata when available.
+  - Home and setting save-mode copy now separates formal OpenID cloud save, QA override, and mock/local testing states by reading the current auth session.
 - Phase 6 UI cleanup is complete for the scoped starter pages:
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
@@ -105,7 +108,8 @@ These are not formal cloud-backed features.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.
-- Phase 5 customer order click flow in GUI.
+- Phase 5 customer order click flow in GUI, including the new payment action panel.
+- Formal OpenID vs QA/mock save-mode copy comparison across home, setting, product library, group-order create/detail, and data center.
 - Phase 3 guide group-order click flow in GUI.
 - QA-only role switching UI in `pages/my` is visible in DevTools, but customer click-through and guide/customer order isolation are not verified because stale webview clicks returned to product library.
 

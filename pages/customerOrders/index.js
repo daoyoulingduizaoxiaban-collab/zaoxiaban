@@ -9,6 +9,19 @@ Page({
     roleScopeText: '',
     canCreateCustomerOrder: false,
     saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
+    actionPanelVisible: false,
+    actionType: '',
+    actionOrderId: '',
+    actionPanelTitle: '',
+    actionSubmitText: '提交',
+    isSubmittingAction: false,
+    actionForm: {
+      paymentMethod: '',
+      paymentRemark: '',
+      confirmedAmount: '',
+      confirmRemark: '',
+      cancelRemark: '',
+    },
   },
 
   onLoad() {
@@ -109,12 +122,117 @@ Page({
       itemList: actions.map(item => item.label),
       success: (res) => {
         const selected = actions[res.tapIndex];
-        if (selected) this.runOrderAction(id, selected.action);
+        if (selected) this.openActionPanel(id, selected.action);
       }
     });
   },
 
-  async runOrderAction(id, action) {
+  openActionPanel(id, action) {
+    const panelConfig = {
+      declarePaid: { title: '声明已付款', submitText: '提交付款资料' },
+      confirmPayment: { title: '确认收款', submitText: '确认收款' },
+      cancelOrder: { title: '取消订单', submitText: '确认取消' },
+    };
+    const config = panelConfig[action];
+    if (!config) return;
+
+    this.setData({
+      actionPanelVisible: true,
+      actionType: action,
+      actionOrderId: id,
+      actionPanelTitle: config.title,
+      actionSubmitText: config.submitText,
+      isSubmittingAction: false,
+      actionForm: {
+        paymentMethod: '',
+        paymentRemark: '',
+        confirmedAmount: '',
+        confirmRemark: '',
+        cancelRemark: '',
+      },
+    });
+  },
+
+  closeActionPanel() {
+    if (this.data.isSubmittingAction) return;
+    this.setData({
+      actionPanelVisible: false,
+      actionType: '',
+      actionOrderId: '',
+      actionPanelTitle: '',
+    });
+  },
+
+  stopPanelTap() {},
+
+  onActionInput(e) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
+    if (!field) return;
+    this.setData({ [`actionForm.${field}`]: value });
+  },
+
+  buildActionPayload() {
+    const { actionType, actionForm } = this.data;
+    const paymentMethod = String(actionForm.paymentMethod || '').trim();
+    const paymentRemark = String(actionForm.paymentRemark || '').trim();
+    const confirmedAmountText = String(actionForm.confirmedAmount || '').trim();
+    const confirmRemark = String(actionForm.confirmRemark || '').trim();
+    const cancelRemark = String(actionForm.cancelRemark || '').trim();
+
+    if (actionType === 'declarePaid') {
+      if (!paymentMethod && !paymentRemark) {
+        return { error: '请填写付款方式或付款备注' };
+      }
+      return {
+        data: {
+          paymentMethod,
+          paymentRemark,
+          note: `客户声明已付款：${[paymentMethod, paymentRemark].filter(Boolean).join('｜')}`,
+        },
+      };
+    }
+
+    if (actionType === 'confirmPayment') {
+      const confirmedAmount = Number(confirmedAmountText);
+      if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
+        return { error: '请填写有效实收金额' };
+      }
+      return {
+        data: {
+          confirmedAmount,
+          confirmRemark,
+          note: `导游确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
+        },
+      };
+    }
+
+    if (actionType === 'cancelOrder') {
+      return {
+        data: {
+          cancelRemark,
+          note: cancelRemark ? `订单已取消：${cancelRemark}` : '订单已取消',
+        },
+      };
+    }
+
+    return { error: '未知订单操作' };
+  },
+
+  async submitActionPanel() {
+    const { actionOrderId, actionType, isSubmittingAction } = this.data;
+    if (isSubmittingAction) return;
+
+    const actionPayload = this.buildActionPayload();
+    if (actionPayload.error) {
+      wx.showToast({ title: actionPayload.error, icon: 'none' });
+      return;
+    }
+
+    await this.runOrderAction(actionOrderId, actionType, actionPayload.data);
+  },
+
+  async runOrderAction(id, action, actionPayload = {}) {
     const actionMap = {
       declarePaid: CustomerOrderService.declarePaid,
       confirmPayment: CustomerOrderService.confirmPayment,
@@ -123,66 +241,24 @@ Page({
     const runner = actionMap[action];
     if (!runner) return;
 
-    const actionPayload = await this.getActionPayload(action);
-    if (actionPayload.cancelled) return;
+    this.setData({ isSubmittingAction: true });
 
-    const res = await runner(id, actionPayload.data);
+    const res = await runner(id, actionPayload);
     if (!res.success) {
+      this.setData({ isSubmittingAction: false });
       wx.showToast({ title: res.error || '操作失败', icon: 'none' });
       return;
     }
 
     await this.loadQaOrders();
+    this.setData({
+      actionPanelVisible: false,
+      actionType: '',
+      actionOrderId: '',
+      actionPanelTitle: '',
+      isSubmittingAction: false,
+    });
     wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
-  },
-
-  getActionPayload(action) {
-    if (action === 'declarePaid') {
-      return new Promise((resolve) => {
-        wx.showModal({
-          title: '声明已付款',
-          content: '请填写付款方式、流水尾号或付款备注，方便导游核对。',
-          editable: true,
-          placeholderText: '例：微信支付，尾号 1234',
-          confirmText: '提交',
-          success: res => resolve({
-            cancelled: !res.confirm,
-            data: {
-              note: res.content ? `客户声明已付款：${res.content}` : '客户声明已付款',
-              paymentMethod: res.content ? '人工备注' : '',
-              paymentRemark: res.content || '',
-            },
-          }),
-          fail: () => resolve({ cancelled: true, data: {} }),
-        });
-      });
-    }
-
-    if (action === 'confirmPayment') {
-      return new Promise((resolve) => {
-        wx.showModal({
-          title: '确认收款',
-          content: '请填写实收金额和确认备注，例：24 已核对微信到账。',
-          editable: true,
-          placeholderText: '例：24 已核对微信到账',
-          confirmText: '确认',
-          success: (res) => {
-            const amountMatch = String(res.content || '').match(/\d+(\.\d+)?/);
-            resolve({
-              cancelled: !res.confirm,
-              data: {
-                note: res.content ? `导游确认收款：${res.content}` : '导游确认收款',
-                confirmRemark: res.content || '',
-                confirmedAmount: amountMatch ? Number(amountMatch[0]) : '',
-              },
-            });
-          },
-          fail: () => resolve({ cancelled: true, data: {} }),
-        });
-      });
-    }
-
-    return Promise.resolve({ cancelled: false, data: {} });
   },
 
   // 同步 TabBar 狀態 (之前提到的關鍵細節)

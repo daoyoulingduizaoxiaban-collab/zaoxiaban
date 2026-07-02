@@ -485,6 +485,7 @@ const customerOrderActions = {
     paymentProofUrls = [],
     confirmedAmount = '',
     confirmRemark = '',
+    cancelRemark = '',
   }, profile) {
     assertProfile(profile);
     const rawTarget = await getById('customerOrders', id);
@@ -523,6 +524,7 @@ const customerOrderActions = {
       paymentProofUrls: paymentProofUrls || target.paymentProofUrls || [],
       confirmedAmount: confirmedAmount || target.confirmedAmount || '',
       confirmRemark: confirmRemark || target.confirmRemark || '',
+      cancelRemark: cancelRemark || target.cancelRemark || '',
       paymentHistory: [...(target.paymentHistory || []), history],
     });
 
@@ -535,7 +537,7 @@ const customerOrderActions = {
           groupOrderId: target.groupOrderId,
           amount: Number(target.totalPrice || 0),
           confirmedAmount: Number(confirmedAmount || target.totalPrice || 0),
-          method: 'manual',
+          method: paymentMethod || target.paymentMethod || 'manual',
           status: 'confirmed',
           confirmedByUserId: profile.id,
           confirmedByOpenId: profile.openId,
