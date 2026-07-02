@@ -28,7 +28,10 @@ Phase 3 与 Phase 6 的 local/QA 范围已完成。使用者已确认 MVP 正式
 - 已确认本轮开始前 dirty files：`CURRENT_TASKS.md`、`HANDOFF.md`、`QA/QA_DETAILED_RETEST_RESULTS_20260702.md`。
 - 既有 WeChat DevTools process 存在；本轮未重启、未 preview、未部署、未使用 `automator.launch(...)`。
 - `miniprogram-automator.connect` 连接 `9420`、`19512`、`3799` 失败；DevTools CLI `auto --port 13521 --auto-port 9420` 可完成，但后续仍无法连接 `9420`、`13521` 或本机侦测到的 WeChat/DevTools listening ports。
-- 因没有新的 DevTools/device GUI evidence，Phase 7 real workflow smoke 仍未通过；不能宣告 Phase 8 真人可用 MVP gate。
+- 2026-07-02 23:11 再次执行 CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project` 后，`9420`、`52632`、`63842`、`40725`、`21511`、`29848`、`32123`、`13521` 仍全部无法被 `miniprogram-automator.connect` 连接。
+- 本轮取得两张有效 GUI 截图：商品库主页面 `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`；「我的」页 QA Seed 面板 `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`。
+- QA-only 身份切换已在 `AuthService.applyQaOverride()` 与「我的」页 QA Seed 面板实现，可切 `guide`、`customer`、`owner`、`admin`、`provider`；它只写入 mock/QA session，标记 `qaOverride: true`，不代表正式 OpenID 权限。实际点击 customer 时受 DevTools stale webview 影响回到商品库，尚未验证切换成功或订单隔离。
+- 因只有商品库主页与 My/QA Seed 面板有效 GUI evidence，Phase 7 real workflow smoke 仍未通过；不能宣告 Phase 8 真人可用 MVP gate。
 
 下一位 agent 只能先做以下接手动作：
 
@@ -36,7 +39,7 @@ Phase 3 与 Phase 6 的 local/QA 范围已完成。使用者已确认 MVP 正式
 2. 执行 `git status --short --branch`，确认是否有非本轮改动。
 3. 对照 `MVP_COMPLETION_CHECKLIST.md`，确认使用者指定的范围属于哪一个 Phase。
 4. 若使用者要求继续 MVP，优先取得可用的 DevTools automation websocket/ticket/session，或安排人工/真机 real workflow smoke；再重跑 `MVP_COMPLETION_CHECKLIST.md` 的 Phase 7 GUI smoke test，并优先确认 QA bug report 中 GUI-004/GUI-006、BUG-002/006/008/009。
-5. 若先有开发 agent 处理 QA 身份切换辅助，只允许做 QA/mock 模式开关；角色选项需覆盖 `guide`、`customer`、`owner`、`admin`、`provider`，但不要把假 OpenID 包装成正式微信身份，也不要扩展 owner/admin/provider 后台能力。
+5. QA/mock 身份切换辅助已实现；下一轮若验证角色隔离，可从「我的」页 QA Seed 面板切换角色，但仍必须区分 `QA/mock role isolation passed` 与 `formal OpenID isolation passed`。
 
 ## 当前约束
 - 项目仍是混合模式：正式微信云登录与核心业务云端保存已接通；mock 身份仍保留 QA/local fallback。

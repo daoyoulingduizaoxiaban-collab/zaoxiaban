@@ -59,6 +59,8 @@
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
 - Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
+- QA retest execution must be focused: test one FLOW/PAGE/BUG row at a time, update that row, then continue. Avoid broad all-in-one retests unless explicitly requested.
+- QA screenshots must target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never save evidence that captures unrelated desktop/private work.
 
 ## Validation Commands
 ```bash
@@ -80,11 +82,15 @@ git diff --check
 - Guide full GUI workflow: group order -> product selection -> reopen.
 - Owner/admin allowlist values are not configured.
 - Formal guide/customer OpenID isolation remains separate from QA/mock role isolation. The user approved using fake customer IDs for QA/mock isolation, but QA must not report that as formal OpenID verification.
-- If useful for automation, a development agent may add a QA-only identity switch such as `qaRoleOverride` / `qaOpenIdOverride`. It must be limited to `isMock: true` or an explicit QA mode and must not affect formal WeChat OpenID permissions.
-- The QA-only identity switch should cover the current role set that can appear in the system: `guide`, `customer`, `owner`, `admin`, and `provider`. For this MVP gate, `guide` and `customer` are the required pass/fail roles; `owner`, `admin`, and `provider` are only for checking restricted/read-only/not-open/allowlist boundary states, not for declaring formal backend capability.
+- QA-only identity switch now exists in `AuthService.applyQaOverride()` and the `pages/my` QA Seed panel. It is limited to `config.isMock`, marks sessions with `qaOverride: true`, and must not be reported as formal WeChat OpenID permission evidence.
+- The QA-only identity switch covers `guide`, `customer`, `owner`, `admin`, and `provider`. For this MVP gate, `guide` and `customer` are the required pass/fail roles; `owner`, `admin`, and `provider` are only for checking restricted/read-only/not-open/allowlist boundary states, not for declaring formal backend capability.
 - DevTools automation should connect to an existing session first. If the session is unreachable or stuck, restart is allowed, but record the reason in QA evidence/logs.
 - "Real image" testing means selecting an image through `wx.chooseMedia`; seed image URLs or hard-coded HTTPS URLs are not enough to verify BUG-002.
 - 2026-07-02 22:43 CST: Existing DevTools process was present. `miniprogram-automator.connect` failed on `9420`, `19512`, and `3799`; CLI `auto --port 13521 --auto-port 9420` completed, but connects still failed on `9420`, `13521`, and discovered WeChat/DevTools listening ports. No GUI pass evidence was generated in that attempt.
+- 2026-07-02 23:11 CST: QA retried CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project`; CLI completed, but websocket probes still failed on `9420`, `52632`, `63842`, `40725`, `21511`, `29848`, `32123`, and `13521`.
+- 2026-07-02 23:16 CST: QA captured one valid DevTools window screenshot at `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`. It only verifies product library main page visibility; tab switching and deeper workflows were not reliable through Computer Use.
+- 2026-07-02 23:39 CST: QA captured one valid DevTools window screenshot at `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`. It verifies the My page QA Seed role panel is visible and lists `owner/admin/guide/customer/provider`.
+- QA-only role/openId switch implementation is present and the panel is GUI-visible, but actual customer click-through and guide/customer order isolation are not yet verified because stale DevTools webview clicks returned to product library. Use the `pages/my` QA Seed panel for manual validation when the UI surface is stable.
 
 ## Phase 8 Auth Verification
 - Cloud environment list returned `cloud1-3gwlqssy1f1972a9`.

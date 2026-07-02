@@ -24,7 +24,7 @@
 - Phase 3 导游团单 local/QA 保存闭环已完成；正式云端保存已通过 targeted automation 验证。
 - Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存已通过 targeted automation 验证。
 - 微信 DevTools 已可通过 CLI 打开项目；automation 可用于 targeted flow，逐 route GUI smoke test 尚未完成。
-- 2026-07-02 细测尝试已记录到 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`；现有 DevTools 进程可见，但 automation websocket 未能连接，因此没有新增 GUI 通过证据。
+- 2026-07-02 细测尝试已记录到 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`；现有 DevTools 进程可见，但 automation websocket 未能连接。本轮仅新增商品库主页面与「我的」页 QA Seed 面板有效 GUI 截图，不能代表完整 workflow smoke 通过。
 
 ## 勾选规则
 - 只有已经实作且有验证信号的项目才能打勾。
@@ -38,7 +38,7 @@
 ## 已做一半，后续要补完
 这些项目已有 local/QA 或设计基础，但还不能算真人可用 MVP 完成。
 
-- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但 2026-07-02 细测时 automation websocket 不可连接，逐页点击/返回/表单仍未完整验证。
+- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但 2026-07-02 细测时 automation websocket 不可连接。目前只有商品库主页面与 My/QA Seed 面板截图，逐页点击/返回/表单仍未完整验证。
 
 ## 尚未开始或尚未正式化
 这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。
@@ -81,6 +81,7 @@
 - [x] guide/customer/admin 本地可见范围已存在。
 - [x] 主登录页已移除 starter 文案与无关登录入口。
 - [x] owner/admin/provider 在 MVP 本地角色边界内受限，不作为完整后台开放。
+- [x] QA/mock 身份切换辅助已实现，覆盖 `guide`、`customer`、`owner`、`admin`、`provider`，并明确标记为 `qaOverride`。
 - [x] 真 OpenID、`authLogin`、云端 `users`、真实 session 验证已移到 Phase 8 gate。
 
 ## Phase 3 - 导游团单工作流
@@ -133,6 +134,8 @@
 - [x] `app.json` 内 27 个 route 的 `.js/.ts`、`.wxml`、`.json` 文件静态存在检查通过。
 - [x] 微信 DevTools `auto-replay --replay-all` 命令可完成。
 - [x] 2026-07-02 细测 pre-flight 与 DevTools automation blocker 已写入 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`。
+- [x] 商品库主页面已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`。
+- [x] 「我的」页 QA Seed 身份切换面板已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`。
 - [ ] Phase 0.5-0.7 eventChannel listener 成功路径已在微信 DevTools 验证。
 - [ ] `app.json` 内所有 route 已在微信 DevTools 或真机打开。
 - [ ] 底部 tab 状态已验证。

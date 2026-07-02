@@ -13,6 +13,7 @@
 - Phase 2 local auth boundary exists:
   - `AuthService` creates local/mock profile sessions.
   - Role scope functions cover `guide`, `customer`, `owner`, `admin`, and `provider`.
+  - QA-only role switching exists through `AuthService.applyQaOverride()` and the `pages/my` QA Seed panel; it is mock-only, marks `qaOverride: true`, and does not call formal wx.login/OpenID.
   - Formal OpenID is verified through deployed `authLogin`.
 - Phase 8 formal auth/login partial completion:
   - DevTools CLI found WeChat Cloud environment `cloud1-3gwlqssy1f1972a9`.
@@ -74,6 +75,9 @@
   - WeChat DevTools `auto-replay --replay-all` command completed, but did not provide route-by-route GUI evidence.
   - 2026-07-02 detailed retest pre-flight completed and recorded in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
   - Existing WeChat DevTools process was found, and DevTools CLI `auto --port 13521 --auto-port 9420` completed, but `miniprogram-automator.connect` could not connect to `9420`, `19512`, `3799`, `13521`, or discovered listening ports. No new GUI pass evidence was produced.
+  - 2026-07-02 23:11 CST rerun of CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project` still left all websocket probes unreachable.
+  - Product library main page has one valid manual GUI screenshot: `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`.
+  - My page QA Seed role panel has one valid manual GUI screenshot: `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`; it shows owner/admin/guide/customer/provider role options, but actual click switching is still not verified.
 - Last known validation commands passed:
   - `npm run lint`
   - `git diff --check`
@@ -87,6 +91,7 @@
 - Customer order create/payment/cancel operations.
 - Payment status history records.
 - QA seed reset and demo data display.
+- QA-only role switching for mock guide/customer/owner/admin/provider checks.
 
 These are not formal cloud-backed features.
 
@@ -94,14 +99,15 @@ These are not formal cloud-backed features.
 - WeChat DevTools GUI route smoke test.
 - WeChat DevTools full route smoke test.
 - 27-route GUI smoke test.
-- 2026-07-02 detailed real workflow smoke: blocked because DevTools automation websocket was not connectable after CLI `auto`; no manual/device run was performed.
+- 2026-07-02 detailed real workflow smoke: mostly blocked because DevTools automation websocket was not connectable after CLI `auto`; only product library main page and My/QA Seed role panel have valid manual screenshot evidence.
 - Product image upload through actual media picker in GUI.
-- QA retest follow-up GUI fixes listed above need screenshot retest.
+- QA retest follow-up GUI fixes listed above still need screenshot retest except product library main page visibility.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.
 - Phase 5 customer order click flow in GUI.
 - Phase 3 guide group-order click flow in GUI.
+- QA-only role switching UI in `pages/my` is visible in DevTools, but customer click-through and guide/customer order isolation are not verified because stale webview clicks returned to product library.
 
 ### Not Implemented
 - Production deployment.

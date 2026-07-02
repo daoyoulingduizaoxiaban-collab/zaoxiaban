@@ -12,6 +12,11 @@ Last updated: 2026-07-02
   - `QA/QA_DETAILED_RETEST_PLAN_20260702.md` is the QA total progress board. Keep its status columns current (`Planned`, `Partial`, `Blocked`, `Pass`, etc.).
   - `QA/QA_BUG_REPORT_202607021815.md` is the formal bug ledger for development agents. Use it to decide what needs fixing.
   - `QA/QA_DETAILED_RETEST_RESULTS_20260702.md` is the detailed QA execution log/evidence ledger. Keep probe attempts, blockers, and screenshot evidence here so context compaction or agent handoff does not lose the trail.
+- QA execution rules:
+  - Test one checklist item at a time. Do not run broad all-in-one retests unless the user explicitly asks for a full smoke pass.
+  - Before each focused test, name the exact FLOW/PAGE/BUG ID being tested, then update only that row's status/evidence/result.
+  - Screenshot evidence must target the WeChat DevTools window, not the full desktop. Use a window-specific capture such as `screencapture -l <WeChat DevTools window id>` after confirming the window id. This is required because the user may be using an external monitor or another main screen.
+  - Do not save screenshots that expose the user's unrelated desktop, main display, private windows, or active work area. If a capture accidentally includes unrelated content, discard it and recapture the DevTools window only.
 - Do not touch: `resume/preview-info.json`, `resume/preview-qr.png`, production data, unrelated QA screenshots, or pre-existing dirty files unless the current task explicitly requires them.
 
 ## Current Single Goal
