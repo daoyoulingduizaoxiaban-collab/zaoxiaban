@@ -72,6 +72,8 @@
   - WeChat DevTools project opened via CLI.
   - Static 27-route file existence check passed.
   - WeChat DevTools `auto-replay --replay-all` command completed, but did not provide route-by-route GUI evidence.
+  - 2026-07-02 detailed retest pre-flight completed and recorded in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+  - Existing WeChat DevTools process was found, and DevTools CLI `auto --port 13521 --auto-port 9420` completed, but `miniprogram-automator.connect` could not connect to `9420`, `19512`, `3799`, `13521`, or discovered listening ports. No new GUI pass evidence was produced.
 - Last known validation commands passed:
   - `npm run lint`
   - `git diff --check`
@@ -92,6 +94,7 @@ These are not formal cloud-backed features.
 - WeChat DevTools GUI route smoke test.
 - WeChat DevTools full route smoke test.
 - 27-route GUI smoke test.
+- 2026-07-02 detailed real workflow smoke: blocked because DevTools automation websocket was not connectable after CLI `auto`; no manual/device run was performed.
 - Product image upload through actual media picker in GUI.
 - QA retest follow-up GUI fixes listed above need screenshot retest.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
@@ -106,7 +109,7 @@ These are not formal cloud-backed features.
 ### Requires User Assistance
 - Owner/admin formal role assignment: provide the OpenID values that should be configured in `OWNER_OPENIDS` / `ADMIN_OPENIDS`, or set them in the cloud function environment.
 - Owner/admin cloud role allowlist: not configured because no owner/admin OpenID list has been provided.
-- GUI smoke: either provide a working DevTools automation ticket/session if route automation becomes unstable again, or manually run/observe the 27-route GUI checklist with Codex.
+- GUI smoke: provide a working DevTools automation websocket/ticket/session, or manually run/observe the real workflow smoke checklist with Codex. Current blocker is recorded in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
 
 ## Validation Rule
 Only mark an item complete when it has a matching validation signal. Lint or static inspection is enough for code-shape checks, but not for GUI behavior, real OpenID, cloud persistence, or real-user MVP closure.

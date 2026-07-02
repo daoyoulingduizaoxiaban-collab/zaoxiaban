@@ -7,6 +7,9 @@
 - Dirty status expected: dirty as of 2026-07-02; do not overwrite existing QA screenshots, bug report edits, or `pages/dataCenter` edits unless they are in scope.
 - Start here: `NEXT_AGENT_TASK.md`
 - Current next action: confirm dirty state, read `QA/QA_BUG_REPORT_202607021815.md`, then continue Phase 7 GUI smoke/retest evidence if requested.
+- Current QA plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
+- Next QA result table: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+- Latest detailed retest attempt: pre-flight completed, but DevTools automation websocket was not connectable; see `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
 - Done definition: files changed + validation run + checklist/acceptance/handoff updated + unverified items listed.
 
 ## Current Source Of Truth
@@ -76,6 +79,12 @@ git diff --check
 - Phase 5 GUI flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
 - Guide full GUI workflow: group order -> product selection -> reopen.
 - Owner/admin allowlist values are not configured.
+- Formal guide/customer OpenID isolation remains separate from QA/mock role isolation. The user approved using fake customer IDs for QA/mock isolation, but QA must not report that as formal OpenID verification.
+- If useful for automation, a development agent may add a QA-only identity switch such as `qaRoleOverride` / `qaOpenIdOverride`. It must be limited to `isMock: true` or an explicit QA mode and must not affect formal WeChat OpenID permissions.
+- The QA-only identity switch should cover the current role set that can appear in the system: `guide`, `customer`, `owner`, `admin`, and `provider`. For this MVP gate, `guide` and `customer` are the required pass/fail roles; `owner`, `admin`, and `provider` are only for checking restricted/read-only/not-open/allowlist boundary states, not for declaring formal backend capability.
+- DevTools automation should connect to an existing session first. If the session is unreachable or stuck, restart is allowed, but record the reason in QA evidence/logs.
+- "Real image" testing means selecting an image through `wx.chooseMedia`; seed image URLs or hard-coded HTTPS URLs are not enough to verify BUG-002.
+- 2026-07-02 22:43 CST: Existing DevTools process was present. `miniprogram-automator.connect` failed on `9420`, `19512`, and `3799`; CLI `auto --port 13521 --auto-port 9420` completed, but connects still failed on `9420`, `13521`, and discovered WeChat/DevTools listening ports. No GUI pass evidence was generated in that attempt.
 
 ## Phase 8 Auth Verification
 - Cloud environment list returned `cloud1-3gwlqssy1f1972a9`.
@@ -118,8 +127,11 @@ git diff --check
 ## Recommended Next Step
 Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.
 
-If continuing MVP implementation, the next high-value gap is Phase 7 full GUI smoke:
-- Open all 27 routes in DevTools or device.
+If continuing QA, use the new plan/result split:
+- Plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
+- Results: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+- First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
+- Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
 - Validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
 - For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
