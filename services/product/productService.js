@@ -1,5 +1,6 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductRepository } from '~/repositories/productRepository';
+import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 
 const normalizeNumber = value => Number(value || 0);
 
@@ -43,8 +44,18 @@ export const ProductService = {
   },
 
   async create(product) {
+    let pictureUrls = product.pictureUrls || [];
+    if (isCloudBusinessEnabled() && pictureUrls.length) {
+      const uploadResult = await uploadProductImages(pictureUrls);
+      if (!uploadResult.success) {
+        return { success: false, error: uploadResult.error || '商品图片上传失败，已停止保存' };
+      }
+      pictureUrls = uploadResult.data;
+    }
+
     const normalizedProduct = {
       ...product,
+      pictureUrls,
       title: String(product.title || '').trim(),
       description: String(product.description || '').trim(),
       sourceNote: String(product.sourceNote || '').trim(),

@@ -34,3 +34,37 @@ export const callBusinessData = ({ resource, action, data = {} }) => new Promise
     fail: err => resolve({ success: false, error: err.errMsg || '云端资料操作失败' }),
   });
 });
+
+const getCloudFileName = (path, index, prefix = 'uploads') => {
+  const name = String(path || '').split('/').pop() || `image-${index}.jpg`;
+  const cleanName = name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  return `${prefix}/${Date.now()}-${index}-${cleanName}`;
+};
+
+const uploadOneFile = (path, index, prefix) => new Promise((resolve) => {
+  if (!path || path.indexOf('cloud://') === 0 || path.indexOf('https://') === 0) {
+    resolve({ success: true, data: path });
+    return;
+  }
+
+  if (!isCloudBusinessEnabled() || !wx.cloud.uploadFile) {
+    resolve({ success: false, error: '当前环境不支持正式图片上传' });
+    return;
+  }
+
+  wx.cloud.uploadFile({
+    cloudPath: getCloudFileName(path, index, prefix),
+    filePath: path,
+    success: res => resolve({ success: true, data: res.fileID }),
+    fail: err => resolve({ success: false, error: err.errMsg || '图片上传失败' }),
+  });
+});
+
+export const uploadCloudFiles = async (paths = [], prefix = 'uploads') => {
+  const uploads = await Promise.all((paths || []).map((path, index) => uploadOneFile(path, index, prefix)));
+  const failed = uploads.find(item => !item.success);
+  if (failed) return failed;
+  return { success: true, data: uploads.map(item => item.data).filter(Boolean) };
+};
+
+export const uploadProductImages = async (pictureUrls = []) => uploadCloudFiles(pictureUrls, 'products');

@@ -1,5 +1,6 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
+import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 
 Page({
   behaviors: [useToastBehavior],
@@ -9,6 +10,8 @@ Page({
 
   onLoad() {
     const profile = AuthService.getCurrentProfile();
+    const session = AuthService.getCurrentSession();
+    const cloudEnabled = isCloudBusinessEnabled();
     this.setData({
       menuData: [
         [
@@ -19,14 +22,14 @@ Page({
           },
           {
             title: '资料模式',
-            note: '本地/QA 展示模式，尚未正式保存到云端',
+            note: cloudEnabled ? '正式微信云端保存' : '本地/QA fallback',
             icon: 'server',
           },
         ],
         [
           {
             title: '正式云端设置',
-            note: 'Phase 8 后接入',
+            note: session && session.cloudOpenIdVerified ? 'OpenID 已验证，云函数已接入' : '未完成正式 OpenID 验证',
             icon: 'cloud',
           },
           {

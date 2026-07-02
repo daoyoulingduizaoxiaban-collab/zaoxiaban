@@ -14,6 +14,13 @@ Page({
     formData: {
       title: '',
       description: '',
+      startAt: '',
+      endAt: '',
+      pickupNote: '',
+      paymentNote: '',
+      contactName: '',
+      contactPhone: '',
+      customerNotice: '',
       status: GroupOrderStatus.OPEN,
     }
   },
@@ -41,6 +48,13 @@ Page({
       formData: {
         title: res.data.title || '',
         description: res.data.description || '',
+        startAt: res.data.startAt || '',
+        endAt: res.data.endAt || '',
+        pickupNote: res.data.pickupNote || '',
+        paymentNote: res.data.paymentNote || '',
+        contactName: res.data.contactName || '',
+        contactPhone: res.data.contactPhone || '',
+        customerNotice: res.data.customerNotice || '',
         status: Number(res.data.status || GroupOrderStatus.OPEN),
       },
       selectedGoods: res.data.productList || [],

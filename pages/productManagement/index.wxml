@@ -17,7 +17,7 @@
     <view class="empty-container" wx:if="{{productList.length === 0}}">
       <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
       <text class="empty-text">当前没有商品</text>
-      <text class="empty-tips">可点击右下角新增，本地/QA 模式尚未正式保存</text>
+      <text class="empty-tips">可点击右下角新增；正式登录后保存到微信云端</text>
     </view>
 
     <block wx:for="{{productList}}" wx:key="id">

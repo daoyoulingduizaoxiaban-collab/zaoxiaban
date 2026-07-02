@@ -8,7 +8,7 @@
 5. `HANDOFF.md`
 6. `DATA_LAYER_DECISION.md`
 7. `DATA_MODEL_AND_PERMISSIONS.md`
-8. `QA_SEED_REQUIREMENTS.md`
+8. `QA/QA_SEED_REQUIREMENTS.md`
 
 Do not rely on chat memory.
 

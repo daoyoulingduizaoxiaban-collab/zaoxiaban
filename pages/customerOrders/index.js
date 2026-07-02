@@ -65,10 +65,17 @@ Page({
     const historyLines = (item.paymentHistory || [])
       .map(history => `${history.createdAt || ''} ${history.note || ''}`)
       .join('\n');
+    const paymentInfo = [
+      item.paymentMethod ? `付款方式：${item.paymentMethod}` : '',
+      item.paymentRemark ? `付款备注：${item.paymentRemark}` : '',
+      item.paymentProofUrls && item.paymentProofUrls.length ? `付款凭证：${item.paymentProofUrls.length} 张` : '',
+      item.confirmedAmount ? `实收金额：￥${item.confirmedAmount}` : '',
+      item.confirmRemark ? `确认备注：${item.confirmRemark}` : '',
+    ].filter(Boolean).join('\n');
 
     wx.showModal({
       title: item.title || '客户订单',
-      content: `状态：${item.statusText}\n客户：${item.customerName}\n金额：￥${item.totalPrice}\n商品：\n${productLines || '暂无商品'}\n状态记录：\n${historyLines || '暂无记录'}\n${this.data.saveModeText}`,
+      content: `状态：${item.statusText}\n客户：${item.customerName}\n金额：￥${item.totalPrice}\n${paymentInfo || '暂无付款备注'}\n商品：\n${productLines || '暂无商品'}\n状态记录：\n${historyLines || '暂无记录'}\n${this.data.saveModeText}`,
       showCancel: false,
       confirmText: '知道了'
     });
@@ -115,7 +122,10 @@ Page({
     const runner = actionMap[action];
     if (!runner) return;
 
-    const res = await runner(id);
+    const actionPayload = await this.getActionPayload(action);
+    if (actionPayload.cancelled) return;
+
+    const res = await runner(id, actionPayload.data);
     if (!res.success) {
       wx.showToast({ title: res.error || '操作失败', icon: 'none' });
       return;
@@ -123,6 +133,55 @@ Page({
 
     await this.loadQaOrders();
     wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+  },
+
+  getActionPayload(action) {
+    if (action === 'declarePaid') {
+      return new Promise((resolve) => {
+        wx.showModal({
+          title: '声明已付款',
+          content: '请填写付款方式、流水尾号或付款备注，方便导游核对。',
+          editable: true,
+          placeholderText: '例：微信支付，尾号 1234',
+          confirmText: '提交',
+          success: res => resolve({
+            cancelled: !res.confirm,
+            data: {
+              note: res.content ? `客户声明已付款：${res.content}` : '客户声明已付款',
+              paymentMethod: res.content ? '人工备注' : '',
+              paymentRemark: res.content || '',
+            },
+          }),
+          fail: () => resolve({ cancelled: true, data: {} }),
+        });
+      });
+    }
+
+    if (action === 'confirmPayment') {
+      return new Promise((resolve) => {
+        wx.showModal({
+          title: '确认收款',
+          content: '请填写实收金额和确认备注，例：24 已核对微信到账。',
+          editable: true,
+          placeholderText: '例：24 已核对微信到账',
+          confirmText: '确认',
+          success: (res) => {
+            const amountMatch = String(res.content || '').match(/\d+(\.\d+)?/);
+            resolve({
+              cancelled: !res.confirm,
+              data: {
+                note: res.content ? `导游确认收款：${res.content}` : '导游确认收款',
+                confirmRemark: res.content || '',
+                confirmedAmount: amountMatch ? Number(amountMatch[0]) : '',
+              },
+            });
+          },
+          fail: () => resolve({ cancelled: true, data: {} }),
+        });
+      });
+    }
+
+    return Promise.resolve({ cancelled: false, data: {} });
   },
 
   // 同步 TabBar 狀態 (之前提到的關鍵細節)

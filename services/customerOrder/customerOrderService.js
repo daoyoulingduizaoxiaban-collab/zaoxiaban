@@ -1,6 +1,7 @@
 import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
+import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
 
 const normalizeNumber = value => Number(value || 0);
 
@@ -133,6 +134,7 @@ export const CustomerOrderService = {
     if (!payload.groupOrderId) return '缺少团单 ID';
     if (!String(payload.customerName || '').trim()) return '请输入客户姓名';
     if (!String(payload.customerPhone || '').trim()) return '请输入客户手机号';
+    if (!/^1[3-9]\d{9}$/.test(String(payload.customerPhone || '').trim())) return '请输入 11 位中国大陆手机号';
     if (!Array.isArray(payload.items) || payload.items.length === 0) return '请至少选择一个商品';
     const invalidItem = payload.items.find(item => normalizeNumber(item.amount) <= 0 || normalizeNumber(item.totalPrice) <= 0);
     if (invalidItem) return '商品数量和金额必须大于 0';
@@ -142,25 +144,36 @@ export const CustomerOrderService = {
   async create(payload) {
     const error = this.validateCreatePayload(payload);
     if (error) return { success: false, error };
+    let paymentProofUrls = payload.paymentProofUrls || [];
+    if (isCloudBusinessEnabled() && paymentProofUrls.length) {
+      const uploadResult = await uploadCloudFiles(paymentProofUrls, 'payment-proofs');
+      if (!uploadResult.success) {
+        return { success: false, error: uploadResult.error || '付款凭证上传失败，已停止提交' };
+      }
+      paymentProofUrls = uploadResult.data;
+    }
 
     return CustomerOrderRepository.create({
       ...payload,
       customerName: String(payload.customerName || '').trim(),
       customerPhone: String(payload.customerPhone || '').trim(),
       memberRemark: String(payload.memberRemark || '').trim(),
+      paymentMethod: String(payload.paymentMethod || '').trim(),
+      paymentRemark: String(payload.paymentRemark || '').trim(),
+      paymentProofUrls,
       totalPrice: normalizeNumber(payload.totalPrice),
     });
   },
 
-  async declarePaid(id) {
-    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.PAID, '客户声明已付款');
+  async declarePaid(id, payload = {}) {
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.PAID, payload.note || '客户声明已付款', payload);
   },
 
-  async confirmPayment(id) {
-    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CONFIRMED, '导游确认收款');
+  async confirmPayment(id, payload = {}) {
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CONFIRMED, payload.note || '导游确认收款', payload);
   },
 
-  async cancelOrder(id) {
-    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CANCELLED, '订单已取消');
+  async cancelOrder(id, payload = {}) {
+    return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CANCELLED, payload.note || '订单已取消', payload);
   },
 };

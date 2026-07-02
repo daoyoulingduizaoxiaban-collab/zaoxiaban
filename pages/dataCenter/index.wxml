@@ -4,7 +4,7 @@
   <view class="card first">
     <view class="card-header">
       <view class="card-header__title">当前范围</view>
-      <view class="card-header__desc">本地/QA 展示模式</view>
+      <view class="card-header__desc">{{dataModeText}}</view>
     </view>
     <view class="card-content">
       <view class="card-content__item" wx:for="{{summaryList}}" wx:key="name">
@@ -19,7 +19,7 @@
       <view class="card-header__title">后续范围</view>
     </view>
     <view class="card-content">
-      <t-empty icon="info-circle-filled" description="正式数据看板将在云端资料层确认后接入" />
+      <t-empty icon="info-circle-filled" description="完整经营分析后续扩展；当前显示团单与客户订单汇总" />
     </view>
   </view>
 </view>

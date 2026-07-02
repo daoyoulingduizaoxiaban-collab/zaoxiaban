@@ -314,12 +314,12 @@ export const CustomerOrderRepository = {
     };
   },
 
-  async updatePaymentStatus(id, nextStatus, note) {
+  async updatePaymentStatus(id, nextStatus, note, payload = {}) {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({
         resource: 'customerOrders',
         action: 'updatePaymentStatus',
-        data: { id, nextStatus, note },
+        data: { id, nextStatus, note, ...payload },
       });
     }
 
@@ -360,6 +360,11 @@ export const CustomerOrderRepository = {
       statusText: getStatusText(nextStatusValue),
       updatedAt: nowIso(),
       cancelledAt: nextStatusValue === MemberOrderStatus.CANCELLED ? nowIso() : target.cancelledAt,
+      paymentMethod: payload.paymentMethod || target.paymentMethod || '',
+      paymentRemark: payload.paymentRemark || target.paymentRemark || '',
+      paymentProofUrls: payload.paymentProofUrls || target.paymentProofUrls || [],
+      confirmedAmount: payload.confirmedAmount || target.confirmedAmount || '',
+      confirmRemark: payload.confirmRemark || target.confirmRemark || '',
       paymentHistory: [...(target.paymentHistory || []), historyItem],
     });
 
@@ -370,11 +375,12 @@ export const CustomerOrderRepository = {
         customerOrderId: target.id,
         groupOrderId: target.groupOrderId,
         amount: target.totalPrice,
+        confirmedAmount: Number(payload.confirmedAmount || target.totalPrice || 0),
         method: 'manual',
         status: 'confirmed',
         confirmedByUserId: profile && profile.id,
         confirmedAt: nowIso(),
-        note: note || '导游确认收款',
+        note: payload.confirmRemark || note || '导游确认收款',
         createdAt: nowIso(),
         updatedAt: nowIso(),
       });

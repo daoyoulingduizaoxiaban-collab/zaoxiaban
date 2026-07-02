@@ -77,6 +77,8 @@ const canCreateGroupOrder = profile => (
   profile && (profile.role === 'guide' || isOwnerOrAdmin(profile))
 );
 
+const buildCustomerEntryPath = groupOrderId => `/pages/customerOrders/edit/index?groupOrderId=${groupOrderId}`;
+
 const persistGroupOrders = (groupOrders) => {
   const state = getStoredState();
   saveState({
@@ -179,14 +181,23 @@ export const GroupOrderRepository = {
     if (!canCreateGroupOrder(profile)) return { success: false, error: '当前角色不能新建团单' };
 
     const createdAt = nowIso();
+    const nextId = Date.now();
     const nextOrder = normalizeGroupOrder({
       ...groupOrderData,
-      id: Date.now(),
+      id: nextId,
       ownerUserId: groupOrderData.ownerUserId || (isOwnerOrAdmin(profile) ? profile.id : 1),
       guideUserId: groupOrderData.guideUserId || profile.id,
       authorizedGuideIds: groupOrderData.authorizedGuideIds || [],
       status: Number(groupOrderData.status || GroupOrderStatus.OPEN),
       qrCodeUrl: groupOrderData.qrCodeUrl || '',
+      sharePath: groupOrderData.sharePath || buildCustomerEntryPath(nextId),
+      startAt: groupOrderData.startAt || '',
+      endAt: groupOrderData.endAt || '',
+      pickupNote: groupOrderData.pickupNote || '',
+      paymentNote: groupOrderData.paymentNote || '',
+      contactName: groupOrderData.contactName || profile.displayName || '',
+      contactPhone: groupOrderData.contactPhone || profile.phone || '',
+      customerNotice: groupOrderData.customerNotice || '',
       productList: groupOrderData.productList || [],
       memberOrderList: [],
       createdAt,

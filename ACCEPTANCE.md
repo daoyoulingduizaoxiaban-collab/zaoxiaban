@@ -50,6 +50,14 @@
 - Phase 8 cloud group-order verification:
   - Guide role created cloud product and cloud group order through existing page/service/repository path.
   - Cloud group order retained one product snapshot after reload/re-enter.
+- QA bug report fixes:
+  - Customer share path is generated for group orders and exposed from group-order detail.
+  - Group order form/detail/customer entry include real-world fields: activity time, cutoff, pickup/delivery, payment note, contact, and customer notice.
+  - Formal product image save path uploads local media to WeChat Cloud Storage before product create.
+  - Login role picker exposes guide/customer only; owner/admin remains cloud-function allowlist controlled.
+  - Customer order phone validation enforces 11-digit mainland China mobile format.
+  - Customer payment method/remark/proof images and guide confirmed amount/remark are saved into order/payment history.
+  - Group-order product list opens a read-only product detail modal instead of unfinished toast.
 - Phase 6 UI cleanup is complete for the scoped starter pages:
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
@@ -76,6 +84,7 @@ These are not formal cloud-backed features.
 - WeChat DevTools GUI route smoke test.
 - WeChat DevTools full route smoke test.
 - 27-route GUI smoke test.
+- Product image upload through actual media picker in GUI.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.

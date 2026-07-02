@@ -15,6 +15,9 @@ Page({
       customerName: '',
       customerPhone: '',
       memberRemark: '',
+      paymentMethod: '',
+      paymentRemark: '',
+      paymentProofUrls: [],
     },
   },
 
@@ -92,6 +95,9 @@ Page({
       customerName: this.data.formData.customerName,
       customerPhone: this.data.formData.customerPhone,
       memberRemark: this.data.formData.memberRemark,
+      paymentMethod: this.data.formData.paymentMethod,
+      paymentRemark: this.data.formData.paymentRemark,
+      paymentProofUrls: this.data.formData.paymentProofUrls,
       items: this.buildSelectedItems(),
       totalPrice: this.data.totalPrice,
     };
@@ -123,5 +129,25 @@ Page({
 
   onBack() {
     wx.navigateBack();
+  },
+
+  choosePaymentProof() {
+    wx.chooseMedia({
+      count: 3,
+      mediaType: ['image'],
+      success: (res) => {
+        const paths = res.tempFiles.map(file => file.tempFilePath);
+        this.setData({
+          'formData.paymentProofUrls': [...this.data.formData.paymentProofUrls, ...paths],
+        });
+      },
+      fail: () => wx.showToast({ title: '选择付款凭证失败', icon: 'none' }),
+    });
+  },
+
+  removePaymentProof(e) {
+    const index = Number(e.currentTarget.dataset.index);
+    const paymentProofUrls = this.data.formData.paymentProofUrls.filter((_, itemIndex) => itemIndex !== index);
+    this.setData({ 'formData.paymentProofUrls': paymentProofUrls });
   },
 });

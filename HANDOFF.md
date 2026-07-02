@@ -7,7 +7,7 @@
 - Acceptance status: `ACCEPTANCE.md`.
 - Data-layer recommendation: `DATA_LAYER_DECISION.md`.
 - Data model and permissions: `DATA_MODEL_AND_PERMISSIONS.md`.
-- QA route/data matrix: `QA_SEED_REQUIREMENTS.md`.
+- QA route/data matrix: `QA/QA_SEED_REQUIREMENTS.md`.
 
 ## Current State
 - Branch: `codex`.
@@ -56,6 +56,7 @@ git diff --check
 
 ## Known Unverified Items
 - Full 27-route GUI smoke test.
+- Product image upload through actual `wx.chooseMedia` GUI picker after the cloud upload code path.
 - Cloud database console security rules were not separately configured by CLI; permission checks are enforced in `businessData`, and pages do not directly access cloud DB.
 - WeChat DevTools route smoke test.
 - WeChat DevTools automation connect now works against `ws://127.0.0.1:9420` for targeted login verification; full route smoke is still not done.
@@ -96,6 +97,12 @@ git diff --check
   - Login back as `guide`.
   - Confirm payment from customer orders page path; status became 2 and history count became 3.
 - The targeted flow also verified string cloud document IDs across group order detail/order entry pages.
+
+## QA Bug Report 202607021815
+- Report location: `QA/QA_BUG_REPORT_202607021815.md`.
+- Fixed BUG-001 through BUG-008 in code and docs.
+- BUG-009 remains: full 27-route GUI smoke test still needs to be executed before checking the final MVP gate.
+- `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
 ## Recommended Next Step
 Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.

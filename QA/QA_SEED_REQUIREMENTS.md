@@ -41,7 +41,7 @@
 | --- | --- | --- | --- |
 | `pages/productManagement/index` | cloud 商品库列表；mock 身份走 local/QA fallback | 搜索无结果 | 新增/上下架/删除云端或 fallback 保存提示 |
 | `sub-pages/groupOrder/detail/index` | 团单统计、客户订单、二维码、客户下单入口 | 无客户订单团单 | 未找到团单提示 |
-| `sub-pages/groupOrder/productList/index` | 本团商品、加入/移除云端或 fallback 保存 | 无商品团单 | 缺少团单 ID、商品详情暂未开发 |
+| `sub-pages/groupOrder/productList/index` | 本团商品、加入/移除云端或 fallback 保存、只读商品详情弹窗 | 无商品团单 | 缺少团单 ID、未找到商品详情提示 |
 | `sub-pages/groupOrder/product-picker/index` | 商品库选择 | 搜索无结果 | 未选择商品提示 |
 | `sub-pages/product/add/index` | 商品表单和价格规则 | 未保存商品列表 | 表单校验、云端或 fallback 保存提示 |
 | `sub-pages/product/list/index` | local/QA 商品列表 | 搜索无结果 | 只读展示 |
@@ -63,6 +63,6 @@
 | `pages/chat/index` | 聊天页可打开 | 空消息 | 聊天能力暂未启用 |
 | `pages/login/login` | 登录页可打开 | 空输入 | 表单校验/跳转需 GUI 验证 |
 | `pages/loginCode/loginCode` | 验证码页可打开 | 空输入 | 表单校验/跳转需 GUI 验证 |
-| `pages/dataCenter/index` | 团单数据看板本地汇总 | 无正式图表 | 云端资料层待接入提示 |
+| `pages/dataCenter/index` | 团单数据看板汇总，正式身份走云端保存提示，mock 身份走 local/QA fallback | 无正式图表 | 云端不可用时显示 fallback 提示 |
 | `pages/setting/index` | 角色、资料模式、正式云端提示 | 未登录角色 | 未完成后台提示 |
 | `pages/release/index` | 开团入口 | 无发布素材 | 社交发布已停用提示 |

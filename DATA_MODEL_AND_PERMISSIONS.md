@@ -1,7 +1,7 @@
 # DATA_MODEL_AND_PERMISSIONS
 
 ## 目的
-本文件是资料模型与权限边界初稿。它描述正式资料层目标结构，不代表当前已经实现正式保存、登录、OpenID、数据库、云函数或 API。
+本文件是资料模型与权限边界说明。当前 MVP 已采用微信云开发数据库 + 云函数，并通过 service/repository 边界接入；完整 27-route GUI smoke test 仍未完成。
 
 `mock/qaSeed.ts` 后续只保留为测试资料来源和 QA 展示 seed，不可作为真人操作的唯一资料来源。正式页面应通过资料存取层读取 mock/cloud/API，而不是直接散落读取 seed、storage 或数据库 SDK。
 
@@ -46,6 +46,11 @@
 - `status`
 - `startAt`
 - `endAt`
+- `pickupNote`
+- `paymentNote`
+- `contactName`
+- `contactPhone`
+- `customerNotice`
 - `qrCodeUrl`
 - `sharePath`
 - `createdAt`
@@ -118,6 +123,11 @@
 - `items`
 - `totalPrice`
 - `status`
+- `paymentMethod`
+- `paymentRemark`
+- `paymentProofUrls`
+- `confirmedAmount`
+- `confirmRemark`
 - `paymentStatus`
 - `createdAt`
 - `updatedAt`
@@ -138,6 +148,7 @@
 - `customerOrderId`
 - `groupOrderId`
 - `amount`
+- `confirmedAmount`
 - `method`
 - `status`
 - `confirmedByUserId`

@@ -33,6 +33,14 @@ Page({
     }
   },
 
+  onShareAppMessage() {
+    const groupOrder = this.data.groupOrder || {};
+    return {
+      title: `${groupOrder.title || '团单'}｜客户下单入口`,
+      path: groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`,
+    };
+  },
+
   async fetchGroupOrderDetail(id) {
 
     try {
@@ -290,6 +298,15 @@ Page({
           icon: 'none'
         });
       }
+    });
+  },
+
+  onCopyCustomerEntry() {
+    const path = this.data.groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`;
+    wx.setClipboardData({
+      data: path,
+      success: () => wx.showToast({ title: '客户入口已复制', icon: 'none' }),
+      fail: () => wx.showToast({ title: '复制客户入口失败', icon: 'none' }),
     });
   },
 

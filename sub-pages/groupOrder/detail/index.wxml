@@ -8,10 +8,23 @@
     <t-input label="团单名称" placeholder="请输入1~20个字符" value="{{ groupOrder.title }}" />
     <t-input label="收单状态" value="{{ groupOrder.statusText }}" />
     <t-input label="描述" value="{{ groupOrder.description }}" />
+    <t-input label="出团时间" value="{{ groupOrder.startAt || '未填写' }}" />
+    <t-input label="收单截止" value="{{ groupOrder.endAt || '未填写' }}" />
+    <t-input label="取货/集合" value="{{ groupOrder.pickupNote || '未填写' }}" />
+    <t-input label="付款说明" value="{{ groupOrder.paymentNote || '未填写' }}" />
+    <t-input label="联系人" value="{{ groupOrder.contactName || '未填写' }}" />
+    <t-input label="联系电话" value="{{ groupOrder.contactPhone || '未填写' }}" />
     <view class="qr-container" bindtap="previewQR">
       <image class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
         show-menu-by-longpress />
       <view class="qr-label">点一下放大，长按分享</view>
+    </view>
+    <view class="share-entry">
+      <view class="share-path">{{groupOrder.sharePath || '暂无客户入口'}}</view>
+      <view class="share-actions">
+        <t-button size="small" theme="primary" open-type="share" disabled="{{!groupOrder.sharePath}}">分享给客户</t-button>
+        <t-button size="small" theme="default" bindtap="onCopyCustomerEntry" disabled="{{!groupOrder.sharePath}}">复制入口</t-button>
+      </view>
     </view>
   </t-cell-group>
 

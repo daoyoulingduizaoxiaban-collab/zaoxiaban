@@ -234,6 +234,13 @@ const normalizeGroupOrderPayload = (payload, profile, existing = {}) => ({
   status: Number(payload.status || existing.status || GROUP_ORDER_STATUS.OPEN),
   qrCodeUrl: payload.qrCodeUrl || existing.qrCodeUrl || '',
   sharePath: payload.sharePath || existing.sharePath || '',
+  startAt: payload.startAt || existing.startAt || '',
+  endAt: payload.endAt || existing.endAt || '',
+  pickupNote: payload.pickupNote || existing.pickupNote || '',
+  paymentNote: payload.paymentNote || existing.paymentNote || '',
+  contactName: payload.contactName || existing.contactName || profile.displayName || '',
+  contactPhone: payload.contactPhone || existing.contactPhone || profile.phone || '',
+  customerNotice: payload.customerNotice || existing.customerNotice || '',
   productList: payload.productList || existing.productList || [],
   memberOrderList: existing.memberOrderList || [],
   authorizedGuideIds: payload.authorizedGuideIds || existing.authorizedGuideIds || [],
@@ -289,7 +296,9 @@ const groupOrderActions = {
       updatedAt: createdAt,
     }, profile);
     const result = await getCollection('groupOrders').add({ data: groupOrder });
-    const created = toId({ ...groupOrder, _id: result._id });
+    const sharePath = `/pages/customerOrders/edit/index?groupOrderId=${result._id}`;
+    await getCollection('groupOrders').doc(result._id).update({ data: { sharePath } });
+    const created = toId({ ...groupOrder, _id: result._id, sharePath });
     await syncGroupOrderProducts(created, created.productList, profile);
     return success(created);
   },
@@ -450,6 +459,9 @@ const customerOrderActions = {
       items: payload.items || [],
       productList: payload.items || [],
       memberRemark: payload.memberRemark || '',
+      paymentMethod: payload.paymentMethod || '',
+      paymentRemark: payload.paymentRemark || '',
+      paymentProofUrls: payload.paymentProofUrls || [],
       hostRemark: '',
       createdAt,
       updatedAt: createdAt,
@@ -464,7 +476,16 @@ const customerOrderActions = {
     return success(orderWithId);
   },
 
-  async updatePaymentStatus({ id, nextStatus, note }, profile) {
+  async updatePaymentStatus({
+    id,
+    nextStatus,
+    note,
+    paymentMethod = '',
+    paymentRemark = '',
+    paymentProofUrls = [],
+    confirmedAmount = '',
+    confirmRemark = '',
+  }, profile) {
     assertProfile(profile);
     const rawTarget = await getById('customerOrders', id);
     if (!rawTarget) return failure('未找到订单资料');
@@ -497,6 +518,11 @@ const customerOrderActions = {
       statusText: STATUS_TEXT[nextStatusValue],
       updatedAt,
       cancelledAt: nextStatusValue === MEMBER_ORDER_STATUS.CANCELLED ? updatedAt : target.cancelledAt,
+      paymentMethod: paymentMethod || target.paymentMethod || '',
+      paymentRemark: paymentRemark || target.paymentRemark || '',
+      paymentProofUrls: paymentProofUrls || target.paymentProofUrls || [],
+      confirmedAmount: confirmedAmount || target.confirmedAmount || '',
+      confirmRemark: confirmRemark || target.confirmRemark || '',
       paymentHistory: [...(target.paymentHistory || []), history],
     });
 
@@ -508,12 +534,13 @@ const customerOrderActions = {
           customerOrderId: target.id || target._id,
           groupOrderId: target.groupOrderId,
           amount: Number(target.totalPrice || 0),
+          confirmedAmount: Number(confirmedAmount || target.totalPrice || 0),
           method: 'manual',
           status: 'confirmed',
           confirmedByUserId: profile.id,
           confirmedByOpenId: profile.openId,
           confirmedAt: updatedAt,
-          note: note || '导游确认收款',
+          note: confirmRemark || note || '导游确认收款',
           createdAt: updatedAt,
           updatedAt,
         },

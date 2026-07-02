@@ -99,9 +99,20 @@ Page({
   // 3. 跳轉到商品詳情
   goToDetail(e) {
     const id = e.currentTarget.dataset.id;
-    wx.showToast({
-      title: `商品详情暂未开发 #${id}`,
-      icon: 'none',
+    const product = this.data.rawList.find(item => String(item.id) === String(id));
+    if (!product) {
+      wx.showToast({ title: '未找到商品详情', icon: 'none' });
+      return;
+    }
+
+    const priceLines = (product.priceSetting || [])
+      .map(rule => `${rule.minQuantity} 件起：¥${rule.unitPrice}${rule.description ? `（${rule.description}）` : ''}`)
+      .join('\n');
+    wx.showModal({
+      title: product.title || '商品详情',
+      content: `描述：${product.description || '暂无'}\n价格规则：\n${priceLines || '未设置'}\n供应来源：${product.sourceNote || '暂无'}\n状态：${Number(product.status) === 2 ? '已上架' : '已下架'}`,
+      showCancel: false,
+      confirmText: '知道了',
     });
   },
 

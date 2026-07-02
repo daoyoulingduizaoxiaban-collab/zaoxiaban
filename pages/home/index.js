@@ -1,6 +1,7 @@
 Page({
   data: {
     titleText: '工作台',
+    modeText: '正式微信云端已接通；mock 身份会使用本地/QA fallback。',
   },
 
   goGroupOrders() {

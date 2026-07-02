@@ -17,8 +17,6 @@ export const ROLE_LABELS = Object.freeze({
 export const MVP_ROLE_OPTIONS = [
   { label: ROLE_LABELS[AUTH_ROLES.GUIDE], value: AUTH_ROLES.GUIDE },
   { label: ROLE_LABELS[AUTH_ROLES.CUSTOMER], value: AUTH_ROLES.CUSTOMER },
-  { label: ROLE_LABELS[AUTH_ROLES.OWNER], value: AUTH_ROLES.OWNER },
-  { label: ROLE_LABELS[AUTH_ROLES.ADMIN], value: AUTH_ROLES.ADMIN },
 ];
 
 export const isOwnerOrAdmin = profile => (

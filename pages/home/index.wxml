@@ -9,13 +9,13 @@
       <t-cell title="商品库" description="维护可加入团单的商品资料" arrow bind:tap="goProducts">
         <t-icon slot="left-icon" name="shop" size="44rpx" color="#0052d9" />
       </t-cell>
-      <t-cell title="客户订单" description="查看订单、收款状态与本地/QA 记录" arrow bind:tap="goCustomerOrders">
+      <t-cell title="客户订单" description="查看订单、收款状态与付款历史" arrow bind:tap="goCustomerOrders">
         <t-icon slot="left-icon" name="usergroup" size="44rpx" color="#0052d9" />
       </t-cell>
     </t-cell-group>
 
     <view class="qa-tip">
-      当前为本地/QA 展示模式，正式云端保存与真 OpenID 仍在 Phase 8 gate。
+      {{modeText}}
     </view>
   </view>
 </view>

@@ -6,6 +6,13 @@
     <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" bindchange="onInput" data-field="title" />
     <t-textarea label="团单描述" placeholder="最多200个字" value="{{formData.description}}" bindchange="onInput" maxlength="200"
       data-field="description" />
+    <t-input label="*出团时间" placeholder="例：2026-07-10 09:00" value="{{formData.startAt}}" bindchange="onInput" data-field="startAt" />
+    <t-input label="*收单截止" placeholder="例：2026-07-09 20:00" value="{{formData.endAt}}" bindchange="onInput" data-field="endAt" />
+    <t-textarea label="*取货/集合" placeholder="说明集合点、取货方式或交付安排" value="{{formData.pickupNote}}" bindchange="onInput" data-field="pickupNote" />
+    <t-textarea label="*付款说明" placeholder="说明付款方式、收款账号、付款后如何备注" value="{{formData.paymentNote}}" bindchange="onInput" data-field="paymentNote" />
+    <t-input label="*联系人" placeholder="导游/领队姓名" value="{{formData.contactName}}" bindchange="onInput" data-field="contactName" />
+    <t-input label="*联系电话" placeholder="导游/领队手机号" value="{{formData.contactPhone}}" bindchange="onInput" data-field="contactPhone" />
+    <t-textarea label="客户提示" placeholder="下单前给客户看的补充说明" value="{{formData.customerNotice}}" bindchange="onInput" data-field="customerNotice" />
   </t-cell-group>
   <t-cell-group theme="card" title="*商品设置">
     <view class="goods-list" wx:if="{{selectedGoods.length > 0}}">

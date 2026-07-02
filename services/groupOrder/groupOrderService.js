@@ -48,6 +48,12 @@ export const GroupOrderService = {
     if (!String(groupOrder.title || '').trim()) return '请输入团单名称';
     if (String(groupOrder.title || '').trim().length > 20) return '团单名称最多 20 个字';
     if (String(groupOrder.description || '').trim().length > 200) return '团单描述最多 200 个字';
+    if (!String(groupOrder.startAt || '').trim()) return '请输入出团或活动时间';
+    if (!String(groupOrder.endAt || '').trim()) return '请输入收单截止时间';
+    if (!String(groupOrder.pickupNote || '').trim()) return '请输入取货/交付/集合说明';
+    if (!String(groupOrder.paymentNote || '').trim()) return '请输入付款方式或付款备注';
+    if (!String(groupOrder.contactName || '').trim()) return '请输入导游/领队联系人';
+    if (!String(groupOrder.contactPhone || '').trim()) return '请输入联系电话';
     return '';
   },
 
@@ -56,6 +62,13 @@ export const GroupOrderService = {
       ...groupOrder,
       title: String(groupOrder.title || '').trim(),
       description: String(groupOrder.description || '').trim(),
+      startAt: String(groupOrder.startAt || '').trim(),
+      endAt: String(groupOrder.endAt || '').trim(),
+      pickupNote: String(groupOrder.pickupNote || '').trim(),
+      paymentNote: String(groupOrder.paymentNote || '').trim(),
+      contactName: String(groupOrder.contactName || '').trim(),
+      contactPhone: String(groupOrder.contactPhone || '').trim(),
+      customerNotice: String(groupOrder.customerNotice || '').trim(),
       status: Number(groupOrder.status || GroupOrderStatus.OPEN),
       productList: (groupOrder.productList || []).map(normalizeProduct),
     };
