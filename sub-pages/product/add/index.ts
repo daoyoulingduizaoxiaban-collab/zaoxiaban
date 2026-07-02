@@ -1,6 +1,11 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductService } from '~/services/product/productService';
-import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import {
+  CLOUD_SAVE_MODE,
+  getSaveModeText,
+  isCloudBusinessEnabled,
+  LOCAL_SAVE_MODE_TEXT,
+} from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
@@ -8,7 +13,8 @@ Page({
     productList: [], // 最終提交的大清單
     isSubmitting: false,
     isChoosingImage: false,
-    saveModeText: '本地/QA 展示模式，尚未正式保存',
+    saveModeText: LOCAL_SAVE_MODE_TEXT,
+    imageModeTip: '本地/QA 测试模式会保留临时预览路径，不代表跨设备持久图片。',
 
     // 當前正在編輯的商品
     currentProduct: {
@@ -28,6 +34,26 @@ Page({
       unitPrice: '',
       description: ''
     }
+  },
+
+  onLoad() {
+    this.refreshSaveModeText();
+  },
+
+  onShow() {
+    this.refreshSaveModeText();
+  },
+
+  refreshSaveModeText() {
+    const cloudEnabled = isCloudBusinessEnabled();
+    this.setData({
+      saveModeText: getSaveModeText({
+        saveMode: cloudEnabled ? CLOUD_SAVE_MODE : 'local-product-repository',
+      }),
+      imageModeTip: cloudEnabled
+        ? '正式云端模式会先上传为持久图片，再保存商品。'
+        : '本地/QA 测试模式会保留临时预览路径，不代表跨设备持久图片。',
+    });
   },
 
   getSafeEventChannel() {
@@ -110,6 +136,10 @@ Page({
   // 圖片處理 (與之前相同，略作簡化)
   chooseImage() {
     if (this.data.isChoosingImage || this.data.isSubmitting) return;
+    if (!wx.chooseMedia) {
+      wx.showToast({ title: '当前环境不支持选择图片', icon: 'none' });
+      return;
+    }
     const remainCount = 3 - this.data.currentProduct.pictureUrls.length;
     if (remainCount <= 0) {
       wx.showToast({ title: '最多上传 3 张商品图片', icon: 'none' });
@@ -152,6 +182,7 @@ Page({
 
   // 4. 按下「储存此商品」
   async addProductToList() {
+    if (this.data.isSubmitting) return;
     const p = this.data.currentProduct;
     const error = ProductService.validateProduct(p);
     if (error) return wx.showToast({ title: error, icon: 'none' });

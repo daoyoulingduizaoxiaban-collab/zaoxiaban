@@ -34,18 +34,25 @@
 - 如果项目只做了一半，正式项保持未勾，并新增后续补完项。
 - 未完成 backlog 必须留在本文件，不要移到 `CURRENT_TASKS.md`。
 - Phase 1-5 先记录当前 local/QA MVP 功能完成度；正式云端、真 OpenID、GUI 验证统一放在 Phase 7/8 gate，不混在前置 Phase 里。
-- 任何 BUG report 中 `Status` 不是 `Fixed - Verified` 的问题，如果仍需要开发或 QA 工作，必须在本文对应 Phase 中保留一个未勾项目。
+- BUG/GUI 项目只有 `Fixed - Verified` 才能视为关闭。凡是 `Partially Fixed`、`Fixed - Needs GUI Retest`、`Blocked / Unverified`、`Not Fixed`、`Partial`、`Blocked`，都还是开放缺陷或开放验收项。
+- 开放缺陷不能只记录状态就停下：如果能从代码、资料流、UI、文案、测试脚本或入口设计修正，就要继续修正；只有真正受正式 OpenID、真机、图片选择器、DevTools session、外部权限等环境限制时，才可保留为 blocked，并必须写清楚具体阻塞和下一步解除方式。
+- 任何 BUG report 中 `Status` 不是 `Fixed - Verified` 的问题，必须在本文对应 Phase 中保留一个未勾项目，直到完成修正并取得足够验证信号。
 
 ## 已做一半，后续要补完
 这些项目已有 local/QA 或设计基础，但还不能算真人可用 MVP 完成。
 
 - [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但 2026-07-02 细测时 automation websocket 不可连接。目前只有商品库主页面与 My/QA Seed 面板截图，逐页点击/返回/表单仍未完整验证。
-- [ ] BUG-002 商品真图片上传：用 `wx.chooseMedia` 选择真实本地/相册图片，保存 durable fileID/URL，重开后图片仍显示。
+- [ ] BUG-002 商品真图片上传：程式已补正式云端上传路径、选择图片失败/取消防护、本地/QA 临时图片提示与防重复提交；仍需用 `wx.chooseMedia` 选择真实本地/相册图片，确认保存 durable fileID/URL，重开后图片仍显示。
 - [ ] BUG-004 正式/QA 文案分流：程式已补首页、设置页与通用保存模式文案，仍需用正式 OpenID 与 mock/local 身份分别验证首页、设置、商品库、开团、资料看板的保存模式文案不误导真人使用者。
 - [ ] BUG-006 付款闭环 GUI：程式已补客户声明付款/导游确认收款/取消订单的页内表单与保存字段，仍需验证实收金额、备注、付款历史在真实 GUI 流程中可见且可追溯。
 - [ ] BUG-008 本团商品详情 GUI：从本团商品列表点击商品后显示只读详情面板，包含图片、描述、价格、来源、状态，不再是未完成提示。
 - [ ] GUI-004 资料中心 GUI：通过 workflow entry 截图确认 navbar/title/cards 不裁切、不破版。
 - [ ] GUI-006 角色与订单隔离：QA/mock role switch 可点击切换，guide/customer 订单列表文案与数据隔离正确；正式 OpenID 隔离另行标记验证状态。
+
+## Partially Fixed 当前分类
+- 仍有可开发修补的项目：优先继续补程式缺口，并在本文件写明已补到哪里。
+- 只缺 GUI/真机证据的项目：不得打勾，必须保留在本节，直到有 DevTools/真机截图或操作记录。
+- 目前只缺 GUI/真机证据或外部状态的项目：BUG-002、BUG-004、BUG-006、BUG-008、GUI-004、GUI-006、Phase 7 GUI smoke test、BUG-009 workflow smoke。
 
 ## 尚未开始或尚未正式化
 这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。

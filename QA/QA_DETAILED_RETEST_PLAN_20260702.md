@@ -24,10 +24,10 @@
 |---|---|
 | Planned | 已列入計劃，尚未開始 |
 | In Progress | 正在測試或補證據 |
-| Pass | 已用指定方式驗證通過，且有證據 |
-| Failed | 已驗出問題或不符合預期 |
-| Partial | 部分通過，但仍有缺口 |
-| Blocked | 因真機、正式 OpenID、DevTools session、圖片選擇、權限或資料不足暫不能判定 |
+| Pass | 已用指定方式驗證通過，且有證據；只有此狀態可作為該測試項目關閉依據 |
+| Failed | 已驗出問題或不符合預期；下一步必須修正 |
+| Partial | 部分通過，但仍有缺口；不得視為完成，能修就繼續修，不能修才寫清阻塞 |
+| Blocked | 因真機、正式 OpenID、DevTools session、圖片選擇、權限或資料不足暫不能判定；不是通過，需保留解除阻塞方式 |
 | Not Applicable | 此頁/情境不適用於本輪 MVP gate |
 
 ## Retest Strategy
@@ -38,6 +38,7 @@
 |---|---|---|
 | Evidence per row | For GUI/QA evidence, tie each focused test and screenshot set to a specific FLOW/PAGE/BUG row, then update that row before claiming it passed | Avoid broad retests where evidence, status, and failure cause cannot be traced |
 | Development batching allowed | Code fixes may batch related bugs when they touch the same module, data path, UI surface, or risk area; after fixing, map the validation result back to each affected row | This rule is for QA evidence traceability, not a limit that only one bug may be fixed at a time |
+| Non-pass means continue | Any BUG/FLOW/PAGE that is not fully `Pass` or `Fixed - Verified` remains open; fix what can be fixed before leaving it to QA or handoff | Partial or blocked statuses should not become a resting place for fixable problems |
 | Announce the target | Record or state the exact FLOW/PAGE/BUG ID before testing evidence for that row | Keeps evidence and status tied to the right item |
 | Window-only screenshots | Capture the WeChat DevTools window by window id, not the whole screen | User may have external monitors or another active main screen |
 | Privacy guard | Discard and redo any screenshot that includes unrelated desktop/main-screen content | QA evidence must not expose unrelated user work |

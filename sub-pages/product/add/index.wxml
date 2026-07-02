@@ -27,7 +27,7 @@
 
       <view class="form-group">
         <text class="label">商品图片 ({{currentProduct.pictureUrls.length}}/3)</text>
-        <view class="image-tip">正式云端模式会先上传为持久图片，再保存商品。</view>
+        <view class="image-tip">{{imageModeTip}}</view>
         <view class="image-grid">
           <block wx:for="{{currentProduct.pictureUrls}}" wx:key="*this">
             <view class="img-wrap">

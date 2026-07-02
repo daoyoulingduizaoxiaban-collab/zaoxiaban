@@ -55,6 +55,7 @@
   - Customer share path is generated for group orders and exposed from group-order detail.
   - Group order form/detail/customer entry include real-world fields: activity time, cutoff, pickup/delivery, payment note, contact, and customer notice.
   - Formal product image save path uploads local media to WeChat Cloud Storage before product create.
+  - Product add image picking now guards unsupported `wx.chooseMedia`, cancel/fail paths, duplicate submit, and clearly separates formal cloud durable image upload copy from local/QA temporary preview copy.
   - Login role picker exposes guide/customer only; owner/admin remains cloud-function allowlist controlled.
   - Customer order phone validation enforces 11-digit mainland China mobile format.
   - Customer payment method/remark/proof images and guide confirmed amount/remark are saved into order/payment history.
@@ -104,6 +105,7 @@ These are not formal cloud-backed features.
 - 27-route GUI smoke test.
 - 2026-07-02 detailed real workflow smoke: mostly blocked because DevTools automation websocket was not connectable after CLI `auto`; only product library main page and My/QA Seed role panel have valid manual screenshot evidence.
 - Product image upload through actual media picker in GUI.
+- Product image reopen/durable display after actual `wx.chooseMedia` upload.
 - QA retest follow-up GUI fixes listed above still need screenshot retest except product library main page visibility.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.

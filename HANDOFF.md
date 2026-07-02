@@ -61,6 +61,8 @@
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
 - Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
+- BUG-fix rule: only `Fixed - Verified` closes a BUG/GUI item. Anything else, including `Partially Fixed`, `Fixed - Needs GUI Retest`, `Blocked / Unverified`, `Partial`, or `Blocked`, remains open and must either be fixed next or have a concrete external blocker and unblock step recorded.
+- Do not treat non-pass statuses as handoff completion. If the issue can be improved through code, data flow, UI, copy, route entry, or test automation, continue fixing instead of merely documenting it.
 - QA retest evidence must stay traceable: tie each focused GUI/QA evidence set to a specific FLOW/PAGE/BUG row, update that row before claiming it passed, and avoid broad all-in-one pass claims unless explicitly requested.
 - This is not a development limit. Code fixes may batch related bugs when they share a module, data path, UI surface, or risk area; after fixing, map validation back to each affected BUG/FLOW/PAGE row.
 - QA screenshots must target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never save evidence that captures unrelated desktop/private work.
@@ -132,6 +134,7 @@ git diff --check
 - Fixed BUG-001/003/005/007 and GUI-001/002/003/005 are currently closed; all other listed Partial/Blocked/Needs GUI Retest items remain open until QA changes them to `Fixed - Verified`.
 - Added follow-up fixes for retest GUI residuals: home workbench, provider non-blank state, search starter hot words, data center layout/native wxss, chat disabled state, product add button style, and customer order role-scope text.
 - 2026-07-03 follow-up code fixes:
+  - BUG-002: product add now separates formal cloud durable image copy from local/QA temporary preview copy, guards unsupported `wx.chooseMedia`, and prevents duplicate submit during image/product save.
   - BUG-004: home/settings/save-mode copy now branches by formal OpenID cloud save, QA override, and mock/local testing state.
   - BUG-006: customer order processing now uses a page-level action panel for payment method, payment remark, confirmed amount, confirmation remark, and cancel reason; local/cloud payment persistence keeps these fields.
 - BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
