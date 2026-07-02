@@ -126,6 +126,7 @@
 ## Phase 7 - GUI Smoke Test
 - [x] 微信 DevTools 项目可通过 CLI 打开。
 - [x] `app.json` 内 27 个 route 的 `.js/.ts`、`.wxml`、`.json` 文件静态存在检查通过。
+- [x] 微信 DevTools `auto-replay --replay-all` 命令可完成。
 - [ ] Phase 0.5-0.7 eventChannel listener 成功路径已在微信 DevTools 验证。
 - [ ] `app.json` 内所有 route 已在微信 DevTools 或真机打开。
 - [ ] 底部 tab 状态已验证。
@@ -151,6 +152,6 @@
 - [ ] 正式客户订单创建已存在。
 - [ ] 正式客户下单/收款流程在重新打开/重新载入后仍能保持。
 - [ ] 27-route GUI smoke test 通过。
-- [ ] `npm run lint` 通过。
-- [ ] `git diff --check` 通过。
-- [ ] 没有把 mock/local fallback 包装成 production 行为。
+- [x] `npm run lint` 通过。
+- [x] `git diff --check` 通过。
+- [x] 没有把 mock/local fallback 包装成 production 行为。

@@ -9,14 +9,14 @@
 - 资料层建议与模型：看 `DATA_LAYER_DECISION.md`、`DATA_MODEL_AND_PERMISSIONS.md`。
 
 ## 当前任务
-Phase 3 与 Phase 6 的 local/QA 范围已完成。当前最明确的未完成验证缺口是 Phase 7 GUI 逐 route 互动 smoke test。
+Phase 3 与 Phase 6 的 local/QA 范围已完成。当前未完成缺口是 Phase 7 GUI 逐 route 互动 smoke test 与 Phase 8 正式云端/真 OpenID gate。
 
 下一位 agent 只能先做以下接手动作：
 
 1. 读取 `CURRENT_TASKS.md`、`PROJECT_RULES.md`、`MVP_COMPLETION_CHECKLIST.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`DATA_LAYER_DECISION.md`、`DATA_MODEL_AND_PERMISSIONS.md`、`QA_SEED_REQUIREMENTS.md`。
 2. 执行 `git status --short --branch`，确认是否有非本轮改动。
 3. 对照 `MVP_COMPLETION_CHECKLIST.md`，确认使用者指定的范围属于哪一个 Phase。
-4. 若使用者要求继续 MVP，优先处理 `MVP_COMPLETION_CHECKLIST.md` 的 Phase 7 未勾 GUI 项目；不要自行跳到正式云端或 Phase 8。
+4. 若使用者要求继续 MVP，优先处理 `MVP_COMPLETION_CHECKLIST.md` 的 Phase 7 未勾 GUI 项目；Phase 8 需要使用者提供云环境/授权后才能继续。
 
 ## 当前约束
 - 项目仍是 QA/local mode，不是 production。
@@ -24,7 +24,8 @@ Phase 3 与 Phase 6 的 local/QA 范围已完成。当前最明确的未完成�
 - Phase 3 导游团单新增/编辑与本团商品加入/移除保存闭环已在 local/QA repository 模式完成。
 - Phase 4 商品库只有 local/QA repository 版本。
 - Phase 5 客户下单与收款闭环只有 local/QA repository 版本，正式云端保存未实现。
-- 微信 DevTools CLI 可打开项目；automation connect 失败，不能宣称 27-route GUI 通过。
+- 微信 DevTools CLI 可打开项目，`auto-replay --replay-all` 可完成；automation connect 失败，不能宣称 27-route GUI 通过。
+- Phase 8 正式资料层、真 OpenID、云函数、云集合与权限规则需要使用者提供云环境/授权。
 
 ## 禁止事项
 - 不要自行启动、重开、refocus 或 preview 微信 DevTools。

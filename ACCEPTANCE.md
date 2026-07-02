@@ -36,6 +36,7 @@
 - Phase 7 partial verification:
   - WeChat DevTools project opened via CLI.
   - Static 27-route file existence check passed.
+  - WeChat DevTools `auto-replay --replay-all` command completed, but did not provide route-by-route GUI evidence.
 - Last known validation commands passed:
   - `npm run lint`
   - `git diff --check`
@@ -73,6 +74,12 @@ These are not formal cloud-backed features.
 - Formal customer order cloud/API workflow.
 - Formal payment confirmation or payment status history workflow.
 - Production deployment.
+
+### Requires User Assistance
+- Formal data layer: provide/confirm WeChat Cloud environment ID or backend API target.
+- Cloud implementation: explicitly allow cloud resource creation, cloud function deployment, and collection/rule setup.
+- Formal OpenID: provide a configured `authLogin` cloud function or allow creating/deploying it.
+- GUI smoke: either provide a working DevTools automation ticket/session or manually run/observe the 27-route GUI checklist with Codex.
 
 ## Validation Rule
 Only mark an item complete when it has a matching validation signal. Lint or static inspection is enough for code-shape checks, but not for GUI behavior, real OpenID, cloud persistence, or real-user MVP closure.

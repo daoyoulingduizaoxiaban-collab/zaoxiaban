@@ -19,7 +19,7 @@
 - Phase 3 guide group-order persistence: local/QA repository version is implemented.
 - Product library: Phase 4 local/QA repository version is implemented.
 - Phase 5 customer ordering/payment workflow: local/QA repository version is implemented.
-- WeChat DevTools GUI validation: project opened by CLI; automation route smoke could not connect to `ws://127.0.0.1:9420`.
+- WeChat DevTools GUI validation: project opened by CLI; `auto-replay --replay-all` completed; automation route smoke could not connect to `ws://127.0.0.1:9420`.
 
 ## Implemented Boundaries
 - Auth uses `services/auth/authService.js` and `services/auth/roleScope.js`.
@@ -52,6 +52,7 @@ git diff --check
 - Cloud `users`, `products`, `groupOrders`, `customerOrders`, and payment-related collections.
 - WeChat DevTools route smoke test.
 - WeChat DevTools automation connect: CLI `auto --auto-port 9420` reported success, but `miniprogram-automator.connect` failed against `ws://127.0.0.1:9420`, `ws://localhost:9420`, and `ws://[::1]:9420`.
+- WeChat DevTools `auto-replay --replay-all` completed, but did not produce route-by-route GUI evidence.
 - 27-route static file existence check passed.
 - Product library GUI flow: create -> list refresh -> status toggle -> soft delete.
 - Phase 5 GUI flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
@@ -65,3 +66,9 @@ If continuing MVP validation, the next gap is Phase 7 GUI smoke test. Do not inf
 - GUI smoke test.
 - Formal data-layer confirmation and cloud setup.
 - UI cleanup / starter removal.
+
+## User Assistance Needed For Phase 8
+- Confirm/provide WeChat Cloud environment ID or backend API target.
+- Explicitly allow creating cloud resources, deploying cloud functions, and setting collection permissions.
+- Provide or allow implementing/deploying `authLogin` for real OpenID exchange.
+- Provide a working DevTools automation ticket/session, or manually assist with the 27-route GUI smoke test.
