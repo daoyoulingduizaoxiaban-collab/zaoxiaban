@@ -41,6 +41,12 @@
 
 These are not formal cloud-backed features.
 
+### Current Blocking Product Gap
+- Phase 3 guide group-order persistence is still incomplete:
+  - Group order create/edit does not yet save through a repository/service boundary.
+  - Add/remove group-order products does not yet persist after reopen/reload.
+  - Group order detail still needs to be fully moved behind the group-order repository/service permission boundary.
+
 ### Not Verified
 - WeChat DevTools GUI route smoke test.
 - Real `wx.login` code exchange for OpenID.

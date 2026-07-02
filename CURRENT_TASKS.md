@@ -9,18 +9,19 @@
 - 资料层建议与模型：看 `DATA_LAYER_DECISION.md`、`DATA_MODEL_AND_PERMISSIONS.md`。
 
 ## 当前任务
-当前没有正在进行中的开发任务。
+当前最明确的未完成产品缺口是 Phase 3 导游团单保存闭环。
 
 下一位 agent 只能先做以下接手动作：
 
 1. 读取 `CURRENT_TASKS.md`、`PROJECT_RULES.md`、`MVP_COMPLETION_CHECKLIST.md`、`ACCEPTANCE.md`、`HANDOFF.md`、`DATA_LAYER_DECISION.md`、`DATA_MODEL_AND_PERMISSIONS.md`、`QA_SEED_REQUIREMENTS.md`。
 2. 执行 `git status --short --branch`，确认是否有非本轮改动。
 3. 对照 `MVP_COMPLETION_CHECKLIST.md`，确认使用者指定的范围属于哪一个 Phase。
-4. 等待使用者明确指定下一轮范围；不要自行从 checklist 中挑一个开做。
+4. 若使用者要求继续 MVP，优先处理 `MVP_COMPLETION_CHECKLIST.md` 的 Phase 3 未勾项目；不要自行跳到正式云端、GUI 或 Phase 6/7/8。
 
 ## 当前约束
 - 项目仍是 QA/local mode，不是 production。
 - 正式资料层未确认，正式 OpenID 未验证，正式云端保存未实现。
+- Phase 3 导游团单新增/编辑与本团商品加入/移除保存闭环未完成。
 - Phase 4 商品库只有 local/QA repository 版本。
 - Phase 5 客户下单与收款闭环只有 local/QA repository 版本，正式云端保存未实现。
 - 微信 DevTools GUI smoke test 尚未执行，不能宣称 GUI 通过。

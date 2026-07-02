@@ -16,6 +16,7 @@
 - `config.js`: `isMock: true`, `baseUrl: ''`, `cloudEnvId: ''`.
 - Formal data layer: not confirmed by user. `DATA_LAYER_DECISION.md` is only a recommendation.
 - Formal OpenID login: not verified. `authLogin` cloud function and cloud `users` collection do not exist yet.
+- Phase 3 guide group-order persistence: incomplete. Group order create/edit and add/remove group-order products still do not persist through a repository/service boundary.
 - Product library: Phase 4 local/QA repository version is implemented.
 - Phase 5 customer ordering/payment workflow: local/QA repository version is implemented.
 - WeChat DevTools GUI validation: not run.
@@ -57,9 +58,9 @@ git diff --check
 ## Recommended Next Step
 Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.
 
-Do not infer the next development phase from the roadmap. Wait for the user to specify one of:
+If continuing MVP implementation, the next product gap is Phase 3 guide group-order persistence. Do not infer a later phase from the roadmap. Wait for the user to specify one of:
+- Phase 3 guide group-order persistence.
 - GUI smoke test.
 - Formal data-layer confirmation and cloud setup.
-- Phase 3 guide group-order persistence.
 - Phase 5 customer ordering/payment workflow.
 - UI cleanup / starter removal.
