@@ -1,25 +1,20 @@
 <t-navbar title="团单数据看板" left-arrow />
 
 <view class="data-center">
-  <view class="card first">
-    <view class="card-header">
-      <view class="card-header__title">当前范围</view>
-      <view class="card-header__desc">{{dataModeText}}</view>
-    </view>
-    <view class="card-content">
-      <view class="card-content__item" wx:for="{{summaryList}}" wx:key="name">
-        <view class="card-content__item--desc">{{item.name}}</view>
-        <view class="card-content__item--count">{{item.number}}</view>
-      </view>
+  <view class="mode-card">
+    <view class="mode-title">当前资料范围</view>
+    <view class="mode-desc">{{dataModeText}}</view>
+  </view>
+
+  <view class="summary-grid">
+    <view class="summary-card" wx:for="{{summaryList}}" wx:key="name">
+      <view class="summary-label">{{item.name}}</view>
+      <view class="summary-value">{{item.number}}</view>
     </view>
   </view>
 
-  <view class="card forth">
-    <view class="card-header">
-      <view class="card-header__title">后续范围</view>
-    </view>
-    <view class="card-content">
-      <t-empty icon="info-circle-filled" description="完整经营分析后续扩展；当前显示团单与客户订单汇总" />
-    </view>
+  <view class="panel">
+    <view class="panel-title">经营分析</view>
+    <view class="panel-desc">当前显示团单与客户订单汇总。完整营收、商品排行、导游分组统计后续再扩展。</view>
   </view>
 </view>

@@ -1,6 +1,7 @@
 <nav nav-type="providers" titleText="{{titleText}}" />
 
 <view class="providers-container">
+  <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
   <t-cell-group theme="card">
     <block wx:for="{{ providersList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.contact }}｜{{ item.note }}" hover arrow
@@ -10,7 +11,7 @@
     </block>
   </t-cell-group>
 
-  <view wx:if="{{ providersList.length === 0 }}" class="empty-state">
+  <view wx:if="{{providersList.length === 0}}" class="empty-state">
     <t-empty icon="info-circle" description="{{disabledReason || '暂无供应商资料'}}" />
   </view>
 

@@ -3,9 +3,9 @@
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
-  height: 100vh;
+  min-height: 100vh;
   font-size: 32rpx;
-  background-color: #fff;
+  background-color: #f5f7fa;
 }
 
 .nav-bar {
@@ -15,6 +15,27 @@
 .content {
   height: 0;
   flex-grow: 1;
+}
+
+.disabled-card {
+  margin: 32rpx;
+  padding: 32rpx;
+  background: #ffffff;
+  border-radius: 8rpx;
+}
+
+.disabled-title {
+  color: #1f2d3d;
+  font-size: 34rpx;
+  font-weight: 600;
+  line-height: 48rpx;
+}
+
+.disabled-desc {
+  margin: 16rpx 0 28rpx;
+  color: #5f6f89;
+  font-size: 26rpx;
+  line-height: 40rpx;
 }
 
 .messages {

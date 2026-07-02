@@ -24,7 +24,7 @@ Page({
 
     this.setData({
       customerOrdersList: res.data,
-      roleScopeText: this.getRoleScopeText(),
+      roleScopeText: this.getRoleScopeText(res.meta),
       canCreateCustomerOrder: this.canCreateCustomerOrder(),
       saveModeText: getSaveModeText(res.meta),
     });
@@ -35,12 +35,13 @@ Page({
     return Boolean(profile && (profile.role === 'customer' || profile.role === 'owner' || profile.role === 'admin'));
   },
 
-  getRoleScopeText() {
+  getRoleScopeText(meta = {}) {
     const profile = AuthService.getCurrentProfile();
-    if (!profile) return '未登录，仅显示空列表';
-    if (profile.role === 'guide') return '仅显示你管理团单下的客户订单';
-    if (profile.role === 'customer') return '仅显示你自己的客户订单';
-    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看 QA 范围内客户订单';
+    const role = meta.role || (profile && profile.role);
+    if (!role) return '未登录，仅显示空列表';
+    if (role === 'guide') return '当前身份：导游/领队｜仅显示你管理团单下的客户订单';
+    if (role === 'customer') return '当前身份：客户｜仅显示你自己的客户订单';
+    if (role === 'owner' || role === 'admin') return '当前身份：管理角色｜可查看授权范围内客户订单';
     return '当前角色暂无客户订单权限';
   },
 

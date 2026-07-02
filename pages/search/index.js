@@ -1,5 +1,3 @@
-import request from '~/api/request';
-
 Page({
   data: {
     historyWords: ['华东五日团', '龙井茶叶', '未付款订单'],
@@ -17,42 +15,18 @@ Page({
   deleteIndex: '',
 
   onShow() {
-    this.queryHistory();
-    this.queryPopular();
+    this.loadLocalSearchWords();
   },
 
-  /**
-   * 查询历史记录
-   * @returns {Promise<void>}
-   */
-  async queryHistory() {
-    return request('/api/searchHistory').then((res) => {
-      const { code, data } = res;
-
-      if (code === 200) {
-        const { historyWords = [] } = data;
-        this.setData({
-          historyWords,
-        });
+  loadLocalSearchWords() {
+    try {
+      const historyWords = wx.getStorageSync('dao_you_ling_search_history');
+      if (Array.isArray(historyWords)) {
+        this.setData({ historyWords });
       }
-    }).catch(() => {});
-  },
-
-  /**
-   * 查询热门搜索
-   * @returns {Promise<void>}
-   */
-  async queryPopular() {
-    return request('/api/searchPopular').then((res) => {
-      const { code, data } = res;
-
-      if (code === 200) {
-        const { popularWords = [] } = data;
-        this.setData({
-          popularWords,
-        });
-      }
-    }).catch(() => {});
+    } catch (err) {
+      // Keep built-in business search terms when storage is unavailable.
+    }
   },
 
   setHistoryWords(searchValue) {
@@ -70,11 +44,7 @@ Page({
       searchValue,
       historyWords,
     });
-    // if (searchValue) {
-    //     wx.navigateTo({
-    //         url: `/pages/goods/result/index?searchValue=${searchValue}`,
-    //     });
-    // }
+    wx.setStorageSync('dao_you_ling_search_history', historyWords);
   },
 
   /**
@@ -95,6 +65,7 @@ Page({
     } else {
       this.setData({ historyWords: [], dialogShow: false });
     }
+    wx.setStorageSync('dao_you_ling_search_history', this.data.historyWords);
   },
 
   /**
@@ -135,11 +106,6 @@ Page({
     });
   },
 
-  /**
-   * 点击关键词跳转搜索
-   * 后期需要增加跳转和后端请求接口
-   * @returns {Promise<void>}
-   */
   handleHistoryTap(e) {
     const { historyWords } = this.data;
     const { index } = e.currentTarget.dataset;
@@ -156,17 +122,12 @@ Page({
     this.setHistoryWords(searchValue);
   },
 
-  /**
-   * 提交搜索框内容
-   * 后期需要增加跳转和后端请求接口
-   * @returns {Promise<void>}
-   */
   handleSubmit(e) {
     const { value } = e.detail;
     if (value.length === 0) return;
 
     this.setHistoryWords(value);
-    wx.showToast({ title: '已记录搜索词，正式结果页待后续接入', icon: 'none' });
+    wx.showToast({ title: '已记录搜索词，可在团单、商品库、客户订单页筛选', icon: 'none' });
   },
 
   /**

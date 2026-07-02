@@ -101,7 +101,8 @@ git diff --check
 ## QA Bug Report 202607021815
 - Report location: `QA/QA_BUG_REPORT_202607021815.md`.
 - Fixed BUG-001 through BUG-008 in code and docs.
-- BUG-009 remains: full 27-route GUI smoke test still needs to be executed before checking the final MVP gate.
+- Added follow-up fixes for retest GUI residuals: home workbench, provider non-blank state, search starter hot words, data center layout, chat disabled state, product add button style, and customer order role-scope text.
+- BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
 ## Recommended Next Step
@@ -109,7 +110,7 @@ Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLET
 
 If continuing MVP implementation, the next high-value gap is Phase 7 full GUI smoke:
 - Open all 27 routes in DevTools or device.
-- Validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, and reload/re-enter behavior.
+- Validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 
 ## User Assistance Needed For Phase 8

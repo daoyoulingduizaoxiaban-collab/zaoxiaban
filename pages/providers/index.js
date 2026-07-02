@@ -11,16 +11,17 @@ Page({
 
   onLoad() {
     const profile = AuthService.getCurrentProfile();
+    const providersList = QaSeedMock.getProviders();
     if (!canUseProviderPortal(profile)) {
       this.setData({
-        providersList: [],
+        providersList,
         disabledReason: '供应商后台暂未开放。当前 MVP 只保留最小提示入口，不提供供应商管理操作。',
       });
       return;
     }
 
     this.setData({
-      providersList: QaSeedMock.getProviders(),
+      providersList,
       disabledReason: '',
     });
   },

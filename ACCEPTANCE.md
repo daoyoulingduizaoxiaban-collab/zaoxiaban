@@ -58,6 +58,14 @@
   - Customer order phone validation enforces 11-digit mainland China mobile format.
   - Customer payment method/remark/proof images and guide confirmed amount/remark are saved into order/payment history.
   - Group-order product list opens a read-only product detail modal instead of unfinished toast.
+- QA retest follow-up GUI fixes:
+  - Home is now a task-focused workbench with group order, product library, customer order, and data center entry points.
+  - Provider page no longer appears blank for non-provider roles; it shows read-only supplier data with an unfinished-provider-backend notice.
+  - Search page no longer requests starter search APIs or shows AI/template hot words; it uses local business terms.
+  - Data center layout was simplified into stable summary cards to avoid broken title/navigation layout.
+  - Chat page now shows a disabled-state card instead of an active input box when chat is not enabled.
+  - Product add primary actions use the same blue operation style as the rest of the MVP.
+  - Customer order list role scope now includes the current role label and uses repository metadata when available.
 - Phase 6 UI cleanup is complete for the scoped starter pages:
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
@@ -85,6 +93,7 @@ These are not formal cloud-backed features.
 - WeChat DevTools full route smoke test.
 - 27-route GUI smoke test.
 - Product image upload through actual media picker in GUI.
+- QA retest follow-up GUI fixes listed above need screenshot retest.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.

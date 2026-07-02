@@ -15,4 +15,12 @@ Page({
   goCustomerOrders() {
     wx.switchTab({ url: '/pages/customerOrders/index' });
   },
+
+  goRelease() {
+    wx.switchTab({ url: '/pages/release/index' });
+  },
+
+  goDataCenter() {
+    wx.switchTab({ url: '/pages/dataCenter/index' });
+  },
 });

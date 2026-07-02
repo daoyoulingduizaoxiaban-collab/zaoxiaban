@@ -1,10 +1,21 @@
 @import '/variable.less';
 
 .providers-container {
-  background-color: #f6f6f6;
-  padding: 32rpx 0; // 給頂部和底部一點呼吸空間
-  padding-bottom: 150rpx; // 確保內容不被底部的 TabBar 遮住 (120rpx + 緩衝)
-  min-height: calc(100vh - 200rpx); // 確保背景色能鋪滿全螢幕
+  background-color: #f5f7fa;
+  padding: 32rpx 0;
+  padding-bottom: 150rpx;
+  min-height: calc(100vh - 200rpx);
+}
+
+.mode-tip {
+  margin: 0 32rpx 24rpx;
+  padding: 20rpx 24rpx;
+  background: #fff7e6;
+  border: 1rpx solid #ffd591;
+  border-radius: 8rpx;
+  color: #ad5b00;
+  font-size: 24rpx;
+  line-height: 36rpx;
 }
 
 /* 讓 Card 類型的 Cell Group 更好看 */
@@ -27,6 +38,6 @@
 }
 
 .empty-state {
-  padding-top: 200rpx;
-  background: #f6f6f6;
+  padding-top: 120rpx;
+  background: #f5f7fa;
 }

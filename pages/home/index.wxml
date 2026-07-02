@@ -2,17 +2,36 @@
 
 <view class="home-container">
   <view class="home-content">
-    <t-cell-group theme="card" title="导游工作台">
-      <t-cell title="团单" description="查看和管理开团、客户订单与本团商品" arrow bind:tap="goGroupOrders">
-        <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
-      </t-cell>
-      <t-cell title="商品库" description="维护可加入团单的商品资料" arrow bind:tap="goProducts">
-        <t-icon slot="left-icon" name="shop" size="44rpx" color="#0052d9" />
-      </t-cell>
-      <t-cell title="客户订单" description="查看订单、收款状态与付款历史" arrow bind:tap="goCustomerOrders">
-        <t-icon slot="left-icon" name="usergroup" size="44rpx" color="#0052d9" />
-      </t-cell>
-    </t-cell-group>
+    <view class="summary-band">
+      <view>
+        <view class="summary-title">今日团单工作台</view>
+        <view class="summary-desc">开团、选品、客户订单和收款核对集中处理</view>
+      </view>
+      <t-button theme="primary" size="small" bind:tap="goRelease">开团</t-button>
+    </view>
+
+    <view class="quick-grid">
+      <view class="quick-item primary" bindtap="goGroupOrders">
+        <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
+        <view class="quick-title">团单</view>
+        <view class="quick-desc">管理本团商品与客户入口</view>
+      </view>
+      <view class="quick-item" bindtap="goProducts">
+        <t-icon name="shop" size="48rpx" color="#0052d9" />
+        <view class="quick-title">商品库</view>
+        <view class="quick-desc">维护可售商品与价格规则</view>
+      </view>
+      <view class="quick-item" bindtap="goCustomerOrders">
+        <t-icon name="usergroup" size="48rpx" color="#0052d9" />
+        <view class="quick-title">客户订单</view>
+        <view class="quick-desc">处理付款声明和确认收款</view>
+      </view>
+      <view class="quick-item" bindtap="goDataCenter">
+        <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
+        <view class="quick-title">数据看板</view>
+        <view class="quick-desc">查看团单与订单汇总</view>
+      </view>
+    </view>
 
     <view class="qa-tip">
       {{modeText}}
