@@ -121,7 +121,7 @@ Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLET
 If continuing MVP implementation, the next high-value gap is Phase 7 full GUI smoke:
 - Open all 27 routes in DevTools or device.
 - Validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
-- For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, and cards are padded rather than flush-left.
+- For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 
 ## User Assistance Needed For Phase 8
