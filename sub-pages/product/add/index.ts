@@ -7,6 +7,7 @@ Page({
     pageTitle: '新增商品',
     productList: [], // 最終提交的大清單
     isSubmitting: false,
+    isChoosingImage: false,
     saveModeText: '本地/QA 展示模式，尚未正式保存',
 
     // 當前正在編輯的商品
@@ -108,19 +109,43 @@ Page({
 
   // 圖片處理 (與之前相同，略作簡化)
   chooseImage() {
+    if (this.data.isChoosingImage || this.data.isSubmitting) return;
+    const remainCount = 3 - this.data.currentProduct.pictureUrls.length;
+    if (remainCount <= 0) {
+      wx.showToast({ title: '最多上传 3 张商品图片', icon: 'none' });
+      return;
+    }
+
+    this.setData({ isChoosingImage: true });
     wx.chooseMedia({
-      count: 3, mediaType: ['image'],
+      count: remainCount,
+      mediaType: ['image'],
       success: (res) => {
-        const paths = res.tempFiles.map(f => f.tempFilePath);
+        const paths = (res.tempFiles || []).map(f => f.tempFilePath).filter(Boolean);
+        if (paths.length === 0) {
+          wx.showToast({ title: '未选择可用图片', icon: 'none' });
+          return;
+        }
+        const nextUrls = [...this.data.currentProduct.pictureUrls, ...paths].slice(0, 3);
         this.setData({
-          'currentProduct.pictureUrls': [...this.data.currentProduct.pictureUrls, ...paths]
+          'currentProduct.pictureUrls': nextUrls
         });
+      },
+      fail: (err) => {
+        const message = err && err.errMsg && err.errMsg.includes('cancel')
+          ? '已取消选择图片'
+          : '选择图片失败，请重试';
+        wx.showToast({ title: message, icon: 'none' });
+      },
+      complete: () => {
+        this.setData({ isChoosingImage: false });
       }
     });
   },
   removeImage(e) {
+    if (this.data.isSubmitting) return;
     const idx = e.currentTarget.dataset.index;
-    const urls = this.data.currentProduct.pictureUrls;
+    const urls = [...this.data.currentProduct.pictureUrls];
     urls.splice(idx, 1);
     this.setData({ 'currentProduct.pictureUrls': urls });
   },
@@ -134,9 +159,13 @@ Page({
     this.setData({
       isSubmitting: true
     });
+    if (p.pictureUrls && p.pictureUrls.length) {
+      wx.showLoading({ title: '保存并上传图片...' });
+    }
 
     const res = await ProductService.create(p);
     this.setData({ isSubmitting: false });
+    wx.hideLoading();
     if (!res.success) {
       wx.showToast({ title: res.error || '保存商品失败', icon: 'none' });
       return;
