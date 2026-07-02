@@ -1,0 +1,8 @@
+{
+  "generatedAt": "2026-07-02T13:47:28.900Z",
+  "mode": "navigateTo after home prep",
+  "currentPath": "pages/dataCenter/index",
+  "opened": true,
+  "text": "数据中心 团单数据看板 当前资料范围 本地/QA 展示模式，尚未正式保存到云端 团单 3 客户订单 5 经营分析 当前显示团单与客户订单汇总。完整营收、商品排行、导游分组统计后续再扩展。",
+  "screenshot": "QA/screenshots/2026-07-02-final-retest/02_data_center_navigation_final.png"
+}

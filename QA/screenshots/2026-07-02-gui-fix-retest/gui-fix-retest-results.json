@@ -1,0 +1,131 @@
+{
+  "generatedAt": "2026-07-02T13:17:54.129Z",
+  "total": 8,
+  "passed": 3,
+  "failed": 5,
+  "results": [
+    {
+      "id": "home",
+      "route": "pages/home/index",
+      "expect": [
+        "工作台",
+        "团单",
+        "商品库",
+        "客户订单",
+        "数据看板"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/01_home.png",
+      "pass": false,
+      "opened": false,
+      "error": "home reLaunch timeout after 18000ms"
+    },
+    {
+      "id": "providers",
+      "route": "pages/providers/index",
+      "expect": [
+        "供应商",
+        "后台暂未开放"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/02_providers.png",
+      "currentPath": "pages/providers/index",
+      "opened": true,
+      "screenshotSaved": true,
+      "missingExpected": [],
+      "rejectedFound": [],
+      "pass": true,
+      "bodyTextSample": "供应商 供应商后台暂未开放。当前 MVP 只保留最小提示入口，不提供供应商管理操作。 杭州伴手礼供应商 供应联系人 A｜已接入 QA 展示资料，编辑保存暂未串接。 可显示资料 景区讲解器供应商 供应联系人 B｜供应商结算与上下架权限待确认。 功能未完成"
+    },
+    {
+      "id": "search",
+      "route": "pages/search/index",
+      "expect": [
+        "搜索团单",
+        "商品",
+        "客户订单"
+      ],
+      "reject": [
+        "AI绘画",
+        "Stable Diffusion",
+        "版权素材"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/03_search.png",
+      "pass": false,
+      "opened": false,
+      "error": "search reLaunch timeout after 18000ms"
+    },
+    {
+      "id": "data_center",
+      "route": "pages/dataCenter/index",
+      "expect": [
+        "数据中心",
+        "经营分析"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/04_data_center.png",
+      "currentPath": "pages/dataCenter/index",
+      "opened": true,
+      "screenshotSaved": true,
+      "missingExpected": [
+        "数据中心"
+      ],
+      "rejectedFound": [],
+      "pass": false,
+      "bodyTextSample": "团单数据看板 当前资料范围 本地/QA 展示模式，尚未正式保存到云端 团单 3 客户订单 5 经营分析 当前显示团单与客户订单汇总。完整营收、商品排行、导游分组统计后续再扩展。"
+    },
+    {
+      "id": "product_add",
+      "route": "sub-pages/product/add/index",
+      "expect": [
+        "保存商品"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/05_product_add.png",
+      "pass": false,
+      "opened": false,
+      "error": "product_add reLaunch timeout after 18000ms"
+    },
+    {
+      "id": "customer_orders",
+      "route": "pages/customerOrders/index",
+      "expect": [
+        "当前身份"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/06_customer_orders.png",
+      "currentPath": "pages/customerOrders/index",
+      "opened": true,
+      "screenshotSaved": true,
+      "missingExpected": [],
+      "rejectedFound": [],
+      "pass": true,
+      "bodyTextSample": "客户订单 当前身份：导游/领队｜仅显示你管理团单下的客户订单 本地/QA 展示模式，尚未正式保存到云端 华东五日团伴手礼收单 - 王客户 客户：王客户｜金额：￥352 未付款 商品 4 件｜状态记录 1 条 处理订单 华东五日团伴手礼收单 - 李客户 客户：李客户｜金额：￥590 客户付款 商品 5 件｜状态记录 1 条 处理订单 华东五日团伴手礼收单 - 团客代表 客户：团客代表｜金额：￥2040 已确认 商品 30 件｜状态记录 1 条 处理订单 北京研学团补货单 - 取消单 客户：赵客户｜金额：￥0 已取消 商品 1 件｜状态记录 1 条 处理订单 QA團單1782993296047 - QA客戶 客户：QA客戶｜金额：￥24 未付款 商品 2 件｜状态记录 1 条 处理订单"
+    },
+    {
+      "id": "chat",
+      "route": "pages/chat/index",
+      "expect": [
+        "聊天能力暂未启用"
+      ],
+      "reject": [
+        "请输入",
+        "发送"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/07_chat.png",
+      "pass": false,
+      "opened": false,
+      "error": "chat reLaunch timeout after 18000ms"
+    },
+    {
+      "id": "message",
+      "route": "pages/message/index",
+      "expect": [
+        "聊天能力暂未启用"
+      ],
+      "screenshot": "QA/screenshots/2026-07-02-gui-fix-retest/08_message.png",
+      "currentPath": "pages/message/index",
+      "opened": true,
+      "screenshotSaved": true,
+      "missingExpected": [],
+      "rejectedFound": [],
+      "pass": true,
+      "bodyTextSample": "消息 聊天能力暂未启用 MVP 当前以团单、商品库、客户订单和收款状态为主；聊天后续再接入。 待处理客户订单 请到客户订单页查看付款声明、确认收款和取消订单。"
+    }
+  ]
+}

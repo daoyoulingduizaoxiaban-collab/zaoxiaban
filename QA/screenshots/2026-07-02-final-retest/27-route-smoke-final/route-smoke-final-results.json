@@ -1,0 +1,223 @@
+{
+  "generatedAt": "2026-07-02T13:52:50.069Z",
+  "total": 27,
+  "opened": 13,
+  "failed": 14,
+  "results": [
+    {
+      "index": 1,
+      "route": "pages/productManagement/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/01_pages__productManagement__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 2,
+      "route": "sub-pages/groupOrder/detail/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/02_sub-pages__groupOrder__detail__index.png",
+      "currentPath": "sub-pages/groupOrder/detail/index",
+      "opened": true,
+      "bodyTextSample": "新建团单 本地/QA 展示模式，尚未正式保存到云端 团单名称 请输入1~20个字符 收单状态 描述 出团时间 收单截止 取货/集合 付款说明 联系人 联系电话 点一下放大，长按分享 暂无客户入口 分享给客户 复制入口 应收总金额 ￥0 已收总金额 ￥0 下单人数 0人 客户订单 当前团单暂无客户订单 编辑团单 导出报表 本团商品 客户下单入口",
+      "screenshotSaved": true
+    },
+    {
+      "index": 3,
+      "route": "sub-pages/groupOrder/productList/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/03_sub-pages__groupOrder__productList__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 4,
+      "route": "sub-pages/groupOrder/product-picker/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/04_sub-pages__groupOrder__product-picker__index.png",
+      "currentPath": "sub-pages/groupOrder/product-picker/index",
+      "opened": true,
+      "bodyTextSample": "从商品库选择 搜索商品名称 黄山团单伴手礼礼盒 适合华东线路收单展示的本地伴手礼，包含长描述用于 QA 检查多行省略、卡片高度和详情展示。 $88 西湖龙井茶叶小罐装 有图片、上架、阶梯价格商品，用于本团商品和商品库选择测试。 $128 无图片雨具应急包 下架且无图片商品，用于空图片兜底、下架状态和搜索过滤测试。 $35 景区无线讲解器租赁 供应商服务型商品，用于验证商品库中非实物商品的展示。 $12起 QA商品1782993196567 QA商品複測描述 $12 QA商品1782993296047 QA商品複測描",
+      "screenshotSaved": true
+    },
+    {
+      "index": 5,
+      "route": "sub-pages/product/add/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/05_sub-pages__product__add__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 6,
+      "route": "sub-pages/product/list/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/06_sub-pages__product__list__index.png",
+      "currentPath": "sub-pages/product/list/index",
+      "opened": true,
+      "bodyTextSample": "搜索商品标题或描述 起售价区间: 最低 - 最高 搜索 黄山团单伴手礼礼盒 ID: 101 适合华东线路收单展示的本地伴手礼，包含长描述用于 QA 检查多行省略、卡片高度和详情展示。 满 1 件: ¥88/件 (共 ¥88) 单盒价 满 10 件: ¥78/件 (共 ¥780) 满 10 盒团单价 满 30 件: ¥68/件 (共 ¥2040) 大团批量价 西湖龙井茶叶小罐装 ID: 102 有图片、上架、阶梯价格商品，用于本团商品和商品库选择测试。 满 1 件: ¥128/件 (共 ¥128) 单罐价 满 6 件",
+      "screenshotSaved": true
+    },
+    {
+      "index": 7,
+      "route": "sub-pages/groupOrder/add/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/07_sub-pages__groupOrder__add__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 8,
+      "route": "pages/groupOrder/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/08_pages__groupOrder__index.png",
+      "currentPath": "pages/groupOrder/index",
+      "opened": true,
+      "bodyTextSample": "团单 搜索团单名称或描述 全部 仅显示你创建或被授权管理的团单 华东五日团伴手礼收单 开放收单，有客户订单、有本团商品，用于主流程 QA。 开放收单 北京研学团补货单 停止收单，有取消订单，用于状态与禁用动作 QA。 停止收单 QA團單1782993296047 QA團單複測描述 开放收单",
+      "screenshotSaved": true
+    },
+    {
+      "index": 9,
+      "route": "pages/tourGuides/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/09_pages__tourGuides__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 10,
+      "route": "pages/tourGuides/edit/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/10_pages__tourGuides__edit__index.png",
+      "currentPath": "pages/tourGuides/edit/index",
+      "opened": true,
+      "bodyTextSample": "新增导游/领队 导游/领队名称 请输入导游/领队名称 维护日期 请选择 导游/领队状态 保存导游/领队",
+      "screenshotSaved": true
+    },
+    {
+      "index": 11,
+      "route": "pages/customerOrders/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/11_pages__customerOrders__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 12,
+      "route": "pages/customerOrders/edit/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/12_pages__customerOrders__edit__index.png",
+      "currentPath": "pages/customerOrders/edit/index",
+      "opened": true,
+      "bodyTextSample": "客户下单 本地/QA 展示模式，尚未正式保存到云端 未找到可下单团单",
+      "screenshotSaved": true
+    },
+    {
+      "index": 13,
+      "route": "pages/providers/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/13_pages__providers__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 14,
+      "route": "pages/providers/edit/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/14_pages__providers__edit__index.png",
+      "currentPath": "pages/providers/edit/index",
+      "opened": true,
+      "bodyTextSample": "新增供应商 供应商名称 请输入供应商名称 最近维护日期 请选择 供应商状态 保存供应商",
+      "screenshotSaved": true
+    },
+    {
+      "index": 15,
+      "route": "pages/profile/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/15_pages__profile__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 16,
+      "route": "pages/profile/edit/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/16_pages__profile__edit__index.png",
+      "currentPath": "pages/profile/edit/index",
+      "opened": true,
+      "bodyTextSample": "新增个人资料 姓名 请输入姓名 维护日期 请选择 资料状态 保存个人资料",
+      "screenshotSaved": true
+    },
+    {
+      "index": 17,
+      "route": "pages/home/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/17_pages__home__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 18,
+      "route": "pages/message/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/18_pages__message__index.png",
+      "currentPath": "pages/message/index",
+      "opened": true,
+      "bodyTextSample": "消息 聊天能力暂未启用 MVP 当前以团单、商品库、客户订单和收款状态为主；聊天后续再接入。 待处理客户订单 请到客户订单页查看付款声明、确认收款和取消订单。",
+      "screenshotSaved": true
+    },
+    {
+      "index": 19,
+      "route": "pages/my/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/19_pages__my__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 20,
+      "route": "pages/search/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/20_pages__search__index.png",
+      "currentPath": "pages/search/index",
+      "opened": true,
+      "bodyTextSample": "搜索 搜索团单、商品或客户订单 取消 最近搜索 华东五日团 龙井茶叶 未付款订单 常用业务词 团单 本团商品 商品库 客户订单 收款状态",
+      "screenshotSaved": true
+    },
+    {
+      "index": 21,
+      "route": "pages/my/info-edit/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/21_pages__my__info-edit__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 22,
+      "route": "pages/chat/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/22_pages__chat__index.png",
+      "currentPath": "pages/chat/index",
+      "opened": true,
+      "bodyTextSample": "聊天能力暂未启用 聊天能力暂未启用。MVP 当前以团单、商品库、客户订单和收款状态为主。 查看客户订单",
+      "screenshotSaved": true
+    },
+    {
+      "index": 23,
+      "route": "pages/login/login",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/23_pages__login__login.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 24,
+      "route": "pages/loginCode/loginCode",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/24_pages__loginCode__loginCode.png",
+      "currentPath": "pages/loginCode/loginCode",
+      "opened": true,
+      "bodyTextSample": "验证码登录已停用 MVP 使用微信登录初始化导游、客户或管理角色资料。短信验证码不作为当前正式登录入口。 返回微信登录",
+      "screenshotSaved": true
+    },
+    {
+      "index": 25,
+      "route": "pages/dataCenter/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/25_pages__dataCenter__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    },
+    {
+      "index": 26,
+      "route": "pages/setting/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/26_pages__setting__index.png",
+      "currentPath": "pages/setting/index",
+      "opened": true,
+      "bodyTextSample": "设置 当前角色 张领队｜导游/领队 资料模式 本地/QA fallback 正式云端设置 未完成正式 OpenID 验证 权限管理 owner/admin 完整后台暂未开放",
+      "screenshotSaved": true
+    },
+    {
+      "index": 27,
+      "route": "pages/release/index",
+      "screenshot": "QA/screenshots/2026-07-02-final-retest/27-route-smoke-final/27_pages__release__index.png",
+      "opened": false,
+      "error": "reLaunch timeout after 15000ms"
+    }
+  ]
+}
