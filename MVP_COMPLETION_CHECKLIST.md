@@ -16,8 +16,10 @@
 
 ## 当前基线
 - 当前仍是 QA/local mode。
-- 正式资料层尚未确认。
-- 正式 OpenID 登录尚未验证。
+- 使用者已确认 MVP 正式资料层优先采用微信云开发数据库 + 云函数，但页面仍必须通过 service/repository 边界接入。
+- 微信云环境 `cloud1-3gwlqssy1f1972a9` 已写入配置。
+- 正式 OpenID 登录已通过 DevTools automation 调用登录页方法验证。
+- `authLogin` 云函数已部署并为当前 OpenID 初始化云端 `users` profile。
 - 商品库已有 local/QA repository 实作。
 - Phase 3 导游团单 local/QA 保存闭环已完成；正式云端保存尚未实现。
 - Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存尚未实现。
@@ -44,7 +46,9 @@
 - [x] 实作 Phase 5 local/QA 客户下单与客户订单管理。
 - [x] 实作 local/QA 收款状态确认与状态历史。
 - [x] 完成 starter 页面全量删除或重写。
+- [x] 部署并验证 `authLogin` 云函数可换取正式 OpenID。
 - [ ] 执行并记录完整 27-route GUI smoke test。
+- [ ] 为 groupOrders/products/customerOrders/payments/paymentStatusHistory 建立 cloud repository 与权限规则。
 - [ ] 通过 Phase 8 真人可用 MVP gate。
 
 ## Phase 0 - 交接纪律
@@ -140,10 +144,10 @@
 - [ ] 正式资料层已选择并实作。
 - [ ] 正式微信云开发环境/配置、云函数、集合、权限规则已建立。
 - [ ] 既有 service/repository 后面已有 cloud/API repository 实作。
-- [ ] 正式登录/OpenID 与基础权限已验证。
-- [ ] 正式 `wx.login` -> OpenID 换取已验证。
-- [ ] `authLogin` 云函数已存在。
-- [ ] 云端 `users` profile 初始化已存在。
+- [x] 正式登录/OpenID 与基础权限已验证。
+- [x] 正式 `wx.login` -> OpenID 换取已验证。
+- [x] `authLogin` 云函数已存在。
+- [x] 云端 `users` profile 初始化已存在。
 - [ ] 导游核心工作流可持久化。
 - [ ] 商品库可持久化。
 - [ ] 客户下单与收款状态流程可持久化。
@@ -155,3 +159,11 @@
 - [x] `npm run lint` 通过。
 - [x] `git diff --check` 通过。
 - [x] 没有把 mock/local fallback 包装成 production 行为。
+
+### Phase 8 已完成但不代表 MVP gate 全部通过
+- [x] 使用 DevTools CLI 找到微信云环境：`cloud1-3gwlqssy1f1972a9`。
+- [x] 小程序端已调用 `wx.cloud.init({ env: cloud1-3gwlqssy1f1972a9 })`。
+- [x] `AuthService` 已通过 `authLogin` 云函数取得正式 OpenID，并保留云不可用时的 mock fallback 标记。
+- [x] `authLogin` 会初始化/读取 `users` profile；owner/admin 不能由前端自提权，需通过云函数环境变量 `OWNER_OPENIDS` / `ADMIN_OPENIDS` 白名单。
+- [ ] 云数据库业务集合与权限规则尚未建立：`groupOrders`、`products`、`groupOrderProducts`、`customerOrders`、`payments`、`paymentStatusHistory`。
+- [ ] 目前正式云端只覆盖登录/users 初始化；团单、商品、客户订单、收款仍是 local/QA repository。

@@ -19,10 +19,11 @@ Do not rely on chat memory.
 - Customer, supplier, and admin capabilities stay minimal until explicitly scoped.
 
 ## Current Technical Truth
-- The app is still in QA/local mode.
-- `config.js` has `isMock: true`, `baseUrl: ''`, and empty `cloudEnvId`.
-- Formal data layer is not confirmed.
-- Formal OpenID is not verified.
+- The app is in mixed mode: formal WeChat Cloud login is connected; business data is still QA/local mode.
+- `config.js` has `isMock: true`, `baseUrl: ''`, and `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`.
+- Formal data layer direction is confirmed by the user: WeChat Cloud Database + Cloud Functions behind service/repository boundaries.
+- Formal OpenID is verified through deployed `authLogin`.
+- Cloud `users` profile initialization is verified for the current OpenID.
 - Group order persistence is local/QA only.
 - Product library persistence is local/QA only.
 - Phase 5 customer ordering/payment workflow is implemented only in local/QA repository mode.
@@ -33,6 +34,7 @@ Do not rely on chat memory.
 - Local/mock fallback must be visibly labeled as local/QA/demo mode.
 - Do not present local storage as formal persistence.
 - Do not present auth adapter/mock OpenID as formal WeChat OpenID.
+- Owner/admin roles must not be self-assigned by the front end in formal auth; use cloud-function controlled allowlists such as `OWNER_OPENIDS` / `ADMIN_OPENIDS`.
 
 ## UI And Copy
 - UI copy uses Simplified Chinese.
@@ -45,7 +47,7 @@ Do not rely on chat memory.
 - Use `automator.launch(...)`.
 - Push remote branches.
 - Deploy.
-- Create cloud resources.
+- Create cloud resources, except when the user explicitly authorizes the specific cloud task.
 - Delete production data.
 - Install new packages.
 - Use network.

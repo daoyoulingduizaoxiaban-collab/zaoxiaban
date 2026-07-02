@@ -1,7 +1,7 @@
 export default {
   isMock: true,
   baseUrl: '',
-  cloudEnvId: '',
+  cloudEnvId: 'cloud1-3gwlqssy1f1972a9',
 };
 
 // config/menu.js

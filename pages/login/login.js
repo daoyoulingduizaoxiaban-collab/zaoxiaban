@@ -6,7 +6,7 @@ Page({
     roleOptions: AuthService.roleOptions,
     selectedRole: AUTH_ROLES.GUIDE,
     isSubmitting: false,
-    authNotice: '将调用 wx.login；未配置云函数时会使用本地 auth adapter 验证角色范围。',
+    authNotice: '将调用 wx.login 并通过 authLogin 云函数初始化资料；云环境不可用时才会退回本地身份验证。',
   },
 
   onRoleChange(e) {

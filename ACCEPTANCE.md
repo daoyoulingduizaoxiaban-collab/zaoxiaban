@@ -13,7 +13,14 @@
 - Phase 2 local auth boundary exists:
   - `AuthService` creates local/mock profile sessions.
   - Role scope functions cover `guide`, `customer`, `owner`, `admin`, and `provider`.
-  - Formal OpenID is not verified.
+  - Formal OpenID is verified through deployed `authLogin`.
+- Phase 8 formal auth/login partial completion:
+  - DevTools CLI found WeChat Cloud environment `cloud1-3gwlqssy1f1972a9`.
+  - `config.js` now points to that cloud environment and `app.js` initializes `wx.cloud`.
+  - `cloudfunctions/authLogin` was deployed successfully with `--remote-npm-install`.
+  - Cloud function info reports `authLogin` status `Active`, runtime `Nodejs16.13`.
+  - DevTools automation connected to `ws://127.0.0.1:9420`; calling login page method initialized storage session with `authSource: wechat-cloud`, `isMockOpenId: false`, `cloudOpenIdVerified: true`, and a real OpenID.
+  - Cloud `users` profile initialization returned a cloud document id for the current OpenID.
 - Phase 4 local/QA product library exists:
   - Product list, create, search/status filter, status toggle, and soft delete go through `ProductService` / `ProductRepository`.
   - Product form includes title, description, images, price rules, status, and source note.
@@ -55,12 +62,11 @@ These are not formal cloud-backed features.
 
 ### Not Verified
 - WeChat DevTools GUI route smoke test.
-- WeChat DevTools automation route smoke: automation port opened, but `miniprogram-automator.connect` could not connect to `ws://127.0.0.1:9420`.
-- Real `wx.login` code exchange for OpenID.
-- Cloud function `authLogin`.
-- Cloud `users` collection initialization.
+- WeChat DevTools full route smoke test.
 - Cloud-backed product persistence.
 - Cloud-backed customer order/payment persistence.
+- Cloud-backed group order persistence.
+- Cloud database permission rules.
 - Reopen/reload persistence for formal business data.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.
@@ -68,7 +74,7 @@ These are not formal cloud-backed features.
 - Phase 3 guide group-order click flow in GUI.
 
 ### Not Implemented
-- Formal data layer.
+- Formal cloud repository for group orders, products, customer orders, payments, and payment status history.
 - Formal cloud/API guide group-order create/edit persistence.
 - Formal cloud/API group order product add/remove persistence.
 - Formal customer order cloud/API workflow.
@@ -76,10 +82,9 @@ These are not formal cloud-backed features.
 - Production deployment.
 
 ### Requires User Assistance
-- Formal data layer: provide/confirm WeChat Cloud environment ID or backend API target.
-- Cloud implementation: explicitly allow cloud resource creation, cloud function deployment, and collection/rule setup.
-- Formal OpenID: provide a configured `authLogin` cloud function or allow creating/deploying it.
-- GUI smoke: either provide a working DevTools automation ticket/session or manually run/observe the 27-route GUI checklist with Codex.
+- Owner/admin formal role assignment: provide the OpenID values that should be configured in `OWNER_OPENIDS` / `ADMIN_OPENIDS`, or set them in the cloud function environment.
+- Cloud implementation beyond auth: explicitly confirm collection permission rules before creating business collection rules for `groupOrders`, `products`, `groupOrderProducts`, `customerOrders`, `payments`, and `paymentStatusHistory`.
+- GUI smoke: either provide a working DevTools automation ticket/session if route automation becomes unstable again, or manually run/observe the 27-route GUI checklist with Codex.
 
 ## Validation Rule
 Only mark an item complete when it has a matching validation signal. Lint or static inspection is enough for code-shape checks, but not for GUI behavior, real OpenID, cloud persistence, or real-user MVP closure.

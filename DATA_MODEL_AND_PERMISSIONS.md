@@ -181,8 +181,10 @@
 - 删除建议默认软删除：设置 `deletedAt`，避免误删真人资料。
 
 ## Current Gaps
-- Formal collections are not created.
+- Formal `users` initialization is implemented through `authLogin`.
+- Business collections are not yet created or wired to repositories: `groupOrders`, `products`, `groupOrderProducts`, `customerOrders`, `payments`, `paymentStatusHistory`.
 - Cloud/API permission checks are not implemented.
-- Formal WeChat OpenID binding is not verified.
-- Only partial local/QA repository boundaries exist.
-- Formal persistence is not implemented.
+- Formal WeChat OpenID binding is verified for the current DevTools user through `authLogin`.
+- Owner/admin role assignment still needs cloud-function environment allowlists: `OWNER_OPENIDS` / `ADMIN_OPENIDS`.
+- Only partial local/QA repository boundaries exist for business data.
+- Formal business persistence is not implemented.

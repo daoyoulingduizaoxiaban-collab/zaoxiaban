@@ -1,9 +1,9 @@
 # DATA_LAYER_DECISION
 
 ## Decision Status
-No formal data-layer choice has been confirmed yet.
+The user has confirmed the MVP direction: WeChat Cloud Database + Cloud Functions.
 
-Current recommendation: use WeChat Cloud Database + Cloud Functions for MVP, behind repository/service boundaries. Do not create cloud resources or implement cloud persistence until the user explicitly confirms.
+Current implementation status: formal login/OpenID uses WeChat Cloud through `authLogin`; business data persistence is still local/QA and must be moved behind cloud repository implementations before claiming production readiness.
 
 ## Non-Negotiable Boundary
 - Pages must not directly call cloud database, cloud functions, API endpoints, storage, or `mock/qaSeed.ts` for business operations.
@@ -40,7 +40,7 @@ Best use:
 - The product will soon need Web/admin/supplier systems, ERP/payment integrations, or non-WeChat clients.
 
 ## Recommendation
-Use WeChat Cloud Database + Cloud Functions for MVP only after user confirmation.
+Use WeChat Cloud Database + Cloud Functions for MVP.
 
 Implementation requirements after confirmation:
 - Add cloud-backed repositories without changing page contracts.
@@ -50,7 +50,7 @@ Implementation requirements after confirmation:
 - Keep `mock/qaSeed.ts` only for QA/test data.
 
 ## Current State
-- Formal data layer: not confirmed.
-- Cloud resources: not created.
+- Formal data layer direction: confirmed for MVP.
+- Cloud resources: `authLogin` cloud function deployed in environment `cloud1-3gwlqssy1f1972a9`; `users` profile initialization verified.
 - Backend API: not created.
-- Formal persistence: not verified.
+- Formal persistence: verified only for auth/users initialization, not for group orders, products, customer orders, payments, or payment status history.

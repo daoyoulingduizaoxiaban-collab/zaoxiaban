@@ -61,7 +61,7 @@ const wxLogin = () => new Promise((resolve) => {
   });
 });
 
-const callCloudAuth = loginCode => new Promise((resolve) => {
+const callCloudAuth = (loginCode, requestedRole) => new Promise((resolve) => {
   if (!config.cloudEnvId || !wx.cloud || !wx.cloud.callFunction) {
     resolve({ success: false, error: '未配置云环境或云函数' });
     return;
@@ -69,7 +69,7 @@ const callCloudAuth = loginCode => new Promise((resolve) => {
 
   wx.cloud.callFunction({
     name: 'authLogin',
-    data: { code: loginCode },
+    data: { code: loginCode, requestedRole },
     success: res => resolve({
       success: true,
       data: res.result || {},
@@ -95,7 +95,7 @@ const normalizeCloudProfile = (data, requestedRole) => {
     role,
     roleLabel: getRoleLabel(role),
     displayName: profile.displayName || defaults.displayName,
-    phone: profile.phone || defaults.phone,
+    phone: profile.phone || '',
     avatarUrl: profile.avatarUrl || '/static/avatar1.png',
     city: profile.city || defaults.city,
     status: profile.status || 'active',
@@ -159,7 +159,7 @@ export const AuthService = {
     };
 
     if (loginResult.success && loginResult.code) {
-      const cloudResult = await callCloudAuth(loginResult.code);
+      const cloudResult = await callCloudAuth(loginResult.code, role);
       if (cloudResult.success && cloudResult.data && cloudResult.data.openId) {
         profileSource = normalizeCloudProfile(cloudResult.data, role);
         authStatus = {

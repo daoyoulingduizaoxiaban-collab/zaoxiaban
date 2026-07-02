@@ -13,6 +13,13 @@ if (config.isMock) {
 
 App({
   onLaunch() {
+    if (config.cloudEnvId && wx.cloud && wx.cloud.init) {
+      wx.cloud.init({
+        env: config.cloudEnvId,
+        traceUser: true,
+      });
+    }
+
     const updateManager = wx.getUpdateManager();
 
     updateManager.onCheckForUpdate((res) => {
@@ -30,23 +37,6 @@ App({
         },
       });
     });
-
-    // wx.login({
-    //   success: res => {
-    //     if (res.code) {
-    //       // 發送到後端換取 OpenID
-    //       wx.request({
-    //         url: 'https://your-server.com/api/login',
-    //         data: {
-    //           code: res.code
-    //         },
-    //         success: res => {
-    //           this.globalData.openId = res.data.openId;
-    //         }
-    //       })
-    //     }
-    //   }
-    // });
 
     this.getUnreadNum();
     // this.connect();
