@@ -61,7 +61,8 @@
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
 - Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
-- QA retest execution must be focused: test one FLOW/PAGE/BUG row at a time, update that row, then continue. Avoid broad all-in-one retests unless explicitly requested.
+- QA retest evidence must stay traceable: tie each focused GUI/QA evidence set to a specific FLOW/PAGE/BUG row, update that row before claiming it passed, and avoid broad all-in-one pass claims unless explicitly requested.
+- This is not a development limit. Code fixes may batch related bugs when they share a module, data path, UI surface, or risk area; after fixing, map validation back to each affected BUG/FLOW/PAGE row.
 - QA screenshots must target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never save evidence that captures unrelated desktop/private work.
 
 ## Validation Commands

@@ -36,8 +36,9 @@
 
 | Rule | Required Behavior | Reason |
 |---|---|---|
-| One item at a time | Execute a single FLOW/PAGE/BUG row per focused test, then update that row before moving on | Avoid long broad retests that are slow and hard to diagnose |
-| Announce the target | Record or state the exact FLOW/PAGE/BUG ID before testing | Keeps evidence and status tied to one item |
+| Evidence per row | For GUI/QA evidence, tie each focused test and screenshot set to a specific FLOW/PAGE/BUG row, then update that row before claiming it passed | Avoid broad retests where evidence, status, and failure cause cannot be traced |
+| Development batching allowed | Code fixes may batch related bugs when they touch the same module, data path, UI surface, or risk area; after fixing, map the validation result back to each affected row | This rule is for QA evidence traceability, not a limit that only one bug may be fixed at a time |
+| Announce the target | Record or state the exact FLOW/PAGE/BUG ID before testing evidence for that row | Keeps evidence and status tied to the right item |
 | Window-only screenshots | Capture the WeChat DevTools window by window id, not the whole screen | User may have external monitors or another active main screen |
 | Privacy guard | Discard and redo any screenshot that includes unrelated desktop/main-screen content | QA evidence must not expose unrelated user work |
 | Evidence verification | Open or inspect each screenshot before marking evidence usable | Prevents saving stale, blank, or wrong-window screenshots |
