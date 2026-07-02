@@ -1,11 +1,11 @@
 # MVP_COMPLETION_CHECKLIST
 
 ## 文件用途
-本文件是从当前 QA/demo 小程序推进到真人可用 MVP 的总路线图。它不是当前执行任务单。
+本文件是从当前 QA/demo 小程序推进到真人可用 MVP 的总路线图，也是唯一工作项目管理文件。
 
-下一位 agent 要先看 `CURRENT_TASKS.md`，确认本轮使用者指定范围后，再回到本文件对照阶段与勾选状态。
+所有开发/QA 工作项目、半成品、未做项、待补验项目，都必须在本文件维护。不要把工作项、派工队列、开放事项分散到 `CURRENT_TASKS.md`、`NEXT_AGENT_TASK.md`、`HANDOFF.md`、聊天记录或 QA report。
 
-本文件是已完成项、半成品、未完成项的主清单。不要把 MVP backlog 分散到 `CURRENT_TASKS.md`。
+`QA/QA_BUG_REPORT_202607021815.md` 只作为 BUG report / retest ledger：记录问题、证据、复测结果、Status、Suspected Area、Next Action。BUG report 里的未关闭问题如果需要变成项目工作，必须同步成本文里的 checklist 项目；真正管理进度以本文为准。
 
 ## 产品定义
 - 产品：面向中国导游/领队的微信小程序。
@@ -34,11 +34,18 @@
 - 如果项目只做了一半，正式项保持未勾，并新增后续补完项。
 - 未完成 backlog 必须留在本文件，不要移到 `CURRENT_TASKS.md`。
 - Phase 1-5 先记录当前 local/QA MVP 功能完成度；正式云端、真 OpenID、GUI 验证统一放在 Phase 7/8 gate，不混在前置 Phase 里。
+- 任何 BUG report 中 `Status` 不是 `Fixed - Verified` 的问题，如果仍需要开发或 QA 工作，必须在本文对应 Phase 中保留一个未勾项目。
 
 ## 已做一半，后续要补完
 这些项目已有 local/QA 或设计基础，但还不能算真人可用 MVP 完成。
 
 - [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但 2026-07-02 细测时 automation websocket 不可连接。目前只有商品库主页面与 My/QA Seed 面板截图，逐页点击/返回/表单仍未完整验证。
+- [ ] BUG-002 商品真图片上传：用 `wx.chooseMedia` 选择真实本地/相册图片，保存 durable fileID/URL，重开后图片仍显示。
+- [ ] BUG-004 正式/QA 文案分流：用正式 OpenID 与 mock/local 身份分别验证首页、设置、商品库、开团、资料看板的保存模式文案不误导真人使用者。
+- [ ] BUG-006 付款闭环 GUI：客户声明付款、导游确认收款、实收金额、备注、付款历史在真实 GUI 流程中可见且可追溯。
+- [ ] BUG-008 本团商品详情 GUI：从本团商品列表点击商品后显示只读详情面板，包含图片、描述、价格、来源、状态，不再是未完成提示。
+- [ ] GUI-004 资料中心 GUI：通过 workflow entry 截图确认 navbar/title/cards 不裁切、不破版。
+- [ ] GUI-006 角色与订单隔离：QA/mock role switch 可点击切换，guide/customer 订单列表文案与数据隔离正确；正式 OpenID 隔离另行标记验证状态。
 
 ## 尚未开始或尚未正式化
 这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。

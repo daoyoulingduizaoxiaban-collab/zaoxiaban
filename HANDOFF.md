@@ -5,16 +5,18 @@
 - Canonical path: `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan`
 - Current branch observed: `codex`
 - Dirty status expected: dirty as of 2026-07-02; do not overwrite existing QA screenshots, bug report edits, or `pages/dataCenter` edits unless they are in scope.
-- Start here: `NEXT_AGENT_TASK.md`
-- Current next action: confirm dirty state, read `QA/QA_BUG_REPORT_202607021815.md`, then continue Phase 7 GUI smoke/retest evidence if requested.
+- Start here: `HANDOFF.md`. This file is the only session entry point.
+- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` as the only work-item source. Use `QA/QA_BUG_REPORT_202607021815.md` only for BUG evidence and retest details.
 - Current QA plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
 - Next QA result table: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
 - Latest detailed retest attempt: pre-flight completed, but DevTools automation websocket was not connectable; see `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
 - Done definition: files changed + validation run + checklist/acceptance/handoff updated + unverified items listed.
 
 ## Current Source Of Truth
-- Short Codex entry: `NEXT_AGENT_TASK.md`.
-- Current task source: `CURRENT_TASKS.md`.
+- Session entry point: `HANDOFF.md`.
+- Single work-item management source: `MVP_COMPLETION_CHECKLIST.md`. It is the only place for MVP backlog, unfinished items, phase progress, and development/QA work items.
+- BUG report / retest ledger: `QA/QA_BUG_REPORT_202607021815.md`. Use it for issue evidence and retest status only; do not create a separate BUG dispatch queue there or anywhere else.
+- Deprecated task files: `CURRENT_TASKS.md` and `NEXT_AGENT_TASK.md`. Do not use them for workflow, task assignment, or project status.
 - Product rules: `PROJECT_RULES.md`.
 - MVP roadmap, partially completed items, and missing backlog: `MVP_COMPLETION_CHECKLIST.md`.
 - Acceptance status: `ACCEPTANCE.md`.
@@ -125,20 +127,23 @@ git diff --check
 
 ## QA Bug Report 202607021815
 - Report location: `QA/QA_BUG_REPORT_202607021815.md`.
-- Fixed BUG-001 through BUG-008 in code and docs.
+- The report is not a work-item manager. Development/QA work items must be tracked in `MVP_COMPLETION_CHECKLIST.md`; this report records BUG evidence, retest result, status, suspected area, and next action.
+- Fixed BUG-001/003/005/007 and GUI-001/002/003/005 are currently closed; all other listed Partial/Blocked/Needs GUI Retest items remain open until QA changes them to `Fixed - Verified`.
 - Added follow-up fixes for retest GUI residuals: home workbench, provider non-blank state, search starter hot words, data center layout/native wxss, chat disabled state, product add button style, and customer order role-scope text.
 - BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
-## Recommended Next Step
-Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.
+## How To Continue
+Start from this `HANDOFF.md` for project rules and current context, then choose work only from `MVP_COMPLETION_CHECKLIST.md`.
+
+Do not treat this section, `CURRENT_TASKS.md`, `NEXT_AGENT_TASK.md`, chat history, or the QA report as a task queue. If a missing task is discovered while reading those sources, add or update the corresponding unchecked item in `MVP_COMPLETION_CHECKLIST.md` first.
 
 If continuing QA, use the new plan/result split:
 - Plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
 - Results: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
 - First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
 - Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
-- Validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
+- When performing QA from a checklist item, validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
 - For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 
