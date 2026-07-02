@@ -8,6 +8,9 @@ Page({
     searchQuery: '',
     rawList: [] as Product[],    // 原始完整列表
     displayList: [] as Product[], // 搜尋過濾後的列表
+    detailVisible: false,
+    selectedProduct: null,
+    selectedPriceRules: [],
     skipNextReload: false
   },
 
@@ -91,8 +94,8 @@ Page({
     if (!query) return list;
     const keyword = query.toLowerCase();
     return list.filter(item =>
-      item.title.toLowerCase().includes(keyword) ||
-      item.description.toLowerCase().includes(keyword)
+      String(item.title || '').toLowerCase().includes(keyword) ||
+      String(item.description || '').toLowerCase().includes(keyword)
     );
   },
 
@@ -105,16 +108,32 @@ Page({
       return;
     }
 
-    const priceLines = (product.priceSetting || [])
-      .map(rule => `${rule.minQuantity} 件起：¥${rule.unitPrice}${rule.description ? `（${rule.description}）` : ''}`)
-      .join('\n');
-    wx.showModal({
-      title: product.title || '商品详情',
-      content: `描述：${product.description || '暂无'}\n价格规则：\n${priceLines || '未设置'}\n供应来源：${product.sourceNote || '暂无'}\n状态：${Number(product.status) === 2 ? '已上架' : '已下架'}`,
-      showCancel: false,
-      confirmText: '知道了',
+    const selectedPriceRules = (product.priceSetting || []).map(rule => ({
+      minQuantity: rule.minQuantity,
+      unitPrice: rule.unitPrice,
+      description: rule.description || '',
+    }));
+
+    this.setData({
+      selectedProduct: {
+        ...product,
+        statusText: Number(product.status) === 2 ? '已上架' : '已下架',
+        coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
+      },
+      selectedPriceRules,
+      detailVisible: true,
     });
   },
+
+  closeProductDetail() {
+    this.setData({
+      detailVisible: false,
+      selectedProduct: null,
+      selectedPriceRules: [],
+    });
+  },
+
+  noop() {},
 
   // 4. 刪除商品
   onDelete(e) {

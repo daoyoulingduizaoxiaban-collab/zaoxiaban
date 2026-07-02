@@ -39,6 +39,7 @@
 | 2026-07-02 23:30 CST | BUG fix - QA role switch | Static Pass / GUI Unverified | `services/auth/authService.js`, `pages/my/index.*` | Added `AuthService.applyQaOverride()` and QA Seed panel role buttons for `guide`, `customer`, `owner`, `admin`, `provider`; sessions are mock-only, `qaOverride: true`, and do not call formal wx.login/OpenID |
 | 2026-07-02 23:38 CST | Automation websocket re-probe after latest fix | Blocked | Ports `9420`, `45087`, `56368`, `40725`, `21511`, `29848`, `32123`, `13521`, `14013`, `14016`, `14019`, `14022`, `14023` | Ports were listening, including `9420`, but `miniprogram-automator.connect` still failed with target project window not opened with automation enabled |
 | 2026-07-02 23:39 CST | QA Seed role panel GUI check | Partial | `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png` | My page rendered after refresh. QA Seed panel shows role options for product owner, admin, guide, customer, and provider. Attempting to click customer hit a stale product-library webview, so actual role switching and data isolation are not verified |
+| 2026-07-02 23:48 CST | BUG-008 code fix | Static Pass / GUI Unverified | `sub-pages/groupOrder/productList/index.ts`, `index.wxml`, `index.less` | Replaced plain `wx.showModal` text detail with an in-page read-only detail panel including image, title, description, price rules, source note, and status; still needs DevTools/device click evidence |
 
 ## Core Flow Results
 
@@ -48,7 +49,7 @@
 | FLOW-002 | 商品新增 - 基本資料 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Partial | `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png` | `sub-pages/product/add/*`, `ProductService`, `ProductRepository` | Product library and add button visible; add form entry/submission not yet verified |
 | FLOW-003 | 商品圖片真實上傳 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Blocked | No new evidence | `uploadProductImages`, cloud storage fileID, product image rendering | Need DevTools/media picker or true device; seed/HTTPS URL is not enough |
 | FLOW-004 | 團單建立 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Not Started | TBD | `sub-pages/groupOrder/add/*`, `GroupOrderService`, product snapshot mapping | TBD |
-| FLOW-005 | 本團商品詳情點擊 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Blocked | No new evidence | `sub-pages/groupOrder/productList/*`, modal binding, product snapshot data | Need GUI click evidence for product detail modal |
+| FLOW-005 | 本團商品詳情點擊 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Partial | Static code fix: `sub-pages/groupOrder/productList/index.*` | `sub-pages/groupOrder/productList/*`, modal binding, product snapshot data | Detail panel now includes image/title/description/price/source/status; need GUI click evidence |
 | FLOW-006 | 客戶入口與下單 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Not Started | TBD | `pages/customerOrders/edit/*`, route params, price calculation, customer order service | TBD |
 | FLOW-007 | 手機驗證 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Not Started | TBD | `CustomerOrderService.validateCreatePayload`, form error display | TBD |
 | FLOW-008 | 客戶聲明付款 | `QA_DETAILED_RETEST_PLAN_20260702.md` | Blocked | No new evidence | `pages/customerOrders/index.js`, action modal, `updatePaymentStatus` | Need GUI modal interaction evidence |
@@ -100,7 +101,7 @@
 | BUG-005 | Fixed - Verified | Not Started | TBD | `services/auth/roleScope.js`, login role selector, cloud allowlist env | TBD |
 | BUG-006 | Partially Fixed | Blocked | No new evidence | `pages/customerOrders/index.js`, `CustomerOrderService.updatePaymentStatus`, `paymentHistory` persistence | Need full GUI payment modal/confirmation/history run |
 | BUG-007 | Fixed - Verified | Not Started | TBD | `CustomerOrderService.validateCreatePayload`, customer order edit validation | TBD |
-| BUG-008 | Blocked / Unverified | Blocked | No new evidence | `sub-pages/groupOrder/productList/index.ts`, click handler, modal binding | Need GUI click evidence for read-only product modal |
+| BUG-008 | Blocked / Unverified | Partial | Static code fix: `sub-pages/groupOrder/productList/index.*` | `sub-pages/groupOrder/productList/index.ts/wxml/less`, click handler, detail panel binding | Code now opens an in-page read-only product detail panel with image and price rules; need GUI click screenshot |
 | BUG-009 | Partially Fixed | Blocked | websocket probe notes plus `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png` | QA automation strategy, route guard fallbacks, real workflow entry design | `9420` is listening but automator still cannot connect; manual GUI evidence is partial only. Need working DevTools automation websocket or stable manual/device workflow smoke |
 
 ## Final Summary
@@ -108,6 +109,6 @@
 | Question | Answer |
 |---|---|
 | 哪些已確認修好 | Static checks pass. 商品庫主頁 GUI 有有效截圖；「我的」頁 QA Seed 身份切換面板可見，且角色集合包含 owner/admin/guide/customer/provider |
-| 哪些仍未修 | BUG-009 automation/workflow smoke 仍 blocked；QA role switch click-through、guide/customer 訂單隔離、BUG-002/006/008、GUI-004/006 仍待穩定 GUI/真機複測 |
+| 哪些仍未修 | BUG-009 automation/workflow smoke 仍 blocked；QA role switch click-through、guide/customer 訂單隔離、BUG-002/006、GUI-004/006 仍待穩定 GUI/真機複測；BUG-008 已補程式但仍需 GUI 點擊截圖 |
 | 哪些需要真機或正式微信 OpenID | 真圖片 `wx.chooseMedia`、正式 guide/customer OpenID 隔離、完整付款閉環 GUI、資料中心最新布局截圖；mock 隔離可先用「我的」页 QA Seed 面板切角色，但目前點擊受 stale webview 影響 |
 | 是否可以宣告真人可用 MVP gate 通過 | 不可以。目前只有商品庫主頁與 My/QA Seed 面板有效 GUI 截圖；未取得完整 DevTools/device workflow evidence，Phase 7/8 gate 仍未通過 |
