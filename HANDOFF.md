@@ -12,28 +12,31 @@
 ## Current State
 - Branch: `codex`.
 - Product: WeChat mini program for China-based guides/tour leaders to manage group orders.
-- Current runtime mode: mixed mode. Formal WeChat Cloud login is connected; business data remains QA/local mode, not production.
+- Current runtime mode: mixed mode. Formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use QA/local fallback.
 - `config.js`: `isMock: true`, `baseUrl: ''`, `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`.
 - Formal data layer direction: user confirmed WeChat Cloud Database + Cloud Functions, behind service/repository boundaries.
 - Formal OpenID login: verified through deployed `authLogin`.
 - Cloud `users` profile initialization: verified for current OpenID through DevTools automation.
-- Phase 3 guide group-order persistence: local/QA repository version is implemented.
-- Product library: Phase 4 local/QA repository version is implemented.
-- Phase 5 customer ordering/payment workflow: local/QA repository version is implemented.
-- WeChat DevTools GUI validation: project opened by CLI; `auto-replay --replay-all` completed; automation route smoke could not connect to `ws://127.0.0.1:9420`.
+- Phase 3 guide group-order persistence: cloud repository plus local/QA fallback is implemented.
+- Product library: Phase 4 cloud repository plus local/QA fallback is implemented.
+- Phase 5 customer ordering/payment workflow: cloud repository plus local/QA fallback is implemented.
+- WeChat DevTools GUI validation: targeted automation flow passed; full 27-route GUI smoke is still not done.
 
 ## Implemented Boundaries
 - Auth uses `services/auth/authService.js` and `services/auth/roleScope.js`.
 - Formal auth cloud function lives in `cloudfunctions/authLogin`.
 - `authLogin` initializes/reads cloud `users` and returns profile/session fields to `AuthService`.
 - In formal auth, owner/admin cannot be self-assigned from the front end; configure `OWNER_OPENIDS` / `ADMIN_OPENIDS` in the cloud function environment.
+- Core business cloud function lives in `cloudfunctions/businessData`.
+- Frontend cloud client lives in `repositories/cloudBusinessRepository.js`.
+- Formal OpenID sessions use `businessData`; mock/local identities keep the old local repositories.
 - Group orders use `services/groupOrder/groupOrderService.js` and `repositories/groupOrderRepository.js`.
-- Group order repository currently saves to local storage key `dao_you_ling_local_group_orders`; this is not cloud persistence.
+- Group order repository uses cloud persistence when `config.useCloudBusinessData` is true and the current profile is a formal cloud OpenID. Mock fallback saves to `dao_you_ling_local_group_orders`.
 - Customer order visibility uses `repositories/customerOrderRepository.js`.
 - Product library uses `services/product/productService.js` and `repositories/productRepository.js`.
-- Product repository currently saves to local storage key `dao_you_ling_local_products`; this is not cloud persistence.
+- Product repository uses cloud persistence for formal OpenID sessions. Mock fallback saves to `dao_you_ling_local_products`.
 - Customer ordering uses `services/customerOrder/customerOrderService.js` and `repositories/customerOrderRepository.js`.
-- Customer order repository currently saves to local storage key `dao_you_ling_local_customer_orders`; this is not cloud persistence.
+- Customer order repository uses cloud persistence for formal OpenID sessions. Mock fallback saves to `dao_you_ling_local_customer_orders`.
 - QA seed remains in `mock/qaSeed.ts` for test/demo data only.
 
 ## Hard Rules
@@ -52,8 +55,8 @@ git diff --check
 ```
 
 ## Known Unverified Items
-- Cloud business collections: `products`, `groupOrders`, `groupOrderProducts`, `customerOrders`, `payments`, and `paymentStatusHistory`.
-- Cloud database permission rules for all formal collections.
+- Full 27-route GUI smoke test.
+- Cloud database console security rules were not separately configured by CLI; permission checks are enforced in `businessData`, and pages do not directly access cloud DB.
 - WeChat DevTools route smoke test.
 - WeChat DevTools automation connect now works against `ws://127.0.0.1:9420` for targeted login verification; full route smoke is still not done.
 - WeChat DevTools `auto-replay --replay-all` completed, but did not produce route-by-route GUI evidence.
@@ -61,7 +64,7 @@ git diff --check
 - Product library GUI flow: create -> list refresh -> status toggle -> soft delete.
 - Phase 5 GUI flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
 - Guide full GUI workflow: group order -> product selection -> reopen.
-- Formal cloud-backed customer order and payment confirmation workflow.
+- Owner/admin allowlist values are not configured.
 
 ## Phase 8 Auth Verification
 - Cloud environment list returned `cloud1-3gwlqssy1f1972a9`.
@@ -76,16 +79,33 @@ git diff --check
   - `wxLoginCodeAvailable: true`
 - The current OpenID was returned and a cloud `users` profile id was created. Do not paste the OpenID into public docs or commits beyond local validation notes.
 
+## Phase 8 Business Cloud Verification
+- Deployed `businessData`; `cloud functions info` reported status `Active`, runtime `Nodejs16.13`.
+- Targeted DevTools automation used existing page/service/repository paths, not direct page DB calls.
+- Verified guide cloud flow:
+  - Login as `guide` with `authSource: wechat-cloud`.
+  - Create product through `/sub-pages/product/add/index`; result `saveMode: wechat-cloud-repository`.
+  - Create group order through `/sub-pages/groupOrder/add/index`; result `saveMode: wechat-cloud-repository`, product count 1.
+- Verified customer cloud flow:
+  - Login as `customer` with `authSource: wechat-cloud`.
+  - Open `/pages/customerOrders/edit/index?groupOrderId=<cloud id>`.
+  - Create customer order; result `saveMode: wechat-cloud-repository`, status 0.
+  - Declare paid; status became 1 and history count became 2.
+  - After the customer scope fix, `listByGroupOrder` as customer returned only the customer's own order.
+- Verified guide payment flow:
+  - Login back as `guide`.
+  - Confirm payment from customer orders page path; status became 2 and history count became 3.
+- The targeted flow also verified string cloud document IDs across group order detail/order entry pages.
+
 ## Recommended Next Step
 Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.
 
-If continuing MVP implementation, the next high-value gap is Phase 8 business data cloud repository work:
-- Define and create permission rules for business collections.
-- Add cloud repository implementations behind the existing group order/product/customer order services.
-- Keep local/QA repository fallback clearly labeled and switchable.
-- Run targeted GUI smoke after each formal workflow is cloud-backed.
+If continuing MVP implementation, the next high-value gap is Phase 7 full GUI smoke:
+- Open all 27 routes in DevTools or device.
+- Validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, and reload/re-enter behavior.
+- Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 
 ## User Assistance Needed For Phase 8
 - Provide owner/admin OpenID allowlist values for formal role assignment, or approve keeping all new cloud users as guide/customer until admin tooling exists.
-- Confirm collection permission rules before applying formal business data rules.
+- If strict database console rules are required in addition to cloud-function permission checks, configure them manually in WeChat Cloud console or provide a CLI/API path.
 - Provide a working DevTools automation ticket/session, or manually assist with the 27-route GUI smoke test if automation becomes unstable.

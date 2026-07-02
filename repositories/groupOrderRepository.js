@@ -3,6 +3,7 @@ import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { filterGroupOrdersByRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
 
 const GROUP_ORDER_STORAGE_KEY = 'dao_you_ling_local_group_orders';
 const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
@@ -92,6 +93,10 @@ export const GroupOrderRepository = {
   },
 
   async listVisible() {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({ resource: 'groupOrders', action: 'listVisible' });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const scoped = filterGroupOrdersByRole(getAllGroupOrders(), profile, getAllCustomerOrders());
 
@@ -108,6 +113,14 @@ export const GroupOrderRepository = {
   },
 
   async filterVisible(keyword, status) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'groupOrders',
+        action: 'listVisible',
+        data: { keyword, status },
+      });
+    }
+
     const result = await this.listVisible();
     const lowerKeyword = (keyword || '').toLowerCase();
     const statusValue = Number(status || 0);
@@ -131,6 +144,14 @@ export const GroupOrderRepository = {
   },
 
   async getById(id) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'groupOrders',
+        action: 'getById',
+        data: { id },
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrder = getAllGroupOrders().find(item => sameId(item.id, id));
     if (!groupOrder) return { success: false, error: '未找到团单' };
@@ -146,6 +167,14 @@ export const GroupOrderRepository = {
   },
 
   async create(groupOrderData) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'groupOrders',
+        action: 'create',
+        data: groupOrderData,
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     if (!canCreateGroupOrder(profile)) return { success: false, error: '当前角色不能新建团单' };
 
@@ -174,6 +203,14 @@ export const GroupOrderRepository = {
   },
 
   async update(id, groupOrderData) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'groupOrders',
+        action: 'update',
+        data: { id, data: groupOrderData },
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrders = getAllGroupOrders();
     const target = groupOrders.find(item => sameId(item.id, id));
@@ -196,6 +233,14 @@ export const GroupOrderRepository = {
   },
 
   async addProducts(groupOrderId, products) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'groupOrders',
+        action: 'addProducts',
+        data: { groupOrderId, products },
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrders = getAllGroupOrders();
     const target = groupOrders.find(item => sameId(item.id, groupOrderId));
@@ -210,6 +255,14 @@ export const GroupOrderRepository = {
   },
 
   async removeProduct(groupOrderId, productId) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'groupOrders',
+        action: 'removeProduct',
+        data: { groupOrderId, productId },
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrders = getAllGroupOrders();
     const target = groupOrders.find(item => sameId(item.id, groupOrderId));
@@ -219,3 +272,5 @@ export const GroupOrderRepository = {
     return this.update(groupOrderId, { productList: nextProducts });
   },
 };
+
+GroupOrderRepository.cloudSaveMode = CLOUD_SAVE_MODE;

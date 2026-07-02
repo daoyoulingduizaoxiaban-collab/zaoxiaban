@@ -1,9 +1,10 @@
 import { Product } from "~/models/Product";
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
-    groupOrderId: 0,
+    groupOrderId: '',
     searchQuery: '',
     rawList: [] as Product[],    // 原始完整列表
     displayList: [] as Product[], // 搜尋過濾後的列表
@@ -11,7 +12,7 @@ Page({
   },
 
   onLoad(options) {
-    const groupOrderId = Number(options.id || 0);
+    const groupOrderId = options.id ? String(options.id) : '';
     this.setData({
       groupOrderId
     });
@@ -110,7 +111,7 @@ Page({
 
     wx.showModal({
       title: '移除商品',
-      content: '确定要从本团移除此商品吗？本地/QA 展示模式，尚未正式保存到云端。',
+      content: '确定要从本团移除此商品吗？',
       confirmColor: '#ff4d4f',
       success: async (res) => {
         if (res.confirm) {
@@ -126,7 +127,7 @@ Page({
             displayList: this.filterList(rawList, this.data.searchQuery)
           });
 
-          wx.showToast({ title: '本地/QA 已保存', icon: 'none' });
+          wx.showToast({ title: getSaveModeText(removeRes.meta), icon: 'none' });
         }
       }
     });
@@ -157,7 +158,7 @@ Page({
               rawList,
               displayList: this.filterList(rawList, this.data.searchQuery)
             });
-            wx.showToast({ title: '本地/QA 已保存', icon: 'none' });
+            wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
           });
         }
       },

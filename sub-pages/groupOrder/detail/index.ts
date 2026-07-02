@@ -3,23 +3,24 @@ import {
 } from '~/models/GroupOrder';
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 
 Page({
   data: {
     pageTitle: '团单详情',
     groupOrder: new GroupOrder(),
-    groupOrderId: 0,
+    groupOrderId: '',
     showDetails: false,
     selectedMemberOrder: new MemberOrder(),
     showConfirmDialog: false,
-    selectedMemberOrderId: 0,
+    selectedMemberOrderId: '',
     showCancelDialog: false,
     saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
   },
 
   onLoad(options) {
-    const id = Number(options.id || 1);
+    const id = options.id ? String(options.id) : '';
     if (id) {
       this.setData({
         groupOrderId: id
@@ -40,6 +41,7 @@ Page({
         this.setData({
           groupOrder: res.data,
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
+          saveModeText: getSaveModeText(res.meta),
         });
       } else {
         wx.showToast({
@@ -237,7 +239,7 @@ Page({
     }
 
     wx.showToast({
-      title: this.data.saveModeText,
+      title: getSaveModeText(res.meta),
       icon: 'none'
     });
     this.fetchGroupOrderDetail(this.data.groupOrderId);
@@ -264,7 +266,7 @@ Page({
     }
 
     wx.showToast({
-      title: this.data.saveModeText,
+      title: getSaveModeText(res.meta),
       icon: 'none'
     });
     this.fetchGroupOrderDetail(this.data.groupOrderId);

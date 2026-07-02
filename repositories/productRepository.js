@@ -3,6 +3,7 @@ import { ProductStatus } from '~/enum/ProductStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { canManageProduct, filterProductsByRole } from '~/services/auth/roleScope';
+import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
 
 const PRODUCT_STORAGE_KEY = 'dao_you_ling_local_products';
 
@@ -34,6 +35,10 @@ export const ProductRepository = {
   storageKey: PRODUCT_STORAGE_KEY,
 
   async listVisible() {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({ resource: 'products', action: 'listVisible' });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const products = filterProductsByRole(getAllProducts(), profile);
 
@@ -50,6 +55,14 @@ export const ProductRepository = {
   },
 
   async filterVisible({ keyword = '', status = 0 } = {}) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'products',
+        action: 'listVisible',
+        data: { keyword, status },
+      });
+    }
+
     const result = await this.listVisible();
     const query = String(keyword || '').trim().toLowerCase();
     const statusValue = Number(status || 0);
@@ -66,6 +79,14 @@ export const ProductRepository = {
   },
 
   async create(productData) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'products',
+        action: 'create',
+        data: productData,
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     if (!profile || !['guide', 'owner', 'admin', 'provider'].includes(profile.role)) {
       return { success: false, error: '当前角色不能新增商品' };
@@ -93,6 +114,14 @@ export const ProductRepository = {
   },
 
   async updateStatus(id, status) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'products',
+        action: 'updateStatus',
+        data: { id, status },
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const allProducts = getAllProducts();
     const target = allProducts.find(product => String(product.id) === String(id));
@@ -118,6 +147,14 @@ export const ProductRepository = {
   },
 
   async softDelete(id) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'products',
+        action: 'softDelete',
+        data: { id },
+      });
+    }
+
     const profile = AuthService.getCurrentProfile();
     const allProducts = getAllProducts();
     const target = allProducts.find(product => String(product.id) === String(id));
@@ -144,3 +181,5 @@ export const ProductRepository = {
     };
   },
 };
+
+ProductRepository.cloudSaveMode = CLOUD_SAVE_MODE;

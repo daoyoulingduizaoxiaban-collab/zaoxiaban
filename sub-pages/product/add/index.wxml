@@ -78,7 +78,7 @@
         </view>
       </view>
 
-      <button class="btn-save-product" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="addProductToList">保存到本地商品库</button>
+      <button class="btn-save-product" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="addProductToList">保存商品</button>
     </view>
   </view>
 

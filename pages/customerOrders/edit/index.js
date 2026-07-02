@@ -1,10 +1,11 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
     pageTitle: '客户下单',
-    groupOrderId: 0,
+    groupOrderId: '',
     groupOrder: null,
     productRows: [],
     totalPrice: 0,
@@ -19,7 +20,7 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const groupOrderId = Number(options.groupOrderId || options.id || 1);
+    const groupOrderId = options.groupOrderId || options.id || '';
 
     this.setData({
       groupOrderId,
@@ -42,6 +43,7 @@ Page({
       pageTitle: res.data.title || '客户下单',
       productRows: res.data.productList || [],
       totalPrice: 0,
+      saveModeText: getSaveModeText(res.meta),
     });
   },
 
@@ -103,9 +105,11 @@ Page({
       return;
     }
 
+    const saveModeText = getSaveModeText(res.meta);
+    this.setData({ saveModeText });
     wx.showModal({
       title: '下单成功',
-      content: `${this.data.saveModeText}\n订单金额：￥${res.data.totalPrice}`,
+      content: `${saveModeText}\n订单金额：￥${res.data.totalPrice}`,
       showCancel: false,
       confirmText: '查看订单',
       success: () => {

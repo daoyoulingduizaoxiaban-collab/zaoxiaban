@@ -2,6 +2,7 @@ export default {
   isMock: true,
   baseUrl: '',
   cloudEnvId: 'cloud1-3gwlqssy1f1972a9',
+  useCloudBusinessData: true,
 };
 
 // config/menu.js

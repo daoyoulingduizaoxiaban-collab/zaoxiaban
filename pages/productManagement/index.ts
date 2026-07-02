@@ -1,6 +1,7 @@
 import { Product } from '../../models/Product';
 import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import {
   getProductStatusList,
   getProductStatusTextByValue
@@ -49,6 +50,7 @@ Page({
       allProducts: res.data,
       productList: res.data,
       roleScopeText: this.getRoleScopeText(),
+      saveModeText: getSaveModeText(res.meta),
       isLoading: false,
     });
   },
@@ -89,7 +91,7 @@ Page({
         refreshList: () => {
           this.fetchData();
           wx.showToast({
-            title: '本地/QA 展示模式，尚未正式保存',
+            title: this.data.saveModeText,
             icon: 'none'
           });
         }
@@ -114,7 +116,7 @@ Page({
 
     await this.fetchData();
     wx.showToast({
-      title: `本地/QA：${getProductStatusTextByValue(res.data.status)}`,
+      title: `${getSaveModeText(res.meta)}：${getProductStatusTextByValue(res.data.status)}`,
       icon: 'none'
     });
   },
@@ -125,7 +127,7 @@ Page({
 
     wx.showModal({
       title: '提示',
-      content: '确定要软删除此商品吗？本地/QA 展示模式，尚未正式保存到云端。',
+      content: `确定要软删除此商品吗？${this.data.saveModeText}`,
       success: async (modalRes) => {
         if (modalRes.confirm) {
           const res = await ProductService.softDelete(id);
@@ -134,7 +136,7 @@ Page({
             return;
           }
           await this.fetchData();
-          wx.showToast({ title: '本地/QA 展示模式，尚未正式保存', icon: 'none' });
+          wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
         }
       }
     });

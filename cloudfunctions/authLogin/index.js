@@ -88,7 +88,9 @@ exports.main = async (event = {}) => {
   if (existing.data && existing.data.length) {
     const profile = existing.data[0];
     const privilegedRole = getPrivilegedRole(openId);
-    const nextRole = privilegedRole || profile.role || normalizeRequestedRole(event.requestedRole);
+    const currentRole = profile.role || normalizeRequestedRole(event.requestedRole);
+    const canSwitchMvpRole = currentRole === ROLE_GUIDE || currentRole === ROLE_CUSTOMER;
+    const nextRole = privilegedRole || (canSwitchMvpRole ? normalizeRequestedRole(event.requestedRole) : currentRole);
     const updateData = {
       unionId: profile.unionId || unionId,
       role: nextRole,

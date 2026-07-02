@@ -3,7 +3,7 @@
 ## Decision Status
 The user has confirmed the MVP direction: WeChat Cloud Database + Cloud Functions.
 
-Current implementation status: formal login/OpenID uses WeChat Cloud through `authLogin`; business data persistence is still local/QA and must be moved behind cloud repository implementations before claiming production readiness.
+Current implementation status: formal login/OpenID uses WeChat Cloud through `authLogin`; core business persistence uses `businessData` behind repository/service boundaries. The remaining MVP gate is full GUI smoke validation.
 
 ## Non-Negotiable Boundary
 - Pages must not directly call cloud database, cloud functions, API endpoints, storage, or `mock/qaSeed.ts` for business operations.
@@ -51,6 +51,6 @@ Implementation requirements after confirmation:
 
 ## Current State
 - Formal data layer direction: confirmed for MVP.
-- Cloud resources: `authLogin` cloud function deployed in environment `cloud1-3gwlqssy1f1972a9`; `users` profile initialization verified.
+- Cloud resources: `authLogin` and `businessData` cloud functions deployed in environment `cloud1-3gwlqssy1f1972a9`; `users` and core business persistence verified.
 - Backend API: not created.
-- Formal persistence: verified only for auth/users initialization, not for group orders, products, customer orders, payments, or payment status history.
+- Formal persistence: verified for auth/users, products, groupOrders, groupOrderProducts, customerOrders, payments, and paymentStatusHistory through targeted DevTools automation.

@@ -1,5 +1,6 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductService } from '~/services/product/productService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
@@ -153,7 +154,9 @@ Page({
       }
     }
 
-    wx.showToast({ title: '本地/QA 展示模式，尚未正式保存', icon: 'none' });
+    const saveModeText = getSaveModeText(res.meta);
+    this.setData({ saveModeText });
+    wx.showToast({ title: saveModeText, icon: 'none' });
     wx.navigateBack({
       fail: () => {
         wx.showToast({ title: '返回商品库失败', icon: 'none' });

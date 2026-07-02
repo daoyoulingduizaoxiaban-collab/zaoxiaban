@@ -26,6 +26,9 @@
   - Product form includes title, description, images, price rules, status, and source note.
   - Price rules compute `totalPrice = minQuantity * unitPrice`.
   - Soft delete writes `deletedAt` and removes deleted products from visible lists.
+- Phase 8 cloud product library verification:
+  - `businessData` cloud function deployed and active.
+  - Product create/list returned `saveMode: wechat-cloud-repository` through the existing product page/service/repository path.
 - Phase 5 local/QA customer ordering workflow exists:
   - Customer entry path is `/pages/customerOrders/edit/index?groupOrderId=...`.
   - Customer order creation goes through `CustomerOrderService` / `CustomerOrderRepository`.
@@ -33,11 +36,20 @@
   - Customer order list uses role-scoped visibility from the repository/service boundary.
   - Customer payment declaration, guide payment confirmation, and order cancellation go through the same service/repository path.
   - Payment status history is appended on each local/QA status change.
+- Phase 8 cloud customer order/payment verification:
+  - Customer role created a cloud customer order through `/pages/customerOrders/edit/index?groupOrderId=...`.
+  - Customer declared paid, changing status from `0` to `1`.
+  - Guide confirmed payment, changing status from `1` to `2`.
+  - Payment history count reached 3 after create, declare paid, and confirm payment.
+  - After redeploying the customer order scope fix, customer `listByGroupOrder` returned only the customer's own order with `saveMode: wechat-cloud-repository`.
 - Phase 3 local/QA guide group-order workflow exists:
   - Group order list/detail/create/edit use `GroupOrderService` / `GroupOrderRepository`.
   - Group order create/edit saves to local storage key `dao_you_ling_local_group_orders`.
   - Add/remove group-order products saves through the same repository/service boundary.
   - Group order detail no longer directly depends on `GroupOrderMock`.
+- Phase 8 cloud group-order verification:
+  - Guide role created cloud product and cloud group order through existing page/service/repository path.
+  - Cloud group order retained one product snapshot after reload/re-enter.
 - Phase 6 UI cleanup is complete for the scoped starter pages:
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
@@ -63,27 +75,19 @@ These are not formal cloud-backed features.
 ### Not Verified
 - WeChat DevTools GUI route smoke test.
 - WeChat DevTools full route smoke test.
-- Cloud-backed product persistence.
-- Cloud-backed customer order/payment persistence.
-- Cloud-backed group order persistence.
-- Cloud database permission rules.
-- Reopen/reload persistence for formal business data.
+- 27-route GUI smoke test.
+- Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.
 - Phase 5 customer order click flow in GUI.
 - Phase 3 guide group-order click flow in GUI.
 
 ### Not Implemented
-- Formal cloud repository for group orders, products, customer orders, payments, and payment status history.
-- Formal cloud/API guide group-order create/edit persistence.
-- Formal cloud/API group order product add/remove persistence.
-- Formal customer order cloud/API workflow.
-- Formal payment confirmation or payment status history workflow.
 - Production deployment.
 
 ### Requires User Assistance
 - Owner/admin formal role assignment: provide the OpenID values that should be configured in `OWNER_OPENIDS` / `ADMIN_OPENIDS`, or set them in the cloud function environment.
-- Cloud implementation beyond auth: explicitly confirm collection permission rules before creating business collection rules for `groupOrders`, `products`, `groupOrderProducts`, `customerOrders`, `payments`, and `paymentStatusHistory`.
+- Owner/admin cloud role allowlist: not configured because no owner/admin OpenID list has been provided.
 - GUI smoke: either provide a working DevTools automation ticket/session if route automation becomes unstable again, or manually run/observe the 27-route GUI checklist with Codex.
 
 ## Validation Rule

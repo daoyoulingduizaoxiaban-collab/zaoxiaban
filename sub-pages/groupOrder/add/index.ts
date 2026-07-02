@@ -1,12 +1,13 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
     pageTitle: '开团',
     isEdit: false,
-    groupOrderId: 0,
+    groupOrderId: '',
     selectedGoods: [] as Product[],
     isSubmitting: false,
     saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
@@ -18,7 +19,7 @@ Page({
   },
 
   onLoad(options) {
-    const groupOrderId = Number(options.id || 0);
+    const groupOrderId = options.id ? String(options.id) : '';
     if (groupOrderId) {
       this.setData({
         pageTitle: '编辑团单',
@@ -103,8 +104,10 @@ Page({
       return;
     }
 
+    const saveModeText = getSaveModeText(res.meta);
+    this.setData({ saveModeText });
     wx.showToast({
-      title: this.data.saveModeText,
+      title: saveModeText,
       icon: 'none',
       success: () => {
         setTimeout(() => wx.navigateBack(), 800);

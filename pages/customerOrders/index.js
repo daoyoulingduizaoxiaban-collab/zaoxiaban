@@ -1,5 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
@@ -25,6 +26,7 @@ Page({
       customerOrdersList: res.data,
       roleScopeText: this.getRoleScopeText(),
       canCreateCustomerOrder: this.canCreateCustomerOrder(),
+      saveModeText: getSaveModeText(res.meta),
     });
   },
 
@@ -120,7 +122,7 @@ Page({
     }
 
     await this.loadQaOrders();
-    wx.showToast({ title: this.data.saveModeText, icon: 'none' });
+    wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
   },
 
   // 同步 TabBar 狀態 (之前提到的關鍵細節)

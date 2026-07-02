@@ -19,14 +19,14 @@ Do not rely on chat memory.
 - Customer, supplier, and admin capabilities stay minimal until explicitly scoped.
 
 ## Current Technical Truth
-- The app is in mixed mode: formal WeChat Cloud login is connected; business data is still QA/local mode.
+- The app is in mixed mode: formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use QA/local fallback.
 - `config.js` has `isMock: true`, `baseUrl: ''`, and `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`.
 - Formal data layer direction is confirmed by the user: WeChat Cloud Database + Cloud Functions behind service/repository boundaries.
 - Formal OpenID is verified through deployed `authLogin`.
 - Cloud `users` profile initialization is verified for the current OpenID.
-- Group order persistence is local/QA only.
-- Product library persistence is local/QA only.
-- Phase 5 customer ordering/payment workflow is implemented only in local/QA repository mode.
+- Group order persistence has cloud repository plus local/QA fallback.
+- Product library persistence has cloud repository plus local/QA fallback.
+- Phase 5 customer ordering/payment workflow has cloud repository plus local/QA fallback.
 
 ## Architecture Rules
 - Pages call services/repositories, not raw storage, cloud database, cloud functions, or `mock/qaSeed.ts` for business operations.
@@ -52,7 +52,7 @@ Do not rely on chat memory.
 - Install new packages.
 - Use network.
 - Submit `resume/preview-info.json` or `resume/preview-qr.png`.
-- Extend Phase 5 beyond local/QA mode or connect it to formal cloud/API persistence.
+- Extend Phase 5 beyond the scoped MVP customer order/payment workflow.
 
 ## Required Validation
 ```bash

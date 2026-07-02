@@ -182,9 +182,9 @@
 
 ## Current Gaps
 - Formal `users` initialization is implemented through `authLogin`.
-- Business collections are not yet created or wired to repositories: `groupOrders`, `products`, `groupOrderProducts`, `customerOrders`, `payments`, `paymentStatusHistory`.
-- Cloud/API permission checks are not implemented.
+- Business collections are created on first `businessData` execution and wired to repositories: `groupOrders`, `products`, `groupOrderProducts`, `customerOrders`, `payments`, `paymentStatusHistory`.
+- Cloud permission checks are implemented in `businessData`; pages do not directly access cloud DB.
 - Formal WeChat OpenID binding is verified for the current DevTools user through `authLogin`.
 - Owner/admin role assignment still needs cloud-function environment allowlists: `OWNER_OPENIDS` / `ADMIN_OPENIDS`.
-- Only partial local/QA repository boundaries exist for business data.
-- Formal business persistence is not implemented.
+- Cloud repository boundaries exist for core business data, with local/QA fallback for mock identities.
+- Formal business persistence has targeted verification; full 27-route GUI smoke is still pending.
