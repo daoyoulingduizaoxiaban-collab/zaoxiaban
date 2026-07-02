@@ -1,6 +1,16 @@
 # HANDOFF
 
+## Codex Entry Snapshot
+
+- Canonical path: `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan`
+- Current branch observed: `codex`
+- Dirty status expected: dirty as of 2026-07-02; do not overwrite existing QA screenshots, bug report edits, or `pages/dataCenter` edits unless they are in scope.
+- Start here: `NEXT_AGENT_TASK.md`
+- Current next action: confirm dirty state, read `QA/QA_BUG_REPORT_202607021815.md`, then continue Phase 7 GUI smoke/retest evidence if requested.
+- Done definition: files changed + validation run + checklist/acceptance/handoff updated + unverified items listed.
+
 ## Current Source Of Truth
+- Short Codex entry: `NEXT_AGENT_TASK.md`.
 - Current task source: `CURRENT_TASKS.md`.
 - Product rules: `PROJECT_RULES.md`.
 - MVP roadmap, partially completed items, and missing backlog: `MVP_COMPLETION_CHECKLIST.md`.

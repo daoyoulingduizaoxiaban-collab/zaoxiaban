@@ -3,6 +3,7 @@
 ## 文件职责
 `CURRENT_TASKS.md` 只回答「下一位 agent 现在该做什么」。不要在这里维护总 MVP backlog。
 
+- 新对话短入口：先看 `NEXT_AGENT_TASK.md`。
 - 完整 MVP checklist、半成品、未做项：看 `MVP_COMPLETION_CHECKLIST.md`。
 - 验收结果与未验证项：看 `ACCEPTANCE.md`。
 - 当前事实与接手注意：看 `HANDOFF.md`。
