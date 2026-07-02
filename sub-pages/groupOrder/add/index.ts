@@ -1,47 +1,114 @@
+import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
+import { Product } from '~/models/Product';
+import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
+
 Page({
   data: {
+    pageTitle: '开团',
+    isEdit: false,
+    groupOrderId: 0,
+    selectedGoods: [] as Product[],
+    isSubmitting: false,
+    saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
     formData: {
       title: '',
-      totalReceivable: 0,
-      totalReceived: 0,
-      totalCustomers: 0,
       description: '',
-      statusText: '未付款'
+      status: GroupOrderStatus.OPEN,
     }
+  },
+
+  onLoad(options) {
+    const groupOrderId = Number(options.id || 0);
+    if (groupOrderId) {
+      this.setData({
+        pageTitle: '编辑团单',
+        isEdit: true,
+        groupOrderId
+      });
+      this.loadGroupOrder(groupOrderId);
+    }
+  },
+
+  async loadGroupOrder(groupOrderId) {
+    const res = await GroupOrderService.getById(groupOrderId);
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载团单失败', icon: 'none' });
+      return;
+    }
+
+    this.setData({
+      formData: {
+        title: res.data.title || '',
+        description: res.data.description || '',
+        status: Number(res.data.status || GroupOrderStatus.OPEN),
+      },
+      selectedGoods: res.data.productList || [],
+    });
   },
 
   onInput(e: any) {
     const { field } = e.currentTarget.dataset;
-    let value = e.detail.value;
-    
-    if (['totalReceivable', 'totalReceived', 'totalCustomers'].includes(field)) {
-      value = value ? parseInt(value, 10) : 0;
-    }
+    const value = e.detail.value;
 
     this.setData({
       [`formData.${field}`]: value
     });
   },
 
+  onRemoveGoods(e: any) {
+    const { index } = e.currentTarget.dataset;
+    const selectedGoods = this.data.selectedGoods.filter((_, itemIndex) => itemIndex !== Number(index));
+    this.setData({ selectedGoods });
+  },
+
+  onSelectGoods() {
+    const existingIds = this.data.selectedGoods.map(item => item.id);
+    wx.navigateTo({
+      url: `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
+      events: {
+        selectedProducts: (data) => {
+          const selectedProducts = (data.products || []).map(item => new Product(item));
+          if (selectedProducts.length === 0) return;
+          this.setData({
+            selectedGoods: [...this.data.selectedGoods, ...selectedProducts]
+          });
+        }
+      },
+      fail: () => {
+        wx.showToast({ title: '打开商品库失败', icon: 'none' });
+      }
+    });
+  },
+
   async onSave() {
-    const { formData } = this.data;
-    
-    if (!formData.title) {
-      wx.showToast({ title: '请输入团单名称', icon: 'none' });
+    const { formData, selectedGoods, groupOrderId, isEdit } = this.data;
+
+    if (this.data.isSubmitting) return;
+    this.setData({ isSubmitting: true });
+    wx.showLoading({ title: isEdit ? '保存中...' : '团单建立中...' });
+
+    const payload = {
+      ...formData,
+      productList: selectedGoods,
+    };
+    const res = isEdit
+      ? await GroupOrderService.update(groupOrderId, payload)
+      : await GroupOrderService.create(payload);
+
+    wx.hideLoading();
+    this.setData({ isSubmitting: false });
+
+    if (!res.success) {
+      wx.showToast({ title: res.error || '保存团单失败', icon: 'none' });
       return;
     }
 
-    wx.showLoading({ title: '团单建立中...' });
-
-    setTimeout(() => {
-      wx.hideLoading();
-      wx.showToast({
-        title: 'QA 展示模式，暂未保存',
-        icon: 'none',
-        success: () => {
-          setTimeout(() => wx.navigateBack(), 1000);
-        }
-      });
-    }, 800);
+    wx.showToast({
+      title: this.data.saveModeText,
+      icon: 'none',
+      success: () => {
+        setTimeout(() => wx.navigateBack(), 800);
+      }
+    });
   }
 });

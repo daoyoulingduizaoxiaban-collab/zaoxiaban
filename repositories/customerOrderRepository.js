@@ -2,6 +2,7 @@ import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { filterCustomerOrdersByRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
+import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
 
 const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
 
@@ -163,7 +164,7 @@ export const CustomerOrderRepository = {
 
   async listVisible() {
     const profile = AuthService.getCurrentProfile();
-    const groupOrders = QaSeedMock.getGroupOrders();
+    const groupOrders = GroupOrderRepository.listAll();
     const customerOrders = getAllOrders();
 
     return {
@@ -180,7 +181,7 @@ export const CustomerOrderRepository = {
 
   async listByGroupOrder(groupOrderId) {
     const profile = AuthService.getCurrentProfile();
-    const groupOrders = QaSeedMock.getGroupOrders();
+    const groupOrders = GroupOrderRepository.listAll();
     const groupOrder = groupOrders.find(item => sameId(item.id, groupOrderId));
     if (!canViewSharedGroupOrder(groupOrder, profile)) {
       return { success: false, error: '当前角色不能查看此团单订单' };
@@ -203,7 +204,7 @@ export const CustomerOrderRepository = {
 
   async getGroupOrderEntry(groupOrderId) {
     const profile = AuthService.getCurrentProfile();
-    const groupOrder = QaSeedMock.getGroupOrders().find(item => sameId(item.id, groupOrderId));
+    const groupOrder = GroupOrderRepository.listAll().find(item => sameId(item.id, groupOrderId));
     if (!groupOrder) return { success: false, error: '未找到团单' };
     if (!canViewSharedGroupOrder(groupOrder, profile)) {
       return { success: false, error: '当前角色不能进入此团单' };
@@ -221,7 +222,7 @@ export const CustomerOrderRepository = {
       return { success: false, error: '当前角色不能提交客户订单' };
     }
 
-    const groupOrder = QaSeedMock.getGroupOrders().find(item => sameId(item.id, orderData.groupOrderId));
+    const groupOrder = GroupOrderRepository.listAll().find(item => sameId(item.id, orderData.groupOrderId));
     if (!groupOrder) return { success: false, error: '未找到团单' };
     if (Number(groupOrder.status) !== 1) return { success: false, error: '当前团单已停止收单' };
 
@@ -278,7 +279,7 @@ export const CustomerOrderRepository = {
 
   async updatePaymentStatus(id, nextStatus, note) {
     const profile = AuthService.getCurrentProfile();
-    const groupOrders = QaSeedMock.getGroupOrders();
+    const groupOrders = GroupOrderRepository.listAll();
     const state = getStoredState();
     const orders = state.orders.map(normalizeOrder);
     const target = orders.find(order => sameId(order.id, id));

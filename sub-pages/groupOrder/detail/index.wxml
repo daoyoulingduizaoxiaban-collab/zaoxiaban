@@ -72,6 +72,10 @@
   </view>
 
   <view class="footer-action-bar">
+    <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onEditGroupOrder"
+      disabled="{{!groupOrderId}}">
+      编辑团单
+    </t-button>
     <t-button theme="primary" class="btn-primary" size="large" block bind:tap="onExportReport"
       disabled="{{groupOrder.memberOrderList.length === 0 }}">
       导出报表

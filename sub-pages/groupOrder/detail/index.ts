@@ -291,6 +291,27 @@ Page({
     });
   },
 
+  onEditGroupOrder() {
+    const id = this.data.groupOrderId;
+    if (!id) {
+      wx.showToast({
+        title: '缺少团单 ID',
+        icon: 'none'
+      });
+      return;
+    }
+
+    wx.navigateTo({
+      url: `/sub-pages/groupOrder/add/index?id=${id}`,
+      fail: () => {
+        wx.showToast({
+          title: '打开编辑团单失败',
+          icon: 'none'
+        });
+      }
+    });
+  },
+
   onManageProducts() {
     const id = this.data.groupOrderId;
     if (id) {

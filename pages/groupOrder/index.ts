@@ -1,7 +1,7 @@
 import {
   GroupOrder
 } from '~/models/GroupOrder';
-import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
+import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import {
   getGroupOrderStatusList,
   getGroupOrderStatusTextByValue
@@ -37,7 +37,7 @@ Page({
     });
 
     try {
-      const res = await GroupOrderRepository.listVisible();
+      const res = await GroupOrderService.listVisible();
       if (res.success) {
 
         const list = this.normalizeGroupOrders(res.data);
@@ -96,6 +96,7 @@ Page({
         value: 'groupOrder'
       });
     }
+    this.applyFilters();
   },
 
   addItinerary(e) {
@@ -148,7 +149,10 @@ Page({
     } = this.data;
 
     // 呼叫 Mock API，同時傳入兩個條件
-    const res = await GroupOrderRepository.filterVisible(searchKeyword, currentStatus);
+    const res = await GroupOrderService.listVisible({
+      keyword: searchKeyword,
+      status: currentStatus
+    });
 
     this.setData({
       // 確保畫面更新的是篩選後的結果

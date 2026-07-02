@@ -1,4 +1,4 @@
-import { ProductMock } from '~/mock/product/index';
+import { ProductService } from '~/services/product/productService';
 
 Page({
   data: {
@@ -11,11 +11,15 @@ Page({
   },
 
   onLoad() {
-    this.generateMockData();
+    this.loadProducts();
   },
 
-  async generateMockData() {
-    const res = await ProductMock.fetchProductListMock();
+  async loadProducts() {
+    const res = await ProductService.listVisible();
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
+      return;
+    }
     this.setData({
       allProducts: res.data,
       filteredList: res.data

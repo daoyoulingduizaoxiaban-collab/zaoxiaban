@@ -1,9 +1,10 @@
-<sub-nav title="开团" />
+<sub-nav title="{{pageTitle}}" />
 
 <view class="add-container">
+  <view class="mode-tip">{{saveModeText}}</view>
   <t-cell-group theme="card" title="基本信息">
-    <t-input label="*名称" placeholder="最多20个字" maxlength="20" bindchange="onInput" data-field="title" />
-    <t-textarea label="团单描述" placeholder="最多200个字" bindchange="onInput" maxlength="200"
+    <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" bindchange="onInput" data-field="title" />
+    <t-textarea label="团单描述" placeholder="最多200个字" value="{{formData.description}}" bindchange="onInput" maxlength="200"
       data-field="description" />
   </t-cell-group>
   <t-cell-group theme="card" title="*商品设置">
@@ -31,6 +32,6 @@
   </t-cell-group>
 
   <view class="footer">
-    <t-button theme="primary" size="large" block bindtap="onSave">新建团单</t-button>
+    <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="onSave">{{isEdit ? '保存团单' : '新建团单'}}</t-button>
   </view>
 </view>

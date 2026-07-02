@@ -1,4 +1,4 @@
-import { ProductMock } from '~/mock/product/index';
+import { ProductService } from '~/services/product/productService';
 
 Page({
   data: {
@@ -40,7 +40,11 @@ Page({
   },
 
   async loadProductLibrary() {
-    const res = await ProductMock.fetchProductListMock();
+    const res = await ProductService.listVisible();
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载商品库失败', icon: 'none' });
+      return;
+    }
     const processedList = res.data.map(item => {
       const isExist = this.data.excludeIds.includes(String(item.id));
       return {

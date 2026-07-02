@@ -1,7 +1,5 @@
 import { Product } from "~/models/Product";
-import {
-  GroupOrderMock
-} from '~/mock/groupOrder/index';
+import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 
 Page({
   data: {
@@ -39,7 +37,12 @@ Page({
       return;
     }
 
-    const res = await GroupOrderMock.fetchById(groupOrderId);
+    const res = await GroupOrderService.getById(groupOrderId);
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载本团商品失败', icon: 'none' });
+      this.setData({ rawList: [], displayList: [] });
+      return;
+    }
     const groupProducts = this.normalizeProducts(res.data.productList || []);
 
     this.setData({
@@ -107,14 +110,15 @@ Page({
 
     wx.showModal({
       title: '移除商品',
-      content: '确定要从本团移除此商品吗？QA 展示模式不会保存。',
+      content: '确定要从本团移除此商品吗？本地/QA 展示模式，尚未正式保存到云端。',
       confirmColor: '#ff4d4f',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          // 呼叫後端 API 刪除
-          // wx.request({ url: 'deleteUrl', method: 'POST', data: { id } ... })
-
-          // 前端先移除
+          const removeRes = await GroupOrderService.removeProduct(this.data.groupOrderId, id);
+          if (!removeRes.success) {
+            wx.showToast({ title: removeRes.error || '移除商品失败', icon: 'none' });
+            return;
+          }
           const rawList = this.data.rawList.filter(item => item.id !== id);
 
           this.setData({
@@ -122,7 +126,7 @@ Page({
             displayList: this.filterList(rawList, this.data.searchQuery)
           });
 
-          wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
+          wx.showToast({ title: '本地/QA 已保存', icon: 'none' });
         }
       }
     });
@@ -143,12 +147,18 @@ Page({
           const selectedProducts = this.normalizeProducts((data.products || []).map(item => new Product(item)));
           if (selectedProducts.length === 0) return;
 
-          const rawList = [...this.data.rawList, ...selectedProducts];
-          this.setData({
-            rawList,
-            displayList: this.filterList(rawList, this.data.searchQuery)
+          GroupOrderService.addProducts(this.data.groupOrderId, selectedProducts).then((res) => {
+            if (!res.success) {
+              wx.showToast({ title: res.error || '加入商品失败', icon: 'none' });
+              return;
+            }
+            const rawList = this.normalizeProducts(res.data.productList || []);
+            this.setData({
+              rawList,
+              displayList: this.filterList(rawList, this.data.searchQuery)
+            });
+            wx.showToast({ title: '本地/QA 已保存', icon: 'none' });
           });
-          wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
         }
       },
       fail: () => {
