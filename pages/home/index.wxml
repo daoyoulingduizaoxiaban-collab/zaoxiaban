@@ -1,30 +1,21 @@
 <nav nav-type="home" titleText="{{titleText}}" />
+
 <view class="home-container">
   <view class="home-content">
-    <t-tabs defaultValue="recommend">
-      <t-tab-panel label="推荐" value="recommend">
-        <t-pull-down-refresh value="{{enable}}" bind:refresh="onRefresh"
-          loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']}}">
-          <view class="home-card-list">
-            <t-swiper list="{{swiperList}}" navigation="{{ { type: 'dots-bar' } }}" height="488rpx"
-              style="width: 340rpx" />
-            <card wx:for="{{cardInfo}}" wx:key="index" desc="{{item.desc}}" url="{{item.url}}" tags="{{item.tags}}" />
-          </view>
-        </t-pull-down-refresh>
-      </t-tab-panel>
-      <t-tab-panel label="我的关注" value="follow">
-        <view class="home-card-list">
-          <card wx:for="{{focusCardInfo}}" wx:key="index" desc="{{item.desc}}" url="{{item.url}}"
-            tags="{{item.tags}}" />
-        </view>
-      </t-tab-panel>
-    </t-tabs>
+    <t-cell-group theme="card" title="导游工作台">
+      <t-cell title="团单" description="查看和管理开团、客户订单与本团商品" arrow bind:tap="goGroupOrders">
+        <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
+      </t-cell>
+      <t-cell title="商品库" description="维护可加入团单的商品资料" arrow bind:tap="goProducts">
+        <t-icon slot="left-icon" name="shop" size="44rpx" color="#0052d9" />
+      </t-cell>
+      <t-cell title="客户订单" description="查看订单、收款状态与本地/QA 记录" arrow bind:tap="goCustomerOrders">
+        <t-icon slot="left-icon" name="usergroup" size="44rpx" color="#0052d9" />
+      </t-cell>
+    </t-cell-group>
+
+    <view class="qa-tip">
+      当前为本地/QA 展示模式，正式云端保存与真 OpenID 仍在 Phase 8 gate。
+    </view>
   </view>
 </view>
-
-<view class="home-release">
-  <t-button theme="primary" size="large" icon="add" shape="round" bindtap="goRelease">
-    发布
-  </t-button>
-</view>
-<t-message id="t-message" />

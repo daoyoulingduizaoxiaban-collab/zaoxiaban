@@ -1,105 +1,17 @@
-import Message from 'tdesign-miniprogram/message/index';
-import request from '~/api/request';
-
-// 获取应用实例
-// const app = getApp()
-
 Page({
   data: {
     titleText: '工作台',
-    enable: false,
-    swiperList: [],
-    cardInfo: [],
-    // 发布
-    motto: 'Hello World',
-    userInfo: {},
-    hasUserInfo: false,
-    canIUse: wx.canIUse('button.open-type.getUserInfo'),
-    canIUseGetUserProfile: false,
-    canIUseOpenData: wx.canIUse('open-data.type.userAvatarUrl') && wx.canIUse('open-data.type.userNickName'), // 如需尝试获取用户信息可改为false
-  },
-  // 生命周期
-  async onReady() {
-    const [cardRes, swiperRes] = await Promise.all([
-      request('/home/cards').then((res) => res.data),
-      request('/home/swipers').then((res) => res.data),
-    ]);
-
-    this.setData({
-      cardInfo: cardRes.data,
-      focusCardInfo: cardRes.data.slice(0, 3),
-      swiperList: swiperRes.data,
-    });
-  },
-  onLoad(option) {
-    if (wx.getUserProfile) {
-      this.setData({
-        canIUseGetUserProfile: true,
-      });
-    }
-    if (option.oper) {
-      let content = '';
-      if (option.oper === 'release') {
-        content = '发布成功';
-      } else if (option.oper === 'save') {
-        content = 'QA 展示模式，暂未保存';
-      }
-      this.showOperMsg(content);
-    }
-  },
-  onRefresh() {
-    this.refresh();
-  },
-  async refresh() {
-    this.setData({
-      enable: true,
-    });
-    const [cardRes, swiperRes] = await Promise.all([
-      request('/home/cards').then((res) => res.data),
-      request('/home/swipers').then((res) => res.data),
-    ]);
-
-    setTimeout(() => {
-      this.setData({
-        enable: false,
-        cardInfo: cardRes.data,
-        swiperList: swiperRes.data,
-      });
-    }, 1500);
-  },
-  showOperMsg(content) {
-    Message.success({
-      context: this,
-      offset: [120, 32],
-      duration: 4000,
-      content,
-    });
-  },
-  goRelease() {
-    wx.navigateTo({
-      url: '/pages/release/index',
-    });
   },
 
-  testBackend() {
-    wx.cloud.callFunction({
-      name: 'cloud1-3gwlqssy1f1972a9', // 對應雲函數的名字
-      data: {
-        a: 10,
-        b: 20
-      },
-      success: () => {
-        wx.showToast({
-          title: '後端連線成功',
-          icon: 'success'
-        });
-      },
-      fail: () => {
-        wx.showToast({
-          title: '後端連線失敗',
-          icon: 'none'
-        });
-      }
-    })
-  }
+  goGroupOrders() {
+    wx.switchTab({ url: '/pages/groupOrder/index' });
+  },
+
+  goProducts() {
+    wx.switchTab({ url: '/pages/productManagement/index' });
+  },
+
+  goCustomerOrders() {
+    wx.switchTab({ url: '/pages/customerOrders/index' });
+  },
 });

@@ -16,14 +16,15 @@
 - `config.js`: `isMock: true`, `baseUrl: ''`, `cloudEnvId: ''`.
 - Formal data layer: not confirmed by user. `DATA_LAYER_DECISION.md` is only a recommendation.
 - Formal OpenID login: not verified. `authLogin` cloud function and cloud `users` collection do not exist yet.
-- Phase 3 guide group-order persistence: incomplete. Group order create/edit and add/remove group-order products still do not persist through a repository/service boundary.
+- Phase 3 guide group-order persistence: local/QA repository version is implemented.
 - Product library: Phase 4 local/QA repository version is implemented.
 - Phase 5 customer ordering/payment workflow: local/QA repository version is implemented.
-- WeChat DevTools GUI validation: not run.
+- WeChat DevTools GUI validation: project opened by CLI; automation route smoke could not connect to `ws://127.0.0.1:9420`.
 
 ## Implemented Boundaries
 - Auth uses `services/auth/authService.js` and `services/auth/roleScope.js`.
-- Group order visibility uses `repositories/groupOrderRepository.js`.
+- Group orders use `services/groupOrder/groupOrderService.js` and `repositories/groupOrderRepository.js`.
+- Group order repository currently saves to local storage key `dao_you_ling_local_group_orders`; this is not cloud persistence.
 - Customer order visibility uses `repositories/customerOrderRepository.js`.
 - Product library uses `services/product/productService.js` and `repositories/productRepository.js`.
 - Product repository currently saves to local storage key `dao_you_ling_local_products`; this is not cloud persistence.
@@ -50,17 +51,17 @@ git diff --check
 - Formal OpenID exchange through WeChat cloud function.
 - Cloud `users`, `products`, `groupOrders`, `customerOrders`, and payment-related collections.
 - WeChat DevTools route smoke test.
+- WeChat DevTools automation connect: CLI `auto --auto-port 9420` reported success, but `miniprogram-automator.connect` failed against `ws://127.0.0.1:9420`, `ws://localhost:9420`, and `ws://[::1]:9420`.
+- 27-route static file existence check passed.
 - Product library GUI flow: create -> list refresh -> status toggle -> soft delete.
 - Phase 5 GUI flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
-- Guide full workflow persistence: group order -> product selection -> reopen.
+- Guide full GUI workflow: group order -> product selection -> reopen.
 - Formal cloud-backed customer order and payment confirmation workflow.
 
 ## Recommended Next Step
 Read `CURRENT_TASKS.md` first for the session entry steps, then use `MVP_COMPLETION_CHECKLIST.md` as the canonical backlog for partially completed and missing work.
 
-If continuing MVP implementation, the next product gap is Phase 3 guide group-order persistence. Do not infer a later phase from the roadmap. Wait for the user to specify one of:
-- Phase 3 guide group-order persistence.
+If continuing MVP validation, the next gap is Phase 7 GUI smoke test. Do not infer a later phase from the roadmap. Wait for the user to specify one of:
 - GUI smoke test.
 - Formal data-layer confirmation and cloud setup.
-- Phase 5 customer ordering/payment workflow.
 - UI cleanup / starter removal.

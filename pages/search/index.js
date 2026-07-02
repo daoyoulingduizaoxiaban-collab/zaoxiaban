@@ -2,8 +2,8 @@ import request from '~/api/request';
 
 Page({
   data: {
-    historyWords: [],
-    popularWords: [],
+    historyWords: ['华东五日团', '龙井茶叶', '未付款订单'],
+    popularWords: ['团单', '本团商品', '商品库', '客户订单', '收款状态'],
     searchValue: '',
     dialog: {
       title: '确认删除当前历史记录',
@@ -26,7 +26,7 @@ Page({
    * @returns {Promise<void>}
    */
   async queryHistory() {
-    request('/api/searchHistory').then((res) => {
+    return request('/api/searchHistory').then((res) => {
       const { code, data } = res;
 
       if (code === 200) {
@@ -35,7 +35,7 @@ Page({
           historyWords,
         });
       }
-    });
+    }).catch(() => {});
   },
 
   /**
@@ -43,7 +43,7 @@ Page({
    * @returns {Promise<void>}
    */
   async queryPopular() {
-    request('/api/searchPopular').then((res) => {
+    return request('/api/searchPopular').then((res) => {
       const { code, data } = res;
 
       if (code === 200) {
@@ -52,7 +52,7 @@ Page({
           popularWords,
         });
       }
-    });
+    }).catch(() => {});
   },
 
   setHistoryWords(searchValue) {
@@ -166,6 +166,7 @@ Page({
     if (value.length === 0) return;
 
     this.setHistoryWords(value);
+    wx.showToast({ title: '已记录搜索词，正式结果页待后续接入', icon: 'none' });
   },
 
   /**

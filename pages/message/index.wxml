@@ -1,25 +1,8 @@
-<wxs src="./index.wxs" module="utils" />
+<nav nav-type="title" title-text="消息" />
 
-<nav nav-type="title" title-text="全部消息"></nav>
-<scroll-view
-  class="message-list"
-  scroll-y
-  refresher-enabled
-  refresher-triggered="{{ loading }}"
-  bindrefresherrefresh="getMessageList"
->
-  <t-cell
-    wx:for="{{ messageList }}"
-    wx:key="index"
-    t-class-image="avatar"
-    t-class-description="content {{ utils.isRead(item.messages) ? '' : 'unread' }}"
-    image="{{ item.avatar }}"
-    title="{{ item.name }}"
-    description="{{ item.messages[item.messages.length - 1].content }}"
-    hover
-    bind:tap="toChat"
-    data-user-id="{{ item.userId }}"
-  >
-    <t-badge slot="right-icon" count="{{ utils.computeUnreadNum(item.messages) }}" class="wrapper" />
-  </t-cell>
-</scroll-view>
+<view class="message-list">
+  <t-cell-group theme="card">
+    <t-cell title="聊天能力暂未启用" description="MVP 当前以团单、商品库、客户订单和收款状态为主；聊天后续再接入。" />
+    <t-cell title="待处理客户订单" description="请到客户订单页查看付款声明、确认收款和取消订单。" arrow bind:tap="goCustomerOrders" />
+  </t-cell-group>
+</view>

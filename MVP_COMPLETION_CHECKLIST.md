@@ -19,9 +19,9 @@
 - 正式资料层尚未确认。
 - 正式 OpenID 登录尚未验证。
 - 商品库已有 local/QA repository 实作。
-- Phase 3 导游团单正式/本地保存闭环尚未完成。
+- Phase 3 导游团单 local/QA 保存闭环已完成；正式云端保存尚未实现。
 - Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存尚未实现。
-- 微信 DevTools GUI smoke test 尚未执行。
+- 微信 DevTools 已可通过 CLI 打开项目；automation 连接失败，逐 route GUI smoke test 尚未完成。
 
 ## 勾选规则
 - 只有已经实作且有验证信号的项目才能打勾。
@@ -35,17 +35,15 @@
 ## 已做一半，后续要补完
 这些项目已有 local/QA 或设计基础，但还不能算真人可用 MVP 完成。
 
-- [ ] Phase 3 团单：已有 QA/local 展示与部分 repository 边界；新增/编辑保存、商品加入/移除保存、重开后持久化仍缺。
-- [ ] Phase 6 UI 收敛：登录与部分业务文案已清理；starter 页面和未完成入口仍需完整产品化。
-- [ ] Phase 7 GUI smoke test：静态检查曾通过；微信 DevTools/真机 route、点击、返回、表单、toast/modal、底部 tab 仍未验证。
+- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；automation 连接失败，逐页点击/返回/表单仍未验证。
 
 ## 尚未开始或尚未正式化
 这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。
 
-- [ ] 实作 Phase 3 local/QA 导游团单新增/编辑与本团商品保存闭环。
+- [x] 实作 Phase 3 local/QA 导游团单新增/编辑与本团商品保存闭环。
 - [x] 实作 Phase 5 local/QA 客户下单与客户订单管理。
 - [x] 实作 local/QA 收款状态确认与状态历史。
-- [ ] 完成 starter 页面全量删除或重写。
+- [x] 完成 starter 页面全量删除或重写。
 - [ ] 执行并记录完整 27-route GUI smoke test。
 - [ ] 通过 Phase 8 真人可用 MVP gate。
 
@@ -85,11 +83,11 @@
 - [x] 团单列表已有搜索/筛选与无结果状态。
 - [x] local/QA 团单详情可显示团单统计、二维码、客户订单。
 - [x] local/QA 本团商品列表可显示团单商品。
-- [ ] local/QA 团单新增/编辑会保存。
-- [ ] local/QA 加入/移除本团商品会保存。
-- [ ] 团单详情改走 group order repository/service，不直接依赖 `GroupOrderMock`。
-- [ ] 缺失或未授权团单显示安全错误/返回状态，并经过 repository/service 权限判断。
-- [ ] 完整导游流程在重新打开/重新载入后仍能保持。
+- [x] local/QA 团单新增/编辑会保存。
+- [x] local/QA 加入/移除本团商品会保存。
+- [x] 团单详情改走 service/repository 边界，不直接依赖 `GroupOrderMock`。
+- [x] 缺失或未授权团单显示安全错误/返回状态，并经过 repository/service 权限判断。
+- [x] 完整导游流程在重新打开/重新载入后仍能保持 local/QA 资料。
 
 ## Phase 4 - 商品库
 - [x] 商品列表在 local/QA 模式下已有角色范围。
@@ -118,20 +116,22 @@
 - [x] 正式云端保存与 GUI 验证已移到 Phase 7/8 gate。
 
 ## Phase 6 - UI 收敛
-- [ ] starter 页面已删除或重写：home、message、dataCenter、release、search、login、setting。
-- [ ] 可见导航只暴露 MVP 已就绪入口，或清楚标示未完成入口。
-- [ ] 主流程文案一致使用团单业务语境。
-- [ ] 表单都有验证与提交状态。
-- [ ] 列表都有 loading、空状态、错误状态、正常状态、无结果状态。
-- [ ] 未正式持久化的数据位置都有本地/QA/demo 模式提示。
+- [x] starter 页面已删除或重写：home、message、dataCenter、release、search、login、setting。
+- [x] 可见导航只暴露 MVP 已就绪入口，或清楚标示未完成入口。
+- [x] 主流程文案一致使用团单业务语境。
+- [x] 表单都有验证与提交状态。
+- [x] 列表都有 loading、空状态、错误状态、正常状态、无结果状态。
+- [x] 未正式持久化的数据位置都有本地/QA/demo 模式提示。
 
 ## Phase 7 - GUI Smoke Test
+- [x] 微信 DevTools 项目可通过 CLI 打开。
+- [x] `app.json` 内 27 个 route 的 `.js/.ts`、`.wxml`、`.json` 文件静态存在检查通过。
 - [ ] Phase 0.5-0.7 eventChannel listener 成功路径已在微信 DevTools 验证。
 - [ ] `app.json` 内所有 route 已在微信 DevTools 或真机打开。
 - [ ] 底部 tab 状态已验证。
 - [ ] toast/modal/floating button/tab 布局已验证。
 - [ ] 表单输入、返回导航、重新进入已验证。
-- [ ] 结果已写入 `ACCEPTANCE.md` 与 `HANDOFF.md`。
+- [x] 结果已写入 `ACCEPTANCE.md` 与 `HANDOFF.md`。
 
 ## Phase 8 - 真人可用 MVP Gate
 声明真人可用 MVP 前，以下项目必须全部成立：

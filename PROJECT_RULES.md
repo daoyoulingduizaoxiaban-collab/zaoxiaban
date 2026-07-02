@@ -23,6 +23,7 @@ Do not rely on chat memory.
 - `config.js` has `isMock: true`, `baseUrl: ''`, and empty `cloudEnvId`.
 - Formal data layer is not confirmed.
 - Formal OpenID is not verified.
+- Group order persistence is local/QA only.
 - Product library persistence is local/QA only.
 - Phase 5 customer ordering/payment workflow is implemented only in local/QA repository mode.
 

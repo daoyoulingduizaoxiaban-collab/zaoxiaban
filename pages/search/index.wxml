@@ -8,7 +8,7 @@
       leftIcon="search"
       action="取消"
       shape="round"
-      placeholder="请搜索你想要的内容"
+      placeholder="搜索团单、商品或客户订单"
       bind:submit="handleSubmit"
       bind:action-click="actionHandle"
       focus
@@ -17,7 +17,7 @@
   <view class="search-wrap">
     <view class="history-wrap">
       <view class="search-header">
-        <text class="search-title">历史记录</text>
+        <text class="search-title">最近搜索</text>
         <t-icon name="delete" size="large" class="search-clear" bind:click="handleClearHistory" />
       </view>
       <view class="search-content">
@@ -36,7 +36,7 @@
     </view>
     <view class="popular-wrap">
       <view class="search-header">
-        <text class="search-title">搜索发现</text>
+        <text class="search-title">常用业务词</text>
       </view>
       <view class="search-content">
         <view

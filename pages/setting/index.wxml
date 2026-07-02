@@ -6,8 +6,9 @@
       wx:for-item="carditem"
       wx:key="cardkey"
       title="{{carditem.title}}"
+      note="{{carditem.note}}"
       hover
-      arrow
+      arrow="{{false}}"
       left-icon="app"
       url="{{carditem.url}}"
       bordered="true"
