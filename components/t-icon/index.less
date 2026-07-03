@@ -23,6 +23,71 @@
   color: currentColor;
 }
 
+.local-icon--home .local-icon__shape {
+  border: 2px solid currentColor;
+  border-radius: 4px 4px 6px 6px;
+  transform: translateY(12%);
+}
+
+.local-icon--home .local-icon__shape::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -18%;
+  width: 62%;
+  height: 62%;
+  border-left: 2px solid currentColor;
+  border-top: 2px solid currentColor;
+  border-radius: 2px 0 0 0;
+  background: transparent;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.local-icon--home .local-icon__shape::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 72%;
+  width: 24%;
+  height: 34%;
+  border: 2px solid currentColor;
+  border-bottom: 0;
+  border-radius: 3px 3px 0 0;
+  background: #fff;
+  transform: translate(-50%, -50%);
+}
+
+.local-icon--none .local-icon__shape,
+.local-icon--success .local-icon__shape {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+}
+
+.local-icon--none .local-icon__shape::before,
+.local-icon--success .local-icon__shape::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46%;
+  height: 2px;
+  border-radius: 99px;
+  background: currentColor;
+  transform: translate(-50%, -50%);
+}
+
+.local-icon--success .local-icon__shape::before {
+  left: 52%;
+  top: 48%;
+  width: 54%;
+  height: 32%;
+  border-left: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  border-radius: 0;
+  background: transparent;
+  transform: translate(-50%, -50%) rotate(-45deg);
+}
+
 .local-icon--add .local-icon__shape::before,
 .local-icon--add .local-icon__shape::after,
 .local-icon--action .local-icon__shape::before,
