@@ -680,6 +680,13 @@ const canEditDirectoryUser = (target, profile) => Boolean(
   )
 );
 
+const validateDirectoryUserPayload = (user) => {
+  if (!trimText(user.displayName || user.name)) return '请填写姓名';
+  const phone = trimText(user.phone);
+  if (phone && !/^1[3-9]\d{9}$/.test(phone)) return '请输入 11 位中国大陆手机号';
+  return '';
+};
+
 const userActions = {
   async listPending(payload, profile) {
     assertApprovedProfile(profile, ['owner', 'admin']);
@@ -740,6 +747,11 @@ const userActions = {
     if (!payload.id && !isOwnerOrAdmin(profile)) return failure('当前账号不能新增资料');
 
     const normalized = normalizeDirectoryUser(payload, target || {});
+    const validationError = validateDirectoryUserPayload(normalized);
+    if (validationError) return failure(validationError);
+    if (profile.role === 'admin' && normalized.role === 'owner') {
+      return failure('管理员不能指派 owner');
+    }
     if (!isOwnerOrAdmin(profile)) {
       normalized.role = target.role || profile.role;
       normalized.status = target.status || profile.status || 'active';
@@ -766,6 +778,12 @@ const normalizeProviderPayload = (payload, existing = {}) => ({
   createdAt: existing.createdAt || payload.createdAt || nowIso(),
   deletedAt: existing.deletedAt || '',
 });
+
+const validateProviderPayload = (provider) => {
+  if (!trimText(provider.title)) return '请填写供应商名称';
+  if (!trimText(provider.contact)) return '请填写供应商联系人';
+  return '';
+};
 
 const providerActions = {
   async listVisible(payload, profile) {
@@ -794,6 +812,8 @@ const providerActions = {
       return failure('当前账号没有供应商资料维护权限');
     }
     const normalized = normalizeProviderPayload(scopedPayload, target || {});
+    const validationError = validateProviderPayload(normalized);
+    if (validationError) return failure(validationError);
     if (target) {
       await getCollection('providers').doc(String(target._id || target.id)).update({ data: toUpdateData(normalized) });
       return success(toId({ ...normalized, _id: target._id || target.id }));
