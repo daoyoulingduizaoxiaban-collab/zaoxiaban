@@ -1,5 +1,6 @@
-import request from '~/api/request';
 import { areaList } from './areaData.js';
+import { AuthService } from '~/services/auth/authService';
+import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
   data: {
@@ -40,6 +41,7 @@ Page({
       width: 160,
       height: 160,
     },
+    isSubmitting: false,
   },
 
   onLoad() {
@@ -48,18 +50,19 @@ Page({
   },
 
   getPersonalInfo() {
-    request('/api/genPersonalInfo').then((res) => {
-      this.setData(
-        {
-          personInfo: res.data.data,
-        },
-        () => {
-          const { personInfo } = this.data;
-          this.setData({
-            addressText: `${areaList.provinces[personInfo.address[0]]} ${areaList.cities[personInfo.address[1]]}`,
-          });
-        },
-      );
+    const profile = AuthService.getCurrentProfile();
+    if (!profile) return;
+    const cityEntry = Object.entries(areaList.cities).find(([, label]) => label === profile.city);
+    const address = cityEntry ? [cityEntry[0].slice(0, 2).padEnd(6, '0'), cityEntry[0]] : [];
+    this.setData({
+      personInfo: {
+        ...this.data.personInfo,
+        name: profile.displayName || '',
+        address,
+        introduction: profile.introduction || '',
+        photos: profile.avatarUrl ? [{ url: profile.avatarUrl }] : [],
+      },
+      addressText: profile.city || '',
     });
   },
 
@@ -167,7 +170,32 @@ Page({
     });
   },
 
-  onSaveInfo() {
-    // console.log(this.data.personInfo);
+  async onSaveInfo() {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile) {
+      wx.showToast({ title: '请先登录', icon: 'none' });
+      return;
+    }
+    const { personInfo, addressText } = this.data;
+    const name = String(personInfo.name || '').trim();
+    if (!name) {
+      wx.showToast({ title: '请填写用户名', icon: 'none' });
+      return;
+    }
+    this.setData({ isSubmitting: true });
+    const res = await DirectoryRepository.saveUser({
+      id: profile.id,
+      name,
+      displayName: name,
+      city: addressText,
+      introduction: String(personInfo.introduction || '').trim(),
+      avatarUrl: personInfo.photos && personInfo.photos[0] ? (personInfo.photos[0].url || personInfo.photos[0].path || '') : '',
+    });
+    this.setData({ isSubmitting: false });
+    if (!res.success) {
+      wx.showToast({ title: res.error || '保存个人信息失败', icon: 'none' });
+      return;
+    }
+    wx.showToast({ title: '个人信息已保存', icon: 'success' });
   },
 });

@@ -44,7 +44,7 @@
 </view>
 
 <view class="info-edit__save">
-  <t-button bind:tap="onSaveInfo" block size="medium" theme="primary">保存</t-button>
+  <t-button bind:tap="onSaveInfo" block size="medium" theme="primary" loading="{{isSubmitting}}" disabled="{{isSubmitting}}">保存</t-button>
 </view>
 
 <t-date-time-picker
