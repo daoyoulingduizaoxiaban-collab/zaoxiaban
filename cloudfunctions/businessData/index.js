@@ -22,6 +22,8 @@ const PRODUCT_STATUS = {
   PUBLISHED: 2,
 };
 
+const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
+
 const GROUP_ORDER_STATUS = {
   OPEN: 1,
   STOPPED: 2,
@@ -210,6 +212,9 @@ const validateProductPayload = (product) => {
   if (!trimText(product.title)) return '请输入商品名称';
   if (!trimText(product.description)) return '请输入商品描述';
   if (!trimText(product.sourceNote)) return '请输入供应来源或备注';
+  if ([product.title, product.description, product.sourceNote].some(value => INTERNAL_PRODUCT_COPY_RE.test(String(value || '')))) {
+    return '商品资料不能包含内部测试文字';
+  }
   if (!Array.isArray(product.pictureUrls) || product.pictureUrls.length === 0) return '请至少上传一张商品图片';
   if (!Array.isArray(product.priceSetting) || product.priceSetting.length === 0) return '请至少设置一组价格';
   const invalidRule = product.priceSetting.find(rule => Number(rule.minQuantity) <= 0 || Number(rule.unitPrice) <= 0);

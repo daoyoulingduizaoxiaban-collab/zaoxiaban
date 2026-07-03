@@ -199,7 +199,6 @@ Page({
       currentStatus
     } = this.data;
 
-    // 呼叫 Mock API，同時傳入兩個條件
     const res = await GroupOrderService.listVisible({
       keyword: searchKeyword,
       status: currentStatus
