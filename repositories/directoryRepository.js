@@ -1,7 +1,13 @@
 import { QaSeedMock } from '~/mock/qaSeed';
 import { callBusinessData, getSaveModeText, isCloudBusinessEnabled } from './cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, REVIEW_STATUS, isOwnerOrAdmin, normalizeReviewStatus } from '~/services/auth/roleScope';
+import {
+  AUTH_ROLES,
+  REVIEW_STATUS,
+  canUseProviderPortal,
+  isOwnerOrAdmin,
+  normalizeReviewStatus,
+} from '~/services/auth/roleScope';
 
 const USERS_STORAGE_KEY = 'dao_you_ling_local_users';
 const PROVIDERS_STORAGE_KEY = 'dao_you_ling_local_providers';
@@ -262,7 +268,7 @@ export const DirectoryRepository = {
 
   async listProviders() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.PROVIDER)) return { success: false, error: '当前账号没有供应商资料管理权限' };
+    if (!canUseProviderPortal(profile)) return { success: false, error: '当前账号没有供应商资料管理权限' };
     const cloudRes = await callCloud('providers', 'listVisible', {});
     if (cloudRes) return cloudRes;
     const providers = getLocalProviders().map(normalizeProvider);
@@ -277,7 +283,7 @@ export const DirectoryRepository = {
 
   async getProviderById(id) {
     const profile = AuthService.getCurrentProfile();
-    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.PROVIDER)) return { success: false, error: '当前账号没有供应商资料查看权限' };
+    if (!canUseProviderPortal(profile)) return { success: false, error: '当前账号没有供应商资料查看权限' };
     const cloudRes = await callCloud('providers', 'getById', { id });
     if (cloudRes) return cloudRes;
     const provider = getLocalProviders().map(normalizeProvider).find(item => sameId(item.id, id));
@@ -291,7 +297,7 @@ export const DirectoryRepository = {
 
   async saveProvider(payload = {}) {
     const profile = AuthService.getCurrentProfile();
-    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.PROVIDER)) return { success: false, error: '当前账号没有供应商资料维护权限' };
+    if (!canUseProviderPortal(profile)) return { success: false, error: '当前账号没有供应商资料维护权限' };
     const scopedPayload = isOwnerOrAdmin(profile)
       ? payload
       : { ...payload, id: payload.id || profile.providerId || profile.id };

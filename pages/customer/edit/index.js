@@ -43,10 +43,16 @@ Page({
       && profile.role === AUTH_ROLES.CUSTOMER
     );
     if (!canSave) {
+      let disabledReason = '请先登录后维护客户资料';
+      if (profile && profile.role === AUTH_ROLES.CUSTOMER) {
+        disabledReason = AuthService.getAccessStateText(profile);
+      } else if (profile) {
+        disabledReason = '当前账号不是客户身份，不能维护客户资料。';
+      }
       this.setData({
         canSave: false,
         isLoggedIn: Boolean(profile),
-        disabledReason: profile ? '当前账号不是客户身份，不能维护客户资料。' : '请先登录后维护客户资料',
+        disabledReason,
         pageErrorText: '',
         formData: this.getEmptyFormData(),
       });
