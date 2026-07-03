@@ -40,6 +40,30 @@ Page({
     },
   },
 
+  getEmptyActionForm() {
+    return {
+      paymentMethod: '',
+      paymentRemark: '',
+      paymentProofUrls: [],
+      confirmedAmount: '',
+      confirmRemark: '',
+      cancelRemark: '',
+    };
+  },
+
+  resetActionState(extraState = {}) {
+    this.setData({
+      actionPanelVisible: false,
+      actionType: '',
+      actionOrderId: '',
+      actionPanelTitle: '',
+      actionSubmitText: '提交',
+      isSubmittingAction: false,
+      actionForm: this.getEmptyActionForm(),
+      ...extraState,
+    });
+  },
+
   onLoad(options = {}) {
     const pendingOrderId = options.orderId || options.id || '';
     this.setData({ pendingOrderId: pendingOrderId ? String(pendingOrderId) : '' });
@@ -60,7 +84,7 @@ Page({
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
-      this.setData({
+      this.resetActionState({
         customerOrdersList: [],
         allCustomerOrdersList: [],
         roleScopeText: accessText,
@@ -71,6 +95,7 @@ Page({
         accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
+        pendingOrderId: '',
       });
       return;
     }
@@ -80,7 +105,7 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载客户订单失败';
       wx.showToast({ title: errorText, icon: 'none' });
-      this.setData({
+      this.resetActionState({
         customerOrdersList: [],
         allCustomerOrdersList: [],
         roleScopeText: errorText,
@@ -244,25 +269,13 @@ Page({
       actionPanelTitle: config.title,
       actionSubmitText: config.submitText,
       isSubmittingAction: false,
-      actionForm: {
-        paymentMethod: '',
-        paymentRemark: '',
-        paymentProofUrls: [],
-        confirmedAmount: '',
-        confirmRemark: '',
-        cancelRemark: '',
-      },
+      actionForm: this.getEmptyActionForm(),
     });
   },
 
   closeActionPanel() {
     if (this.data.isSubmittingAction) return;
-    this.setData({
-      actionPanelVisible: false,
-      actionType: '',
-      actionOrderId: '',
-      actionPanelTitle: '',
-    });
+    this.resetActionState();
   },
 
   stopPanelTap() {},
@@ -443,13 +456,7 @@ Page({
     }
 
     await this.loadQaOrders();
-    this.setData({
-      actionPanelVisible: false,
-      actionType: '',
-      actionOrderId: '',
-      actionPanelTitle: '',
-      isSubmittingAction: false,
-    });
+    this.resetActionState();
     wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
   },
 

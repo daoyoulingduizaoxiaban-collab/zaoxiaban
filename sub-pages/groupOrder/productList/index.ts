@@ -49,6 +49,15 @@ Page({
     this.loadGroupProducts();
   },
 
+  resetDetailState(extraState = {}) {
+    this.setData({
+      detailVisible: false,
+      selectedProduct: null,
+      selectedPriceRules: [],
+      ...extraState,
+    });
+  },
+
   consumePickerFallbackResult() {
     let result = null;
     try {
@@ -83,11 +92,12 @@ Page({
   async loadGroupProducts() {
     const { groupOrderId } = this.data;
     if (!groupOrderId) {
-      this.setData({
+      this.resetDetailState({
         isLoading: false,
         pageErrorText: '缺少团单 ID，请返回团单详情重新进入。',
         rawList: [],
         displayList: [],
+        pendingProductId: '',
       });
       return;
     }
@@ -96,7 +106,14 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载本团商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
-      this.setData({ rawList: [], displayList: [], isLoading: false, pageErrorText: errorText, canManageGroupOrder: false });
+      this.resetDetailState({
+        rawList: [],
+        displayList: [],
+        isLoading: false,
+        pageErrorText: errorText,
+        canManageGroupOrder: false,
+        pendingProductId: '',
+      });
       return;
     }
     const canManageGroupOrder = this.canManageGroupOrder(res.data);
@@ -190,11 +207,7 @@ Page({
   },
 
   closeProductDetail() {
-    this.setData({
-      detailVisible: false,
-      selectedProduct: null,
-      selectedPriceRules: [],
-    });
+    this.resetDetailState();
   },
 
   noop() {},
@@ -256,7 +269,10 @@ Page({
       return;
     }
     if (!this.data.groupOrderId) {
-      this.setData({ pageErrorText: '缺少团单 ID，请返回团单详情重新进入。' });
+      this.resetDetailState({
+        pageErrorText: '缺少团单 ID，请返回团单详情重新进入。',
+        pendingProductId: '',
+      });
       return;
     }
 

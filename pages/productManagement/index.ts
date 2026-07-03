@@ -43,10 +43,19 @@ Page({
     this.fetchData();
   },
 
+  resetDetailState(extraState = {}) {
+    this.setData({
+      detailVisible: false,
+      selectedProduct: null,
+      selectedPriceRules: [],
+      ...extraState,
+    });
+  },
+
   async fetchData() {
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) {
-      this.setData({
+      this.resetDetailState({
         allProducts: [],
         productList: [],
         roleScopeText: AuthService.getAccessStateText(profile),
@@ -70,7 +79,7 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
-      this.setData({
+      this.resetDetailState({
         allProducts: [],
         productList: [],
         roleScopeText: errorText,
@@ -187,7 +196,7 @@ Page({
   },
 
   closeDetail() {
-    this.setData({ selectedProduct: null, selectedPriceRules: [], detailVisible: false });
+    this.resetDetailState();
   },
 
   stopDetailTap() {},

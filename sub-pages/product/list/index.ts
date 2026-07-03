@@ -28,6 +28,15 @@ Page({
     this.loadProducts();
   },
 
+  resetDetailState(extraState = {}) {
+    this.setData({
+      detailVisible: false,
+      selectedProduct: null,
+      selectedPriceRules: [],
+      ...extraState,
+    });
+  },
+
   async loadProducts() {
     const profile = AuthService.getCurrentProfile();
     const canUseBusiness = AuthService.canUseBusiness(profile);
@@ -39,7 +48,13 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
-      this.setData({ isLoading: false, pageErrorText: errorText, allProducts: [], filteredList: [] });
+      this.resetDetailState({
+        isLoading: false,
+        pageErrorText: errorText,
+        allProducts: [],
+        filteredList: [],
+        pendingProductId: '',
+      });
       return;
     }
     const products = this.normalizeProducts(res.data);
@@ -164,11 +179,7 @@ Page({
   },
 
   closeDetail() {
-    this.setData({
-      selectedProduct: null,
-      selectedPriceRules: [],
-      detailVisible: false,
-    });
+    this.resetDetailState();
   },
 
   noop() {},
