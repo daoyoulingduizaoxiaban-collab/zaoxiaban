@@ -127,19 +127,21 @@ Page({
 
   addPriceRule() {
     const { minQuantity, unitPrice, description } = this.data.tempPriceSetting;
+    const normalizedMinQuantity = Number(minQuantity);
+    const normalizedUnitPrice = Number(unitPrice);
 
-    if (!minQuantity || minQuantity < 1) {
+    if (!normalizedMinQuantity || normalizedMinQuantity < 1) {
       return wx.showToast({ title: '起订量需大于 0', icon: 'none' });
     }
-    if (!unitPrice || unitPrice < 0) {
+    if (!normalizedUnitPrice || normalizedUnitPrice <= 0) {
       return wx.showToast({ title: '请输入有效单价', icon: 'none' });
     }
 
     const newRule = {
-      minQuantity: parseInt(minQuantity),
-      unitPrice: parseFloat(unitPrice),
+      minQuantity: normalizedMinQuantity,
+      unitPrice: normalizedUnitPrice,
       description: description || '',
-      totalPrice: parseInt(minQuantity) * parseFloat(unitPrice)
+      totalPrice: normalizedMinQuantity * normalizedUnitPrice
     };
 
     const updatedPriceSettings = [...this.data.currentProduct.priceSetting, newRule];
@@ -163,8 +165,8 @@ Page({
 
   removePriceRule(e) {
     const index = e.currentTarget.dataset.index;
-    const settings = this.data.currentProduct.priceSetting;
-    settings.splice(index, 1);
+    const settings = [...this.data.currentProduct.priceSetting];
+    settings.splice(Number(index), 1);
     this.setData({ 'currentProduct.priceSetting': settings });
   },
 
