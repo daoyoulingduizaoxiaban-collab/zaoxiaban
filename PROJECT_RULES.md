@@ -9,9 +9,9 @@
 6. `DATA_MODEL_AND_PERMISSIONS.md`
 7. `QA/QA_SEED_REQUIREMENTS.md`
 
-`HANDOFF.md` is the only session entry point. After reading it, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for QA problem reports, retest notes, evidence, and pass/fail status.
+`HANDOFF.md` is the only session entry point. After reading it, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for current not-pass problem rows. The BUG report is not a history log and must not store proof-shortage wording.
 
-QA and AGENT must not create extra planning, handoff, result, matrix, or progress documents unless the user explicitly asks. QA reports only in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA retest.
+QA and AGENT must not create extra planning, handoff, result, matrix, or progress documents unless the user explicitly asks. QA reports only current `不通過` rows in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA verification.
 
 Do not rely on chat memory.
 
@@ -65,4 +65,6 @@ npm run lint
 git diff --check
 ```
 
-GUI validation must only be claimed after actual WeChat DevTools or device testing.
+Validation method depends on the runner. CLI agents may use CLI, scripts, automation, static checks, and available DevTools automation. Codex App agents, when they are performing user-facing QA or claiming UI/product behavior, must actually operate the mini program through the WeChat DevTools interface or a real device. Static checks, route existence, screenshots alone, automation connection state, or written claims are not enough for Codex App to mark any UI/product row `通過`.
+
+Never write `GUI 證據不足`, `缺少 GUI 證據`, `待複測`, `未驗證`, `blocked`, `partial`, or equivalent proof-shortage wording in the BUG report. A row is either `通過` and removed from the current BUG report, or it remains `不通過` with a concrete fixable problem.

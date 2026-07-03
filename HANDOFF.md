@@ -6,16 +6,16 @@
 - Current branch observed: `codex`
 - Dirty status expected: dirty as of 2026-07-02; do not overwrite existing QA screenshots, bug report edits, or `pages/dataCenter` edits unless they are in scope.
 - Start here: `HANDOFF.md`. This file is the only session entry point.
-- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for QA problem reports, retest notes, evidence, and pass/fail status. Never copy BUG row lists into the MVP checklist.
-- QA/AGENT output rule: QA must not create extra plan/result/handoff/progress documents; QA reports only in the BUG report. AGENT must not create extra docs; AGENT fixes product code, runs validation, and hands the fix back for QA retest.
+- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog reference. Use `QA/QA_BUG_REPORT_202607021815.md` only for current `不通過` problem rows. Never copy BUG row lists into the MVP checklist.
+- QA/AGENT output rule: QA must not create extra plan/result/handoff/progress documents; QA reports only current not-pass rows in the BUG report. AGENT must not create extra docs; AGENT fixes product code, runs validation, and hands the fix back for QA verification.
 - Environment rule: do not ask QA or the user to perform environment setup/cleanup as part of normal flow. The normal loop is fix, validate, QA retest in the BUG report.
-- Latest detailed retest attempt: pre-flight completed, but DevTools automation websocket was not connectable; future retest notes should be written directly in `QA/QA_BUG_REPORT_202607021815.md`.
-- Done definition: code fixed + validation run + QA retest reflected in the BUG report. If still not pass, fix and test again.
+- Reporting language rule: never write `GUI 證據不足`, `缺少 GUI 證據`, `待複測`, `未驗證`, `blocked`, `partial`, or equivalent proof-shortage wording. Test result language is only `通過` or `不通過`.
+- Done definition: code fixed + validation run + valid verification for the runner. Codex App agents claiming UI/product behavior must operate the WeChat DevTools interface or a real device; CLI agents may use CLI/scripts/automation when that is the available runner. If still not pass, fix and test again.
 
 ## Current Source Of Truth
 - Session entry point: `HANDOFF.md`.
 - MVP gate reference: `MVP_COMPLETION_CHECKLIST.md`. It tracks MVP gate categories and product completion judgment, but QA/AGENT are not required to update it during normal fix/retest cycles.
-- BUG report / retest ledger: `QA/QA_BUG_REPORT_202607021815.md`. Use it as the only QA reporting surface for atomic issue evidence, retest notes, and pass/fail status. Do not create separate QA plan/result/handoff/progress files.
+- Current BUG list: `QA/QA_BUG_REPORT_202607021815.md`. Use it only for atomic current `不通過` problem rows. Do not create separate QA plan/result/handoff/progress files.
 - Product rules: `PROJECT_RULES.md`.
 - MVP roadmap, open items, and missing backlog: `MVP_COMPLETION_CHECKLIST.md`.
 - Acceptance status: `ACCEPTANCE.md`.
@@ -34,7 +34,7 @@
 - Phase 3 guide group-order persistence: cloud repository plus local/QA fallback is implemented.
 - Product library: Phase 4 cloud repository plus local/QA fallback is implemented.
 - Phase 5 customer ordering/payment workflow: cloud repository plus local/QA fallback is implemented.
-- WeChat DevTools GUI validation: targeted automation flow passed; full 27-route GUI smoke is still not done.
+- WeChat DevTools validation: targeted automation flow passed; full 27-route behavior verification is still not done.
 
 ## Implemented Boundaries
 - Auth uses `services/auth/authService.js` and `services/auth/roleScope.js`.
@@ -60,15 +60,15 @@
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
 - Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
-- QA and development responsibilities must stay separate. QA reports issues and retest status only in the BUG report; AGENT/development fixes product code and validates the fix. There is no separate QA environment lifecycle in the normal flow.
-- QA must retest a named commit or clear handoff point, record the tested commit in the BUG report, and avoid judging uncommitted development-agent work. If the tested commit is missing, no row may be marked `通過`.
-- QA preserves evidence paths in the BUG report. Escalate to the user only for true-device help, credentials, deploy/production-data risk, destructive cleanup of unresolved evidence, or product acceptance decisions.
+- QA and development responsibilities must stay separate. QA reports current not-pass issues only in the BUG report; AGENT/development fixes product code and validates the fix. There is no separate QA environment lifecycle in the normal flow.
+- QA must verify a named commit or clear handoff point before marking anything `通過`. Codex App QA must use the WeChat DevTools interface or a real device for UI/product behavior; CLI QA may use CLI/scripts/automation when that is the available runner. If the tested commit is missing, no row may be marked `通過`.
+- Escalate to the user only for true-device help, credentials, deploy/production-data risk, destructive cleanup of unresolved project files, or product acceptance decisions.
 - Before any context-compression handoff, do not create or update separate QA handoff files. Keep the current state in this `HANDOFF.md` only when explicitly asked; otherwise QA state belongs in the BUG report.
-- BUG report status rule: only `通過` and `不通過` are allowed. If one original BUG has both verified and GUI/device-not-yet-verified parts, split it into multiple rows instead of using an in-between status. If a BUG row is too broad to verify in one pass, QA must split it instead of creating `partial fix` wording.
+- BUG report status rule: only `通過` and `不通過` are allowed. If one row is too broad to verify in one pass, QA must split it into concrete fixable rows instead of creating any in-between status wording.
 - Do not treat `不通過` rows as handoff completion. If the issue can be improved through code, data flow, UI, copy, route entry, or test automation, continue fixing instead of merely documenting it.
-- QA retest evidence must stay traceable: tie each focused GUI/QA evidence set to a specific FLOW/PAGE/BUG row, update that row before claiming it passed, and avoid broad all-in-one pass claims unless explicitly requested.
+- For Codex App QA, a UI/product row can pass only after the relevant flow was actually clicked and operated in the WeChat DevTools interface or a real device. CLI agents are allowed to use CLI/scripts/automation, but static checks, route existence, screenshots alone, automation connection state, or written claims are not enough by themselves for user-facing behavior.
 - This is not a development limit. Code fixes may batch related bugs when they share a module, data path, UI surface, or risk area; after fixing, run validation and hand back to QA so QA can map retest results back to each affected BUG row.
-- QA screenshots must target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never save evidence that captures unrelated desktop/private work.
+- If screenshots are used for visual review, target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never capture unrelated desktop/private work.
 
 ## Validation Commands
 ```bash
@@ -78,27 +78,27 @@ git diff --check
 ```
 
 ## Known Not-Pass Items
-- Full 27-route GUI smoke test.
-- Product image upload through actual `wx.chooseMedia` GUI picker after the cloud upload code path.
+- Full 27-route behavior verification.
+- Product image upload through actual `wx.chooseMedia` picker after the cloud upload code path.
 - Cloud database console security rules were not separately configured by CLI; permission checks are enforced in `businessData`, and pages do not directly access cloud DB.
-- WeChat DevTools route smoke test.
-- WeChat DevTools automation connect now works against `ws://127.0.0.1:9420` for targeted login verification; full route smoke is still not done.
-- WeChat DevTools `auto-replay --replay-all` completed, but did not produce route-by-route GUI evidence.
+- WeChat DevTools route verification.
+- WeChat DevTools automation connect now works against `ws://127.0.0.1:9420` for targeted login verification; full route behavior verification is still not done.
+- WeChat DevTools `auto-replay --replay-all` completed, but does not by itself replace complete route-by-route behavior verification.
 - 27-route static file existence check passed.
-- Product library GUI flow: create -> list refresh -> status toggle -> soft delete.
-- Phase 5 GUI flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
-- Guide full GUI workflow: group order -> product selection -> reopen.
+- Product library flow: create -> list refresh -> status toggle -> soft delete.
+- Phase 5 flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
+- Guide full workflow: group order -> product selection -> reopen.
 - Owner/admin allowlist values are not configured.
 - Formal guide/customer OpenID isolation remains separate from QA/mock role isolation. The user approved using fake customer IDs for QA/mock isolation, but QA must not report that as formal OpenID verification.
 - QA-only identity switch now exists in `AuthService.applyQaOverride()` and the `pages/my` QA Seed panel. It is limited to `config.isMock`, marks sessions with `qaOverride: true`, and must not be reported as formal WeChat OpenID permission evidence.
 - The QA-only identity switch covers `guide`, `customer`, `owner`, `admin`, and `provider`. For this MVP gate, `guide` and `customer` are the required pass/fail roles; `owner`, `admin`, and `provider` are only for checking restricted/read-only/not-open/allowlist boundary states, not for declaring formal backend capability.
-- DevTools automation should connect to an existing session first. If the session is unreachable or stuck, restart is allowed, but record the reason in QA evidence/logs.
+- DevTools automation should connect to an existing session first. If the session is unreachable or stuck, restart is allowed, but the final status still must be `通過` or `不通過`; do not write proof-shortage wording into the BUG report.
 - "Real image" testing means selecting an image through `wx.chooseMedia`; seed image URLs or hard-coded HTTPS URLs are not enough to verify BUG-002.
-- 2026-07-02 22:43 CST: Existing DevTools process was present. `miniprogram-automator.connect` returned 不通過 on `9420`, `19512`, and `3799`; CLI `auto --port 13521 --auto-port 9420` completed, but connects still returned 不通過 on `9420`, `13521`, and discovered WeChat/DevTools listening ports. No GUI pass evidence was generated in that attempt.
+- 2026-07-02 22:43 CST: Existing DevTools process was present. `miniprogram-automator.connect` returned 不通過 on `9420`, `19512`, and `3799`; CLI `auto --port 13521 --auto-port 9420` completed, but connects still returned 不通過 on `9420`, `13521`, and discovered WeChat/DevTools listening ports. The result stays `不通過`.
 - 2026-07-02 23:11 CST: QA retried CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project`; CLI completed, but websocket probes still returned 不通過 on `9420`, `52632`, `63842`, `40725`, `21511`, `29848`, `32123`, and `13521`.
-- 2026-07-02 23:16 CST: QA captured one valid DevTools window screenshot at `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`. It only verifies product library main page visibility; tab switching and deeper workflows were not reliable through Computer Use.
-- 2026-07-02 23:39 CST: QA captured one valid DevTools window screenshot at `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`. It verifies the My page QA Seed role panel is visible and lists `owner/admin/guide/customer/provider`.
-- QA-only role/openId switch implementation is present and the panel is GUI-visible, but actual customer click-through and guide/customer order isolation are not yet verified because stale DevTools webview clicks returned to product library. Use the `pages/my` QA Seed panel for manual validation when the UI surface is stable.
+- 2026-07-02 23:16 CST: Product library main page was visible in the WeChat DevTools window, but tab switching and deeper workflows were not completed, so affected rows remain `不通過`.
+- 2026-07-02 23:39 CST: My page QA Seed role panel was visible and listed `owner/admin/guide/customer/provider`.
+- QA-only role/openId switch implementation is present. Codex App QA must operate customer click-through and guide/customer order isolation through the WeChat DevTools interface or a real device before marking related rows `通過`; CLI QA may use CLI/scripts/automation if that is the available runner.
 
 ## Phase 8 Auth Verification
 - Cloud environment list returned `cloud1-3gwlqssy1f1972a9`.
