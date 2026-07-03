@@ -2,7 +2,7 @@
   "usingComponents": {
     "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "t-cell": "tdesign-miniprogram/cell/cell",
-    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-icon": "/components/t-icon/index",
     "nav": "/components/nav/index",
     "t-fab": "tdesign-miniprogram/fab/fab",
     "t-search": "tdesign-miniprogram/search/search",

@@ -2,6 +2,6 @@
   "navigationStyle": "custom",
   "usingComponents": {
     "sub-nav": "/components/sub-nav/index",
-    "t-icon": "tdesign-miniprogram/icon/icon"
+    "t-icon": "/components/t-icon/index"
   }
 }

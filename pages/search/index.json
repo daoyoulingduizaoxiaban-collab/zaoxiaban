@@ -3,7 +3,7 @@
   "usingComponents": {
     "t-navbar": "tdesign-miniprogram/navbar/navbar",
     "t-search": "tdesign-miniprogram/search/search",
-    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-icon": "/components/t-icon/index",
     "t-dialog": "tdesign-miniprogram/dialog/dialog",
     "t-tag": "tdesign-miniprogram/tag/tag",
     "t-check-tag": "tdesign-miniprogram/check-tag/check-tag"

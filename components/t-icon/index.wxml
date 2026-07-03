@@ -1,0 +1,10 @@
+<view
+  class="local-icon local-icon--{{name}} t-class"
+  style="{{iconStyle}}"
+  bindtap="onTap"
+  aria-hidden="{{ariaHidden}}"
+  aria-label="{{ariaLabel}}"
+  aria-role="{{ariaRole}}"
+>
+  <view class="local-icon__shape"></view>
+</view>

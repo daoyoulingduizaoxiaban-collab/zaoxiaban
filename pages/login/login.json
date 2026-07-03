@@ -3,7 +3,7 @@
   "usingComponents": {
     "t-navbar": "tdesign-miniprogram/navbar/navbar",
     "t-input": "tdesign-miniprogram/input/input",
-    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-icon": "/components/t-icon/index",
     "t-link": "tdesign-miniprogram/link/link",
     "t-button": "tdesign-miniprogram/button/button",
     "t-radio-group": "tdesign-miniprogram/radio-group/radio-group",

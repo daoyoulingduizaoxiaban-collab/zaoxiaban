@@ -5,7 +5,7 @@
     "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "t-avatar": "tdesign-miniprogram/avatar/avatar",
     "t-divider": "tdesign-miniprogram/divider/divider",
-    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-icon": "/components/t-icon/index",
     "t-image": "tdesign-miniprogram/image/image",
     "t-navbar": "tdesign-miniprogram/navbar/navbar",
     "t-grid": "tdesign-miniprogram/grid/grid",
