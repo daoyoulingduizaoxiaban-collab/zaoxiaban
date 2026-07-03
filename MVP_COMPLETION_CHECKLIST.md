@@ -105,7 +105,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
   - 矩阵来源：角色功能规则参考既有 `ROLE_FEATURE_ACCESS_MATRIX.md`，不要新增第二份矩阵。若矩阵不足，更新既有矩阵或在程式修正说明中指出缺口；QA 验收仍回到 `QA/QA_BUG_REPORT_202607021815.md`，不要产生新的进度文件。
   - AGENT 修正规则：AGENT 直接依既有角色矩阵、本文 gate 与 BUG 单修正代码。若发现角色入口规则缺失，优先补既有矩阵或在修正说明中指出，不另开新文件，除非使用者明确要求。
   - 必盘点角色：未登录/游客、`guide`、`customer`、`owner`、`admin`、`provider`、QA override 下的各角色、正式 OpenID 下的各角色、owner/admin/provider 白名单命中与未命中状态。不能只测 guide/customer 后宣称全角色完成。
-  - 必盘点范围：`app.json` 内全部 28 个 route、全部 tabBar/custom-tab-bar 入口、首页快捷入口、My 服务列表与 QA 工具、登录/设置入口、商品库新增/编辑/上下架/删除、团单新增/编辑/本团商品/客户入口/复制分享/导出、客户订单下单/声明付款/确认收款/取消/付款历史/凭证、资料中心、消息、聊天、发布、搜索、导游资料、客户资料、供应商资料、profile/tourGuide/provider 编辑页，以及所有列表项按钮、详情页按钮、空状态 CTA、分享路径、扫码/复制入口、返回后的 fallback 导航。
+  - 必盘点范围：`app.json` 内全部 29 个 route、全部 tabBar/custom-tab-bar 入口、首页快捷入口、My 服务列表与 QA 工具、登录/设置入口、商品库新增/编辑/上下架/删除、团单新增/编辑/本团商品/客户入口/复制分享/导出、客户订单下单/声明付款/确认收款/取消/付款历史/凭证、资料中心、消息、聊天、发布、搜索、导游资料、客户资料、供应商资料、profile/tourGuide/provider 编辑页，以及所有列表项按钮、详情页按钮、空状态 CTA、分享路径、扫码/复制入口、返回后的 fallback 导航。
   - 可见规则：当前角色不能使用、不能保存、不能查看、未正式开放、仅 QA/开发用途、或需要白名单但当前用户未获授权的功能，正式用户界面必须隐藏入口。若业务上允许某角色只读，矩阵必须明确标成「可见但只读」，且页面不得显示任何写入、保存、确认、取消、导出、分享、编辑或管理按钮。
   - 直达 route 规则：用户通过 URL、分享路径、扫码、历史页面、fallback 导航或手动参数直达无权页面时，不能露出无权功能入口或内部开发说明；必须显示正式产品语言的安全空状态、返回上一页、或导向该角色可用页面，并保留可追溯错误处理。
   - 权限防线规则：前端隐藏只解决入口外露，不代表权限完成。service、repository、cloud function、云数据库访问边界必须继续做角色/owner/admin 白名单/订单归属/团单归属校验；AGENT 不得因为前端隐藏而移除或放宽后端权限判断。
@@ -219,7 +219,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 
 ## Phase 7 - GUI Smoke Test
 - [x] 微信 DevTools 项目可通过 CLI 打开。
-- [x] `app.json` 内 28 个 route 的 `.js/.ts`、`.wxml`、`.json` 文件静态存在检查通过。
+- [x] `app.json` 内 29 个 route 的 `.js/.ts`、`.wxml`、`.json` 文件静态存在检查通过。
 - [x] 微信 DevTools `auto-replay --replay-all` 命令可完成。
 - [x] 2026-07-02 细测 pre-flight 与 DevTools automation blocker 已有历史记录；后续 QA 结果统一写入 BUG 单。
 - [x] 商品库主页面已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`。
