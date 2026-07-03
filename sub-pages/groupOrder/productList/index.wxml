@@ -38,7 +38,7 @@
           </view>
         </view>
 
-        <view class="p-action" catchtap="onDelete" data-index="{{index}}" data-id="{{item.id}}">
+        <view wx:if="{{canManageGroupOrder}}" class="p-action" catchtap="onDelete" data-index="{{index}}" data-id="{{item.id}}">
           <view class="btn-delete-icon">
             <t-icon name="delete" size="36rpx" color="#ff4d4f" />
           </view>
@@ -57,7 +57,7 @@
     <view class="list-spacer"></view>
   </scroll-view>
 
-  <view wx:if="{{!pageErrorText}}" class="footer-bar">
+  <view wx:if="{{!pageErrorText && canManageGroupOrder}}" class="footer-bar">
     <button class="btn-add-new" bindtap="goToLibrary" disabled="{{isLoading}}">
       <text class="plus">+</text> 从商品库加入
     </button>

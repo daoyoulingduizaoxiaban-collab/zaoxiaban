@@ -1,6 +1,8 @@
 import { Product } from "~/models/Product";
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
 const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
@@ -17,6 +19,7 @@ Page({
     skipNextReload: false,
     pageErrorText: '',
     isLoading: true,
+    canManageGroupOrder: false,
   },
 
   onLoad(options) {
@@ -55,7 +58,18 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载本团商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
-      this.setData({ rawList: [], displayList: [], isLoading: false, pageErrorText: errorText });
+      this.setData({ rawList: [], displayList: [], isLoading: false, pageErrorText: errorText, canManageGroupOrder: false });
+      return;
+    }
+    if (!this.canManageGroupOrder(res.data)) {
+      const errorText = '当前账号不能管理本团商品';
+      this.setData({
+        rawList: [],
+        displayList: [],
+        isLoading: false,
+        pageErrorText: errorText,
+        canManageGroupOrder: false,
+      });
       return;
     }
     const groupProducts = this.normalizeProducts(res.data.productList || []);
@@ -64,6 +78,7 @@ Page({
       rawList: groupProducts,
       isLoading: false,
       pageErrorText: '',
+      canManageGroupOrder: true,
       displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
   },
@@ -169,6 +184,10 @@ Page({
   },
 
   onDelete(e) {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能移除本团商品', icon: 'none' });
+      return;
+    }
     const { id } = e.currentTarget.dataset;
 
     wx.showModal({
@@ -196,6 +215,10 @@ Page({
   },
 
   goToLibrary() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能管理本团商品', icon: 'none' });
+      return;
+    }
     if (!this.data.groupOrderId) {
       this.setData({ pageErrorText: '缺少团单 ID，请返回团单详情重新进入。' });
       return;
@@ -240,5 +263,20 @@ Page({
         }
       }
     );
+  },
+
+  canManageGroupOrder(groupOrder) {
+    const profile = AuthService.getCurrentProfile();
+    if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE)) return false;
+    if (isOwnerOrAdmin(profile)) return true;
+    if (!profile || profile.role !== 'guide' || !groupOrder) return false;
+
+    const sameId = (a, b) => String(a) === String(b);
+    const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
+    const authorizedGuideOpenIds = groupOrder.authorizedGuideOpenIds || [];
+    return sameId(groupOrder.guideUserId, profile.id)
+      || sameId(groupOrder.guideOpenId, profile.openId)
+      || authorizedGuideIds.some(id => sameId(id, profile.id))
+      || authorizedGuideOpenIds.some(openId => sameId(openId, profile.openId));
   }
 });
