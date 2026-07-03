@@ -54,7 +54,7 @@ Page({
 
   goLogin() {
     wx.navigateTo({
-      url: '/pages/login/login',
+      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/home/index')}`,
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },

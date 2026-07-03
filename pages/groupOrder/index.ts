@@ -123,7 +123,7 @@ Page({
 
   onLogin() {
     wx.navigateTo({
-      url: '/pages/login/login',
+      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/groupOrder/index')}`,
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },

@@ -222,7 +222,7 @@ Page({
     if (this.data.isNavigatingLogin) return;
     this.setData({ isNavigatingLogin: true });
     wx.navigateTo({
-      url: '/pages/login/login',
+      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/my/index')}`,
       complete: () => {
         setTimeout(() => this.setData({ isNavigatingLogin: false }), 600);
       },

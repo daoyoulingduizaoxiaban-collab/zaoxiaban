@@ -19,7 +19,7 @@ Page({
     if (!this.data.canCreateGroupOrder) {
       if (!AuthService.getCurrentProfile()) {
         wx.navigateTo({
-          url: '/pages/login/login',
+          url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/release/index')}`,
           fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
         });
         return;
