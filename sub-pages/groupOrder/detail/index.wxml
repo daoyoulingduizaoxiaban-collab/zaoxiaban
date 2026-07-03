@@ -23,8 +23,9 @@
     <t-input label="联系人" value="{{ groupOrder.contactName || '未填写' }}" />
     <t-input label="联系电话" value="{{ groupOrder.contactPhone || '未填写' }}" />
     <view class="qr-container" bindtap="previewQR">
-      <image class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
+      <image wx:if="{{groupOrder.qrCodeUrl}}" class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
         show-menu-by-longpress />
+      <view wx:else class="qr-image qr-image--empty">暂无团单二维码</view>
       <view class="qr-label">点一下放大，长按分享</view>
     </view>
     <view class="share-entry" wx:if="{{canManageGroupOrder}}">

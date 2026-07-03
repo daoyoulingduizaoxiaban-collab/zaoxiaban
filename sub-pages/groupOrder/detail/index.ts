@@ -241,7 +241,7 @@ Page({
     }
 
     this.setData({
-      'groupOrder.qrCodeUrl': '/static/logo/zaoxiaban.png'
+      'groupOrder.qrCodeUrl': ''
     });
 
     wx.showToast({
