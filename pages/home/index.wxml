@@ -49,7 +49,7 @@
       </view>
     </view>
 
-    <view class="qa-tip">
+    <view class="status-note">
       {{modeText}}
     </view>
   </view>

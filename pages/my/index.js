@@ -16,6 +16,9 @@ Page({
     accessStateText: '请先登录后继续使用',
     isNavigatingLogin: false,
     canUseBusiness: false,
+    canShowPreviewNotice: false,
+    canShowDeviceOnlyNotice: false,
+    canShowRolePreviewNotice: false,
     gridList: [
       {
         name: '工作台',
@@ -57,6 +60,9 @@ Page({
       accessState: AuthService.getAccessState(profile),
       accessStateText: AuthService.getAccessStateText(profile),
       canUseBusiness,
+      canShowPreviewNotice: AuthService.canShowQaTools(profile, session),
+      canShowDeviceOnlyNotice: AuthService.canShowQaTools(profile, session) && session && session.isMockOpenId && !session.qaOverride,
+      canShowRolePreviewNotice: AuthService.canShowQaTools(profile, session) && session && session.qaOverride,
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
       gridList: this.buildGridList(profile),

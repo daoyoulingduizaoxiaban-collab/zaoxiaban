@@ -24,10 +24,10 @@
         </view>
       </view>
     </t-cell-group>
-    <view class="auth-warning" wx:if="{{authSession.isMockOpenId && !authSession.qaOverride}}">
+    <view class="auth-warning" wx:if="{{canShowDeviceOnlyNotice}}">
       当前为演示身份，资料仅保留在当前设备。
     </view>
-    <view class="auth-warning auth-warning--qa" wx:if="{{authSession.qaOverride}}">
+    <view class="auth-warning auth-warning--preview" wx:if="{{canShowRolePreviewNotice}}">
       当前为演示身份切换，仅用于预览角色可见范围。
     </view>
     <view class="access-card" wx:if="{{isLoggedIn && !canUseBusiness}}">
