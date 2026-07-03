@@ -29,11 +29,9 @@
           <text class="p-title">{{item.title}}</text>
           <view class="p-price-row">
             <text class="p-description">{{item.description}}</text>
-            <!-- <text class="p-sold">已售 {{item.soldCount || 0}}</text> -->
           </view>
           <view class="p-price-row">
           <text class="p-price">{{item.priceDisplay}}</text>
-            <!-- <text class="p-sold">已售 {{item.soldCount || 0}}</text> -->
           </view>
         </view>
 

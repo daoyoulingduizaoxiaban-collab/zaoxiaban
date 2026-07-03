@@ -6,8 +6,8 @@ Page({
   data: {
     groupOrderId: '',
     searchQuery: '',
-    rawList: [] as Product[],    // 原始完整列表
-    displayList: [] as Product[], // 搜尋過濾後的列表
+    rawList: [] as Product[],
+    displayList: [] as Product[],
     detailVisible: false,
     selectedProduct: null,
     selectedPriceRules: [],
@@ -33,11 +33,9 @@ Page({
       return;
     }
 
-    // 每次頁面顯示時重新抓取資料 (確保從選品頁回來後資料是最新的)
     this.loadGroupProducts();
   },
 
-  // 1. 載入本團商品
   async loadGroupProducts() {
     const { groupOrderId } = this.data;
     if (!groupOrderId) {
@@ -63,7 +61,6 @@ Page({
       rawList: groupProducts,
       isLoading: false,
       pageErrorText: '',
-      // 如果目前有搜尋關鍵字，則保留過濾狀態，否則顯示全部
       displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
   },
@@ -87,7 +84,6 @@ Page({
     });
   },
 
-  // 2. 搜尋輸入處理
   onSearchInput(e) {
     const query = e.detail.value;
     this.setData({
@@ -112,7 +108,6 @@ Page({
     );
   },
 
-  // 3. 跳轉到商品詳情
   goToDetail(e) {
     const id = e.currentTarget.dataset.id;
     const product = this.data.rawList.find(item => String(item.id) === String(id));
@@ -164,7 +159,6 @@ Page({
     });
   },
 
-  // 4. 刪除商品
   onDelete(e) {
     const { id } = e.currentTarget.dataset;
 
@@ -192,7 +186,6 @@ Page({
     });
   },
 
-  // 5. 跳轉到「商品庫選擇頁」
   goToLibrary() {
     if (!this.data.groupOrderId) {
       this.setData({ pageErrorText: '缺少团单 ID，请返回团单详情重新进入。' });
@@ -231,7 +224,7 @@ Page({
           skipNextReload: false
         });
         wx.showToast({
-          title: '跳轉商品庫失敗',
+          title: '打开商品库失败',
           icon: 'none'
         });
       }
