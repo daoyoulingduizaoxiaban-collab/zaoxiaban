@@ -59,10 +59,11 @@ export const ProductService = {
     };
   },
 
-  validateProduct(product) {
+  validateProduct(product, { requireImage = false } = {}) {
     if (!String(product.title || '').trim()) return '请输入商品名称';
     if (!String(product.description || '').trim()) return '请输入商品描述';
     if (!String(product.sourceNote || '').trim()) return '请输入供应来源或备注';
+    if (requireImage && (!Array.isArray(product.pictureUrls) || product.pictureUrls.length === 0)) return '请至少上传一张商品图片';
     if (!Array.isArray(product.priceSetting) || product.priceSetting.length === 0) return '请至少设置一组价格';
     const invalidRule = product.priceSetting.find(rule => Number(rule.minQuantity) <= 0 || Number(rule.unitPrice) <= 0);
     if (invalidRule) return '价格规则需包含有效起订量和单价';
@@ -90,10 +91,11 @@ export const ProductService = {
     };
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
-    if (AuthService.isFormalSession(profile, session) && hasInternalProductCopy(normalizedProduct)) {
+    const isFormalSession = AuthService.isFormalSession(profile, session);
+    if (isFormalSession && hasInternalProductCopy(normalizedProduct)) {
       return { success: false, error: '商品资料不能包含内部测试文字' };
     }
-    const error = this.validateProduct(normalizedProduct);
+    const error = this.validateProduct(normalizedProduct, { requireImage: isFormalSession });
     if (error) return { success: false, error };
 
     const result = await ProductRepository.create(normalizedProduct);
@@ -125,10 +127,11 @@ export const ProductService = {
     };
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
-    if (AuthService.isFormalSession(profile, session) && hasInternalProductCopy(normalizedProduct)) {
+    const isFormalSession = AuthService.isFormalSession(profile, session);
+    if (isFormalSession && hasInternalProductCopy(normalizedProduct)) {
       return { success: false, error: '商品资料不能包含内部测试文字' };
     }
-    const error = this.validateProduct(normalizedProduct);
+    const error = this.validateProduct(normalizedProduct, { requireImage: isFormalSession });
     if (error) return { success: false, error };
 
     const result = await ProductRepository.update(normalizedProduct);

@@ -206,6 +206,17 @@ const normalizeProductPayload = (payload, profile, existing = {}) => ({
   deletedAt: existing.deletedAt || '',
 });
 
+const validateProductPayload = (product) => {
+  if (!trimText(product.title)) return '请输入商品名称';
+  if (!trimText(product.description)) return '请输入商品描述';
+  if (!trimText(product.sourceNote)) return '请输入供应来源或备注';
+  if (!Array.isArray(product.pictureUrls) || product.pictureUrls.length === 0) return '请至少上传一张商品图片';
+  if (!Array.isArray(product.priceSetting) || product.priceSetting.length === 0) return '请至少设置一组价格';
+  const invalidRule = product.priceSetting.find(rule => Number(rule.minQuantity) <= 0 || Number(rule.unitPrice) <= 0);
+  if (invalidRule) return '价格规则需包含有效起订量和单价';
+  return '';
+};
+
 const productActions = {
   async listVisible({ keyword = '', status = 0 }, profile) {
     assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
@@ -227,6 +238,8 @@ const productActions = {
       createdAt,
       updatedAt: createdAt,
     }, profile);
+    const validationError = validateProductPayload(product);
+    if (validationError) return failure(validationError);
     const result = await getCollection('products').add({ data: product });
     return success(toId({ ...product, _id: result._id }));
   },
@@ -255,6 +268,8 @@ const productActions = {
       id: product.id || product._id,
       updatedAt,
     }, profile, product);
+    const validationError = validateProductPayload(updateData);
+    if (validationError) return failure(validationError);
     await getCollection('products').doc(String(product._id || product.id)).update({ data: toUpdateData(updateData) });
     return success(toId({ ...product, ...updateData }));
   },

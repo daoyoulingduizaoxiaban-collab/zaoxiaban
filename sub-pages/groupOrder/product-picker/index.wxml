@@ -19,7 +19,7 @@
           <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
         </view>
 
-        <image class="p-img" src="{{item.pictureUrls[0] || ''}}" mode="aspectFill"></image>
+        <image class="p-img" src="{{item.pictureUrls[0] || '/static/icon_map.png'}}" mode="aspectFill"></image>
 
         <view class="p-info">
           <text class="p-title">{{item.title}}</text>
