@@ -63,14 +63,14 @@ export const redirectByUrl = (url, options = {}) => {
   });
 };
 
-export const navigateBackOrTab = (fallbackUrl = '/pages/groupOrder/index') => {
+export const navigateBackOrTab = (fallbackUrl = DEFAULT_TAB_URL) => {
   const pages = getCurrentPages();
   if (pages.length > 1) {
     wx.navigateBack({
       delta: 1,
-      fail: () => wx.switchTab({ url: normalizeRouteUrl(fallbackUrl, '/pages/groupOrder/index') }),
+      fail: () => wx.switchTab({ url: normalizeRouteUrl(fallbackUrl, DEFAULT_TAB_URL) }),
     });
     return;
   }
-  wx.switchTab({ url: normalizeRouteUrl(fallbackUrl, '/pages/groupOrder/index') });
+  wx.switchTab({ url: normalizeRouteUrl(fallbackUrl, DEFAULT_TAB_URL) });
 };
