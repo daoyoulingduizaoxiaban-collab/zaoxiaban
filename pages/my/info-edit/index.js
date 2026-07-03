@@ -17,6 +17,7 @@ Page({
   data: {
     personInfo: {
       name: '',
+      phone: '',
       gender: 0,
       birth: '',
       address: [],
@@ -82,6 +83,7 @@ Page({
       personInfo: {
         ...this.data.personInfo,
         name: profile.displayName || '',
+        phone: profile.phone || '',
         gender: Number(profile.gender || 0),
         birth: profile.birth || '',
         address,
@@ -168,6 +170,10 @@ Page({
     this.personInfoFieldChange('gender', e);
   },
 
+  onPhoneChange(e) {
+    this.personInfoFieldChange('phone', e);
+  },
+
   onIntroductionChange(e) {
     this.personInfoFieldChange('introduction', e);
   },
@@ -208,6 +214,11 @@ Page({
       wx.showToast({ title: '请填写用户名', icon: 'none' });
       return;
     }
+    const phone = String(personInfo.phone || '').trim();
+    if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+      wx.showToast({ title: '请输入 11 位中国大陆手机号', icon: 'none' });
+      return;
+    }
     if (personInfo.birth && personInfo.birth > this.data.birthEnd) {
       wx.showToast({ title: '生日不能晚于今天', icon: 'none' });
       return;
@@ -227,6 +238,7 @@ Page({
       id: profile.id,
       name,
       displayName: name,
+      phone,
       gender: Number(personInfo.gender || 0),
       birth: personInfo.birth || '',
       city: addressText,

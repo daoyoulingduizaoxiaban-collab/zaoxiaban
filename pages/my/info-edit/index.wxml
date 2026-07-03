@@ -9,6 +9,9 @@
   <t-cell class="info-edit__cell" title="用户名">
     <t-input bind:change="onNameChange" borderless placeholder="请输入用户名" slot="note" value="{{personInfo.name}}" />
   </t-cell>
+  <t-cell class="info-edit__cell" title="手机号">
+    <t-input bind:change="onPhoneChange" borderless placeholder="请输入 11 位手机号" slot="note" value="{{personInfo.phone}}" />
+  </t-cell>
   <t-cell class="info-edit__cell" title="性别">
     <t-radio-group
       bind:change="onGenderChange"
