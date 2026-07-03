@@ -6,6 +6,7 @@ import {
   canUseAdminPortal,
   canUseFeature,
   canUseProviderPortal,
+  hasRole,
 } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
@@ -20,6 +21,7 @@ Page({
     authSession: {},
     accessState: 'logged_out',
     accessStateText: '请先登录后继续使用',
+    accessStateDesc: '管理员确认身份后，会开放与你角色对应的正式功能。',
     isNavigatingLogin: false,
     canUseBusiness: false,
     canShowPreviewNotice: false,
@@ -66,6 +68,7 @@ Page({
       isLoggedIn: Boolean(profile),
       accessState: AuthService.getAccessState(profile),
       accessStateText: AuthService.getAccessStateText(profile),
+      accessStateDesc: this.getAccessStateDesc(AuthService.getAccessState(profile)),
       canUseBusiness,
       canShowPreviewNotice: AuthService.canShowQaTools(profile, session),
       canShowDeviceOnlyNotice: AuthService.canShowQaTools(profile, session) && session && session.isMockOpenId && !session.qaOverride,
@@ -168,7 +171,7 @@ Page({
       { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index', feature: FEATURE_KEYS.PROFILE },
       { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index', feature: FEATURE_KEYS.INFO_EDIT },
       { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index', feature: FEATURE_KEYS.USER_REVIEW },
-      { name: '导游/领队资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
+      { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
       { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index', feature: FEATURE_KEYS.PROVIDERS },
     ];
 
@@ -179,7 +182,7 @@ Page({
       }
     });
 
-    if (profile && profile.role === AUTH_ROLES.CUSTOMER) {
+    if (profile && hasRole(profile, AUTH_ROLES.CUSTOMER)) {
       list.push({
         name: '客户资料',
         icon: 'user',
@@ -187,7 +190,7 @@ Page({
         url: '/pages/customer/edit/index',
       });
       list.push({
-        name: '申请导游/领队',
+        name: '申请团主',
         icon: 'usergroup',
         type: 'tourGuideApply',
         url: '/pages/tourGuides/edit/index',
@@ -212,6 +215,17 @@ Page({
       image: profile.avatarUrl || '/static/avatar1.png',
       authSourceText,
     };
+  },
+
+  getAccessStateDesc(accessState) {
+    const descMap = {
+      pending_review: '管理员确认身份后，会开放与你角色对应的正式功能。',
+      rejected: '当前账号未获准使用系统，请联系管理员确认原因。',
+      disabled: '当前账号已被停用，如需恢复请联系管理员。',
+      expired: '当前账号的角色使用期限已过，请联系管理员续期后再使用。',
+      logged_out: '请先完成微信登录。',
+    };
+    return descMap[accessState] || descMap.pending_review;
   },
 
   onLoginTouchEnd() {

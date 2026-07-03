@@ -1,7 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
-import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
 import { consumeTabRouteQuery, navigateByUrl, parseRouteQuery } from '~/utils/navigation';
 
@@ -9,7 +9,7 @@ const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
   .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
 const ROLE_TEXT = {
   customer: '客户',
-  guide: '导游/领队',
+  guide: '团主',
   owner: '产品拥有者',
   admin: '运营管理员',
   provider: '供应商',
@@ -61,8 +61,8 @@ Page({
   },
 
   getAvailableOrderActions(order, profile = AuthService.getCurrentProfile()) {
-    const isCustomer = profile && profile.role === 'customer';
-    const isGuideOrAdmin = profile && ['guide', 'owner', 'admin'].includes(profile.role);
+    const isCustomer = profile && hasRole(profile, 'customer');
+    const isGuideOrAdmin = profile && (hasRole(profile, 'guide') || isOwnerOrAdmin(profile));
     const status = Number(order && order.status);
     const actions = [];
 
@@ -451,7 +451,7 @@ Page({
         data: {
           confirmedAmount,
           confirmRemark,
-          note: `导游确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
+          note: `团主确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
         },
       };
     }

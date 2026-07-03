@@ -46,6 +46,20 @@ const normalizeRequestedRole = role => (
 );
 
 const normalizeReviewStatus = status => (status === ACTIVE_STATUS ? REVIEW_STATUS.APPROVED : (status || REVIEW_STATUS.PENDING));
+const normalizeRoles = (roles, fallbackRole = '') => {
+  const rawRoles = Array.isArray(roles) ? [...roles, fallbackRole] : [fallbackRole];
+  return [...new Set(rawRoles.filter(role => [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER, ROLE_OWNER, ROLE_ADMIN].includes(role)))];
+};
+const buildRoleLabel = (role) => {
+  const labels = {
+    [ROLE_OWNER]: '产品拥有者',
+    [ROLE_ADMIN]: '运营管理员',
+    [ROLE_GUIDE]: '团主',
+    [ROLE_CUSTOMER]: '客户',
+    [ROLE_PROVIDER]: '供应商',
+  };
+  return labels[role] || role;
+};
 
 const getSystemReviewer = bootstrapRole => (bootstrapRole ? 'system-bootstrap-owner' : 'system-allowlist');
 const getSystemReviewRemark = bootstrapRole => (bootstrapRole ? '首位管理者初始化' : '管理员白名单账号');
@@ -70,7 +84,10 @@ const buildDefaultProfile = (openId, unionId, requestedRole, bootstrapRole = '')
     openId,
     unionId: unionId || '',
     role: normalizedRole,
+    roles: [normalizedRole],
     requestedRole: privilegedRole ? normalizedRole : normalizeRequestedRole(requestedRole),
+    roleExpiresAt: '',
+    rolesExpireAt: '',
     displayName: '微信用户',
     phone: '',
     avatarUrl: '',
@@ -94,13 +111,17 @@ const toClientProfile = doc => ({
   openId: doc.openId,
   unionId: doc.unionId || '',
   role: doc.role || ROLE_GUIDE,
+  roles: normalizeRoles(doc.roles, doc.role || ROLE_GUIDE),
   requestedRole: doc.requestedRole || '',
+  roleLabel: normalizeRoles(doc.roles, doc.role || ROLE_GUIDE).map(buildRoleLabel).join('、'),
   displayName: doc.displayName || '微信用户',
   phone: doc.phone || '',
   avatarUrl: doc.avatarUrl || '',
   providerId: doc.providerId || '',
   status: normalizeReviewStatus(doc.reviewStatus || doc.status || REVIEW_STATUS.PENDING),
   reviewStatus: normalizeReviewStatus(doc.reviewStatus || doc.status || REVIEW_STATUS.PENDING),
+  roleExpiresAt: doc.roleExpiresAt || doc.rolesExpireAt || '',
+  rolesExpireAt: doc.rolesExpireAt || doc.roleExpiresAt || '',
   reviewedBy: doc.reviewedBy || '',
   reviewedAt: doc.reviewedAt || '',
   reviewRemark: doc.reviewRemark || '',
@@ -130,10 +151,12 @@ exports.main = async (event = {}) => {
     const bootstrapRole = allowlistRole ? '' : await getBootstrapRole();
     const privilegedRole = allowlistRole || bootstrapRole;
     const currentRole = profile.role || normalizeRequestedRole(event.requestedRole);
+    const currentRoles = normalizeRoles(profile.roles, currentRole);
     const currentReviewStatus = normalizeReviewStatus(profile.reviewStatus || profile.status || REVIEW_STATUS.PENDING);
     const canUpdateRequestedRole = currentReviewStatus === REVIEW_STATUS.PENDING
       && [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER].includes(currentRole);
     const nextRole = privilegedRole || currentRole;
+    const nextRoles = privilegedRole ? normalizeRoles([privilegedRole], nextRole) : currentRoles;
     let nextRequestedRole = profile.requestedRole || currentRole;
     if (privilegedRole) {
       nextRequestedRole = profile.requestedRole || nextRole;
@@ -143,6 +166,7 @@ exports.main = async (event = {}) => {
     const updateData = {
       unionId: profile.unionId || unionId,
       role: nextRole,
+      roles: nextRoles,
       requestedRole: nextRequestedRole,
       status: privilegedRole ? REVIEW_STATUS.APPROVED : currentReviewStatus,
       reviewStatus: privilegedRole ? REVIEW_STATUS.APPROVED : currentReviewStatus,

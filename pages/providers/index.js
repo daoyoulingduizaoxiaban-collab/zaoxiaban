@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, canUseProviderPortal, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { AUTH_ROLES, canUseProviderPortal, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateByUrl } from '~/utils/navigation';
 
@@ -36,7 +36,7 @@ Page({
     const res = await DirectoryRepository.listProviders();
     const providers = res.success ? res.data : [];
     const canCreateProvider = isOwnerOrAdmin(profile);
-    const canEditOwnProvider = profile && profile.role === AUTH_ROLES.PROVIDER;
+    const canEditOwnProvider = profile && hasRole(profile, AUTH_ROLES.PROVIDER);
     this.setData({
       providersList: providers.map(provider => ({
         ...provider,

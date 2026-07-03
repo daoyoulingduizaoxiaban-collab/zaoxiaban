@@ -1,8 +1,6 @@
-<t-navbar
-  title="{{ title }}"
-  left-arrow
-  bind:go-back="onBack"
-  fixed
-  placeholder
-  t-class="custom-sub-nav"
-/>
+<view class="sub-nav" style="height: {{navHeight}}px; padding-top: {{statusHeight}}px;">
+  <button class="sub-nav__back" bindtap="onBack">返回</button>
+  <view class="sub-nav__title">{{title}}</view>
+  <view class="sub-nav__side"></view>
+</view>
+<view class="sub-nav__placeholder" style="height: {{navHeight}}px;"></view>

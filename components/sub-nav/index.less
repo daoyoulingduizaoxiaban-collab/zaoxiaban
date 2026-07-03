@@ -1,41 +1,46 @@
-@import '/variable.less';
-
-.home-navbar {
-  .t-navbar {
-    &__left {
-      margin-left: 12rpx;
-    }
-  }
-
-  &__icon {
-    padding: 12rpx;
-  }
-
-  &__left {
-    display: flex;
-    align-items: center;
-    padding: 0 16rpx;
-
-    .t-search {
-      --td-search-height: 64rpx;
-      --td-search-font-size: @font-size-mini;
-      width: 375rpx;
-
-      .t-icon {
-        font-size: @font-size-default !important;
-      }
-    }
-  }
-  --td-drawer-title-font-size: 48rpx;
-}
-
-.navbar-left-content {
+.sub-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 500;
   display: flex;
   align-items: center;
-  padding-left: 32rpx;
+  justify-content: space-between;
+  padding: 0 24rpx;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-bottom: 1rpx solid #e8edf3;
 }
-.logo {
-  width: 60rpx;
-  height: 60rpx;
-  margin-right: 16rpx;
+
+.sub-nav__back,
+.sub-nav__side {
+  width: 112rpx;
+}
+
+.sub-nav__back {
+  height: 64rpx;
+  margin: 0;
+  padding: 0;
+  color: #0052d9;
+  font-size: 28rpx;
+  line-height: 64rpx;
+  text-align: left;
+  background: transparent;
+}
+
+.sub-nav__back::after {
+  border: 0;
+}
+
+.sub-nav__title {
+  flex: 1;
+  overflow: hidden;
+  color: #1f2d3d;
+  font-size: 32rpx;
+  font-weight: 600;
+  line-height: 44rpx;
+  text-align: center;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }

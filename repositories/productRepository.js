@@ -2,7 +2,7 @@ import { Product } from '~/models/Product';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole, hasRole } from '~/services/auth/roleScope';
 import {
   callBusinessData,
   callPublicBusinessData,
@@ -132,7 +132,7 @@ export const ProductRepository = {
       ...productData,
       id: Date.now(),
       ownerUserId: productData.ownerUserId || profile.id,
-      providerId: productData.providerId || (profile.role === 'provider' ? (profile.providerId || profile.id) : ''),
+      providerId: productData.providerId || (hasRole(profile, 'provider') ? (profile.providerId || profile.id) : ''),
       status: Number(productData.status || ProductStatus.PUBLISHED),
       createdAt,
       updatedAt: createdAt,
@@ -205,7 +205,7 @@ export const ProductRepository = {
         ...productData,
         id: product.id,
         ownerUserId: product.ownerUserId,
-        providerId: product.providerId || productData.providerId || (profile.role === 'provider' ? (profile.providerId || profile.id) : ''),
+        providerId: product.providerId || productData.providerId || (hasRole(profile, 'provider') ? (profile.providerId || profile.id) : ''),
         status: Number(productData.status || product.status || ProductStatus.PUBLISHED),
         updatedAt,
       });

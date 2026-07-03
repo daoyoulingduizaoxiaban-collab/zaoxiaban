@@ -356,7 +356,7 @@ Page({
     const res = await CustomerOrderService.confirmPayment(this.data.selectedMemberOrderId, {
       confirmedAmount,
       confirmRemark,
-      note: `导游确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
+      note: `团主确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
     });
     wx.hideLoading();
     this.setData({

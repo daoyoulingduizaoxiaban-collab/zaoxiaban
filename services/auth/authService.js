@@ -1,5 +1,14 @@
 import config from '~/config';
-import { getRoleLabel, MVP_ROLE_OPTIONS, AUTH_ROLES, REVIEW_STATUS, isApprovedProfile, normalizeReviewStatus } from './roleScope';
+import {
+  getRoleLabel,
+  MVP_ROLE_OPTIONS,
+  AUTH_ROLES,
+  REVIEW_STATUS,
+  isApprovedProfile,
+  isRoleExpired,
+  normalizeReviewStatus,
+  normalizeRoles,
+} from './roleScope';
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
@@ -136,18 +145,25 @@ const ALL_QA_ROLE_OPTIONS = Object.freeze(Object.values(AUTH_ROLES).map(role => 
 
 const normalizeRole = role => (Object.values(AUTH_ROLES).includes(role) ? role : AUTH_ROLES.GUIDE);
 
+const buildRoleLabelText = roles => normalizeRoles(roles)
+  .map(role => getRoleLabel(role))
+  .join('、');
+
 const normalizeCloudProfile = (data, requestedRole) => {
   const role = data.role || requestedRole || AUTH_ROLES.GUIDE;
   const defaults = DEFAULT_ROLE_PROFILES[role] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.GUIDE];
   const profile = data.profile || {};
+  const roles = normalizeRoles(profile.roles || data.roles || [], role);
+  const roleLabel = buildRoleLabelText(roles) || getRoleLabel(role);
 
   return {
     id: profile.id || data.id || defaults.id,
     openId: data.openId,
     unionId: data.unionId || '',
     role,
+    roles,
     requestedRole: profile.requestedRole || data.requestedRole || role,
-    roleLabel: getRoleLabel(role),
+    roleLabel,
     displayName: profile.displayName || defaults.displayName,
     phone: profile.phone || '',
     avatarUrl: profile.avatarUrl || '/static/avatar1.png',
@@ -155,6 +171,8 @@ const normalizeCloudProfile = (data, requestedRole) => {
     providerId: profile.providerId || defaults.providerId || '',
     status: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
     reviewStatus: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
+    roleExpiresAt: profile.roleExpiresAt || data.roleExpiresAt || '',
+    rolesExpireAt: profile.rolesExpireAt || data.rolesExpireAt || profile.roleExpiresAt || data.roleExpiresAt || '',
     reviewRemark: profile.reviewRemark || data.reviewRemark || '',
     authSource: 'wechat-cloud',
     isMockOpenId: false,
@@ -170,6 +188,7 @@ const normalizeMockProfile = (role, overrides = {}) => {
     openId: overrides.openId || buildMockOpenId(normalizedRole),
     unionId: '',
     role: normalizedRole,
+    roles: [normalizedRole],
     roleLabel: getRoleLabel(normalizedRole),
     displayName: defaults.displayName,
     phone: defaults.phone,
@@ -224,6 +243,7 @@ export const AuthService = {
     if (!profile) return 'logged_out';
     if (profile.isMockOpenId || profile.qaOverride) return 'approved';
     const status = normalizeReviewStatus(profile.reviewStatus || profile.status);
+    if (status === REVIEW_STATUS.APPROVED && isRoleExpired(profile)) return 'expired';
     if (status === REVIEW_STATUS.APPROVED) return 'approved';
     if (status === REVIEW_STATUS.REJECTED) return 'rejected';
     if (status === REVIEW_STATUS.DISABLED) return 'disabled';
@@ -241,6 +261,7 @@ export const AuthService = {
       pending_review: '已提交使用申请，等待管理员确认身份',
       rejected: '当前账号暂不能使用，请联系管理员',
       disabled: '当前账号已停用，请联系管理员',
+      expired: '账号使用期限已过，请联系管理员',
       approved: '账号已通过审核',
     };
     return textMap[state] || textMap.logged_out;
@@ -292,6 +313,7 @@ export const AuthService = {
     const session = {
       openId: profile.openId,
       role: profile.role,
+      roles: profile.roles || [profile.role],
       authSource: profile.authSource,
       isMockOpenId: profile.isMockOpenId,
       cloudOpenIdVerified: authStatus.cloudOpenIdVerified,
@@ -299,6 +321,7 @@ export const AuthService = {
       wxLoginCodeAvailable: authStatus.wxLoginCodeAvailable,
       fallbackReason: authStatus.fallbackReason,
       reviewStatus: profile.reviewStatus || profile.status || '',
+      roleExpiresAt: profile.roleExpiresAt || '',
       updatedAt: nowIso(),
     };
 
@@ -341,6 +364,7 @@ export const AuthService = {
       ...currentSession,
       openId: profile.openId,
       role: profile.role,
+      roles: profile.roles || [profile.role],
       authSource: profile.authSource,
       isMockOpenId: false,
       cloudOpenIdVerified: true,
@@ -348,6 +372,7 @@ export const AuthService = {
       wxLoginCodeAvailable: true,
       fallbackReason: '',
       reviewStatus: profile.reviewStatus || profile.status || '',
+      roleExpiresAt: profile.roleExpiresAt || '',
       updatedAt: nowIso(),
     };
     safeSetStorage(AUTH_PROFILE_KEY, profile);
@@ -372,6 +397,7 @@ export const AuthService = {
     const session = {
       openId: profile.openId,
       role: profile.role,
+      roles: profile.roles || [profile.role],
       authSource: 'qa-role-override',
       isMockOpenId: true,
       qaOverride: true,
@@ -401,7 +427,10 @@ export const AuthService = {
       ...currentProfile,
       ...profilePatch,
       role: profilePatch.role || currentProfile.role,
-      roleLabel: profilePatch.roleLabel || getRoleLabel(profilePatch.role || currentProfile.role),
+      roles: normalizeRoles(profilePatch.roles || currentProfile.roles, profilePatch.role || currentProfile.role),
+      roleLabel: profilePatch.roleLabel || buildRoleLabelText(profilePatch.roles || currentProfile.roles || [profilePatch.role || currentProfile.role]) || getRoleLabel(profilePatch.role || currentProfile.role),
+      roleExpiresAt: profilePatch.roleExpiresAt || currentProfile.roleExpiresAt || '',
+      rolesExpireAt: profilePatch.rolesExpireAt || profilePatch.roleExpiresAt || currentProfile.rolesExpireAt || currentProfile.roleExpiresAt || '',
       reviewStatus: normalizeReviewStatus(profilePatch.reviewStatus || profilePatch.status || currentProfile.reviewStatus || currentProfile.status),
       status: normalizeReviewStatus(profilePatch.reviewStatus || profilePatch.status || currentProfile.reviewStatus || currentProfile.status),
     });

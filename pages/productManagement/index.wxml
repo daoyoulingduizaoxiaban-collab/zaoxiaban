@@ -14,7 +14,7 @@
     <text wx:if="{{saveModeText}}">{{saveModeText}}</text>
   </view>
 
-  <view class="access-card" wx:if="{{!canUseBusiness}}">
+  <view class="access-card" wx:if="{{!isLoading && !canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
     <view class="access-desc">可先浏览公开商品；下单、管理商品或查看专属资料需登录并通过身份确认。</view>
     <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
@@ -38,16 +38,16 @@
 
     <block wx:else>
       <block wx:for="{{productList}}" wx:key="id">
-        <view class="product-card" bindtap="onOpenDetail" data-id="{{item.id}}">
-          <view class="product-card-body">
-            <view class="product-img-wrap">
+        <view class="product-card">
+          <view class="product-card-body" bindtap="onOpenDetail" data-id="{{item.id}}">
+            <view class="product-img-wrap" bindtap="onOpenDetail" data-id="{{item.id}}">
               <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="product-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
               <view wx:if="{{item.isImageFallback}}" class="image-fallback">
                 <view class="image-fallback__mark">品</view>
                 <view class="image-fallback__text">{{item.imageFallbackText}}</view>
               </view>
             </view>
-            <view class="product-info">
+            <view class="product-info" bindtap="onOpenDetail" data-id="{{item.id}}">
               <view class="title-row">
                 <text class="title">{{item.title}}</text>
                 <text
@@ -58,6 +58,7 @@
             </view>
           </view>
           <view class="action-bar" wx:if="{{canManageProducts}}">
+            <button size="mini" plain catchtap="onOpenDetail" data-id="{{item.id}}">详情</button>
             <button size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
             <button size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
             <button size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">
@@ -69,9 +70,9 @@
     </block>
   </scroll-view>
 
-  <view class="fab-btn" wx:if="{{canManageProducts}}" bindtap="onAddProduct">
+  <button class="fab-btn" wx:if="{{canManageProducts}}" bindtap="onAddProduct" aria-label="新增商品">
     <text class="plus">+</text>
-  </view>
+  </button>
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">
     <view class="detail-panel" catchtap="stopDetailTap">
@@ -104,8 +105,10 @@
           <text class="detail-text">{{selectedProduct.sourceNote || '暂无'}}</text>
         </view>
       </view>
-      <button wx:if="{{canManageProducts}}" class="detail-close" data-id="{{selectedProduct.id}}" bindtap="onEditProduct">编辑商品</button>
-      <button class="detail-close" bindtap="closeDetail">知道了</button>
+      <view class="detail-actions">
+        <button wx:if="{{canManageProducts}}" class="detail-action detail-action--secondary" data-id="{{selectedProduct.id}}" bindtap="onEditProduct">编辑商品</button>
+        <button class="detail-action" bindtap="closeDetail">知道了</button>
+      </view>
     </view>
   </view>
 </view>

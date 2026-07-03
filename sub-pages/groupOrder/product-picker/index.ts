@@ -1,5 +1,6 @@
 import { ProductService } from '~/services/product/productService';
-import { navigateBackOrTab } from '~/utils/navigation';
+import { AuthService } from '~/services/auth/authService';
+import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
@@ -28,7 +29,7 @@ Page({
     return null;
   },
 
-  onLoad(options) {
+  async onLoad(options) {
     const hasEventChannel = Boolean(this.getSafeEventChannel());
     this.setData({
       hasEventChannel,
@@ -53,6 +54,7 @@ Page({
       return;
     }
 
+    await AuthService.refreshSession();
     this.loadProductLibrary();
   },
 
@@ -177,6 +179,12 @@ Page({
     } catch (err) {
       return false;
     }
+  },
+
+  goProductLibrary() {
+    navigateByUrl('/pages/productManagement/index', {
+      fail: () => wx.showToast({ title: '打开商品库失败', icon: 'none' }),
+    });
   },
 
   confirmAdd() {

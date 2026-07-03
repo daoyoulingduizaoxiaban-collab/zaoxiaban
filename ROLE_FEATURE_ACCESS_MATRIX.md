@@ -1,43 +1,42 @@
 # ROLE_FEATURE_ACCESS_MATRIX
 
-This matrix is a reference for role x feature entry visibility. It is not a required QA or AGENT deliverable: QA reports only in `QA/QA_BUG_REPORT_202607021815.md`, and AGENT fixes product code instead of maintaining extra documents unless the user explicitly asks.
+## 文件用途
+本文件只保留角色入口验收的最小原则，避免形成第二套权限规则。
 
-## Legend
+稳定业务逻辑以 `BUSINESS_LOGIC_PRINCIPLES.md` 为准；MVP gate 以 `MVP_COMPLETION_CHECKLIST.md` 为准；实际程式权限以 `services/auth/roleScope.js`、service/repository、cloud function guard 为准。
 
-- Formal visible: visible for a verified WeChat OpenID session with the allowed role.
-- Demo visible: visible only for mock / QA override sessions.
-- Direct route: what happens if the user opens the route by URL, share path, history, or fallback navigation.
-- Backend guard: service / repository / cloud function checks that must still enforce permissions even when the frontend hides an entry.
-- Role key note: `guide` is the internal role key; user-facing copy must display this role as `团主`.
+## 核心原则
+- `guide` 是内部 role key，正式用户界面显示为「团主」。
+- 前端隐藏入口只改善体验，不能替代 service/repository/cloud function 权限检查。
+- 正式用户不得看到 QA、mock、Seed、MVP、未完成、后续、OpenID 未验证等内部文案。
+- 未登录、待审核、拒绝、停用、过期或无权角色不能看到完整业务入口。
+- 一个 OpenID 可以有多个角色；页面入口和后端权限必须按当前场景与有效身份判断。
+- 直达 route、分享路径、扫码、历史页面、fallback 导航都必须进入安全状态，不得绕过权限。
 
-## Matrix
+## 验收方式
+角色入口验收只记录 gate 级结论，不在本文件维护逐页矩阵。
 
-| Route / Surface | Entry | Business Action | Allowed Roles | Hidden / Read-Only Roles | Formal Visible State | Demo Visible State | Direct Route Behavior | Backend Guard | QA Evidence Needed |
-|---|---|---|---|---|---|---|---|---|---|
-| `pages/groupOrder/index` | Tab / home quick entry / My grid | List/search group orders | guide, owner, admin; customer read-only for joined orders | provider, unauthenticated | Visible to allowed roles; create CTA only guide/owner/admin | Same role rules, with demo-save banner if not cloud verified | Empty or unauthorized state with product copy; no internal wording | `GroupOrderService`, `GroupOrderRepository`, `businessData` role and ownership checks | Per-role tab screenshots, create CTA visibility, direct route empty/unauthorized state |
-| `sub-pages/groupOrder/add/index` | Group order FAB / release entry | Create/edit group order | guide, owner, admin | customer, provider, unauthenticated | Visible only from allowed entry points | Same role rules | Unauthorized users see formal blocked state or cannot save | `GroupOrderService.validate`, `GroupOrderRepository.create/update`, `businessData` | 团主 create/edit workflow, customer/provider direct route check |
-| `sub-pages/groupOrder/detail/index` | Group order list card / share history | View group detail, customer entry, products, customer orders | guide, owner/admin for managed groups; customer via joined/shared group read-only | provider, unrelated users | Managed actions visible only to guide/owner/admin; customer entry visible for managed 团主 | Same role rules | Missing/unauthorized id shows formal error and return path | `GroupOrderRepository.getById`, `CustomerOrderService.getGroupOrderDetail`, `businessData` | List-card entry, missing id, unauthorized direct route |
-| `sub-pages/groupOrder/productList/index` | Group detail product entry | View/add/remove current group products | guide, owner, admin; customer read-only only if routed from shared group | provider, unauthenticated | Add/remove hidden unless can manage; detail panel always read-only | Same role rules | Unauthorized users cannot mutate | `GroupOrderService.addProducts/removeProduct` | Product detail click, add/remove CTA visibility |
-| `sub-pages/groupOrder/product-picker/index` | Group add/product list workflow | Select products via eventChannel | guide, owner, admin | customer, provider, unauthenticated | Only reachable from allowed workflow | Same role rules | Direct route without eventChannel shows formal guidance and no mutation | EventChannel guard plus group-order service guard | Picker open/select/return evidence |
-| `pages/productManagement/index` | Tab / home quick entry / My grid | Product list/search/manage | guide, owner, admin, provider scoped; customer read-only hidden by default | unauthenticated | Manage actions only for allowed roles; no QA/internal copy | Same role rules, demo-save banner if not cloud verified | Empty/unauthorized state without internal wording | `ProductService`, `ProductRepository`, `businessData` product ownership checks | Per-role product list and action visibility |
-| `sub-pages/product/add/index` | Product FAB | Create/edit product and upload images | guide, owner, admin, provider scoped | customer, unauthenticated | Visible only to allowed roles; durable image save in cloud mode | Same role rules, demo image warning if not cloud verified | Unauthorized users cannot save | `ProductService.create/update`, `ProductRepository`, cloud durable asset guard | Real image picker/reopen evidence |
-| `sub-pages/product/list/index` | Product picker / read-only product route | Select/read products | guide, owner, admin; provider scoped; customer read-only when routed from customer flow | unauthenticated | Read/select state depends on workflow | Same role rules | Direct route read-only or formal empty state | Product service role filter | Product select/read-only screenshots |
-| `pages/customerOrders/index` | Tab / My QA isolation buttons | List orders, declare/confirm/cancel | customer for own orders; guide for managed group orders; owner/admin authorized | provider, unauthenticated | Actions visible only when role and status allow; no internal wording | Same role rules, demo-save banner if not cloud verified | Unauthorized users see formal empty state | `CustomerOrderService`, `CustomerOrderRepository`, `businessData` order ownership checks | 团主/customer list, declare paid, confirm, cancel, history |
-| `pages/customerOrders/edit/index` | Share path / group detail customer entry | Submit customer order | approved customer, owner/admin for assisted entry | pending/rejected/disabled customer, guide/provider/unauthenticated | Customer must pass review before share-path ordering; unapproved share visitors see safe status state only | Same role rules, demo-save banner if not cloud verified | Missing/invalid group or unapproved session shows formal unavailable state | `CustomerOrderService.validateCreatePayload`, `CustomerOrderRepository.create`, `businessData` | Share path, phone validation, submit evidence |
-| `pages/home/index` | Post-login landing | Core workflow entry | guide/customer/owner/admin/provider with role-scoped entries | unauthenticated sees login path | Shows only role-appropriate workflow copy | Same role rules; demo mode indicated without QA wording | N/A | Entrypoints still backed by page guards | Home per role screenshot |
-| `pages/my/index` | Tab | Profile, settings, QA tools in demo only | all logged-in users; QA tools only demo/mock/QA override | unauthenticated login card | Formal users see profile, core workflow, settings only | Demo users may see diagnostic panel | Direct route honors same visibility | Auth session state and page-level entry filters | Formal vs demo My screenshots |
-| `pages/setting/index` | My settings | Account and data-save status | logged-in users | unauthenticated sees formal login prompt | No QA/local/mock/internal copy | Demo mode may show demo-save state without QA wording | Direct route shows account state only | AuthService session metadata | Formal/demo settings screenshots |
-| `pages/dataCenter/index` | Home data board | Group/order summary | guide, owner, admin | customer, provider, unauthenticated | Visible as data board, no roadmap wording | Same role rules, demo-save banner if needed | Unauthorized role sees formal empty state | Group/customer order services role filters | Workflow screenshot for navbar/title/cards |
-| `pages/message/index`, `pages/chat/index` | Message/chat entry | Customer-order communication substitute | guide/customer/owner/admin read-only shortcut | provider, unauthenticated | Shows formal "消息中心建设中，请先用客户订单处理" copy; no roadmap wording | Same copy | Direct route no fake chat input | No business mutation | Message/chat screenshots |
-| `pages/release/index` | Home "开团" entry | Create group order shortcut | guide, owner, admin | customer, provider, unauthenticated | Shows create group order only to allowed roles | Same role rules | Unauthorized users see formal blocked state | Group order service guard | Home release entry screenshot |
-| `pages/search/index` | Search entry | Search core resources | guide, customer, owner, admin | provider scoped / unauthenticated limited | Product-language search only | Same | Direct route safe empty state | Resource service filters | Search screenshot |
-| `pages/providers/index`, `pages/providers/edit/index` | My role entry / direct route | Supplier information | provider self profile; owner/admin all providers | guide, customer, unauthenticated | Provider can maintain own supplier profile; owner/admin can manage supplier records | Same role rules, demo-save banner if not cloud verified | Unauthorized roles see formal no-access copy | `canUseProviderPortal`, `DirectoryRepository`, `businessData` provider self-scope guard | Provider self-edit, owner/admin list, unauthorized direct route checks |
-| `pages/profile/index`, `pages/profile/edit/index` | My profile entry | View/edit own profile | logged-in user for self; owner/admin future scoped | provider/customer/guide limited to self | Save handler must not claim production save unless implemented | Demo save state clearly marked as demo | Direct route safe self-profile state | Auth profile storage/cloud profile future guard | Edit date/save/return screenshot |
-| `pages/tourGuides/index`, `pages/tourGuides/edit/index` | My role entry / direct route | 团主 profile directory | guide self profile; owner/admin all guide records | customer, provider, unauthenticated | 团主 can maintain own public profile; owner/admin can manage 团主 records | Same role rules, demo-save banner if not cloud verified | Unauthorized roles see formal no-access copy | `DirectoryRepository`, `businessData` user self-scope guard | 团主 self-edit, owner/admin list, unauthorized direct route checks |
-| `pages/login/login`, `pages/loginCode/loginCode` | Login flow | Authenticate as guide/customer | unauthenticated | owner/admin/provider not public login options | Product login copy only; owner/admin via allowlist | Demo fallback handled without internal wording | Redirects to tab via `switchTab` | `authLogin`, owner/admin allowlist | 团主/customer login success and fallback |
+QA 或 AGENT 验收时应覆盖：
 
-## Implementation Notes
+- 未登录/游客。
+- `pending_review`、`rejected`、`disabled`、过期账号。
+- 团主（内部 role key `guide`）。
+- `customer`。
+- `provider`。
+- `admin`。
+- `owner`。
+- 多角色账号和场景化入口。
 
-- Hiding an entry never replaces backend permission checks.
-- Demo copy may say "演示" but must not expose `QA`, `mock`, `Seed`, `MVP`, `后续`, `未完成`, or internal OpenID diagnostics to formal users.
-- QA-only role switching belongs behind demo/mock visibility and is never formal permission evidence.
+每个角色至少检查：
+
+- 登录后首屏。
+- tab/custom tab bar。
+- 首页快捷入口。
+- My 服务列表。
+- 核心列表页与详情页。
+- 空状态 CTA。
+- 分享/扫码入口。
+- 直达 route 与返回 fallback。
+- 后端拒绝无权读写。
+
+具体不通过项只写入 `QA/QA_BUG_REPORT_202607021815.md`；本文件不维护逐页 row。

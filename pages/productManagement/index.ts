@@ -36,14 +36,35 @@ Page({
     },
   },
 
-  async onLoad() {
+  syncAccessShell() {
+    const profile = AuthService.getCurrentProfile();
+    const canUseBusiness = AuthService.canUseBusiness(profile);
+    this.setData({
+      isLoading: true,
+      loadErrorText: '',
+      canManageProducts: canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE),
+      canShowProductCatalog: true,
+      isLoggedIn: Boolean(profile),
+      canUseBusiness,
+      accessStateText: AuthService.getAccessStateText(profile),
+      roleScopeText: canUseBusiness
+        ? getRoleScopeText(profile, FEATURE_KEYS.PRODUCTS)
+        : AuthService.getAccessStateText(profile),
+    });
+  },
+
+  async refreshAndFetchData() {
+    this.syncAccessShell();
     await AuthService.refreshSession();
     await this.fetchData();
   },
 
+  async onLoad() {
+    await this.refreshAndFetchData();
+  },
+
   async onShow() {
-    await AuthService.refreshSession();
-    await this.fetchData();
+    await this.refreshAndFetchData();
   },
 
   resetDetailState(extraState = {}) {

@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { AUTH_ROLES, FEATURE_KEYS, canUseFeature, hasRole } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
@@ -45,11 +45,11 @@ Page({
     const profile = AuthService.getCurrentProfile();
     const canSave = Boolean(
       canUseFeature(profile, FEATURE_KEYS.PROFILE)
-      && profile.role === AUTH_ROLES.CUSTOMER
+      && hasRole(profile, AUTH_ROLES.CUSTOMER)
     );
     if (!canSave) {
       let disabledReason = '请先登录后维护客户资料';
-      if (profile && profile.role === AUTH_ROLES.CUSTOMER) {
+      if (profile && hasRole(profile, AUTH_ROLES.CUSTOMER)) {
         disabledReason = AuthService.getAccessStateText(profile);
       } else if (profile) {
         disabledReason = '当前账号不是客户身份，不能维护客户资料。';
@@ -109,7 +109,7 @@ Page({
 
   async onSave() {
     const profile = AuthService.getCurrentProfile();
-    if (!this.data.canSave || !profile || profile.role !== AUTH_ROLES.CUSTOMER) {
+    if (!this.data.canSave || !profile || !hasRole(profile, AUTH_ROLES.CUSTOMER)) {
       wx.showToast({ title: '当前账号没有客户资料维护权限', icon: 'none' });
       return;
     }

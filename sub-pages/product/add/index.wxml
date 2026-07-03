@@ -27,7 +27,7 @@
 
       <view class="form-group">
         <text class="label">供应来源或备注 <text class="required">*</text></text>
-        <input class="input-box" placeholder="例如：杭州伴手礼供应商 / 导游自建商品" data-field="sourceNote" value="{{currentProduct.sourceNote}}" bindinput="onProductInput" />
+        <input class="input-box" placeholder="例如：杭州伴手礼供应商 / 团主自建商品" data-field="sourceNote" value="{{currentProduct.sourceNote}}" bindinput="onProductInput" />
       </view>
 
       <view class="form-group">

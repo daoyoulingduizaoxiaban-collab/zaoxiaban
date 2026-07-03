@@ -23,6 +23,19 @@ page {
   align-items: center;
   padding: 0 24rpx;
 }
+.search-label {
+  width: 40rpx;
+  height: 40rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6rpx;
+  background: #e5e7eb;
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 1;
+  flex-shrink: 0;
+}
 .search-input {
   flex: 1;
   margin-left: 16rpx;
@@ -82,6 +95,11 @@ page {
 .txt-added {
   font-size: 20rpx;
   color: #999;
+}
+.txt-selected {
+  color: #ffffff;
+  font-size: 18rpx;
+  line-height: 1;
 }
 
 .p-img-wrap {
@@ -179,6 +197,38 @@ page {
   line-height: 42rpx;
   padding: 160rpx 40rpx;
   text-align: center;
+}
+
+.empty-title {
+  color: #101828;
+  font-size: 32rpx;
+  font-weight: 600;
+  line-height: 44rpx;
+  margin-bottom: 16rpx;
+}
+
+.empty-desc {
+  color: #667085;
+  font-size: 26rpx;
+  line-height: 40rpx;
+  margin: 0 auto 28rpx;
+  max-width: 560rpx;
+}
+
+.empty-action {
+  background: #0052d9;
+  border-radius: 8rpx;
+  color: #fff;
+  font-size: 28rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  margin: 0 auto;
+  max-width: 280rpx;
+  padding: 0 40rpx;
+}
+
+.empty-action::after {
+  border: 0;
 }
 
 .footer-bar {

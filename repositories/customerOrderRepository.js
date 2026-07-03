@@ -1,6 +1,6 @@
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { filterCustomerOrdersByRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { filterCustomerOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
@@ -144,7 +144,7 @@ const getAllOrders = () => getStoredState().orders.map(normalizeOrder);
 const canManageOrder = (order, groupOrders, profile) => {
   if (!profile || !order) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (profile.role !== 'guide') return false;
+  if (!hasRole(profile, 'guide')) return false;
   const groupOrder = groupOrders.find(item => sameId(item.id, order.groupOrderId));
   if (!groupOrder) return false;
   const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
@@ -155,8 +155,8 @@ const canViewSharedGroupOrder = (groupOrder, profile) => {
   if (!groupOrder) return false;
   if (!profile) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (profile.role === 'customer') return true;
-  if (profile.role !== 'guide') return false;
+  if (hasRole(profile, 'customer')) return true;
+  if (!hasRole(profile, 'guide')) return false;
   const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
   return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
@@ -220,7 +220,7 @@ export const CustomerOrderRepository = {
 
     const orders = getAllOrders()
       .filter(order => sameId(order.groupOrderId, groupOrderId))
-      .filter(order => profile.role !== 'customer' || sameId(order.customerUserId, profile.id));
+      .filter(order => !hasRole(profile, 'customer') || sameId(order.customerUserId, profile.id));
     return {
       success: true,
       data: orders,
@@ -275,7 +275,7 @@ export const CustomerOrderRepository = {
     }
 
     const profile = AuthService.getCurrentProfile();
-    if (!profile || (profile.role !== 'customer' && !isOwnerOrAdmin(profile))) {
+    if (!profile || (!hasRole(profile, 'customer') && !isOwnerOrAdmin(profile))) {
       return { success: false, error: '当前角色不能提交客户订单' };
     }
 
@@ -366,7 +366,7 @@ export const CustomerOrderRepository = {
     if (!target) return { success: false, error: '未找到订单资料' };
 
     const nextStatusValue = Number(nextStatus);
-    const isCustomerOwner = profile && profile.role === 'customer' && sameId(target.customerUserId, profile.id);
+    const isCustomerOwner = profile && hasRole(profile, 'customer') && sameId(target.customerUserId, profile.id);
     const isManager = canManageOrder(target, groupOrders, profile);
     if (nextStatusValue === MemberOrderStatus.PAID && !isCustomerOwner && !isOwnerOrAdmin(profile)) {
       return { success: false, error: '只有下单客户可以声明已付款' };
@@ -450,7 +450,7 @@ export const CustomerOrderRepository = {
         status: 'confirmed',
         confirmedByUserId: profile && profile.id,
         confirmedAt: nowIso(),
-        note: payload.confirmRemark || note || '导游确认收款',
+        note: payload.confirmRemark || note || '团主确认收款',
         createdAt: nowIso(),
         updatedAt: nowIso(),
       });

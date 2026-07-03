@@ -11,12 +11,13 @@ export const REVIEW_STATUS = Object.freeze({
   APPROVED: 'approved',
   REJECTED: 'rejected',
   DISABLED: 'disabled',
+  EXPIRED: 'expired',
 });
 
 export const ROLE_LABELS = Object.freeze({
   [AUTH_ROLES.OWNER]: '产品拥有者',
   [AUTH_ROLES.ADMIN]: '运营管理员',
-  [AUTH_ROLES.GUIDE]: '导游/领队',
+  [AUTH_ROLES.GUIDE]: '团主',
   [AUTH_ROLES.CUSTOMER]: '客户',
   [AUTH_ROLES.PROVIDER]: '供应商',
 });
@@ -78,8 +79,37 @@ const FEATURE_ALLOWED_ROLES = Object.freeze({
 
 export const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APPROVED : (status || ''));
 
+export const normalizeRoles = (profileOrRoles, fallbackRole = '') => {
+  const rawRoles = Array.isArray(profileOrRoles)
+    ? [...profileOrRoles, fallbackRole]
+    : [
+      ...((profileOrRoles && Array.isArray(profileOrRoles.roles)) ? profileOrRoles.roles : []),
+      profileOrRoles && profileOrRoles.role,
+      fallbackRole,
+    ];
+  return [...new Set(rawRoles.filter(role => Object.values(AUTH_ROLES).includes(role)))];
+};
+
+export const hasRole = (profile, role) => normalizeRoles(profile).includes(role);
+
+const parseExpiryTime = (value) => {
+  if (!value) return 0;
+  const text = String(value);
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text;
+  const time = new Date(normalized).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
+export const isRoleExpired = (profile, now = Date.now()) => {
+  if (!profile || profile.isMockOpenId || profile.qaOverride) return false;
+  const expiresAt = profile.roleExpiresAt || profile.rolesExpireAt || profile.expiresAt || '';
+  const expiryTime = parseExpiryTime(expiresAt);
+  return Boolean(expiryTime && expiryTime < now);
+};
+
 export const isApprovedProfile = profile => Boolean(
   profile
+  && !isRoleExpired(profile)
   && (
     profile.isMockOpenId
     || profile.qaOverride
@@ -88,13 +118,13 @@ export const isApprovedProfile = profile => Boolean(
 );
 
 export const isOwnerOrAdmin = profile => (
-  isApprovedProfile(profile) && (profile.role === AUTH_ROLES.OWNER || profile.role === AUTH_ROLES.ADMIN)
+  isApprovedProfile(profile) && (hasRole(profile, AUTH_ROLES.OWNER) || hasRole(profile, AUTH_ROLES.ADMIN))
 );
 
 export const getRoleLabel = role => ROLE_LABELS[role] || '未定义角色';
 
 export const canUseProviderPortal = profile => (
-  isOwnerOrAdmin(profile) || (isApprovedProfile(profile) && profile.role === AUTH_ROLES.PROVIDER)
+  isOwnerOrAdmin(profile) || (isApprovedProfile(profile) && hasRole(profile, AUTH_ROLES.PROVIDER))
 );
 
 export const canUseAdminPortal = profile => isOwnerOrAdmin(profile);
@@ -102,7 +132,7 @@ export const canUseAdminPortal = profile => isOwnerOrAdmin(profile);
 export const canUseFeature = (profile, featureKey) => {
   if (!isApprovedProfile(profile)) return false;
   const allowedRoles = FEATURE_ALLOWED_ROLES[featureKey] || [];
-  return allowedRoles.includes(profile.role);
+  return normalizeRoles(profile).some(role => allowedRoles.includes(role));
 };
 
 export const getRoleScopeText = (profile, featureKey) => {
@@ -125,7 +155,7 @@ export const getRoleScopeText = (profile, featureKey) => {
       [AUTH_ROLES.PROVIDER]: '仅显示你提供的商品',
     },
     [FEATURE_KEYS.CUSTOMER_ORDERS]: {
-      [AUTH_ROLES.GUIDE]: '当前身份：导游/领队｜仅显示你管理团单下的客户订单',
+      [AUTH_ROLES.GUIDE]: '当前身份：团主｜仅显示你管理团单下的客户订单',
       [AUTH_ROLES.CUSTOMER]: '当前身份：客户｜仅显示你自己的客户订单',
       [AUTH_ROLES.OWNER]: '当前身份：管理角色｜可查看授权范围内客户订单',
       [AUTH_ROLES.ADMIN]: '当前身份：管理角色｜可查看授权范围内客户订单',
@@ -141,14 +171,14 @@ export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = [
   if (!isApprovedProfile(profile)) return [];
   if (isOwnerOrAdmin(profile)) return groupOrders;
 
-  if (profile.role === AUTH_ROLES.GUIDE) {
+  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
     return groupOrders.filter((order) => {
       const authorizedGuideIds = order.authorizedGuideIds || [];
       return sameId(order.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
     });
   }
 
-  if (profile.role === AUTH_ROLES.CUSTOMER) {
+  if (hasRole(profile, AUTH_ROLES.CUSTOMER)) {
     const visibleGroupOrderIds = customerOrders
       .filter(order => sameId(order.customerUserId, profile.id))
       .map(order => String(order.groupOrderId));
@@ -162,7 +192,7 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
   if (!isApprovedProfile(profile)) return [];
   if (isOwnerOrAdmin(profile)) return customerOrders;
 
-  if (profile.role === AUTH_ROLES.GUIDE) {
+  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
     const visibleGroupOrderIds = groupOrders
       .filter((order) => {
         const authorizedGuideIds = order.authorizedGuideIds || [];
@@ -172,7 +202,7 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
     return customerOrders.filter(order => visibleGroupOrderIds.includes(String(order.groupOrderId)));
   }
 
-  if (profile.role === AUTH_ROLES.CUSTOMER) {
+  if (hasRole(profile, AUTH_ROLES.CUSTOMER)) {
     return customerOrders.filter(order => sameId(order.customerUserId, profile.id));
   }
 
@@ -189,7 +219,7 @@ export const filterProductsByRole = (products, profile) => {
   if (!isApprovedProfile(profile)) return publicProducts;
   if (isOwnerOrAdmin(profile)) return activeProducts;
 
-  if (profile.role === AUTH_ROLES.GUIDE) {
+  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
     return activeProducts.filter(product => (
       !product.ownerUserId
       || sameId(product.ownerUserId, profile.id)
@@ -197,11 +227,11 @@ export const filterProductsByRole = (products, profile) => {
     ));
   }
 
-  if (profile.role === AUTH_ROLES.PROVIDER) {
+  if (hasRole(profile, AUTH_ROLES.PROVIDER)) {
     return activeProducts.filter(product => sameId(product.providerId, profile.providerId || profile.id));
   }
 
-  if (profile.role === AUTH_ROLES.CUSTOMER) {
+  if (hasRole(profile, AUTH_ROLES.CUSTOMER)) {
     return publicProducts;
   }
 
@@ -211,10 +241,10 @@ export const filterProductsByRole = (products, profile) => {
 export const canManageProduct = (product, profile) => {
   if (!isApprovedProfile(profile) || !product) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (profile.role === AUTH_ROLES.GUIDE) {
+  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
     return !product.ownerUserId || sameId(product.ownerUserId, profile.id);
   }
-  if (profile.role === AUTH_ROLES.PROVIDER) {
+  if (hasRole(profile, AUTH_ROLES.PROVIDER)) {
     return sameId(product.providerId, profile.providerId || profile.id);
   }
   return false;

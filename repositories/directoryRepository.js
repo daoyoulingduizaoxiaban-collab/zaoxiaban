@@ -5,8 +5,11 @@ import {
   AUTH_ROLES,
   REVIEW_STATUS,
   canUseProviderPortal,
+  getRoleLabel,
+  hasRole,
   isOwnerOrAdmin,
   normalizeReviewStatus,
+  normalizeRoles,
 } from '~/services/auth/roleScope';
 
 const USERS_STORAGE_KEY = 'dao_you_ling_local_users';
@@ -58,11 +61,20 @@ const saveLocalProviders = (providers) => {
 
 const userLabel = user => user.displayRole || user.roleLabel || user.role || '使用者';
 
+const buildRoleLabelText = roles => normalizeRoles(roles)
+  .map(role => getRoleLabel(role))
+  .join('、');
+
+const isReviewableUser = user => !normalizeRoles(user.roles, user.role).includes(AUTH_ROLES.OWNER);
+
 const normalizeUser = user => ({
   ...user,
   id: user.id || user._id || `${Date.now()}`,
   name: user.name || user.displayName || '',
   displayName: user.displayName || user.name || '',
+  roles: normalizeRoles(user.roles, user.role),
+  roleExpiresAt: user.roleExpiresAt || user.rolesExpireAt || '',
+  rolesExpireAt: user.rolesExpireAt || user.roleExpiresAt || '',
   displayRole: user.displayRole || user.roleLabel || userLabel(user),
   city: user.city || '',
   phone: user.phone || '',
@@ -119,7 +131,7 @@ export const DirectoryRepository = {
     if (cloudRes) return cloudRes;
     return {
       success: true,
-      data: getLocalUsers().map(normalizeUser).filter(user => user.status === 'pending_review' || user.reviewStatus === 'pending_review'),
+      data: getLocalUsers().map(normalizeUser).filter(isReviewableUser),
       meta: { saveMode: 'local-directory-repository' },
     };
   },
@@ -134,20 +146,30 @@ export const DirectoryRepository = {
     const target = users.find(user => sameId(user.id, payload.id));
     if (!target) return { success: false, error: '未找到用户' };
     if (target.role === AUTH_ROLES.OWNER) return { success: false, error: '不能修改 owner 账号' };
-    if (profile.role === AUTH_ROLES.ADMIN && (payload.role === AUTH_ROLES.OWNER || target.role === AUTH_ROLES.ADMIN)) {
+    const requestedRoles = normalizeRoles(payload.roles, payload.role || target.requestedRole || target.role || AUTH_ROLES.CUSTOMER);
+    if (hasRole(profile, AUTH_ROLES.ADMIN) && (requestedRoles.includes(AUTH_ROLES.OWNER) || normalizeRoles(target.roles, target.role).includes(AUTH_ROLES.ADMIN))) {
       return { success: false, error: '管理员不能指派 owner 或修改管理员账号' };
     }
     const nextStatus = normalizeReviewStatus(payload.reviewStatus);
     const allowedStatuses = [REVIEW_STATUS.APPROVED, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED, REVIEW_STATUS.PENDING];
     if (!allowedStatuses.includes(nextStatus)) return { success: false, error: '审核状态无效' };
+    const nextRoles = nextStatus === REVIEW_STATUS.APPROVED
+      ? requestedRoles.filter(role => role !== AUTH_ROLES.OWNER)
+      : normalizeRoles(target.roles, target.role || payload.role || AUTH_ROLES.CUSTOMER).filter(role => role !== AUTH_ROLES.OWNER);
+    if (nextStatus === REVIEW_STATUS.APPROVED && !nextRoles.length) return { success: false, error: '请至少选择一个可用角色' };
     const nextRole = nextStatus === REVIEW_STATUS.APPROVED
-      ? (payload.role || target.requestedRole || target.role || AUTH_ROLES.CUSTOMER)
+      ? nextRoles[0]
       : (target.role || payload.role || AUTH_ROLES.CUSTOMER);
     if (nextRole === AUTH_ROLES.OWNER) return { success: false, error: '不能通过审核入口指派 owner' };
     const updatedAt = nowIso();
     const next = normalizeUser({
       ...target,
       role: nextRole,
+      roles: nextRoles,
+      roleLabel: buildRoleLabelText(nextRoles),
+      displayRole: buildRoleLabelText(nextRoles),
+      roleExpiresAt: payload.roleExpiresAt || '',
+      rolesExpireAt: payload.roleExpiresAt || '',
       status: nextStatus,
       reviewStatus: nextStatus,
       reviewRemark: payload.reviewRemark || '',
@@ -189,6 +211,7 @@ export const DirectoryRepository = {
       openId: existing.openId || profile.openId,
       unionId: existing.unionId || profile.unionId || '',
       role: existing.role || profile.role || AUTH_ROLES.CUSTOMER,
+      roles: normalizeRoles(existing.roles, existing.role || profile.role || AUTH_ROLES.CUSTOMER),
       requestedRole,
       status: REVIEW_STATUS.PENDING,
       reviewStatus: REVIEW_STATUS.PENDING,
@@ -228,7 +251,7 @@ export const DirectoryRepository = {
     const existing = users.find(user => sameId(user.id, payload.id));
     if (payload.id && !canEditUser(existing, profile)) return { success: false, error: '当前账号没有保存权限' };
     if (!payload.id && !isOwnerOrAdmin(profile)) return { success: false, error: '当前账号不能新增资料' };
-    if (existing && existing.role === AUTH_ROLES.OWNER && profile && profile.role === AUTH_ROLES.ADMIN) {
+    if (existing && existing.role === AUTH_ROLES.OWNER && profile && hasRole(profile, AUTH_ROLES.ADMIN)) {
       return { success: false, error: '管理员不能修改 owner 账号' };
     }
 
@@ -241,13 +264,16 @@ export const DirectoryRepository = {
       updatedAt,
       createdAt: (existing && existing.createdAt) || updatedAt,
     });
-    if (profile && profile.role === AUTH_ROLES.ADMIN && next.role === AUTH_ROLES.OWNER) {
+    if (profile && hasRole(profile, AUTH_ROLES.ADMIN) && next.role === AUTH_ROLES.OWNER) {
       return { success: false, error: '管理员不能指派 owner' };
     }
     if (!isOwnerOrAdmin(profile)) {
       next.role = (existing && existing.role) || profile.role;
+      next.roles = (existing && existing.roles) || profile.roles || [next.role];
       next.roleLabel = (existing && existing.roleLabel) || next.roleLabel || '';
       next.displayRole = (existing && (existing.displayRole || existing.roleLabel)) || next.displayRole || next.role;
+      next.roleExpiresAt = (existing && existing.roleExpiresAt) || profile.roleExpiresAt || '';
+      next.rolesExpireAt = (existing && existing.rolesExpireAt) || profile.rolesExpireAt || profile.roleExpiresAt || '';
       next.status = (existing && existing.status) || profile.status || REVIEW_STATUS.APPROVED;
       next.reviewStatus = (existing && (existing.reviewStatus || existing.status)) || profile.reviewStatus || profile.status || REVIEW_STATUS.APPROVED;
       next.requestedRole = (existing && existing.requestedRole) || profile.requestedRole || next.role;

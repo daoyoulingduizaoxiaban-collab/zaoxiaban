@@ -34,7 +34,7 @@
 
   <t-cell-group theme="card" wx:elif="{{canUseBusiness}}">
     <block wx:for="{{ itineraryList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
+      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow="{{false}}"
         bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
         <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
       </t-cell>
@@ -44,11 +44,14 @@
   <view wx:if="{{canUseBusiness && !isLoading && !loadErrorText && itineraryList.length === 0}}" class="empty-wrapper">
     <t-empty icon="info-circle" description="暂无团单" t-class-description="empty-text">
       <view slot="action">
-        <t-button theme="primary" variant="outline" size="small">
-          {{isLoggedIn ? '暂无可查看团单' : '请登录后查看团单'}}
+        <t-button wx:if="{{canCreateGroupOrder}}" theme="primary" size="small" bindtap="addItinerary">
+          新建团单
         </t-button>
         <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">
           去登录
+        </t-button>
+        <t-button wx:if="{{isLoggedIn && !canCreateGroupOrder}}" theme="primary" variant="outline" size="small">
+          暂无可查看团单
         </t-button>
       </view>
     </t-empty>

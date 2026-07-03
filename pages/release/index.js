@@ -8,13 +8,18 @@ Page({
     accessText: '请先登录后继续使用',
   },
 
-  async onShow() {
-    await AuthService.refreshSession();
+  syncAccessState() {
     const profile = AuthService.getCurrentProfile();
     this.setData({
       canCreateGroupOrder: canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
       accessText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
     });
+  },
+
+  async onShow() {
+    this.syncAccessState();
+    await AuthService.refreshSession();
+    this.syncAccessState();
   },
 
   goCreateGroupOrder() {

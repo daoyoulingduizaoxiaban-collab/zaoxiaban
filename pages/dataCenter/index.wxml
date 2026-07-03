@@ -1,4 +1,4 @@
-<t-navbar title="数据中心" left-arrow fixed="{{true}}" placeholder="{{true}}" />
+<sub-nav title="数据中心" fallback-url="/pages/my/index" />
 
 <view class="data-center">
   <view class="page-title">团单数据看板</view>

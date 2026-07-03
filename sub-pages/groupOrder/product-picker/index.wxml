@@ -3,7 +3,7 @@
 <view class="container">
   <view class="search-box">
     <view class="search-inner">
-      <t-icon name="search" size="40rpx" color="#bbb" />
+      <text class="search-label">搜</text>
       <input class="search-input" placeholder="搜索商品名称" bindinput="onSearch" />
     </view>
   </view>
@@ -12,6 +12,12 @@
     <view wx:if="{{isLoading}}" class="empty-state">正在加载商品库</view>
     <view wx:elif="{{pageErrorText}}" class="empty-state">{{pageErrorText}}</view>
 
+    <view wx:elif="{{products.length === 0}}" class="empty-state">
+      <view class="empty-title">暂无可选商品</view>
+      <view class="empty-desc">请先到商品库新增或启用商品后，再回到开团表单选择。</view>
+      <button class="empty-action" bindtap="goProductLibrary">去商品库</button>
+    </view>
+
     <block wx:else>
       <block wx:for="{{products}}" wx:key="id">
         <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}"
@@ -19,7 +25,7 @@
               data-id="{{item.id}}">
 
           <view class="checkbox">
-            <t-icon wx:if="{{item.selected}}" name="check" size="32rpx" color="#fff" />
+            <text wx:if="{{item.selected}}" class="txt-selected">已选</text>
             <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
           </view>
           <view class="p-img-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">

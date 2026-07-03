@@ -62,7 +62,7 @@ export const GroupOrderService = {
     if (!String(groupOrder.endAt || '').trim()) return '请输入收单截止时间';
     if (!String(groupOrder.pickupNote || '').trim()) return '请输入取货/交付/集合说明';
     if (!String(groupOrder.paymentNote || '').trim()) return '请输入付款方式或付款备注';
-    if (!String(groupOrder.contactName || '').trim()) return '请输入导游/领队联系人';
+    if (!String(groupOrder.contactName || '').trim()) return '请输入团主联系人';
     if (!String(groupOrder.contactPhone || '').trim()) return '请输入联系电话';
     return '';
   },

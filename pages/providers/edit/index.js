@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, canUseProviderPortal } from '~/services/auth/roleScope';
+import { AUTH_ROLES, canUseProviderPortal, hasRole } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
 
@@ -45,12 +45,12 @@ Page({
 
   initPage(options = {}) {
     const profile = AuthService.getCurrentProfile();
-    const providerSelfId = profile && profile.role === AUTH_ROLES.PROVIDER ? (profile.providerId || profile.id) : '';
+    const providerSelfId = profile && hasRole(profile, AUTH_ROLES.PROVIDER) ? (profile.providerId || profile.id) : '';
     const targetId = options.id || providerSelfId || '';
     const canSave = canUseProviderPortal(profile);
     const isProviderSelfProfile = Boolean(
       profile
-      && profile.role === AUTH_ROLES.PROVIDER
+      && hasRole(profile, AUTH_ROLES.PROVIDER)
       && targetId
       && String(targetId) === String(providerSelfId)
     );
@@ -135,7 +135,7 @@ Page({
     }
     this.setData({ isSubmitting: true });
     const profile = AuthService.getCurrentProfile();
-    const targetId = this.data.targetId || (profile && profile.role === AUTH_ROLES.PROVIDER ? (profile.providerId || profile.id) : '');
+    const targetId = this.data.targetId || (profile && hasRole(profile, AUTH_ROLES.PROVIDER) ? (profile.providerId || profile.id) : '');
     const res = await DirectoryRepository.saveProvider({
       id: targetId,
       title: this.data.formData.title,
@@ -149,7 +149,7 @@ Page({
       return;
     }
     this.setData({ isDirty: false });
-    if (profile && profile.role === AUTH_ROLES.PROVIDER) {
+    if (profile && hasRole(profile, AUTH_ROLES.PROVIDER)) {
       AuthService.updateCurrentProfile({
         id: profile.id,
         openId: profile.openId,

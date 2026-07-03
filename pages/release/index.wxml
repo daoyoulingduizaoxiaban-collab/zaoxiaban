@@ -1,9 +1,12 @@
-<t-navbar title="开团入口" left-arrow fixed="{{true}}" placeholder="{{true}}" />
+<sub-nav title="开团入口" fallback-url="/pages/my/index" />
 
 <view class="page">
   <view class="release-container">
     <view class="box" wx:if="{{canCreateGroupOrder}}">
-      <t-cell title="新建团单" description="进入导游开团表单，团单资料会按账号状态保存" arrow bind:tap="goCreateGroupOrder" />
+      <button class="entry-button" bindtap="goCreateGroupOrder">
+        <view class="entry-title">新建团单</view>
+        <view class="entry-desc">进入团主开团表单，团单资料会按账号状态保存</view>
+      </button>
     </view>
     <view class="box" wx:else>
       <t-cell title="开团入口" description="{{accessText}}" />

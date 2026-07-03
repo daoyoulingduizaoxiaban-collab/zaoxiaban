@@ -26,7 +26,7 @@
 
   <t-cell-group theme="card" wx:elif="{{canUseBusiness}}">
     <block wx:for="{{ customerOrdersList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow
+      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow="{{false}}"
         bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
         <t-icon slot="left-icon" name="usergroup" size="48rpx" color="#0052d9" />
       </t-cell>
@@ -79,7 +79,7 @@
           </view>
         </view>
       </view>
-      <view class="action-hint">请填写付款金额、付款方式并上传至少一张付款凭证，方便导游核对收款。</view>
+      <view class="action-hint">请填写付款金额、付款方式；可上传付款凭证，方便团主核对收款。</view>
     </view>
 
     <view wx:elif="{{actionType === 'confirmPayment'}}" class="action-form">

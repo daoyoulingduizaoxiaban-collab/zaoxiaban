@@ -32,7 +32,7 @@
     </view>
     <view class="access-card" wx:if="{{isLoggedIn && !canUseBusiness}}">
       <view class="access-title">{{accessStateText}}</view>
-      <view class="access-desc">管理员确认身份后，会开放与你角色对应的正式功能。</view>
+      <view class="access-desc">{{accessStateDesc}}</view>
       <t-button theme="primary" variant="outline" size="small" bindtap="onRefreshAccessState">重新检查状态</t-button>
       <t-button theme="default" variant="outline" size="small" bindtap="onContactAdmin">联系管理员</t-button>
     </view>
@@ -51,6 +51,7 @@
         class="grid-item {{gridItem.type === 'all' ? 'split-line' : ''}}"
         data-data="{{gridItem}}"
         bindclick="onEleClick"
+        bindtap="onEleClick"
       >
         <t-icon name="{{gridItem.icon}}" size="48rpx" color="#0052d9" />
         <view slot="text">{{gridItem.name}}</view>
@@ -66,9 +67,10 @@
       title="{{item.name}}"
       url="{{item.url}}"
       hover
-      arrow
+      arrow="{{false}}"
       data-data="{{item}}"
       bindclick="onEleClick"
+      bindtap="onEleClick"
     >
       <t-icon slot="left-icon" name="{{item.icon}}" size="44rpx" color="#0052d9" />
     </t-cell>

@@ -229,7 +229,7 @@ export const CustomerOrderService = {
       ...payload,
       confirmedAmount,
       confirmRemark,
-      note: payload.note || `导游确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
+      note: payload.note || `团主确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
     };
     return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.CONFIRMED, nextPayload.note, nextPayload);
   },

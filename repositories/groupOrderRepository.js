@@ -2,7 +2,7 @@ import { GroupOrder } from '~/models/GroupOrder';
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { filterGroupOrdersByRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { filterGroupOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
 
 const GROUP_ORDER_STORAGE_KEY = 'dao_you_ling_local_group_orders';
@@ -68,19 +68,19 @@ const getAllCustomerOrders = () => {
 const canManageGroupOrder = (groupOrder, profile) => {
   if (!profile || !groupOrder) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (profile.role !== 'guide') return false;
+  if (!hasRole(profile, 'guide')) return false;
   const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
   return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
 
 const canCreateGroupOrder = profile => (
-  profile && (profile.role === 'guide' || isOwnerOrAdmin(profile))
+  profile && (hasRole(profile, 'guide') || isOwnerOrAdmin(profile))
 );
 
 const canViewGroupOrder = (groupOrder, profile) => {
   if (!groupOrder || !profile) return false;
   if (canManageGroupOrder(groupOrder, profile)) return true;
-  if (profile.role !== 'customer') return false;
+  if (!hasRole(profile, 'customer')) return false;
   if (Number(groupOrder.status) === 1) return true;
   return getAllCustomerOrders().some(order => (
     sameId(order.groupOrderId, groupOrder.id)
