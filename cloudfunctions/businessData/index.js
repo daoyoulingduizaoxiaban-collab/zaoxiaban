@@ -928,18 +928,27 @@ const validateProviderPayload = (provider) => {
   return '';
 };
 
+const sameProviderId = (provider, providerId) => Boolean(
+  provider
+  && (
+    sameId(provider.id, providerId)
+    || sameId(provider._id, providerId)
+  )
+);
+
 const providerActions = {
   async listVisible(payload, profile) {
     assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
     const providers = await getAllActive('providers');
     if (isOwnerOrAdmin(profile)) return success(providers);
-    return success(providers.filter(provider => sameId(provider._id || provider.id, profile.providerId || profile.id)));
+    const providerId = profile.providerId || profile.id;
+    return success(providers.filter(provider => sameProviderId(provider, providerId)));
   },
 
   async getById({ id }, profile) {
     assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
     const provider = await getById('providers', id);
-    if (provider && !isOwnerOrAdmin(profile) && !sameId(provider._id || provider.id, profile.providerId || profile.id)) {
+    if (provider && !isOwnerOrAdmin(profile) && !sameProviderId(provider, profile.providerId || profile.id)) {
       return failure('当前账号没有供应商资料查看权限');
     }
     return provider ? success(provider) : failure('未找到供应商资料');
@@ -951,7 +960,7 @@ const providerActions = {
       ? payload
       : { ...payload, id: payload.id || profile.providerId || profile.id };
     const target = scopedPayload.id ? await getById('providers', scopedPayload.id) : null;
-    if (target && !isOwnerOrAdmin(profile) && !sameId(target._id || target.id, profile.providerId || profile.id)) {
+    if (target && !isOwnerOrAdmin(profile) && !sameProviderId(target, profile.providerId || profile.id)) {
       return failure('当前账号没有供应商资料维护权限');
     }
     const normalized = normalizeProviderPayload(scopedPayload, target || {});
@@ -962,7 +971,13 @@ const providerActions = {
       return success(toId({ ...normalized, _id: target._id || target.id }));
     }
     const result = await getCollection('providers').add({ data: normalized });
-    return success(toId({ ...normalized, _id: result._id }));
+    const created = toId({ ...normalized, _id: result._id });
+    if (profile.role === 'provider' && !profile.providerId) {
+      await getCollection('users').doc(String(profile._id || profile.id)).update({
+        data: { providerId: created.id, updatedAt: nowIso() },
+      });
+    }
+    return success(created);
   },
 };
 

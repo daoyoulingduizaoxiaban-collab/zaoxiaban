@@ -13,6 +13,7 @@ Page({
     targetId: '',
     isProviderSelfProfile: false,
     isSubmitting: false,
+    isDirty: false,
     formData: {
       title: '',
       date: '',
@@ -33,6 +34,16 @@ Page({
   },
 
   onLoad(options) {
+    this.initPage(options);
+  },
+
+  onShow() {
+    if (this.data.canSave && this.data.targetId && !this.data.isSubmitting && !this.data.isDirty) {
+      this.fetchprovidersDetail(this.data.targetId);
+    }
+  },
+
+  initPage(options = {}) {
     const profile = AuthService.getCurrentProfile();
     const providerSelfId = profile && profile.role === AUTH_ROLES.PROVIDER ? (profile.providerId || profile.id) : '';
     const targetId = options.id || providerSelfId || '';
@@ -102,7 +113,7 @@ Page({
     const { field } = e.currentTarget.dataset;
     const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
     if (!field) return;
-    this.setData({ [`formData.${field}`]: value });
+    this.setData({ [`formData.${field}`]: value, isDirty: true });
   },
 
   async onSave() {
@@ -136,6 +147,14 @@ Page({
     if (!res.success) {
       wx.showToast({ title: res.error || '保存供应商资料失败', icon: 'none' });
       return;
+    }
+    this.setData({ isDirty: false });
+    if (profile && profile.role === AUTH_ROLES.PROVIDER) {
+      AuthService.updateCurrentProfile({
+        id: profile.id,
+        openId: profile.openId,
+        providerId: res.data.id || targetId,
+      });
     }
     wx.showToast({ title: '供应商资料已保存', icon: 'success' });
     setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);

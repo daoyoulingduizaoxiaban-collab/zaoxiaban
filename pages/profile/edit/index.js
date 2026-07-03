@@ -13,6 +13,7 @@ Page({
     pageErrorText: '',
     targetId: '',
     isSubmitting: false,
+    isDirty: false,
     formData: {
       title: '',
       date: '',
@@ -33,6 +34,16 @@ Page({
   },
 
   onLoad(options) {
+    this.initPage(options);
+  },
+
+  onShow() {
+    if (this.data.canSave && this.data.targetId && !this.data.isSubmitting && !this.data.isDirty) {
+      this.fetchprofileDetail(this.data.targetId);
+    }
+  },
+
+  initPage(options = {}) {
     const profile = AuthService.getCurrentProfile();
     const targetId = options.id || (profile && profile.id) || '';
     const canSave = Boolean(
@@ -89,7 +100,7 @@ Page({
     const { field } = e.currentTarget.dataset;
     const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
     if (!field) return;
-    this.setData({ [`formData.${field}`]: value });
+    this.setData({ [`formData.${field}`]: value, isDirty: true });
   },
 
   async onSave() {
@@ -127,6 +138,7 @@ Page({
       wx.showToast({ title: res.error || '保存个人资料失败', icon: 'none' });
       return;
     }
+    this.setData({ isDirty: false });
     AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '个人资料已保存', icon: 'success' });
     setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);

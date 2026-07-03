@@ -11,6 +11,7 @@ Page({
     disabledReason: '请先登录后维护客户资料',
     pageErrorText: '',
     isSubmitting: false,
+    isDirty: false,
     formData: {
       name: '',
       phone: '',
@@ -24,7 +25,9 @@ Page({
   },
 
   onShow() {
-    this.loadCustomerProfile();
+    if (!this.data.isSubmitting && !this.data.isDirty) {
+      this.loadCustomerProfile();
+    }
   },
 
   getEmptyFormData() {
@@ -93,7 +96,7 @@ Page({
     const { field } = e.currentTarget.dataset;
     const value = e.detail && e.detail.value !== undefined ? e.detail.value : '';
     if (!field) return;
-    this.setData({ [`formData.${field}`]: value });
+    this.setData({ [`formData.${field}`]: value, isDirty: true });
   },
 
   onLogin() {
@@ -140,6 +143,7 @@ Page({
       return;
     }
 
+    this.setData({ isDirty: false });
     AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '客户资料已保存', icon: 'success' });
     setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);

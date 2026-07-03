@@ -20,6 +20,7 @@ Page({
     pageErrorText: '',
     targetId: '',
     isSubmitting: false,
+    isDirty: false,
     isApplicationMode: false,
     submitText: '保存导游/领队',
     formData: {
@@ -42,6 +43,16 @@ Page({
   },
 
   onLoad(options) {
+    this.initPage(options);
+  },
+
+  onShow() {
+    if (this.data.canSave && this.data.targetId && !this.data.isSubmitting && !this.data.isDirty && !this.data.isApplicationMode) {
+      this.fetchtourGuidesDetail(this.data.targetId);
+    }
+  },
+
+  initPage(options = {}) {
     const profile = AuthService.getCurrentProfile();
     const reviewStatus = normalizeReviewStatus(profile && (profile.reviewStatus || profile.status));
     const isGuideApplicant = Boolean(profile && profile.requestedRole === AUTH_ROLES.GUIDE && reviewStatus === REVIEW_STATUS.PENDING);
@@ -115,7 +126,7 @@ Page({
     const { field } = e.currentTarget.dataset;
     const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
     if (!field) return;
-    this.setData({ [`formData.${field}`]: value });
+    this.setData({ [`formData.${field}`]: value, isDirty: true });
   },
 
   async onSave() {
@@ -158,6 +169,7 @@ Page({
       wx.showToast({ title: res.error || '保存导游/领队资料失败', icon: 'none' });
       return;
     }
+    this.setData({ isDirty: false });
     AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: this.data.isApplicationMode ? '申请已提交' : '导游/领队资料已保存', icon: 'success' });
     setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
