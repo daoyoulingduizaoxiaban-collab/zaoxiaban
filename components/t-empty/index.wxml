@@ -1,0 +1,8 @@
+<view class="local-empty t-class">
+  <t-icon class="local-empty__icon" name="{{icon}}" size="96rpx" color="#8a94a6" />
+  <view class="local-empty__description t-class-description">{{description}}</view>
+  <view class="local-empty__action">
+    <slot name="action" />
+  </view>
+  <slot />
+</view>

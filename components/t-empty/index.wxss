@@ -1,0 +1,27 @@
+.local-empty {
+  width: 100%;
+  min-height: 220rpx;
+  padding: 24rpx 32rpx;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: #5f6f89;
+}
+
+.local-empty__icon {
+  color: #8a94a6;
+}
+
+.local-empty__description {
+  margin-top: 18rpx;
+  color: #5f6f89;
+  font-size: 28rpx;
+  line-height: 42rpx;
+}
+
+.local-empty__action {
+  margin-top: 24rpx;
+}

@@ -4,7 +4,7 @@
     "t-cell": "tdesign-miniprogram/cell/cell",
     "t-icon": "/components/t-icon/index",
     "nav": "/components/nav/index",
-    "t-fab": "tdesign-miniprogram/fab/fab",
+    "t-fab": "/components/t-fab/index",
     "t-search": "tdesign-miniprogram/search/search",
     "t-dropdown-menu": "tdesign-miniprogram/dropdown-menu/dropdown-menu",
     "t-dropdown-item": "tdesign-miniprogram/dropdown-item/dropdown-item"

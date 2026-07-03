@@ -1,0 +1,8 @@
+<button
+  class="local-fab t-class"
+  style="{{style}}{{customStyle}}"
+  aria-label="{{ariaLabel}}"
+  bindtap="handleTap"
+>
+  <t-icon name="{{icon}}" size="48rpx" color="#ffffff" />
+</button>

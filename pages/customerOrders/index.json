@@ -4,6 +4,6 @@
     "t-cell": "tdesign-miniprogram/cell/cell",
     "t-icon": "/components/t-icon/index",
     "nav": "/components/nav/index",
-    "t-fab": "tdesign-miniprogram/fab/fab"
+    "t-fab": "/components/t-fab/index"
   }
 }
