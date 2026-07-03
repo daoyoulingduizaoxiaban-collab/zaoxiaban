@@ -1,7 +1,7 @@
 import { QaSeedMock } from '~/mock/qaSeed';
 import { callBusinessData, getSaveModeText, isCloudBusinessEnabled } from './cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { AUTH_ROLES, REVIEW_STATUS, isOwnerOrAdmin, normalizeReviewStatus } from '~/services/auth/roleScope';
 
 const USERS_STORAGE_KEY = 'dao_you_ling_local_users';
 const PROVIDERS_STORAGE_KEY = 'dao_you_ling_local_providers';
@@ -127,12 +127,23 @@ export const DirectoryRepository = {
     const users = getLocalUsers().map(normalizeUser);
     const target = users.find(user => sameId(user.id, payload.id));
     if (!target) return { success: false, error: '未找到用户' };
+    if (target.role === AUTH_ROLES.OWNER) return { success: false, error: '不能修改 owner 账号' };
+    if (profile.role === AUTH_ROLES.ADMIN && (payload.role === AUTH_ROLES.OWNER || target.role === AUTH_ROLES.ADMIN)) {
+      return { success: false, error: '管理员不能指派 owner 或修改管理员账号' };
+    }
+    const nextStatus = normalizeReviewStatus(payload.reviewStatus);
+    const allowedStatuses = [REVIEW_STATUS.APPROVED, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED, REVIEW_STATUS.PENDING];
+    if (!allowedStatuses.includes(nextStatus)) return { success: false, error: '审核状态无效' };
+    const nextRole = nextStatus === REVIEW_STATUS.APPROVED
+      ? (payload.role || target.requestedRole || target.role || AUTH_ROLES.CUSTOMER)
+      : (target.role || payload.role || AUTH_ROLES.CUSTOMER);
+    if (nextRole === AUTH_ROLES.OWNER) return { success: false, error: '不能通过审核入口指派 owner' };
     const updatedAt = nowIso();
     const next = normalizeUser({
       ...target,
-      role: payload.role || target.role,
-      status: payload.reviewStatus,
-      reviewStatus: payload.reviewStatus,
+      role: nextRole,
+      status: nextStatus,
+      reviewStatus: nextStatus,
       reviewRemark: payload.reviewRemark || '',
       reviewedAt: updatedAt,
       reviewedBy: profile.openId || profile.id,
@@ -169,6 +180,9 @@ export const DirectoryRepository = {
     const existing = users.find(user => sameId(user.id, payload.id));
     if (payload.id && !canEditUser(existing, profile)) return { success: false, error: '当前账号没有保存权限' };
     if (!payload.id && !isOwnerOrAdmin(profile)) return { success: false, error: '当前账号不能新增资料' };
+    if (existing && existing.role === AUTH_ROLES.OWNER && profile && profile.role === AUTH_ROLES.ADMIN) {
+      return { success: false, error: '管理员不能修改 owner 账号' };
+    }
 
     const updatedAt = nowIso();
     const next = normalizeUser({
@@ -179,6 +193,23 @@ export const DirectoryRepository = {
       updatedAt,
       createdAt: (existing && existing.createdAt) || updatedAt,
     });
+    if (profile && profile.role === AUTH_ROLES.ADMIN && next.role === AUTH_ROLES.OWNER) {
+      return { success: false, error: '管理员不能指派 owner' };
+    }
+    if (!isOwnerOrAdmin(profile)) {
+      next.role = (existing && existing.role) || profile.role;
+      next.roleLabel = (existing && existing.roleLabel) || next.roleLabel || '';
+      next.displayRole = (existing && (existing.displayRole || existing.roleLabel)) || next.displayRole || next.role;
+      next.status = (existing && existing.status) || profile.status || REVIEW_STATUS.APPROVED;
+      next.reviewStatus = (existing && (existing.reviewStatus || existing.status)) || profile.reviewStatus || profile.status || REVIEW_STATUS.APPROVED;
+      next.requestedRole = (existing && existing.requestedRole) || profile.requestedRole || next.role;
+      next.reviewedBy = (existing && existing.reviewedBy) || '';
+      next.reviewedAt = (existing && existing.reviewedAt) || '';
+      next.reviewRemark = (existing && existing.reviewRemark) || '';
+      next.openId = (existing && existing.openId) || profile.openId;
+      next.unionId = (existing && existing.unionId) || profile.unionId || '';
+      next.providerId = (existing && existing.providerId) || profile.providerId || '';
+    }
 
     const nextUsers = existing
       ? users.map(user => (sameId(user.id, next.id) ? next : user))
