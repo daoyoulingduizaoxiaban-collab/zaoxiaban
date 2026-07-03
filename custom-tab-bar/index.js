@@ -1,6 +1,6 @@
 import {
   BOTTOM_BAR_LIST
-} from '../config'
+} from '../config.js'
 import { AuthService } from '../services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '../services/auth/roleScope';
 
