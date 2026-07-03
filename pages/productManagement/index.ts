@@ -20,6 +20,7 @@ Page({
     roleScopeText: '',
     saveModeText: '',
     isLoading: false,
+    loadErrorText: '',
     canManageProducts: false,
     isLoggedIn: false,
     canUseBusiness: false,
@@ -54,19 +55,32 @@ Page({
         canUseBusiness: false,
         accessStateText: AuthService.getAccessStateText(profile),
         isLoading: false,
+        loadErrorText: '',
       });
       return;
     }
 
-    this.setData({ isLoading: true });
+    this.setData({ isLoading: true, loadErrorText: '' });
     const res = await ProductService.listVisible({
       keyword: this.data.searchQuery,
       status: this.data.currentStatus,
     });
 
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
-      this.setData({ isLoading: false });
+      const errorText = res.error || '加载商品失败';
+      wx.showToast({ title: errorText, icon: 'none' });
+      this.setData({
+        allProducts: [],
+        productList: [],
+        roleScopeText: errorText,
+        saveModeText: '',
+        canManageProducts: this.canManageProducts(),
+        isLoggedIn: Boolean(profile),
+        canUseBusiness: true,
+        accessStateText: AuthService.getAccessStateText(profile),
+        isLoading: false,
+        loadErrorText: errorText,
+      });
       return;
     }
 
@@ -81,6 +95,7 @@ Page({
       canUseBusiness: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
       isLoading: false,
+      loadErrorText: '',
     });
   },
 

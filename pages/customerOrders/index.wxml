@@ -16,7 +16,15 @@
     </t-dropdown-menu>
   </view>
 
-  <t-cell-group theme="card" wx:if="{{canUseBusiness}}">
+  <view wx:if="{{canUseBusiness && isLoading}}" class="empty-state">
+    <t-empty icon="info-circle" description="正在加载客户订单" />
+  </view>
+
+  <view wx:elif="{{canUseBusiness && loadErrorText}}" class="empty-state">
+    <t-empty icon="info-circle" description="{{loadErrorText}}" />
+  </view>
+
+  <t-cell-group theme="card" wx:elif="{{canUseBusiness}}">
     <block wx:for="{{ customerOrdersList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow
         bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
@@ -30,7 +38,7 @@
     </block>
   </t-cell-group>
 
-  <view wx:if="{{canUseBusiness && customerOrdersList.length === 0 }}" class="empty-state">
+  <view wx:if="{{canUseBusiness && !isLoading && !loadErrorText && customerOrdersList.length === 0 }}" class="empty-state">
     <t-empty icon="info-circle" description="暂无客户订单" />
     <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>

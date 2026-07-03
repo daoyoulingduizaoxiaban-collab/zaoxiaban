@@ -91,7 +91,7 @@ const callCloudAuth = (loginCode, requestedRole) => new Promise((resolve) => {
     }),
     fail: err => resolve({
       success: false,
-      error: err.errMsg || '云函数 authLogin 调用失败',
+      error: err.errMsg || '账号服务暂时不可用',
     }),
   });
 });

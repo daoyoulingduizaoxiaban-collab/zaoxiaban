@@ -21,14 +21,25 @@
   </view>
 
   <scroll-view scroll-y="true" class="product-list" wx:if="{{canUseBusiness}}">
-    <view class="empty-container" wx:if="{{productList.length === 0}}">
+    <view class="empty-container" wx:if="{{isLoading}}">
+      <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
+      <text class="empty-text">正在加载商品</text>
+    </view>
+
+    <view class="empty-container" wx:elif="{{loadErrorText}}">
+      <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
+      <text class="empty-text">{{loadErrorText}}</text>
+      <text class="empty-tips">请稍后刷新页面重试</text>
+    </view>
+
+    <view class="empty-container" wx:elif="{{productList.length === 0}}">
       <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
       <text class="empty-text">当前没有商品</text>
       <text class="empty-tips">{{isLoggedIn ? (canManageProducts ? '可点击右下角新增，资料将保存到微信云端' : '当前账号暂无可管理商品') : '请登录后查看可管理的商品库'}}</text>
       <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
     </view>
 
-    <block wx:for="{{productList}}" wx:key="id">
+    <block wx:else wx:for="{{productList}}" wx:key="id">
       <view class="product-card" bindtap="onOpenDetail" data-id="{{item.id}}">
         <view class="product-card-body">
           <image class="product-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>

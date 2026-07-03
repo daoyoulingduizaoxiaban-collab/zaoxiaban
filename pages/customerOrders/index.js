@@ -20,6 +20,8 @@ Page({
     isLoggedIn: false,
     canUseBusiness: false,
     accessStateText: '',
+    isLoading: false,
+    loadErrorText: '',
     actionPanelVisible: false,
     actionType: '',
     actionOrderId: '',
@@ -52,13 +54,29 @@ Page({
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
         accessStateText: AuthService.getAccessStateText(profile),
+        isLoading: false,
+        loadErrorText: '',
       });
       return;
     }
 
+    this.setData({ isLoading: true, loadErrorText: '' });
     const res = await CustomerOrderService.listVisible();
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载客户订单失败', icon: 'none' });
+      const errorText = res.error || '加载客户订单失败';
+      wx.showToast({ title: errorText, icon: 'none' });
+      this.setData({
+        customerOrdersList: [],
+        allCustomerOrdersList: [],
+        roleScopeText: errorText,
+        canCreateCustomerOrder: this.canCreateCustomerOrder(),
+        saveModeText: '',
+        isLoggedIn: Boolean(profile),
+        canUseBusiness: true,
+        accessStateText: AuthService.getAccessStateText(profile),
+        isLoading: false,
+        loadErrorText: errorText,
+      });
       return;
     }
 
@@ -72,6 +90,8 @@ Page({
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       canUseBusiness: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
+      isLoading: false,
+      loadErrorText: '',
     });
   },
 
@@ -86,6 +106,7 @@ Page({
     this.setData({
       currentStatus: status,
       customerOrdersList: this.filterOrdersByStatus(this.data.allCustomerOrdersList, status),
+      loadErrorText: '',
     });
   },
 

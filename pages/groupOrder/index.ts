@@ -21,6 +21,8 @@ Page({
     isLoggedIn: false,
     canUseBusiness: false,
     accessStateText: '',
+    isLoading: false,
+    loadErrorText: '',
   },
 
   // 初始化
@@ -45,10 +47,13 @@ Page({
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
         accessStateText: AuthService.getAccessStateText(profile),
+        isLoading: false,
+        loadErrorText: '',
       });
       return;
     }
 
+    this.setData({ isLoading: true, loadErrorText: '' });
     wx.showLoading({
       title: '加载中'
     });
@@ -66,9 +71,37 @@ Page({
           isLoggedIn: Boolean(AuthService.getCurrentProfile()),
           canUseBusiness: true,
           accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
+          isLoading: false,
+          loadErrorText: '',
+        });
+      } else {
+        const errorText = res.error || '加载团单失败';
+        this.setData({
+          itineraryList: [],
+          roleScopeText: errorText,
+          canCreateGroupOrder: this.canCreateGroupOrder(),
+          isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+          canUseBusiness: true,
+          accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
+          isLoading: false,
+          loadErrorText: errorText,
+        });
+        wx.showToast({
+          title: errorText,
+          icon: 'none'
         });
       }
     } catch (err) {
+      this.setData({
+        itineraryList: [],
+        roleScopeText: '加载团单失败',
+        canCreateGroupOrder: this.canCreateGroupOrder(),
+        isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+        canUseBusiness: true,
+        accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
+        isLoading: false,
+        loadErrorText: '加载团单失败',
+      });
       wx.showToast({
         title: '加载团单失败',
         icon: 'none'
@@ -119,7 +152,7 @@ Page({
         value: 'groupOrder'
       });
     }
-    this.applyFilters();
+    this.fetchItineraryList();
   },
 
   addItinerary(e) {
@@ -172,9 +205,25 @@ Page({
       status: currentStatus
     });
 
+    if (!res.success) {
+      const errorText = res.error || '加载团单失败';
+      this.setData({
+        itineraryList: [],
+        roleScopeText: errorText,
+        loadErrorText: errorText,
+      });
+      wx.showToast({
+        title: errorText,
+        icon: 'none'
+      });
+      return;
+    }
+
     this.setData({
       // 確保畫面更新的是篩選後的結果
-      itineraryList: this.normalizeGroupOrders(res.data)
+      itineraryList: this.normalizeGroupOrders(res.data),
+      roleScopeText: this.getRoleScopeText(),
+      loadErrorText: '',
     });
   }
 
