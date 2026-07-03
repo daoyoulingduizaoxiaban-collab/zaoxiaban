@@ -47,9 +47,12 @@ Component({
     },
 
     refreshTabBar() {
+      const list = this.getVisibleTabs();
+      const currentValue = this.getCurrentTabValue();
+      const isCurrentVisible = list.some(item => item.value === currentValue);
       this.setData({
-        list: this.getVisibleTabs(),
-        value: this.getCurrentTabValue(),
+        list,
+        value: isCurrentVisible ? currentValue : 'my',
       });
     },
 
@@ -71,7 +74,7 @@ Component({
         const {
           value
         } = e.detail;
-        const item = this.data.list.find(i => i.value === value);
+        const item = nextList.find(i => i.value === value);
 
         if (item) {
           const previousValue = this.data.value;
