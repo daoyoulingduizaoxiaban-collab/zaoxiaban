@@ -132,20 +132,19 @@ const canManageProduct = (product, profile) => {
   if (isOwnerOrAdmin(profile)) return true;
   if (profile.role === 'guide') return sameId(product.ownerOpenId, profile.openId);
   if (profile.role === 'provider') return sameId(product.providerId, profile.providerId || profile.id);
-  if (profile.role === 'customer') {
-    return Number(product.status) === PRODUCT_STATUS.PUBLISHED
-      && product.visibility !== 'private';
-  }
   return false;
 };
 
 const canViewProduct = (product, profile) => {
   if (!profile || !product || product.deletedAt) return false;
   if (isOwnerOrAdmin(profile)) return true;
+  const isPublishedPublic = Number(product.status) === PRODUCT_STATUS.PUBLISHED
+    && product.visibility !== 'private';
   if (profile.role === 'guide') {
-    return product.visibility === 'public' || sameId(product.ownerOpenId, profile.openId);
+    return sameId(product.ownerOpenId, profile.openId) || isPublishedPublic;
   }
   if (profile.role === 'provider') return sameId(product.providerId, profile.providerId || profile.id);
+  if (profile.role === 'customer') return isPublishedPublic;
   return false;
 };
 
