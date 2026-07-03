@@ -2,10 +2,10 @@ import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
 import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
+import { normalizeProductImageFields } from '~/utils/productImage';
 
 const normalizeNumber = value => Number(value || 0);
 const trimText = value => String(value || '').trim();
-const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
 const getBestPriceRule = (priceSetting = [], quantity = 0) => {
   const count = normalizeNumber(quantity);
@@ -40,13 +40,9 @@ const normalizeOrderListItem = order => ({
 const normalizeGroupOrderProducts = groupOrder => (groupOrder.productList || [])
   .filter(product => Number(product.status) === ProductStatus.PUBLISHED)
   .map(product => {
-    const coverUrl = product.coverUrl || (product.pictureUrls && product.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK;
-    const isImageFallback = product.isImageFallback || coverUrl === PRODUCT_IMAGE_FALLBACK;
+    const normalizedImage = normalizeProductImageFields(product);
     return {
-      ...product,
-      coverUrl,
-      isImageFallback,
-      imageFallbackText: product.imageFallbackText || (isImageFallback ? '暂无商品图片' : ''),
+      ...normalizedImage,
       quantity: 0,
       priceDisplay: getProductPriceDisplay(product),
       lineTotal: 0,

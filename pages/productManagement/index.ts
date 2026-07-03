@@ -4,12 +4,11 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { navigateByUrl } from '~/utils/navigation';
+import { normalizeProductImageFields } from '~/utils/productImage';
 import {
   getProductStatusList,
   getProductStatusTextByValue
 } from '~/enum/ProductStatus'
-
-const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
 Page({
   data: {
@@ -103,12 +102,8 @@ Page({
 
   normalizeProducts(products: Product[] = []) {
     return products.map((product) => {
-      const coverUrl = product.coverUrl || (product.pictureUrls && product.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK;
       return {
-        ...product,
-        coverUrl,
-        isImageFallback: product.isImageFallback || coverUrl === PRODUCT_IMAGE_FALLBACK,
-        imageFallbackText: product.imageFallbackText || (coverUrl === PRODUCT_IMAGE_FALLBACK ? '暂无商品图片' : ''),
+        ...normalizeProductImageFields(product),
         priceSetting: product.priceSetting || product.priceSettings || [],
       };
     });
@@ -200,7 +195,7 @@ Page({
   onImageError(e: any) {
     const id = String(e.currentTarget.dataset.id);
     const patchCover = product => (String(product.id) === id
-      ? { ...product, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+      ? { ...product, coverUrl: '', isImageFallback: true, imageFallbackText: '图片加载失败' }
       : product);
     this.setData({
       productList: this.data.productList.map(patchCover),
@@ -211,7 +206,7 @@ Page({
   onDetailImageError() {
     if (!this.data.selectedProduct) return;
     this.setData({
-      'selectedProduct.coverUrl': PRODUCT_IMAGE_FALLBACK,
+      'selectedProduct.coverUrl': '',
       'selectedProduct.isImageFallback': true,
       'selectedProduct.imageFallbackText': '图片加载失败',
     });

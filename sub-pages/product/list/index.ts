@@ -1,8 +1,7 @@
 import { ProductService } from '~/services/product/productService';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { AuthService } from '~/services/auth/authService';
-
-const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
+import { normalizeProductImageFields } from '~/utils/productImage';
 
 Page({
   data: {
@@ -54,12 +53,8 @@ Page({
 
   normalizeProducts(products = []) {
     return products.map((item) => {
-      const coverUrl = item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK;
       return {
-        ...item,
-        coverUrl,
-        isImageFallback: item.isImageFallback || coverUrl === PRODUCT_IMAGE_FALLBACK,
-        imageFallbackText: item.imageFallbackText || (coverUrl === PRODUCT_IMAGE_FALLBACK ? '暂无商品图片' : ''),
+        ...normalizeProductImageFields(item),
         priceSetting: item.priceSetting || item.priceSettings || [],
         priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
         minUnitPrice: this.getMinUnitPrice(item.priceSetting || item.priceSettings || []),
@@ -146,8 +141,7 @@ Page({
     }
     this.setData({
       selectedProduct: {
-        ...product,
-        coverUrl: product.coverUrl || PRODUCT_IMAGE_FALLBACK,
+        ...normalizeProductImageFields(product),
       },
       selectedPriceRules: product.priceSetting || [],
       detailVisible: true,
@@ -168,12 +162,12 @@ Page({
     const { id } = e.currentTarget.dataset;
     const nextAll = this.data.allProducts.map(item => (
       String(item.id) === String(id)
-        ? { ...item, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+        ? { ...item, coverUrl: '', isImageFallback: true, imageFallbackText: '图片加载失败' }
         : item
     ));
     const nextFiltered = this.data.filteredList.map(item => (
       String(item.id) === String(id)
-        ? { ...item, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+        ? { ...item, coverUrl: '', isImageFallback: true, imageFallbackText: '图片加载失败' }
         : item
     ));
     this.setData({ allProducts: nextAll, filteredList: nextFiltered });
@@ -182,7 +176,7 @@ Page({
   onDetailImageError() {
     if (!this.data.selectedProduct) return;
     this.setData({
-      'selectedProduct.coverUrl': PRODUCT_IMAGE_FALLBACK,
+      'selectedProduct.coverUrl': '',
       'selectedProduct.isImageFallback': true,
       'selectedProduct.imageFallbackText': '图片加载失败',
     });

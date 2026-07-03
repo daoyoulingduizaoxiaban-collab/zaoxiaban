@@ -2,10 +2,10 @@ import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductRepository } from '~/repositories/productRepository';
 import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
+import { normalizeProductImageFields } from '~/utils/productImage';
 
 const normalizeNumber = value => Number(value || 0);
 const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
-const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
 export const calculatePriceRule = rule => ({
   minQuantity: normalizeNumber(rule.minQuantity),
@@ -23,19 +23,10 @@ export const getProductPriceDisplay = (priceSetting = []) => {
 };
 
 const normalizeProduct = (product) => {
-  const pictureUrls = product.pictureUrls || [];
-  const coverUrl = product.coverUrl || pictureUrls[0] || PRODUCT_IMAGE_FALLBACK;
-  let normalizedPictureUrls = pictureUrls;
-  if (!normalizedPictureUrls.length && coverUrl !== PRODUCT_IMAGE_FALLBACK) {
-    normalizedPictureUrls = [coverUrl];
-  }
+  const normalizedImage = normalizeProductImageFields(product);
   return {
-    ...product,
-    pictureUrls: normalizedPictureUrls,
+    ...normalizedImage,
     priceSetting: product.priceSetting || product.priceSettings || [],
-    coverUrl,
-    isImageFallback: coverUrl === PRODUCT_IMAGE_FALLBACK,
-    imageFallbackText: coverUrl === PRODUCT_IMAGE_FALLBACK ? '暂无商品图片' : '',
     priceDisplay: getProductPriceDisplay(product.priceSetting || product.priceSettings || []),
   };
 };

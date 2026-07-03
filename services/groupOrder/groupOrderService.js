@@ -1,5 +1,6 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
+import { normalizeProductImageFields } from '~/utils/productImage';
 
 const normalizeNumber = value => Number(value || 0);
 
@@ -12,7 +13,7 @@ const getProductPriceDisplay = (product) => {
 };
 
 const normalizeProduct = product => ({
-  ...product,
+  ...normalizeProductImageFields(product),
   priceDisplay: product.priceDisplay || getProductPriceDisplay(product),
 });
 

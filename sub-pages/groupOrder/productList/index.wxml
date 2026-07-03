@@ -24,7 +24,7 @@
       <view class="product-card" wx:for="{{displayList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
         
         <view class="p-img-wrap">
-          <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError" />
+          <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError" />
           <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
         </view>
         
@@ -66,7 +66,7 @@
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeProductDetail">
     <view class="detail-panel" catchtap="noop">
       <view class="detail-img-wrap">
-        <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
+        <image wx:if="{{selectedProduct.coverUrl && !selectedProduct.isImageFallback}}" class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
         <view wx:if="{{selectedProduct.isImageFallback}}" class="detail-image-fallback-label">{{selectedProduct.imageFallbackText}}</view>
       </view>
       <view class="detail-content">

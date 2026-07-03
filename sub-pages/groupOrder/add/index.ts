@@ -5,8 +5,7 @@ import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusin
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
-
-const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
+import { normalizeProductImageFields } from '~/utils/productImage';
 
 Page({
   data: {
@@ -86,10 +85,7 @@ Page({
 
   normalizeGoods(goods = []) {
     return goods.map(item => ({
-      ...item,
-      coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK,
-      isImageFallback: item.isImageFallback || !(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])),
-      imageFallbackText: item.imageFallbackText || (!(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])) ? '暂无商品图片' : ''),
+      ...normalizeProductImageFields(item),
       priceSetting: item.priceSetting || item.priceSettings || [],
     }));
   },
@@ -115,7 +111,7 @@ Page({
       itemIndex === Number(index)
         ? {
           ...item,
-          coverUrl: PRODUCT_IMAGE_FALLBACK,
+          coverUrl: '',
           isImageFallback: true,
           imageFallbackText: '图片加载失败',
         }

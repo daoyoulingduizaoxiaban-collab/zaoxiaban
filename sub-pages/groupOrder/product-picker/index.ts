@@ -1,7 +1,6 @@
 import { ProductService } from '~/services/product/productService';
 import { navigateBackOrTab } from '~/utils/navigation';
-
-const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
+import { normalizeProductImageFields } from '~/utils/productImage';
 
 Page({
   data: {
@@ -66,10 +65,7 @@ Page({
     const processedList = res.data.map(item => {
       const isExist = this.data.excludeIds.includes(String(item.id));
       return {
-        ...item,
-        coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK,
-        isImageFallback: item.isImageFallback || !(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])),
-        imageFallbackText: item.imageFallbackText || (!(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])) ? '暂无商品图片' : ''),
+        ...normalizeProductImageFields(item),
         priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
         disabled: isExist,
         selected: false
@@ -154,7 +150,7 @@ Page({
     const { id } = e.currentTarget.dataset;
     const patchCover = product => (String(product.id) === String(id) ? {
       ...product,
-      coverUrl: PRODUCT_IMAGE_FALLBACK,
+      coverUrl: '',
       isImageFallback: true,
       imageFallbackText: '图片加载失败',
     } : product);

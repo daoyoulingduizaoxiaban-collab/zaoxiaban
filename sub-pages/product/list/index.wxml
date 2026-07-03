@@ -28,7 +28,7 @@
     <block wx:else wx:for="{{filteredList}}" wx:key="id">
       <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
         <view class="cover-image-wrap">
-          <image class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+          <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
           <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
         </view>
         <view class="content-area">
@@ -55,7 +55,7 @@
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">
     <view class="detail-panel" catchtap="noop">
       <view class="detail-img-wrap">
-        <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
+        <image wx:if="{{selectedProduct.coverUrl && !selectedProduct.isImageFallback}}" class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
         <view wx:if="{{selectedProduct.isImageFallback}}" class="detail-image-fallback-label">{{selectedProduct.imageFallbackText}}</view>
       </view>
       <view class="detail-content">

@@ -212,7 +212,7 @@ Page({
     const productRows = this.data.productRows.map(product => (String(product.id) === String(productId)
       ? {
         ...product,
-        coverUrl: '/static/logo/zaoxiaban.png',
+        coverUrl: '',
         isImageFallback: true,
         imageFallbackText: '图片加载失败',
       }
