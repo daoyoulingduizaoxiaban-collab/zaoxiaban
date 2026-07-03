@@ -6,9 +6,9 @@
 3. `MVP_COMPLETION_CHECKLIST.md`
 4. `ACCEPTANCE.md` only when the task needs current validation status.
 
-`BUSINESS_LOGIC_PRINCIPLES.md` is the only business-logic source of truth. Do not use deleted or historical handoff/data-model/QA-seed documents as decision sources. Use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` only when explicitly fixing current QA not-pass rows.
+`BUSINESS_LOGIC_PRINCIPLES.md` is the only business-logic source of truth. Use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` only when explicitly fixing current QA not-pass rows.
 
-QA and AGENT must not create extra planning, handoff, result, matrix, or progress documents unless the user explicitly asks. QA reports only current `不通過` rows in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA verification.
+QA and AGENT must not create extra planning, result, matrix, or progress documents unless the user explicitly asks. QA reports only current `不通過` rows in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA verification.
 
 Do not rely on chat memory.
 

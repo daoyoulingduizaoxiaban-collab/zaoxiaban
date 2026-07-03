@@ -15,7 +15,7 @@ Use `BUSINESS_LOGIC_PRINCIPLES.md` as the only business-logic source of truth. U
 
 Do not copy BUG rows, BUG ID lists, GUI subissue lists, or per-page defect ledgers into `MVP_COMPLETION_CHECKLIST.md`. The MVP checklist tracks gate-level categories; the BUG report tracks independently fixable and retestable rows.
 
-QA/AGENT work must stay separated by responsibility: QA reports only in the BUG report and does not create extra planning/result/handoff documents; development agents fix product code, run validation, and hand the fix back for QA retest.
+QA/AGENT work must stay separated by responsibility: QA reports only in the BUG report and does not create extra planning/result/progress documents; development agents fix product code, run validation, and hand the fix back for QA retest.
 
 ## Current State
 - Mixed mode: formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use local/QA fallback.
