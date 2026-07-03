@@ -74,21 +74,44 @@ Page({
   },
 
   onSave() {
-    wx.showToast({
-      title: '演示模式，暂不保存二维码',
-      icon: 'none'
+    const path = this.data.groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`;
+    if (!this.data.groupOrderId) {
+      wx.showToast({
+        title: '缺少团单 ID',
+        icon: 'none'
+      });
+      return;
+    }
+    wx.setClipboardData({
+      data: path,
+      success: () => wx.showToast({ title: '客户入口已复制', icon: 'none' }),
+      fail: () => wx.showToast({ title: '复制客户入口失败', icon: 'none' }),
     });
   },
 
   onExportReport() {
-    wx.showActionSheet({
-      itemList: ['导出为 PDF', '导出为 Excel', '发送到邮箱'],
-      success: () => {
-        wx.showToast({
-          title: '当前页面暂不支持导出',
-          icon: 'none'
-        });
-      }
+    const groupOrder = this.data.groupOrder || {};
+    const orders = groupOrder.memberOrderList || [];
+    const lines = [
+      `团单：${groupOrder.title || ''}`,
+      `状态：${groupOrder.statusText || ''}`,
+      `应收总金额：￥${groupOrder.totalReceivable || 0}`,
+      `已收总金额：￥${groupOrder.totalReceived || 0}`,
+      `下单人数：${groupOrder.totalCustomers || orders.length || 0}`,
+      '',
+      '客户订单：',
+      ...orders.map(order => [
+        `#${order.id}`,
+        order.customerName || `客户 ${order.customerUserId || order.userId || ''}`,
+        `状态 ${order.statusText || order.status}`,
+        `金额 ￥${order.totalPrice || 0}`,
+      ].join('｜')),
+    ];
+
+    wx.setClipboardData({
+      data: lines.join('\n'),
+      success: () => wx.showToast({ title: '报表摘要已复制', icon: 'success' }),
+      fail: () => wx.showToast({ title: '导出报表失败', icon: 'none' }),
     });
   },
 
@@ -259,7 +282,13 @@ Page({
       title: '处理中...'
     });
 
-    const res = await CustomerOrderService.confirmPayment(this.data.selectedMemberOrderId);
+    const selectedOrder = (this.data.groupOrder.memberOrderList || [])
+      .find(order => String(order.id) === String(this.data.selectedMemberOrderId));
+    const confirmedAmount = selectedOrder && (selectedOrder.totalPrice || selectedOrder.originalTotalPrice);
+    const res = await CustomerOrderService.confirmPayment(this.data.selectedMemberOrderId, {
+      confirmedAmount,
+      confirmRemark: '团单详情确认到账',
+    });
     wx.hideLoading();
     this.setData({
       showConfirmDialog: false

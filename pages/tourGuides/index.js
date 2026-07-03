@@ -1,8 +1,6 @@
-import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
-
-const sameId = (a, b) => String(a) === String(b);
+import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
   data: {
@@ -16,7 +14,16 @@ Page({
     this.loadTourGuides();
   },
 
-  loadTourGuides() {
+  onShow() {
+    this.loadTourGuides();
+    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+      this.getTabBar().setData({
+        value: 'my'
+      });
+    }
+  },
+
+  async loadTourGuides() {
     const profile = AuthService.getCurrentProfile();
     if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.GUIDE)) {
       this.setData({
@@ -27,21 +34,19 @@ Page({
       return;
     }
 
-    const guideUsers = QaSeedMock.getUsers().filter(user => user.role === 'owner' || user.role === 'guide');
-    const visibleUsers = isOwnerOrAdmin(profile)
-      ? guideUsers
-      : guideUsers.filter(user => sameId(user.id, profile.id) || sameId(user.openId, profile.openId));
+    const res = await DirectoryRepository.listGuides();
+    const visibleUsers = res.success ? res.data : [];
 
     this.setData({
       tourGuidesList: visibleUsers
         .map(user => ({
           id: user.id,
-          title: user.name,
+          title: user.name || user.displayName,
           statusText: user.displayRole,
           description: `${user.city}｜手机号 ${user.phone}`,
         })),
       canCreateTourGuide: isOwnerOrAdmin(profile),
-      disabledReason: visibleUsers.length ? '' : '当前账号没有可查看的导游/领队资料。',
+      disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的导游/领队资料。'),
     });
   },
 
@@ -54,14 +59,6 @@ Page({
       showCancel: false,
       confirmText: '知道了'
     });
-  },
-
-  onShow() {
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        value: 'my'
-      });
-    }
   },
 
   onGoToEdit(e) {

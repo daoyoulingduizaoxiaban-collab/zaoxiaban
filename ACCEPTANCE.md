@@ -74,6 +74,8 @@
   - Customer order list role scope now includes the current role label and uses repository metadata when available.
   - My / QA Seed panel now includes dedicated guide/customer order-isolation check buttons that switch QA role and open the customer-order tab, reducing stale-tab/manual-navigation ambiguity during GUI retest.
   - Home and setting save-mode copy now separates formal OpenID cloud save, QA override, and mock/local testing states by reading the current auth session.
+  - Profile, tour guide, and provider list/edit pages now use `DirectoryRepository` instead of page-level seed reads; edit forms bind input values, validate required names, save through local fallback or cloud `businessData` actions, and return to refreshed lists.
+  - Group-order detail confirmation now sends a confirmed amount to the payment service, and export generates a copyable report summary instead of a non-supported action toast.
 - Documentation hygiene:
   - `README.md` now reflects the current source-of-truth workflow, confirmed WeChat Cloud data layer, implemented Phase 5 workflow, and remaining GUI gate.
 - Phase 6 UI cleanup is complete for the scoped starter pages:

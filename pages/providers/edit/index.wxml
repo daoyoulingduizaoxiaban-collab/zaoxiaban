@@ -3,12 +3,14 @@
 <view class="edit-container">
   <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
   <t-cell-group theme="card">
-    <t-input label="供应商名称" placeholder="请输入供应商名称" value="{{ formData.title }}" />
+    <t-input label="供应商名称" placeholder="请输入供应商名称" value="{{ formData.title }}" data-field="title" bind:change="onInputChange" />
+    <t-input label="联系人" placeholder="请输入联系人" value="{{ formData.contact }}" data-field="contact" bind:change="onInputChange" />
+    <t-input label="资料说明" placeholder="请输入供货或合作说明" value="{{ formData.note }}" data-field="note" bind:change="onInputChange" />
     <t-cell title="最近维护日期" note="{{ formData.date || '请选择' }}" arrow bind:tap="showDatePicker" />
-    <t-input label="供应商状态" value="{{ formData.statusText }}" disabled />
+    <t-input label="供应商状态" value="{{ formData.statusText }}" data-field="statusText" bind:change="onInputChange" />
   </t-cell-group>
 
   <view class="submit-bar" wx:if="{{canSave}}">
-    <t-button theme="primary" size="large" block bind:tap="onSave">保存供应商</t-button>
+    <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bind:tap="onSave">保存供应商</t-button>
   </view>
 </view>

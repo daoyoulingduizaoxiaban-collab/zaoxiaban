@@ -7,6 +7,8 @@ cloud.init({
 const db = cloud.database();
 
 const COLLECTIONS = [
+  'users',
+  'providers',
   'products',
   'groupOrders',
   'groupOrderProducts',
@@ -575,7 +577,111 @@ const customerOrderActions = {
   },
 };
 
+const normalizeDirectoryUser = (payload, existing = {}) => ({
+  ...existing,
+  displayName: trimText(payload.displayName || payload.name || existing.displayName || existing.name),
+  name: trimText(payload.name || payload.displayName || existing.name || existing.displayName),
+  phone: trimText(payload.phone || existing.phone),
+  city: trimText(payload.city || existing.city),
+  avatarUrl: payload.avatarUrl || existing.avatarUrl || '',
+  role: payload.role || existing.role || 'guide',
+  roleLabel: payload.roleLabel || existing.roleLabel || '',
+  displayRole: payload.displayRole || existing.displayRole || payload.roleLabel || existing.role || 'guide',
+  status: payload.status || existing.status || 'active',
+  updatedAt: nowIso(),
+  createdAt: existing.createdAt || payload.createdAt || nowIso(),
+});
+
+const canEditDirectoryUser = (target, profile) => Boolean(
+  profile && target && (
+    isOwnerOrAdmin(profile)
+    || sameId(target._id || target.id, profile.id)
+    || sameId(target.openId, profile.openId)
+  )
+);
+
+const userActions = {
+  async listVisible(payload, profile) {
+    assertProfile(profile);
+    if (isOwnerOrAdmin(profile)) {
+      const users = await getAllActive('users');
+      return success(users);
+    }
+    const result = await getCollection('users').where({ openId: profile.openId }).limit(1).get();
+    return success((result.data || []).map(toId));
+  },
+
+  async getById({ id }, profile) {
+    assertProfile(profile);
+    const target = await getById('users', id);
+    if (!canEditDirectoryUser(target, profile)) return failure('当前账号没有资料查看权限');
+    return success(target);
+  },
+
+  async save(payload, profile) {
+    assertProfile(profile);
+    const target = payload.id ? await getById('users', payload.id) : null;
+    if (payload.id && !canEditDirectoryUser(target, profile)) return failure('当前账号没有保存权限');
+    if (!payload.id && !isOwnerOrAdmin(profile)) return failure('当前账号不能新增资料');
+
+    const normalized = normalizeDirectoryUser(payload, target || {});
+    if (!isOwnerOrAdmin(profile)) {
+      normalized.role = target.role || profile.role;
+      normalized.status = target.status || profile.status || 'active';
+    }
+
+    if (target) {
+      await getCollection('users').doc(String(target._id || target.id)).update({ data: toUpdateData(normalized) });
+      return success(toId({ ...normalized, _id: target._id || target.id }));
+    }
+
+    const result = await getCollection('users').add({ data: normalized });
+    return success(toId({ ...normalized, _id: result._id }));
+  },
+};
+
+const normalizeProviderPayload = (payload, existing = {}) => ({
+  ...existing,
+  title: trimText(payload.title || existing.title),
+  contact: trimText(payload.contact || existing.contact),
+  statusText: trimText(payload.statusText || existing.statusText || '可显示资料'),
+  note: trimText(payload.note || existing.note),
+  updatedAt: nowIso(),
+  createdAt: existing.createdAt || payload.createdAt || nowIso(),
+  deletedAt: existing.deletedAt || '',
+});
+
+const providerActions = {
+  async listVisible(payload, profile) {
+    assertProfile(profile);
+    if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料管理权限');
+    return success(await getAllActive('providers'));
+  },
+
+  async getById({ id }, profile) {
+    assertProfile(profile);
+    if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料查看权限');
+    const provider = await getById('providers', id);
+    return provider ? success(provider) : failure('未找到供应商资料');
+  },
+
+  async save(payload, profile) {
+    assertProfile(profile);
+    if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料维护权限');
+    const target = payload.id ? await getById('providers', payload.id) : null;
+    const normalized = normalizeProviderPayload(payload, target || {});
+    if (target) {
+      await getCollection('providers').doc(String(target._id || target.id)).update({ data: toUpdateData(normalized) });
+      return success(toId({ ...normalized, _id: target._id || target.id }));
+    }
+    const result = await getCollection('providers').add({ data: normalized });
+    return success(toId({ ...normalized, _id: result._id }));
+  },
+};
+
 const handlers = {
+  users: userActions,
+  providers: providerActions,
   products: productActions,
   groupOrders: groupOrderActions,
   customerOrders: customerOrderActions,

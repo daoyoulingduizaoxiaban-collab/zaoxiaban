@@ -163,6 +163,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单记录问题、证据、复
 - [x] 表单都有验证与提交状态。
 - [x] 列表都有 loading、空状态、错误状态、正常状态、无结果状态。
 - [x] 未正式持久化的数据位置都有本地/QA/demo 模式提示。
+- [x] profile、tourGuide、provider 资料页已从直接 seed 读取收敛到 repository 边界；可见编辑页有实际保存路径，不再只用未支持提示挡住。
 
 ## Phase 7 - GUI Smoke Test
 - [x] 微信 DevTools 项目可通过 CLI 打开。

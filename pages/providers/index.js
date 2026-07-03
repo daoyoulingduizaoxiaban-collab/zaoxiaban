@@ -1,6 +1,6 @@
-import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { canUseProviderPortal } from '~/services/auth/roleScope';
+import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
   data: {
@@ -10,8 +10,11 @@ Page({
   },
 
   onLoad() {
+    this.loadProviders();
+  },
+
+  async loadProviders() {
     const profile = AuthService.getCurrentProfile();
-    const providersList = QaSeedMock.getProviders();
     if (!canUseProviderPortal(profile)) {
       this.setData({
         providersList: [],
@@ -20,9 +23,10 @@ Page({
       return;
     }
 
+    const res = await DirectoryRepository.listProviders();
     this.setData({
-      providersList,
-      disabledReason: '',
+      providersList: res.success ? res.data : [],
+      disabledReason: res.success ? '' : (res.error || '当前账号没有供应商资料管理权限。'),
     });
   },
 
@@ -37,8 +41,8 @@ Page({
     });
   },
 
-  // 同步 TabBar 狀態 (之前提到的關鍵細節)
   onShow() {
+    this.loadProviders();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'providers'
