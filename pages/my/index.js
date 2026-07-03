@@ -301,7 +301,7 @@ Page({
     if (url) {
       wx.navigateTo({
         url,
-        fail: () => wx.switchTab({ url }),
+        fail: () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' }),
       });
       return;
     }

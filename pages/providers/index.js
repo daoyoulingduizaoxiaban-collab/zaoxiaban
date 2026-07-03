@@ -56,13 +56,7 @@ Page({
 
     wx.navigateTo({
       url: url,
-      fail: (err) => {
-        if (err.errMsg.includes('tabbar')) {
-          wx.switchTab({ url });
-        } else {
-          wx.showToast({ title: '打开供应商表单失败', icon: 'none' });
-        }
-      }
+      fail: () => wx.showToast({ title: '打开供应商表单失败', icon: 'none' }),
     });
   }
 });
