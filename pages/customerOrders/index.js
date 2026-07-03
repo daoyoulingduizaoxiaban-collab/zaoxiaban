@@ -382,6 +382,10 @@ Page({
   async submitActionPanel() {
     const { actionOrderId, actionType, isSubmittingAction } = this.data;
     if (isSubmittingAction) return;
+    if (!actionOrderId || !this.getActionOrder()) {
+      wx.showToast({ title: '未找到订单资料，请重新进入后再操作', icon: 'none' });
+      return;
+    }
 
     const actionPayload = this.buildActionPayload();
     if (actionPayload.error) {

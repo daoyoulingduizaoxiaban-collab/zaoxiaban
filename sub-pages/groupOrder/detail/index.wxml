@@ -120,7 +120,7 @@
       <view class="item-row" wx:for="{{selectedMemberOrder.productList}}" wx:key="productId">
         <view class="item-main">
           <text wx:if="{{item.title}}" class="item-name">{{item.title}}</text>
-          <text wx:else class="item-name">商品 ID: {{item.productId}}</text>
+          <text wx:else class="item-name">商品资料</text>
           <text class="item-spec">数量: {{item.amount}}</text>
         </view>
         <view class="item-price-info">

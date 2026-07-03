@@ -31,7 +31,6 @@
         <view class="content-area">
           <view class="header">
             <text class="title">{{item.title}}</text>
-            <text class="id-tag">ID: {{item.id}}</text>
           </view>
           <text class="description">{{item.description}}</text>
           <text class="description">{{item.sourceNote}}</text>

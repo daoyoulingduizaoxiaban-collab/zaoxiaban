@@ -106,7 +106,10 @@ Page({
       return;
     }
     this.setData({
-      selectedProduct: product,
+      selectedProduct: {
+        ...product,
+        coverUrl: product.coverUrl || '/static/icon_map.png',
+      },
       selectedPriceRules: product.priceSetting || [],
       detailVisible: true,
     });
