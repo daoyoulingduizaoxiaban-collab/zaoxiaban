@@ -1,6 +1,9 @@
 <t-navbar title="搜索" left-arrow />
 <view class="page search-page">
-  <view class="search-input">
+  <view wx:if="{{!canUseSearch}}" class="result-wrap">
+    <t-empty icon="info-circle" description="{{accessStateText}}" />
+  </view>
+  <view wx:else class="search-input">
     <t-search
       t-class-input-container="t-class__input-container"
       t-class-input="t-search__input"
@@ -14,7 +17,7 @@
       focus
     ></t-search>
   </view>
-  <view class="search-wrap">
+  <view wx:if="{{canUseSearch}}" class="search-wrap">
     <view class="result-wrap" wx:if="{{hasSearched}}">
       <view class="search-header">
         <text class="search-title">搜索结果</text>

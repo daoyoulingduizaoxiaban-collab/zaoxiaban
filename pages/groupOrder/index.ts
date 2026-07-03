@@ -39,14 +39,15 @@ Page({
 
   async fetchItineraryList() {
     const profile = AuthService.getCurrentProfile();
-    if (!AuthService.canUseBusiness(profile)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDERS)) {
+      const accessText = getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS);
       this.setData({
         itineraryList: [],
-        roleScopeText: AuthService.getAccessStateText(profile),
+        roleScopeText: accessText,
         canCreateGroupOrder: false,
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
-        accessStateText: AuthService.getAccessStateText(profile),
+        accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
       });

@@ -1,5 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
 const READ_MESSAGE_KEY = 'dao_you_ling_read_messages';
@@ -39,10 +40,10 @@ Page({
 
   async loadMessages() {
     const profile = AuthService.getCurrentProfile();
-    if (!AuthService.canUseBusiness(profile)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.MESSAGE)) {
       this.setData({
         messages: [],
-        disabledReason: AuthService.getAccessStateText(profile),
+        disabledReason: getRoleScopeText(profile, FEATURE_KEYS.MESSAGE),
       });
       return;
     }

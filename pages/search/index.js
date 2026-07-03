@@ -2,6 +2,7 @@ import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { ProductService } from '~/services/product/productService';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
 Page({
@@ -12,6 +13,7 @@ Page({
     isSearching: false,
     resultGroups: [],
     hasSearched: false,
+    canUseSearch: false,
     accessStateText: '',
     dialog: {
       title: '确认删除当前历史记录',
@@ -25,9 +27,15 @@ Page({
   deleteIndex: '',
 
   onShow() {
-    this.loadLocalSearchWords();
+    const profile = AuthService.getCurrentProfile();
+    const canUseSearch = canUseFeature(profile, FEATURE_KEYS.SEARCH);
+    if (canUseSearch) this.loadLocalSearchWords();
     this.setData({
-      accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
+      canUseSearch,
+      accessStateText: getRoleScopeText(profile, FEATURE_KEYS.SEARCH),
+      historyWords: canUseSearch ? this.data.historyWords : [],
+      resultGroups: canUseSearch ? this.data.resultGroups : [],
+      hasSearched: canUseSearch ? this.data.hasSearched : false,
     });
   },
 
@@ -130,11 +138,11 @@ Page({
     if (!keyword) return;
 
     const profile = AuthService.getCurrentProfile();
-    if (!AuthService.canUseBusiness(profile)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.SEARCH)) {
       this.setData({
         hasSearched: true,
         resultGroups: [],
-        accessStateText: AuthService.getAccessStateText(profile),
+        accessStateText: getRoleScopeText(profile, FEATURE_KEYS.SEARCH),
       });
       return;
     }

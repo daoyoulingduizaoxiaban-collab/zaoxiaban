@@ -45,16 +45,17 @@ Page({
 
   async loadQaOrders() {
     const profile = AuthService.getCurrentProfile();
-    if (!AuthService.canUseBusiness(profile)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS)) {
+      const accessText = getRoleScopeText(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
       this.setData({
         customerOrdersList: [],
         allCustomerOrdersList: [],
-        roleScopeText: AuthService.getAccessStateText(profile),
+        roleScopeText: accessText,
         canCreateCustomerOrder: false,
         saveModeText: '',
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
-        accessStateText: AuthService.getAccessStateText(profile),
+        accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
       });
