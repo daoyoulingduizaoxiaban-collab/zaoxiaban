@@ -31,7 +31,7 @@ export const callBusinessData = ({ resource, action, data = {} }) => new Promise
     name: 'businessData',
     data: { resource, action, data },
     success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
-    fail: err => resolve({ success: false, error: err.errMsg || '资料保存失败，请稍后重试' }),
+    fail: () => resolve({ success: false, error: '资料保存失败，请稍后重试' }),
   });
 });
 
@@ -56,7 +56,7 @@ const uploadOneFile = (path, index, prefix) => new Promise((resolve) => {
     cloudPath: getCloudFileName(path, index, prefix),
     filePath: path,
     success: res => resolve({ success: true, data: res.fileID }),
-    fail: err => resolve({ success: false, error: err.errMsg || '图片上传失败' }),
+    fail: () => resolve({ success: false, error: '图片上传失败，请稍后重试' }),
   });
 });
 

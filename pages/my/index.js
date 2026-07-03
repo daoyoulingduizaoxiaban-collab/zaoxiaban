@@ -213,7 +213,7 @@ Page({
       },
       fail: (error) => wx.showModal({
         title: '登录入口',
-        content: `打开登录页失败：${error && error.errMsg ? error.errMsg : '请稍后重试'}`,
+        content: '打开登录页失败，请稍后重试。',
         showCancel: false,
         confirmText: '知道了',
       }),

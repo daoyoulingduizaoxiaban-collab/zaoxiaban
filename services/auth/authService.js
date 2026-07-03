@@ -72,7 +72,7 @@ const wxLogin = () => new Promise((resolve) => {
 
   wx.login({
     success: res => resolve({ success: true, code: res.code || '' }),
-    fail: err => resolve({ success: false, error: err.errMsg || '微信登录失败，请稍后重试' }),
+    fail: () => resolve({ success: false, error: '微信登录失败，请稍后重试' }),
   });
 });
 
@@ -89,9 +89,9 @@ const callCloudAuth = (loginCode, requestedRole) => new Promise((resolve) => {
       success: true,
       data: res.result || {},
     }),
-    fail: err => resolve({
+    fail: () => resolve({
       success: false,
-      error: err.errMsg || '账号服务暂时不可用',
+      error: '账号服务暂时不可用',
     }),
   });
 });
