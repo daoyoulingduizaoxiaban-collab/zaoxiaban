@@ -148,7 +148,7 @@ const canManageOrder = (order, groupOrders, profile) => {
 
 const canViewSharedGroupOrder = (groupOrder, profile) => {
   if (!groupOrder) return false;
-  if (!profile) return true;
+  if (!profile) return false;
   if (isOwnerOrAdmin(profile)) return true;
   if (profile.role === 'customer') return true;
   if (profile.role !== 'guide') return false;
@@ -207,7 +207,9 @@ export const CustomerOrderRepository = {
       return { success: false, error: '当前角色不能查看此团单订单' };
     }
 
-    const orders = getAllOrders().filter(order => sameId(order.groupOrderId, groupOrderId));
+    const orders = getAllOrders()
+      .filter(order => sameId(order.groupOrderId, groupOrderId))
+      .filter(order => profile.role !== 'customer' || sameId(order.customerUserId, profile.id));
     return {
       success: true,
       data: orders,

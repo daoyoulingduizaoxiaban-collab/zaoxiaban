@@ -148,7 +148,7 @@ const canManageGroupOrder = (groupOrder, profile) => {
 
 const canViewGroupOrder = async (groupOrder, profile) => {
   if (!groupOrder || groupOrder.deletedAt) return false;
-  if (!profile) return Number(groupOrder.status) === GROUP_ORDER_STATUS.OPEN;
+  if (!profile) return false;
   if (canManageGroupOrder(groupOrder, profile)) return true;
   if (profile.role === 'customer') {
     if (Number(groupOrder.status) === GROUP_ORDER_STATUS.OPEN) return true;

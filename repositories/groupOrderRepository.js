@@ -77,6 +77,17 @@ const canCreateGroupOrder = profile => (
   profile && (profile.role === 'guide' || isOwnerOrAdmin(profile))
 );
 
+const canViewGroupOrder = (groupOrder, profile) => {
+  if (!groupOrder || !profile) return false;
+  if (canManageGroupOrder(groupOrder, profile)) return true;
+  if (profile.role !== 'customer') return false;
+  if (Number(groupOrder.status) === 1) return true;
+  return getAllCustomerOrders().some(order => (
+    sameId(order.groupOrderId, groupOrder.id)
+    && sameId(order.customerUserId, profile.id)
+  ));
+};
+
 const buildCustomerEntryPath = groupOrderId => `/pages/customerOrders/edit/index?groupOrderId=${groupOrderId}`;
 
 const persistGroupOrders = (groupOrders) => {
@@ -157,7 +168,7 @@ export const GroupOrderRepository = {
     const profile = AuthService.getCurrentProfile();
     const groupOrder = getAllGroupOrders().find(item => sameId(item.id, id));
     if (!groupOrder) return { success: false, error: '未找到团单' };
-    if (!canManageGroupOrder(groupOrder, profile) && !(profile && profile.role === 'customer')) {
+    if (!canViewGroupOrder(groupOrder, profile)) {
       return { success: false, error: '当前角色不能查看此团单' };
     }
 
