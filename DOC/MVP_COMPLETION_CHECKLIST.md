@@ -9,7 +9,7 @@
 
 强制职责边界：
 
-- `MVP_COMPLETION_CHECKLIST.md` 只管理 MVP gate、阶段、产品完成度、剩余能力类别和验收门槛；它不是 QA/AGENT 的日常回报文件。
+- `DOC/MVP_COMPLETION_CHECKLIST.md` 只管理 MVP gate、阶段、产品完成度、剩余能力类别和验收门槛；它不是 QA/AGENT 的日常回报文件。
 - `QA/QA_BUG_REPORT_202607021815.md` 只管理原子化 BUG / GUI issue row。
 - 禁止把 BUG row、BUG ID 清单、GUI 子项清单、逐页缺陷清单复制到本文；这会制造第二份 BUG 单，后续状态必然分裂。
 - 如果 BUG 单发现某类问题会影响 MVP，QA 仍只更新 BUG 单；MVP gate 是否调整由负责整理项目状态的人处理，不能要求 QA 或 AGENT 另写文件。
@@ -71,16 +71,45 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] 全站搜索：搜索页要支持正式商品、团购或相关内容搜索；无结果、清除条件与错误状态都要有正式画面。
 - [x] 聊天或联系流程：商品、团购或供应商页的联系入口必须进入正式聊天/联系流程；若暂不开发，正式入口必须移除。
 - [x] 发布流程：授权角色可以建立可发布内容并送出，列表或相关页面能看到结果；未授权角色不可发布。
+- [ ] 操作记录与审计：
+  - 需求目标：系统必须提供可追溯的「操作记录」给 Owner/admin 与团主（guide），支持按用户个人视角查看本人近端及服务端触发的关键操作，避免管理和争议场景缺少审计线索。
+  - 记录范围（至少）：`authLogin` 登录成功与退出、用户角色审核与角色变更、`groupOrders` 开团与本团商品维护、`products` 新增/编辑/上下架/删除、`customerOrders` 状态流转、`payments` 提交/确认/拒绝/取消、关键设置变更、供应商资料或商品变更。每条记录需具备：
+    - 操作人 OpenID（脱敏展示）
+    - 操作角色（可见角色）
+    - 操作类型
+    - 操作时间
+    - 目标对象与对象标识（如订单号、团单号、商品 ID）
+    - 操作前状态与操作后状态（若有）
+    - 请求来源（页面/页面 ID）、IP/端点环境标识（如可得）
+  - 权限范围：
+    - 系统管理员可查看自己的全量操作记录；管理员仅能查询本人操作，不得默认越权查看他人详情。
+    - 团主可查看自己的操作记录；不得查看其他角色/他人详情。
+    - 未审核用户与访客不显示操作记录页面与入口。
+  - 数据保存：
+    - 记录必须落在正式云端，不能只存在本地 storage。
+    - 同一操作不可重复写入；重试导致重复提交时需可幂等标识。
+    - 不能写入敏感明文证据（如完整 OpenID、手机号、支付口令），并应对敏感字段按最小化原则展示。
+  - 展示与查询：
+    - 需提供「操作列表」入口及查看页，支持按时间范围、操作类型、对象类型、状态筛选。
+    - 列表支持分页、空状态、错误状态与加载状态；列表项需可跳转至对应对象详情（受权限限制）。
+    - 日志保留期建议至少 12 个月；超过保留期可按策略归档，不得静默删除且应有归档策略说明。
+  - 风险控制：
+    - 前端只是入口控制，后端必须验证用户身份与权限，禁止越权读写。
+    - 操作记录查询 API 也必须做 owner/admin 与团主权限再校验。
+  - 验收标准：
+    - 微信开发工具画面实测验证 Owner/admin 与团主可分别查看自己的操作记录列表。
+    - 验证列表字段完整、筛选可用、分页可运行、越权不可见/越权接口被后端拒绝。
+    - 至少一类对象链路（如订单付款、团单修改）完整可还原：从发起动作到记录展示一致，无误显示。
 
 - [ ] Phase 7 GUI smoke test：DevTools 项目可打开，29 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但完整逐页点击、返回、表单、角色、权限、copy、console/network、empty/error/loading 状态仍未完整验证。
-- [ ] 真图片与付款凭证 GUI/真机验证：需要实际 media picker、保存、重开后仍显示的证据。
+- [ ] 图片上传与付款凭证微信开发工具画面验证：需要实际 media picker、保存、重开后仍显示的证据。
 - [x] 正式/QA 文案与内部测试工具隔离：正式角色不得看到 QA/local/test/Seed/mock/OpenID 未验证/MVP/后续/未完成等内部或开发进度文字。
 - [ ] 付款闭环 GUI 验证：客户声明付款、团主确认收款、付款历史、付款凭证必须分别有 GUI 证据。
 - [ ] 付款凭证 MVP 规则改为选填：客户声明付款时，付款凭证图片不是必填项；付款方式、付款金额与必要备注必须足以提交付款声明，图片凭证作为补充证据上传。
   - 产品规则：客户可以在未上传截图的情况下声明已付款；团主确认收款时依据实际到账、金额、备注与可选凭证判断。系统不得因为没有图片凭证而阻止付款声明，但必须清楚显示「未上传凭证」状态。
   - 表单规则：付款声明必须校验合法订单状态、付款金额、付款方式和重复提交；凭证图片若有上传，必须走正式 media picker 与持久化存储路径，不能保存临时本地路径到正式云端资料。
   - 显示规则：订单详情、付款历史与团主确认收款页必须显示付款方式、声明金额、备注、凭证数量或未上传凭证状态。凭证图片仅允许有权限的客户本人、所属团主、owner/admin 查看。
-  - 验收规则：必须 fresh DevTools 或真机验证两条路径：无凭证也能声明付款并由团主确认；有凭证时可选择图片、保存、重开后仍显示。两条路径都必须验证无权角色不能查看凭证。
+  - 验收规则：必须用微信开发工具画面实测两条路径：无凭证也能声明付款并由团主确认；有凭证时可选择图片、保存、重开后仍显示。两条路径都必须验证无权角色不能查看凭证。
 - [ ] Customer 多入口与多角色规则：直接注册用户必须进入审核；从团单分享链接进入的用户可以免人工审核完成受限下单；同一个微信 OpenID 可以同时拥有团主等正式角色与客户下单身份，系统必须按当前场景切换有效身份与资料归属。
   - 入口来源规则：用户直接打开小程序、首页、搜索、普通扫码或非团单分享路径时，首次微信登录只能创建 `pending_review` 正式用户，不得自动成为 customer、guide、provider、admin 或 owner。用户必须由 owner/admin 审核后才获得正式业务角色。
   - 团单分享规则：用户从合法团单分享链接、团单码或带有效 share token 的客户下单入口进入时，可以建立「受限客户下单身份」并进入该团单的客户下单流程。该身份只允许查看该分享团单、该团单商品、自己的订单、自己的付款状态和付款声明，不允许进入完整业务 tab、商品库管理、团主团单管理、供应商管理、资料中心、用户审核或其他客户资料。
@@ -91,7 +120,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
   - 分享安全规则：受限客户下单必须验证分享入口对应的团单仍有效、未过截止时间、可售、未被删除或停用。无效分享路径必须显示正式错误页或返回安全页面，不得放开完整客户权限。
   - 切换与 UI 规则：若一个已审核团主从别人分享链接进入，系统应进入客户下单场景，而不是强行跳回团主工作台；完成或退出该分享流程后，再回到其原本团主身份首屏。若同一账号拥有多个正式角色，My/设置页应清楚显示已审核角色与当前场景，不得让用户误以为受限客户身份等于完整角色。
   - 后端规则：所有 cloud function 与 repository 必须按 `effectiveRole`、入口来源、share token、订单归属和团单归属校验权限。前端隐藏入口不是权限完成；后端必须拒绝非分享来源的免审客户能力、过期分享、角色不符、订单不归属、团单不归属和停用账号。
-  - 验收规则：必须 fresh DevTools 或真机验证三条路径：直接新用户登录后进入待审核且没有业务入口；未审核用户通过合法团单分享可以完成该团单受限下单但不能进入其他业务；已审核团主通过别人团单分享能以客户场景下单，退出后仍保留团主工作台权限且看不到不属于自己的客户资料。
+  - 验收规则：必须用微信开发工具画面实测三条路径：直接新用户登录后进入待审核且没有业务入口；未审核用户通过合法团单分享可以完成该团单受限下单但不能进入其他业务；已审核团主通过别人团单分享能以客户场景下单，退出后仍保留团主工作台权限且看不到不属于自己的客户资料。
 - [ ] Provider 供应商作为 MVP 正式角色补齐：供应商不是可隐藏的后续角色，上线前必须完成正式申请、审核、资料维护、商品管理、团主选品、客户可见与权限隔离。
   - 产品定位：`provider` 指供应商，是 MVP 上线前必须支持的正式角色。不得再把 provider 当成暂不开放、半成品、只读展示或用未完成文案挡住的角色。
   - 申请与审核：用户可申请成为供应商，owner/admin 可在审核入口查看申请、通过、拒绝、停用或调整供应商状态。审核必须保存 `reviewStatus`、`role/roles`、`reviewedBy`、`reviewedAt`、`updatedAt` 与可选备注。未审核或被拒绝/停用的供应商不得进入供应商业务功能。
@@ -102,18 +131,18 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
   - 权限隔离：provider 不得进入团主团单管理、客户资料中心、用户审核、owner/admin 功能、其他供应商资料、其他供应商商品管理或不属于自己的订单资料。owner/admin 可以管理所有供应商；团主只能在选品与团单上下文读取可用供应商商品。
   - 停用规则：provider 被停用后不得新增或修改商品；其商品应停止被新团单选用，既有订单与团单必须保留历史资料并显示正式状态。停用不得删除历史交易资料。
   - 后端规则：`businessData`、repository 与 service 层必须校验 provider 资料归属、商品归属、审核状态和角色权限。正式云端不得依赖前端隐藏来保护供应商资料。
-  - 验收规则：必须 fresh DevTools 或真机验证 provider 申请、owner/admin 审核通过、provider 维护资料、provider 新增商品、团主选用 provider 商品开团、customer 下单可见供应商资讯、provider 被停用后不可继续管理商品。没有完整流程证据不得勾选。
+  - 验收规则：必须用微信开发工具画面实测 provider 申请、owner/admin 审核通过、provider 维护资料、provider 新增商品、团主选用 provider 商品开团、customer 下单可见供应商资讯、provider 被停用后不可继续管理商品。没有完整流程证据不得勾选。
 - [ ] 产品角色命名统一为「团主」：正式用户界面、业务说明、权限文案、验收文档与可见角色名称中，面向用户的「导游」「领队」「导游/领队」必须统一改为「团主」。
   - 命名范围：所有正式 UI 文案、tab/按钮/空状态/错误提示/审核入口/角色说明/商品选品/开团/客户订单/收款流程中，用户可见的导游或领队称呼都必须改为「团主」。
   - 保留范围：代码内部既有 `guide` role key、资料字段、云端集合字段、API action、历史迁移兼容逻辑可以先保留，除非 AGENT 能完整迁移并验证；但任何保留的内部命名不得外露给正式用户。
-  - 文件同步：`BUSINESS_LOGIC_PRINCIPLES.md`、`PROJECT_RULES.md`、`MVP_COMPLETION_CHECKLIST.md`、`ACCEPTANCE.md` 中面向产品角色说明的文字应同步改为「团主」。若为了说明内部 role key，可写「内部 role key 仍为 `guide`，用户显示为团主」。
+  - 文件同步：`DOC/BUSINESS_LOGIC_PRINCIPLES.md`、`DOC/PROJECT_RULES.md`、`DOC/MVP_COMPLETION_CHECKLIST.md`、`DOC/ACCEPTANCE.md` 中面向产品角色说明的文字应同步改为「团主」。若为了说明内部 role key，可写「内部 role key 仍为 `guide`，用户显示为团主」。
   - 权限语义：本项只改产品称呼，不改变角色权限。原本 `guide` 能开团、维护本团商品、查看团单客户订单、确认收款的业务能力，改名后仍属于「团主」。
-  - 验收规则：必须搜索并检查正式用户可见文案，确认普通用户、团主、供应商、owner/admin 相关页面不再出现「导游」「领队」「导游/领队」作为用户显示称呼；同时运行 lint 与基础 diff check。GUI 页面仍需 fresh DevTools 或真机确认关键入口显示为「团主」。
+  - 验收规则：必须搜索并检查正式用户可见文案，确认普通用户、团主、供应商、owner/admin 相关页面不再出现「导游」「领队」「导游/领队」作为用户显示称呼；同时运行 lint 与基础 diff check。GUI 页面仍需微信开发工具画面确认关键入口显示为「团主」。
 - [ ] Owner 运营验收角色预览模式：使用者本人微信 OpenID 必须被设置为第一位正式 `owner`，并新增只有真实 owner 可见、可用的角色预览能力，让同一个 owner 微信账号安全模拟不同角色与审核状态完成 MVP 上线验收。
   - 需求定位：这是上线前运营验收工具，不是 QA Seed、mock 身份切换、普通用户功能，也不是把真实用户角色改来改去的后台操作。实现后，使用者可用自己的正式微信登录账号，在不破坏真实 owner 权限的前提下，预览并操作 `visitor`、`pending_review`、`rejected`、`disabled`、`customer`、`guide`、`provider`、`admin`、`owner` 等状态或角色。
   - OpenID 处理规则：AGENT 必须从本机 DevTools 登录结果、storage、`authLogin` 回传或云端 `users` profile 找到使用者当前正式微信 OpenID。不得把完整 OpenID 写进公开报告、截图、commit message 或普通文档；只允许写入受控配置、云函数环境变量或本地验证备注。找到后必须把该 OpenID 设置为 `OWNER_OPENIDS` 或等价 owner allowlist，让 `authLogin` 每次识别到该 OpenID 都返回 `role: owner` 与 `reviewStatus: approved`，并同步云端 `users` profile。
   - 身份模型：必须区分真实身份与预览身份。真实身份 `realProfile` 永远代表当前微信 OpenID 的正式云端用户，例如 `role: owner`、`reviewStatus: approved`。预览身份 `effectiveProfile` 只代表当前页面、入口、权限与业务流程的模拟视角，例如 `role: guide`、`reviewStatus: approved`、`simulation: true`、`simulationActorRole: owner`。不得直接把使用者真实 `users.role` 从 owner 改成 guide/customer/provider/admin 来做测试，避免唯一 owner 被降权或锁死。
-  - 可用角色与状态：角色预览至少必须支持 `visitor`、`pending_review`、`rejected`、`disabled`、`customer`、`guide`、`provider`、`admin`、`owner`。`visitor` 是未登录视角预览，不等于真正登出；真正登出流程仍需单独测试。`pending_review`、`rejected`、`disabled` 必须显示正式状态页并隐藏业务入口。`customer`、`guide`、`provider`、`admin`、`owner` 必须按 `ROLE_FEATURE_ACCESS_MATRIX.md` 与现有权限规则计算入口和操作。
+  - 可用角色与状态：角色预览至少必须支持 `visitor`、`pending_review`、`rejected`、`disabled`、`customer`、`guide`、`provider`、`admin`、`owner`。`visitor` 是未登录视角预览，不等于真正登出；真正登出流程仍需单独测试。`pending_review`、`rejected`、`disabled` 必须显示正式状态页并隐藏业务入口。`customer`、`guide`、`provider`、`admin`、`owner` 必须按 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 与现有权限规则计算入口和操作。
   - 前端 AuthService 规则：`services/auth/authService.js` 必须新增或等价实现 `getRealProfile()`、`getEffectiveProfile()`、`setRoleSimulation(roleOrState)`、`clearRoleSimulation()`、`canUseRoleSimulation()`。页面、首页入口、custom tab bar、我的页服务列表、资料中心、商品、团单、客户订单、审核入口等用于显示和入口判断时应读取 `effectiveProfile`；涉及真实登录、owner 验证、退出登录、云端刷新与安全判断时必须保留并使用 `realProfile`。
   - UI 入口规则：只允许真实 `owner` 且 `reviewStatus: approved` 看见角色预览入口。建议入口放在「我的」或「设置」的 owner 管理区，正式名称可用「运营验收模式」或「角色预览」。面板必须显示当前真实身份、当前预览身份，并提供切换按钮与「退出预览」。进入预览后页面顶部或 owner 可见区域应显示当前预览状态与退出入口，避免 owner 切成 customer 后找不到回 owner 的路径。普通正式用户、待审核用户、被拒绝用户、停用用户、非 owner 角色不得看见该入口。
   - 前端状态刷新：每次切换预览角色后，必须写入本地 storage 或等价状态、更新 global auth state、重新计算 tabBar 与首页入口，并跳转到该预览角色可访问的安全首屏。退出预览后必须恢复真实 owner 视角。小程序启动、前台恢复、进入首页、进入我的页、进入权限敏感页面时，必须能重新套用或清除无效的预览状态；如果真实身份不再是 owner，必须自动清除预览状态。
@@ -124,9 +153,9 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
   - 写入策略：MVP 建议采用「可写入但强制标记模拟资料」策略，而不是只读预览。原因是上线路径必须能用一个 owner 账号跑完：预览团主（内部 role key `guide`）建商品、开团、产生分享入口；预览 customer 下单、声明付款；再预览团主确认收款并查看状态。若 AGENT 选择只读预览，必须另外提供可完整验证上述流程的替代方案，否则不得勾选本项。
   - 权限边界：角色预览只改变验收视角，不改变真实账号的 owner 身份。真实 owner 仍可退出预览、进入审核入口、清理模拟资料。预览 admin 不得修改真实 owner，不得指派 owner，不得绕过 owner-only guard。预览 guide/customer/provider 不得取得 owner/admin 真实权限；其中 `guide` 在正式 UI 中显示为团主。后端所有无权请求仍必须能返回正式拒绝结果。
   - 文件与命名规则：不得把该功能命名为 QA Seed、mock role、debug switch、测试账号切换或任何会暴露给普通正式用户的开发名词。代码内部可用 `simulation`、`rolePreview`、`effectiveProfile` 等名称；正式 UI 建议用「运营验收模式」或「角色预览」。如需记录 OpenID，只能用遮罩形式或受控本地备注。
-  - 可能修改范围：预计需要调整 `services/auth/authService.js`、`services/auth/roleScope.js`、`custom-tab-bar/index.js`、`pages/my/index.js`、`app.js`、`repositories/cloudBusinessRepository.js`、`cloudfunctions/authLogin/index.js`、`cloudfunctions/businessData/index.js`，以及使用当前 profile 判断入口或权限的核心页面。实现时应优先复用既有角色矩阵和权限 guard，不另建第二份角色规则。
-  - 最低验收路径：同一 owner 微信账号必须能完成以下 fresh DevTools 或真机操作：切 `pending_review` 后只看到等待审核状态且没有业务 tab；切 `customer` 后只能看到客户可用入口并能下单；切 `guide` 后能建商品、开团、查看客户订单并确认收款；切 `admin` 后能看到审核入口但不能修改 owner 或自提权；切 `provider` 后按 MVP provider 定位显示可用或无权画面；切回 `owner` 后 owner 管理入口恢复且预览状态清除。
-  - 不得勾选条件：找不到或未设置使用者 owner OpenID、真实 owner 会被预览切换降权、非 owner 可使用角色预览、前端可伪造 simulation 参数绕过后端、模拟资料污染普通正式列表、不同模拟角色共用同一资料归属导致隔离失效、退出预览后不能恢复 owner、缺少 fresh DevTools/真机操作证据，任一项存在都不得勾选。
+  - 可能修改范围：预计需要调整 `services/auth/authService.js`、`services/auth/roleScope.js`、`custom-tab-bar/index.js`、`pages/my/index.js`、`app.js`、`repositories/cloudBusinessRepository.js`、`cloudfunctions/authLogin/index.js`、`cloudfunctions/businessData/index.js`，以及使用当前 profile 判断入口或权限的核心页面。实现时应优先遵守 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 的角色与权限原则，不另建第二份角色规则。
+  - 最低验收路径：同一 owner 微信账号必须能在微信开发工具画面完成以下操作：切 `pending_review` 后只看到等待审核状态且没有业务 tab；切 `customer` 后只能看到客户可用入口并能下单；切 `guide` 后能建商品、开团、查看客户订单并确认收款；切 `admin` 后能看到审核入口但不能修改 owner 或自提权；切 `provider` 后按 MVP provider 定位显示可用或无权画面；切回 `owner` 后 owner 管理入口恢复且预览状态清除。
+  - 不得勾选条件：找不到或未设置使用者 owner OpenID、真实 owner 会被预览切换降权、非 owner 可使用角色预览、前端可伪造 simulation 参数绕过后端、模拟资料污染普通正式列表、不同模拟角色共用同一资料归属导致隔离失效、退出预览后不能恢复 owner、缺少微信开发工具画面操作证据，任一项存在都不得勾选。
 - [x] 正式登录、未登录、待审核与角色授权必须收敛成固定规格画面和统一权限闸门：
   - 拆分方式：本需求作为一个登录/授权大待办管理，底下拆成 5 个子待办让 AGENT 开发：未登录固定画面、已登录但待管理员审核固定画面、管理员审核与指派角色、已登录用户状态/角色刷新、前后端权限防线。不要另开新文件管理这些需求；所有业务逻辑、验收门槛与未完成状态统一留在本文。
   - 需求目标：任何真人用户第一次通过微信登录后，系统不得自动把他当成可用团主、客户、管理员、供应商或 owner。登录只代表系统取得该用户的微信身份与 OpenID，不代表该用户已经获准使用业务功能。用户必须先进入「等待审核」状态，由系统管理员在后台/管理入口明确决定该用户是否可使用系统，以及该用户的正式角色是什么。没有登录、已登录但待审核、已被拒绝/停用、已审核通过这几种状态必须有清楚且互斥的界面规则，不能混在同一套业务 tab 里让用户看到一堆不能用的下方选单。
@@ -139,7 +168,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
   - 子待办 3 - 首次登录与管理员审核流程：用户通过 `wx.login` / `authLogin` 取得 OpenID 后，云端若找不到该 OpenID 的正式用户记录，必须创建用户 profile，但默认状态只能是 `pending_review`，默认角色不得拥有任何业务写入/查看权限。管理员审核入口建议放在「我的 -> 用户审核」或单独 admin 页面；入口只对 owner/admin 可见。管理员至少能看到可审核用户列表，通过时必须选择一个或多个正式角色并可设置使用期限，拒绝、停用、改角色、续期都必须有明确操作。审核资料必须保存 `reviewStatus`、`role`、`roles[]`、`roleExpiresAt`、`reviewedBy`、`reviewedAt`、`updatedAt`，建议增加 `reviewRemark` 记录拒绝、停用或调整原因。
   - 子待办 3 权限边界：不得允许用户在正式模式下自行选择、切换、提交或伪造角色；不得用前端参数、本地 storage、QA override 或分享链接改变正式角色。`admin` 不得把自己升成 `owner`，不得修改或停用 `owner`，不得指派 `owner`；`owner` 操作 admin/user 必须有审核/角色变更记录。所有角色变更都要记录操作者、时间、前后状态和备注。
   - customer 分享下单取舍：必须明确定义 customer 是否需要人工审核。若 customer 也需要人工审核，必须接受分享下单转化率下降，首次打开分享链接后进入待审核固定画面。若 customer 不需要完整人工审核，必须定义「受限 customer」状态或等价机制：受限 customer 只能通过分享团单查看该团商品、提交自己的订单、查看自己的付款状态，不能进入完整业务 tab、商品库、团主团单、资料中心、管理入口或其他客户资料。分享路径、直达 route、重新打开小程序、返回 fallback 都必须符合这个规则。
-  - provider MVP 定位：MVP 必须明确 provider 是否正式开放审核。若 provider 暂不开放，管理员审核时不得把新用户指派为 provider，provider 直达 route 必须显示正式无权画面。若 provider 开放，必须先在既有角色功能矩阵中定义 provider 可见、可改、不可见范围，并补齐后端权限；不得用「未完成」或测试文案挡住正式 provider。
+  - provider MVP 定位：MVP 必须明确 provider 是否正式开放审核。若 provider 暂不开放，管理员审核时不得把新用户指派为 provider，provider 直达 route 必须显示正式无权画面。若 provider 开放，必须先按 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 定义 provider 可见、可改、不可见范围，并补齐后端权限；不得用「未完成」或测试文案挡住正式 provider。
   - 子待办 4 - 已登录状态变更与角色刷新：如果用户已经打开小程序并处于登录状态，而管理员随后把该用户从 `pending_review` 改成 `approved` 并指派为团主或客户，系统必须能让用户顺畅取得新状态并继续使用。最低要求是小程序在启动、前台恢复、进入首页/我的页/权限敏感页面、以及用户点击刷新/重试时重新向云端读取当前用户 profile；读到状态或角色变化后，必须更新全局 auth/session 状态、清掉旧权限缓存、重算 tab/入口可见性，并自动导向该角色可用的首屏或继续当前可访问流程。若微信小程序环境可行，可额外使用轮询、订阅消息、云函数触发后的轻量刷新信号或页面级 refresh 机制，但不能只依赖用户手动退出重登。
   - 子待办 5 - 角色变更、降权与权限防线：管理员不只会把待审核用户改成团主/客户，也可能把已通过用户改角色、停用或拒绝。系统每次恢复前台、进入核心页面、提交保存、读取敏感资料或调用云函数时，都必须以云端最新状态为准；如果用户从 `approved` 变成 `disabled` / `rejected` / 其他无权角色，前端必须立即隐藏/移除不可用入口并导向安全状态页，后端/cloud function 必须拒绝后续业务读写。前端等待页、未登录页和入口隐藏只改善体验，不是权限完成；所有 service、repository、cloud function、云数据库访问边界仍必须检查云端最新用户审核状态与正式角色。
   - 后端统一闸门：所有业务云函数入口必须统一读取当前 OpenID 的云端 `users` profile。只有 `approved` 且角色符合功能规则时，才能做正式业务读写；`pending_review`、`rejected`、`disabled`、角色不符、或只有 QA/mock 身份都必须被后端拒绝。写入动作尤其要严格，包括新增商品、开团、编辑团单、加入/移除本团商品、客户下单、声明付款、确认收款、取消订单、管理审核、导出或分享敏感资料。
@@ -148,29 +177,29 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
   - UI/文案规则：未登录、`pending_review`、`rejected`、`disabled`、无权页、空状态页必须使用正式简体中文产品文案，提供清楚状态、微信登录或刷新/重新检查入口、联系管理员或返回安全页面路径。正式模式不得显示「未完成」「MVP」「mock」「Seed」「OpenID 未验证」「测试账号」「QA」等内部字样；无权时使用类似「当前账号暂无权限，请联系管理员」的正式文案。QA 工具只允许在 mock/demo 模式出现。
   - 数据一致性规则：如果本地缓存与云端用户 profile 冲突，以云端为准；如果云端读取失败，不得乐观放行正式业务功能。可以保留上一次已审核状态用于离线显示，但任何新增、编辑、确认收款、管理审核、导出、分享业务入口等写入或敏感操作必须重新确认云端状态。
   - 本地缓存刷新规则：app 启动、前台恢复、进入首页、进入我的页、进入敏感页、提交保存或调用业务云函数前，必须刷新或确认云端 profile。若云端状态变成 `disabled` / `rejected` / 角色不符，立即清掉旧权限缓存并导向安全状态页。云端读取失败时，不能乐观放行写入或敏感操作；本地 storage 只能加速显示，不能当权限真相。
-  - 角色矩阵定位：角色功能规则参考既有 `ROLE_FEATURE_ACCESS_MATRIX.md`，不要新增第二份矩阵。若矩阵不足，优先更新既有矩阵或在程式修正说明中指出缺口；QA 验收仍回到 `QA/QA_BUG_REPORT_202607021815.md`，不要产生新的进度文件。
+  - 角色规则定位：角色功能规则以 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 为准，不要新增第二份矩阵或第二份角色规则文件。若角色入口规则不足，优先回补业务逻辑原则或在程式修正说明中指出缺口；QA 验收仍回到 `QA/QA_BUG_REPORT_202607021815.md`，不要产生新的进度文件。
   - 可验收子任务：AGENT 应拆成可独立验收的小任务推进，包括 `authLogin` 新用户默认 `pending_review`、owner/admin 白名单可进入审核入口、admin 可通过 `guide`、admin 可通过 `customer`、`disabled` / `rejected` 后前端入口消失、`disabled` / `rejected` 后后端拒绝业务操作、分享下单路径符合 customer 规则。每一项都要有明确截图、云端 readback、自动化 readback 或后端拒绝证据，不得只写「已完成」。
-  - QA 验收规则：必须覆盖至少 5 条正式 OpenID 状态路径：未登录用户只能看到固定未登录画面且没有完整下方选单；新用户首次登录进入固定等待审核画面且没有业务 tab/入口；管理员通过并指派 `guide` 后，已打开小程序的用户不用重新安装即可刷新到团主可用首屏；管理员通过并指派 `customer` 后，用户只看到客户可用入口或受限 customer 分享下单入口；管理员拒绝或停用后，已登录用户无法继续进入或保存业务资料。每条路径都需要 fresh DevTools/真机截图、云端 users 记录 readback、关键页面入口可见性证据、以及至少一次后端/cloud function 拒绝无权请求的证据。
-  - 不得勾选条件：没有 owner/admin 初始来源、旧 `active` 状态未 migration、customer 分享下单规则未定义、provider MVP 定位不清、审核入口无具体规格、未登录状态仍出现完整业务下方选单、待审核状态仍出现完整业务下方选单、首次微信登录自动获得业务角色、用户可自行选正式角色、admin 可自提权或修改 owner、只靠前端隐藏但后端放行、管理员改角色后必须退出重登才生效、旧缓存覆盖云端新状态、QA/mock 身份影响正式用户、正式用户仍看到内部文案、被拒绝/停用用户还能读写业务资料、或缺少 fresh GUI/真机与云端 readback 证据，任一项存在都不得勾选。
-- [x] 全系统角色功能入口自动隐藏与验收矩阵：
+  - QA 验收规则：必须覆盖至少 5 条正式 OpenID 状态路径：未登录用户只能看到固定未登录画面且没有完整下方选单；新用户首次登录进入固定等待审核画面且没有业务 tab/入口；管理员通过并指派 `guide` 后，已打开小程序的用户不用重新安装即可刷新到团主可用首屏；管理员通过并指派 `customer` 后，用户只看到客户可用入口或受限 customer 分享下单入口；管理员拒绝或停用后，已登录用户无法继续进入或保存业务资料。每条路径都需要微信开发工具画面截图、云端 users 记录 readback、关键页面入口可见性证据、以及至少一次后端/cloud function 拒绝无权请求的证据。
+  - 不得勾选条件：没有 owner/admin 初始来源、旧 `active` 状态未 migration、customer 分享下单规则未定义、provider MVP 定位不清、审核入口无具体规格、未登录状态仍出现完整业务下方选单、待审核状态仍出现完整业务下方选单、首次微信登录自动获得业务角色、用户可自行选正式角色、admin 可自提权或修改 owner、只靠前端隐藏但后端放行、管理员改角色后必须退出重登才生效、旧缓存覆盖云端新状态、QA/mock 身份影响正式用户、正式用户仍看到内部文案、被拒绝/停用用户还能读写业务资料、或缺少微信开发工具画面与云端 readback 证据，任一项存在都不得勾选。
+- [x] 全系统角色功能入口自动隐藏与验收规则：
   - 需求目标：系统必须根据当前用户角色、登录状态、正式 OpenID、QA override 与白名单状态，自动隐藏该用户不能使用的功能入口。正式用户不得先看到不可用入口，再靠 toast、禁用按钮、错误页、未完成文案、`MVP`、`后续`、QA/local/test/Seed/mock 文案挡住。
-  - 矩阵来源：角色功能规则参考既有 `ROLE_FEATURE_ACCESS_MATRIX.md`，不要新增第二份矩阵。若矩阵不足，更新既有矩阵或在程式修正说明中指出缺口；QA 验收仍回到 `QA/QA_BUG_REPORT_202607021815.md`，不要产生新的进度文件。
-  - AGENT 修正规则：AGENT 直接依既有角色矩阵、本文 gate 与 BUG 单修正代码。若发现角色入口规则缺失，优先补既有矩阵或在修正说明中指出，不另开新文件，除非使用者明确要求。
+  - 规则来源：角色功能规则以 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 为准，不要新增第二份矩阵。若角色入口规则不足，更新业务逻辑原则或在程式修正说明中指出缺口；QA 验收仍回到 `QA/QA_BUG_REPORT_202607021815.md`，不要产生新的进度文件。
+  - AGENT 修正规则：AGENT 直接依 `DOC/BUSINESS_LOGIC_PRINCIPLES.md`、本文 gate 与 BUG 单修正代码。若发现角色入口规则缺失，优先补业务逻辑原则或在修正说明中指出，不另开新文件，除非使用者明确要求。
   - 必盘点角色：未登录/游客、`guide`、`customer`、`owner`、`admin`、`provider`、QA override 下的各角色、正式 OpenID 下的各角色、owner/admin/provider 白名单命中与未命中状态。不能只测 guide/customer 后宣称全角色完成。
   - 必盘点范围：`app.json` 内全部 29 个 route、全部 tabBar/custom-tab-bar 入口、首页快捷入口、My 服务列表与 QA 工具、登录/设置入口、商品库新增/编辑/上下架/删除、团单新增/编辑/本团商品/客户入口/复制分享/导出、客户订单下单/声明付款/确认收款/取消/付款历史/凭证、资料中心、消息、聊天、发布、搜索、团主资料、客户资料、供应商资料、profile/tourGuide/provider 编辑页，以及所有列表项按钮、详情页按钮、空状态 CTA、分享路径、扫码/复制入口、返回后的 fallback 导航。
-  - 可见规则：当前角色不能使用、不能保存、不能查看、未正式开放、仅 QA/开发用途、或需要白名单但当前用户未获授权的功能，正式用户界面必须隐藏入口。若业务上允许某角色只读，矩阵必须明确标成「可见但只读」，且页面不得显示任何写入、保存、确认、取消、导出、分享、编辑或管理按钮。
+  - 可见规则：当前角色不能使用、不能保存、不能查看、未正式开放、仅 QA/开发用途、或需要白名单但当前用户未获授权的功能，正式用户界面必须隐藏入口。若业务上允许某角色只读，业务逻辑原则必须明确标成「可见但只读」，且页面不得显示任何写入、保存、确认、取消、导出、分享、编辑或管理按钮。
   - 直达 route 规则：用户通过 URL、分享路径、扫码、历史页面、fallback 导航或手动参数直达无权页面时，不能露出无权功能入口或内部开发说明；必须显示正式产品语言的安全空状态、返回上一页、或导向该角色可用页面，并保留可追溯错误处理。
   - 权限防线规则：前端隐藏只解决入口外露，不代表权限完成。service、repository、cloud function、云数据库访问边界必须继续做角色/owner/admin 白名单/订单归属/团单归属校验；AGENT 不得因为前端隐藏而移除或放宽后端权限判断。
-  - QA 验收规则：QA 必须按矩阵逐角色验收，至少覆盖每个角色的登录后首屏、tab、首页快捷入口、My、核心列表页、核心详情页、直达 route、空状态 CTA、分享/扫码入口、返回 fallback。每个角色都要留下 fresh GUI/真机截图、操作记录或自动化 readback；只有代码静态检查、只看单一角色、只测可用入口、不测不可见入口，都不能算通过。矩阵缺项属于 AGENT 返工，不由 QA 自行猜测补齐。
-  - 不得勾选条件：未参考既有 `ROLE_FEATURE_ACCESS_MATRIX.md`、既有矩阵缺角色、矩阵缺 route、矩阵缺按钮/CTA/分享/直达路径、正式用户仍看得到不可用入口、只能靠点击后报错阻挡、QA 工具外露给正式用户、内部文案外露、后端权限被放宽、或缺 fresh GUI/真机证据，任一项存在都不得勾选。
+  - QA 验收规则：QA 必须按 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 逐角色验收，至少覆盖每个角色的登录后首屏、tab、首页快捷入口、My、核心列表页、核心详情页、直达 route、空状态 CTA、分享/扫码入口、返回 fallback。每个角色都要留下微信开发工具画面截图、操作记录或自动化 readback；只有代码静态检查、只看单一角色、只测可用入口、不测不可见入口，都不能算通过。角色规则缺项属于 AGENT 返工，不由 QA 自行猜测补齐。
+  - 不得勾选条件：未参考 `DOC/BUSINESS_LOGIC_PRINCIPLES.md`、业务逻辑原则缺角色、缺 route、缺按钮/CTA/分享/直达路径、正式用户仍看得到不可用入口、只能靠点击后报错阻挡、QA 工具外露给正式用户、内部文案外露、后端权限被放宽、或缺微信开发工具画面证据，任一项存在都不得勾选。
 - [ ] 真实 workflow smoke：tab、带 id 详情、eventChannel picker、客户分享入口、列表卡片、空状态 CTA、返回 fallback 必须用真实入口验证。
 - [ ] GUI layout/style 稳定性：资料中心、图示字体、固定 navbar、按钮/表单/弹窗/底部 tab 需完成全画面检查并无 console/style 阻塞。
 
 ## 不通過当前分类
 - 仍有可开发修补的项目：优先继续补程式缺口；AGENT 不需在本文写进度，修完跑验证后交回 QA 复测。
-- 只缺 GUI/真机证据的项目：不得打勾，必须保留在本节，直到有 DevTools/真机截图或操作记录。
-- 目前仍不通過、需继续取得 GUI/真机证据、外部状态或修正的原子 BUG：以 `QA/QA_BUG_REPORT_202607021815.md` 的 `Status = 不通過` rows 为准；MVP 文件不复制 BUG row 清单。
-- 2026-07-03 Phase 2-5 QA 已执行到当前环境可提供的证据范围；阻塞/Unable-to-test 不作为第三状态，仍视为 `不通過`，直到有 fresh GUI/true-device evidence。
+- 只缺微信开发工具画面证据的项目：不得打勾，必须保留在本节，直到有微信开发工具画面截图或操作记录。
+- 目前仍不通過、需继续取得微信开发工具画面证据、外部状态或修正的原子 BUG：以 `QA/QA_BUG_REPORT_202607021815.md` 的 `Status = 不通過` rows 为准；MVP 文件不复制 BUG row 清单。
+- 2026-07-03 Phase 2-5 QA 已执行到当前环境可提供的证据范围；阻塞/Unable-to-test 不作为第三状态，仍视为 `不通過`，直到有微信开发工具画面实测证据。
 
 ## 尚未开始或尚未正式化
 这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。
@@ -221,7 +250,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] owner/admin 初始来源已定义并验证：采用白名单或一次性初始化 owner；没有 owner/admin 前不得宣称审核流程完成。
 - [x] 旧用户状态 migration 已定义：旧 `active` 与新 `approved` / `pending_review` 等状态的转换规则前后端一致，不再只判断 `active`。
 - [x] customer 分享下单规则已定案：明确 customer 是否需人工审核；若采用受限 customer，分享路径、直达 route、重新开启后只能使用受限下单能力。
-- [x] provider MVP 定位已定案：若暂不开放，审核入口不得指派 provider；若开放，必须先补齐 provider 角色矩阵与权限。
+- [x] provider MVP 定位已定案：若暂不开放，审核入口不得指派 provider；若开放，必须先补齐 provider 角色权限。
 
 ## Phase 3 - 团主团单工作流
 - [x] 团主团单列表在 local/QA 模式下已有角色范围。
@@ -277,7 +306,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] 商品库主页面已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`。
 - [x] 「我的」页 QA Seed 身份切换面板已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`。
 - [ ] Phase 0.5-0.7 eventChannel listener 成功路径已在微信 DevTools 验证。
-- [ ] `app.json` 内所有 route 已在微信 DevTools 或真机打开。
+- [ ] `app.json` 内所有 route 已在微信 DevTools 打开并完成画面检查。
 - [ ] 底部 tab 状态已验证。
 - [ ] toast/modal/floating button/tab 布局已验证。
 - [ ] 表单输入、返回导航、重新进入已验证。

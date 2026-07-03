@@ -1,12 +1,12 @@
 # PROJECT_RULES
 
 ## Read Order For Every New Work Session
-1. `PROJECT_RULES.md`
-2. `BUSINESS_LOGIC_PRINCIPLES.md`
-3. `MVP_COMPLETION_CHECKLIST.md`
-4. `ACCEPTANCE.md` only when the task needs current validation status.
+1. `DOC/PROJECT_RULES.md`
+2. `DOC/BUSINESS_LOGIC_PRINCIPLES.md`
+3. `DOC/MVP_COMPLETION_CHECKLIST.md`
+4. `DOC/ACCEPTANCE.md` only when the task needs current validation status.
 
-`BUSINESS_LOGIC_PRINCIPLES.md` is the only business-logic source of truth. Use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` only when explicitly fixing current QA not-pass rows.
+`DOC/BUSINESS_LOGIC_PRINCIPLES.md` is the only business-logic source of truth. Use `DOC/MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` only when explicitly fixing current QA not-pass rows.
 
 QA and AGENT must not create extra planning, result, matrix, or progress documents unless the user explicitly asks. QA reports only current `不通過` rows in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA verification.
 
@@ -15,7 +15,7 @@ Do not rely on chat memory.
 ## Product Definition
 - WeChat mini program for China-based 团主 users.
 - Core terms: `开团`, `团单`, `本团商品`, `商品库`, `客户订单`, `收款状态`.
-- MVP business logic is defined in `BUSINESS_LOGIC_PRINCIPLES.md`.
+- MVP business logic is defined in `DOC/BUSINESS_LOGIC_PRINCIPLES.md`.
 - Provider is a formal MVP role, not a future placeholder.
 - Customer logic must distinguish direct registration from restricted share-ordering, and one OpenID may have multiple scenario roles.
 
@@ -54,7 +54,7 @@ Do not rely on chat memory.
 - Install new packages.
 - Use network.
 - Submit `resume/preview-info.json` or `resume/preview-qr.png`.
-- Add business scope beyond `BUSINESS_LOGIC_PRINCIPLES.md` or `MVP_COMPLETION_CHECKLIST.md` without explicit user approval.
+- Add business scope beyond `DOC/BUSINESS_LOGIC_PRINCIPLES.md` or `DOC/MVP_COMPLETION_CHECKLIST.md` without explicit user approval.
 
 ## Required Validation
 ```bash
@@ -63,6 +63,6 @@ npm run lint
 git diff --check
 ```
 
-Validation method depends on the runner. CLI agents may use CLI, scripts, automation, static checks, and available DevTools automation. Codex App agents, when they are performing user-facing QA or claiming UI/product behavior, must actually operate the mini program through the WeChat DevTools interface or a real device. Static checks, route existence, screenshots alone, automation connection state, or written claims are not enough for Codex App to mark any UI/product row `通過`.
+Validation method depends on the runner. CLI agents may use CLI, scripts, automation, static checks, and available DevTools automation. Codex App agents, when they are performing user-facing QA or claiming UI/product behavior, must actually operate the mini program through the WeChat DevTools interface and verify the visible screen behavior. Static checks, route existence, screenshots alone, automation connection state, or written claims are not enough for Codex App to mark any UI/product row `通過`.
 
 Never write `GUI 證據不足`, `缺少 GUI 證據`, `待複測`, `未驗證`, `blocked`, `partial`, or equivalent proof-shortage wording in the BUG report. A row is either `通過` and removed from the current BUG report, or it remains `不通過` with a concrete fixable problem.

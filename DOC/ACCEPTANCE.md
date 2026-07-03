@@ -3,7 +3,7 @@
 ## 文件用途
 本文件只记录当前产品能否宣告通过验收。它不是业务逻辑来源、不是 MVP backlog、不是 BUG 单，也不维护逐页或逐角色细项清单。
 
-业务原则以 `BUSINESS_LOGIC_PRINCIPLES.md` 为准；MVP gate 与剩余需求以 `MVP_COMPLETION_CHECKLIST.md` 为准；当前不通过的具体 GUI/BUG row 只看 `QA/QA_BUG_REPORT_202607021815.md`。
+业务原则以 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 为准；MVP gate 与剩余需求以 `DOC/MVP_COMPLETION_CHECKLIST.md` 为准；当前不通过的具体 GUI/BUG row 只看 `QA/QA_BUG_REPORT_202607021815.md`。
 
 ## 当前结论
 当前项目还不能宣告真人可用 MVP 上线。
@@ -13,7 +13,7 @@
 - 完整 29-route GUI smoke test 尚未完成。
 - 真实 workflow smoke 尚未完成。
 - GUI layout/style 稳定性尚未完成全画面验证。
-- 图片上传、付款凭证、付款闭环仍缺 fresh DevTools 或真机证据。
+- 图片上传、付款凭证、付款闭环仍缺微信开发工具画面实测证据。
 - 正式 OpenID 下的角色审核、权限刷新、过期/停用/拒绝状态与后端拒绝仍需 fresh GUI/云端 readback 验证。
 
 ## 已有验证信号
@@ -23,7 +23,7 @@
 - 商品、团单、客户订单的云端保存曾通过 targeted automation 验证。
 - 既有静态检查曾通过：`npm run lint`、`git diff --check`。
 
-这些信号只能证明对应范围已有基础实现或局部验证，不能替代完整 GUI/真机验收。
+这些信号只能证明对应范围已有基础实现或局部验证，不能替代完整微信开发工具画面验收。
 
 ## 未验收项目
 - 全量 route GUI smoke。
@@ -36,6 +36,7 @@
 - provider 供应商完整申请、审核、资料维护、商品管理、团主选品、客户可见流程。
 - owner/admin 用户审核、角色多选、角色期限、过期账号不可用状态。
 - owner 运营验收角色预览模式。
+- 操作记录功能：Owner/admin 与团主（guide）可查看本人操作记录，支持时间范围/类型筛选与越权防护。
 - 正式云端权限拒绝 readback。
 
 ## 验收规则
