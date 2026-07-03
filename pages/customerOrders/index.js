@@ -3,6 +3,7 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
+import { navigateByUrl } from '~/utils/navigation';
 
 const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
   .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
@@ -115,8 +116,7 @@ Page({
   },
 
   onLogin() {
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/customerOrders/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/customerOrders/index')}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },
@@ -448,8 +448,7 @@ Page({
     }
     const url = `/pages/customerOrders/edit/index${groupOrderId ? `?groupOrderId=${groupOrderId}` : ''}`;
 
-    wx.navigateTo({
-      url: url,
+    navigateByUrl(url, {
       fail: () => wx.showToast({ title: '打开订单表单失败', icon: 'none' }),
     });
   }

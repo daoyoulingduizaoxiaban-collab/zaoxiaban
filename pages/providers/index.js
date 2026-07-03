@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { canUseProviderPortal } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -59,8 +60,7 @@ Page({
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/providers/edit/index?id=${id}` : '/pages/providers/edit/index';
 
-    wx.navigateTo({
-      url: url,
+    navigateByUrl(url, {
       fail: () => wx.showToast({ title: '打开供应商表单失败', icon: 'none' }),
     });
   }

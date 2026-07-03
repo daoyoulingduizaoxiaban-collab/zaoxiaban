@@ -1,3 +1,5 @@
+import { redirectByUrl } from '~/utils/navigation';
+
 Page({
   data: {},
 
@@ -13,11 +15,8 @@ Page({
       decoded = '';
     }
     const suffix = decoded ? `?redirectTo=${encodeURIComponent(decoded)}` : '';
-    wx.redirectTo({
-      url: `/pages/login/login${suffix}`,
-      fail: () => {
-        wx.navigateTo({ url: `/pages/login/login${suffix}` });
-      },
+    redirectByUrl(`/pages/login/login${suffix}`, {
+      fallbackUrl: '/pages/my/index',
     });
   },
 });

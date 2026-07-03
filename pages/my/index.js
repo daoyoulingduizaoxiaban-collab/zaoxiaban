@@ -1,13 +1,7 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseAdminPortal, canUseFeature, canUseProviderPortal } from '~/services/auth/roleScope';
-
-const TAB_PAGE_URLS = new Set([
-  '/pages/groupOrder/index',
-  '/pages/customerOrders/index',
-  '/pages/productManagement/index',
-  '/pages/my/index',
-]);
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   behaviors: [useToastBehavior],
@@ -189,8 +183,7 @@ Page({
   onLogin() {
     if (this.data.isNavigatingLogin) return;
     this.setData({ isNavigatingLogin: true });
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/my/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/my/index')}`, {
       complete: () => {
         setTimeout(() => this.setData({ isNavigatingLogin: false }), 600);
       },
@@ -206,7 +199,7 @@ Page({
   onNavigateTo() {
     const profile = AuthService.getCurrentProfile();
     const url = profile && profile.id ? `/pages/profile/edit/index?id=${profile.id}` : '/pages/profile/index';
-    wx.navigateTo({ url });
+    navigateByUrl(url);
   },
 
   onLogout() {
@@ -241,9 +234,7 @@ Page({
       return;
     }
     if (url) {
-      const navigate = TAB_PAGE_URLS.has(url) ? wx.switchTab : wx.navigateTo;
-      navigate({
-        url,
+      navigateByUrl(url, {
         fail: () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' }),
       });
       return;
@@ -278,9 +269,7 @@ Page({
         });
         return;
       }
-      wx.navigateTo({
-        url: '/pages/providers/index',
-      });
+      navigateByUrl('/pages/providers/index');
       return;
     }
     this.onShowToast('#t-toast', name);

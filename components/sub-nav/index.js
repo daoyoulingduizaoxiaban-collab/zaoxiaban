@@ -1,3 +1,5 @@
+import { navigateBackOrTab } from '~/utils/navigation';
+
 Component({
   properties: {
     title: {
@@ -7,13 +9,7 @@ Component({
   },
   methods: {
     onBack() {
-      const pages = getCurrentPages();
-
-      if (pages.length > 1) {
-        wx.navigateBack({ delta: 1 });
-      } else {
-        wx.switchTab({ url: '/pages/groupOrder/index' });
-      }
+      navigateBackOrTab('/pages/groupOrder/index');
     }
   }
 });

@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -68,8 +69,7 @@ Page({
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/profile/edit/index?id=${id}` : '/pages/profile/edit/index';
 
-    wx.navigateTo({
-      url: url,
+    navigateByUrl(url, {
       fail: () => {
         wx.showToast({ title: '打开个人资料表单失败', icon: 'none' });
       }

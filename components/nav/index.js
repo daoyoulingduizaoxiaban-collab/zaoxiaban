@@ -1,3 +1,5 @@
+import { navigateByUrl } from '~/utils/navigation';
+
 Component({
   options: {
     styleIsolation: 'shared',
@@ -43,32 +45,17 @@ Component({
       });
     },
     itemClick(e) {
-      const that = this;
       const {
-        isSidebar,
         url
       } = e.detail.item;
-      if (isSidebar) {
-        wx.switchTab({
-          url: `/${url}`,
-          success: () => that.setData({ visible: false }),
-          fail: () => wx.switchTab({ url: '/pages/groupOrder/index' }),
-        });
-      } else {
-        wx.navigateTo({
-          url: `/${url}`,
-          success: () => that.setData({ visible: false }),
-          fail: () => {
-            wx.showToast({ title: '暂时无法打开该页面', icon: 'none' });
-          },
-        });
-      }
+      navigateByUrl(`/${url}`, {
+        success: () => this.setData({ visible: false }),
+        fail: () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' }),
+      });
     },
 
     searchTurn() {
-      wx.navigateTo({
-        url: `/pages/search/index`,
-      });
+      navigateByUrl('/pages/search/index');
     },
   },
 });

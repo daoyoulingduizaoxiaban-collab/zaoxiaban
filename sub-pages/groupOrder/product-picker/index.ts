@@ -1,4 +1,5 @@
 import { ProductService } from '~/services/product/productService';
+import { navigateBackOrTab } from '~/utils/navigation';
 
 const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
@@ -205,14 +206,7 @@ Page({
         return;
       }
 
-      wx.navigateBack({
-        fail: () => {
-          wx.showToast({
-            title: '返回本团商品失败',
-            icon: 'none'
-          });
-        }
-      });
+      navigateBackOrTab('/pages/groupOrder/index');
     }, 500);
   }
 });

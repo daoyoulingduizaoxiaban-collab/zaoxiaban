@@ -1,3 +1,5 @@
+import { navigateByUrl } from '~/utils/navigation';
+
 const app = getApp();
 
 Page({
@@ -92,6 +94,6 @@ Page({
   },
 
   onGoOrders() {
-    wx.switchTab({ url: '/pages/customerOrders/index' });
+    navigateByUrl('/pages/customerOrders/index');
   },
 });

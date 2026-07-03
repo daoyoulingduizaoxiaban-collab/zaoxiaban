@@ -1,6 +1,7 @@
 import { Product } from "~/models/Product";
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { navigateByUrl } from '~/utils/navigation';
 
 const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
@@ -206,36 +207,38 @@ Page({
       skipNextReload: true
     });
 
-    wx.navigateTo({
-      url: `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
-      events: {
-        selectedProducts: (data) => {
-          const selectedProducts = this.normalizeProducts((data.products || []).map(item => new Product(item)));
-          if (selectedProducts.length === 0) return;
+    navigateByUrl(
+      `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
+      {
+        events: {
+          selectedProducts: (data) => {
+            const selectedProducts = this.normalizeProducts((data.products || []).map(item => new Product(item)));
+            if (selectedProducts.length === 0) return;
 
-          GroupOrderService.addProducts(this.data.groupOrderId, selectedProducts).then((res) => {
-            if (!res.success) {
-              wx.showToast({ title: res.error || '加入商品失败', icon: 'none' });
-              return;
-            }
-            const rawList = this.normalizeProducts(res.data.productList || []);
-            this.setData({
-              rawList,
-              displayList: this.filterList(rawList, this.data.searchQuery)
+            GroupOrderService.addProducts(this.data.groupOrderId, selectedProducts).then((res) => {
+              if (!res.success) {
+                wx.showToast({ title: res.error || '加入商品失败', icon: 'none' });
+                return;
+              }
+              const rawList = this.normalizeProducts(res.data.productList || []);
+              this.setData({
+                rawList,
+                displayList: this.filterList(rawList, this.data.searchQuery)
+              });
+              wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
             });
-            wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+          }
+        },
+        fail: () => {
+          this.setData({
+            skipNextReload: false
+          });
+          wx.showToast({
+            title: '打开商品库失败',
+            icon: 'none'
           });
         }
-      },
-      fail: () => {
-        this.setData({
-          skipNextReload: false
-        });
-        wx.showToast({
-          title: '打开商品库失败',
-          icon: 'none'
-        });
       }
-    });
+    );
   }
 });

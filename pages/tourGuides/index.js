@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -74,8 +75,7 @@ Page({
       || (!this.data.canCreateTourGuide && profile ? profile.id : '');
     const url = id ? `/pages/tourGuides/edit/index?id=${id}` : '/pages/tourGuides/edit/index';
 
-    wx.navigateTo({
-      url: url,
+    navigateByUrl(url, {
       fail: () => {
         wx.showToast({ title: '打开导游/领队表单失败', icon: 'none' });
       }

@@ -1,5 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -18,8 +19,7 @@ Page({
   goCreateGroupOrder() {
     if (!this.data.canCreateGroupOrder) {
       if (!AuthService.getCurrentProfile()) {
-        wx.navigateTo({
-          url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/release/index')}`,
+        navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/release/index')}`, {
           fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
         });
         return;
@@ -27,8 +27,7 @@ Page({
       wx.showToast({ title: this.data.accessText, icon: 'none' });
       return;
     }
-    wx.navigateTo({
-      url: '/sub-pages/groupOrder/add/index',
+    navigateByUrl('/sub-pages/groupOrder/add/index', {
       fail: () => {
         wx.showToast({ title: '打开开团表单失败', icon: 'none' });
       },

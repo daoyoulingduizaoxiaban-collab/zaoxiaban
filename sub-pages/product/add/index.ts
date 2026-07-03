@@ -8,6 +8,7 @@ import {
   getSaveModeText,
   isCloudBusinessEnabled,
 } from '~/repositories/cloudBusinessRepository';
+import { navigateBackOrTab } from '~/utils/navigation';
 
 Page({
   data: {
@@ -255,10 +256,6 @@ Page({
     const saveModeText = getSaveModeText(res.meta);
     this.setData({ saveModeText });
     wx.showToast({ title: saveModeText, icon: 'none' });
-    wx.navigateBack({
-      fail: () => {
-        wx.showToast({ title: '返回商品库失败', icon: 'none' });
-      }
-    });
+    navigateBackOrTab('/pages/productManagement/index');
   },
 });

@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { navigateBackOrTab } from '~/utils/navigation';
 
 Page({
   data: {
@@ -99,10 +100,10 @@ Page({
     }
     AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '个人资料已保存', icon: 'success' });
-    setTimeout(() => wx.navigateBack(), 300);
+    setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
   },
 
   onBack() {
-    wx.navigateBack();
+    navigateBackOrTab('/pages/my/index');
   }
 });

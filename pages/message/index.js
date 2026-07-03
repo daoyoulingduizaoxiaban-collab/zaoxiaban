@@ -1,5 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { navigateByUrl } from '~/utils/navigation';
 
 const READ_MESSAGE_KEY = 'dao_you_ling_read_messages';
 
@@ -72,7 +73,7 @@ Page({
   },
 
   goCustomerOrders() {
-    wx.switchTab({ url: '/pages/customerOrders/index' });
+    navigateByUrl('/pages/customerOrders/index');
   },
 
   markRead(e) {
@@ -89,7 +90,7 @@ Page({
     const { id, orderId } = e.currentTarget.dataset;
     if (id) this.markRead({ currentTarget: { dataset: { id } } });
     if (orderId) {
-      wx.switchTab({ url: '/pages/customerOrders/index' });
+      navigateByUrl('/pages/customerOrders/index');
     }
   },
 });

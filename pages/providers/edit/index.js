@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { canUseProviderPortal } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { navigateBackOrTab } from '~/utils/navigation';
 
 Page({
   data: {
@@ -93,10 +94,10 @@ Page({
       return;
     }
     wx.showToast({ title: '供应商资料已保存', icon: 'success' });
-    setTimeout(() => wx.navigateBack(), 300);
+    setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
   },
 
   onBack() {
-    wx.navigateBack();
+    navigateBackOrTab('/pages/my/index');
   }
 });

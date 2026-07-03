@@ -2,6 +2,7 @@ import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -142,16 +143,16 @@ Page({
       showCancel: false,
       confirmText: '查看订单',
       success: () => {
-        wx.switchTab({
-          url: '/pages/customerOrders/index',
-          fail: () => wx.navigateBack(),
+        navigateByUrl('/pages/customerOrders/index', {
+          fallbackUrl: '/pages/my/index',
+          fail: () => navigateBackOrTab('/pages/customerOrders/index'),
         });
       },
     });
   },
 
   onBack() {
-    wx.navigateBack();
+    navigateBackOrTab('/pages/groupOrder/index');
   },
 
   choosePaymentProof() {

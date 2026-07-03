@@ -3,6 +3,7 @@ import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -93,8 +94,7 @@ Page({
   },
 
   goLogin() {
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/home/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/home/index')}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },
@@ -110,7 +110,7 @@ Page({
       this.goLogin();
       return;
     }
-    wx.switchTab({ url: '/pages/groupOrder/index' });
+    navigateByUrl('/pages/groupOrder/index');
   },
 
   goProducts() {
@@ -118,7 +118,7 @@ Page({
       this.goLogin();
       return;
     }
-    wx.switchTab({ url: '/pages/productManagement/index' });
+    navigateByUrl('/pages/productManagement/index');
   },
 
   goCustomerOrders() {
@@ -126,7 +126,7 @@ Page({
       this.goLogin();
       return;
     }
-    wx.switchTab({ url: '/pages/customerOrders/index' });
+    navigateByUrl('/pages/customerOrders/index');
   },
 
   goRelease() {
@@ -134,8 +134,7 @@ Page({
       wx.showToast({ title: '当前账号不能新建团单', icon: 'none' });
       return;
     }
-    wx.navigateTo({
-      url: '/pages/release/index',
+    navigateByUrl('/pages/release/index', {
       fail: () => wx.showToast({ title: '打开开团入口失败', icon: 'none' }),
     });
   },
@@ -145,8 +144,7 @@ Page({
       wx.showToast({ title: '当前账号不能查看数据看板', icon: 'none' });
       return;
     }
-    wx.navigateTo({
-      url: '/pages/dataCenter/index',
+    navigateByUrl('/pages/dataCenter/index', {
       fail: () => wx.showToast({ title: '打开数据看板失败', icon: 'none' }),
     });
   },

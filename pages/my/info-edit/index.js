@@ -2,6 +2,7 @@ import { areaList } from './areaData.js';
 import { AuthService } from '~/services/auth/authService';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -223,8 +224,7 @@ Page({
   },
 
   onLogin() {
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/my/info-edit/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/my/info-edit/index')}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },

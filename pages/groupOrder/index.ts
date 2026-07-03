@@ -8,6 +8,7 @@ import {
 } from '~/enum/GroupOrderStatus'
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -121,8 +122,7 @@ Page({
   },
 
   onLogin() {
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/groupOrder/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/groupOrder/index')}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },
@@ -131,8 +131,7 @@ Page({
     const {
       id
     } = e.currentTarget.dataset;
-    wx.navigateTo({
-      url: `/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`,
+    navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`, {
       fail: () => {
         wx.showToast({
           title: '跳轉詳情頁失敗',
@@ -162,8 +161,7 @@ Page({
 
     const url = '/sub-pages/groupOrder/add/index';
 
-    wx.navigateTo({
-      url: url,
+    navigateByUrl(url, {
       fail: () => {
         wx.showToast({
           title: '打开新建团单失败',

@@ -1,23 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-
-const TAB_PAGE_URLS = new Set([
-  '/pages/groupOrder/index',
-  '/pages/customerOrders/index',
-  '/pages/productManagement/index',
-  '/pages/my/index',
-]);
-
-const normalizeRedirect = value => {
-  let decoded = '';
-  try {
-    decoded = decodeURIComponent(String(value || '')).trim();
-  } catch (err) {
-    decoded = '';
-  }
-  if (!decoded || decoded.indexOf('/') !== 0 || decoded.indexOf('//') === 0) return '/pages/my/index';
-  if (decoded.includes('..')) return '/pages/my/index';
-  return decoded;
-};
+import { normalizeRouteUrl, redirectByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -30,7 +12,7 @@ Page({
 
   onLoad(options = {}) {
     this.setData({
-      redirectTo: normalizeRedirect(options.redirectTo),
+      redirectTo: normalizeRouteUrl(options.redirectTo),
     });
   },
 
@@ -71,18 +53,7 @@ Page({
   },
 
   navigateAfterLogin() {
-    const redirectTo = normalizeRedirect(this.data.redirectTo);
-    if (TAB_PAGE_URLS.has(redirectTo)) {
-      wx.switchTab({
-        url: redirectTo,
-        fail: () => wx.switchTab({ url: '/pages/my/index' }),
-      });
-      return;
-    }
-    wx.redirectTo({
-      url: redirectTo,
-      fail: () => wx.switchTab({ url: '/pages/my/index' }),
-    });
+    redirectByUrl(this.data.redirectTo, { fallbackUrl: '/pages/my/index' });
   },
 
   onRoleSelect(e) {

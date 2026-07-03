@@ -2,6 +2,7 @@ import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   behaviors: [useToastBehavior],
@@ -95,8 +96,7 @@ Page({
   onEleClick(e) {
     const { title, note, url } = e.currentTarget.dataset.data;
     if (url) {
-      wx.navigateTo({
-        url,
+      navigateByUrl(url, {
         fail: () => wx.showToast({ title: '打开账号资料失败', icon: 'none' }),
       });
       return;
@@ -105,8 +105,7 @@ Page({
   },
 
   onLogin() {
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/setting/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/setting/index')}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },

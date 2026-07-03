@@ -2,6 +2,7 @@ import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { ProductService } from '~/services/product/productService';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -198,15 +199,15 @@ Page({
       return;
     }
     if (type === 'groupOrder') {
-      wx.navigateTo({ url: `/sub-pages/groupOrder/detail/index?id=${id}&readonly=1` });
+      navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`);
       return;
     }
     if (type === 'customerOrder') {
-      wx.switchTab({ url: '/pages/customerOrders/index' });
+      navigateByUrl('/pages/customerOrders/index');
       return;
     }
     if (type === 'product') {
-      wx.switchTab({ url: '/pages/productManagement/index' });
+      navigateByUrl('/pages/productManagement/index');
     }
   },
 
@@ -214,6 +215,6 @@ Page({
     this.setData({
       searchValue: '',
     });
-    wx.switchTab({ url: '/pages/groupOrder/index' });
+    navigateByUrl('/pages/groupOrder/index');
   },
 });

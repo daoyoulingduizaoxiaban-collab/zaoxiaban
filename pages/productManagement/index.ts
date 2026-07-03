@@ -3,6 +3,7 @@ import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { navigateByUrl } from '~/utils/navigation';
 import {
   getProductStatusList,
   getProductStatusTextByValue
@@ -135,8 +136,7 @@ Page({
       return;
     }
 
-    wx.navigateTo({
-      url: `/sub-pages/product/add/index`,
+    navigateByUrl('/sub-pages/product/add/index', {
       fail: () => {
         wx.showToast({
           title: '打开商品表单失败',
@@ -161,8 +161,7 @@ Page({
       wx.showToast({ title: '当前角色不能编辑商品', icon: 'none' });
       return;
     }
-    wx.navigateTo({
-      url: `/sub-pages/product/add/index?id=${id}`,
+    navigateByUrl(`/sub-pages/product/add/index?id=${id}`, {
       fail: () => wx.showToast({ title: '打开商品表单失败', icon: 'none' }),
       events: {
         refreshList: () => {
@@ -173,8 +172,7 @@ Page({
   },
 
   onOpenProductList() {
-    wx.navigateTo({
-      url: '/sub-pages/product/list/index',
+    navigateByUrl('/sub-pages/product/list/index', {
       fail: () => wx.showToast({ title: '打开商品列表失败', icon: 'none' }),
     });
   },
@@ -267,8 +265,7 @@ Page({
   },
 
   onLogin() {
-    wx.navigateTo({
-      url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/productManagement/index')}`,
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/productManagement/index')}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },

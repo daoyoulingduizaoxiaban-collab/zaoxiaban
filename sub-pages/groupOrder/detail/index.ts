@@ -6,6 +6,7 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 
 Page({
@@ -97,7 +98,7 @@ Page({
   },
 
   onBack() {
-    wx.navigateBack();
+    navigateBackOrTab('/pages/groupOrder/index');
   },
 
   onSave() {
@@ -386,8 +387,7 @@ Page({
       return;
     }
 
-    wx.navigateTo({
-      url: `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+    navigateByUrl(`/pages/customerOrders/edit/index?groupOrderId=${id}`, {
       fail: () => {
         wx.showToast({
           title: '打开客户下单页失败',
@@ -424,8 +424,7 @@ Page({
       return;
     }
 
-    wx.navigateTo({
-      url: `/sub-pages/groupOrder/add/index?id=${id}`,
+    navigateByUrl(`/sub-pages/groupOrder/add/index?id=${id}`, {
       fail: () => {
         wx.showToast({
           title: '打开编辑团单失败',
@@ -442,8 +441,7 @@ Page({
     }
     const id = this.data.groupOrderId;
     if (id) {
-      wx.navigateTo({
-        url: `/sub-pages/groupOrder/productList/index?id=${id}`,
+      navigateByUrl(`/sub-pages/groupOrder/productList/index?id=${id}`, {
         fail: () => {
           wx.showToast({
             title: '打开本团商品失败',

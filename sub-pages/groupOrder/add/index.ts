@@ -4,6 +4,7 @@ import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
@@ -118,21 +119,23 @@ Page({
 
   onSelectGoods() {
     const existingIds = this.data.selectedGoods.map(item => item.id);
-    wx.navigateTo({
-      url: `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
-      events: {
-        selectedProducts: (data) => {
-          const selectedProducts = this.normalizeGoods((data.products || []).map(item => new Product(item)));
-          if (selectedProducts.length === 0) return;
-          this.setData({
-            selectedGoods: [...this.data.selectedGoods, ...selectedProducts]
-          });
+    navigateByUrl(
+      `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
+      {
+        events: {
+          selectedProducts: (data) => {
+            const selectedProducts = this.normalizeGoods((data.products || []).map(item => new Product(item)));
+            if (selectedProducts.length === 0) return;
+            this.setData({
+              selectedGoods: [...this.data.selectedGoods, ...selectedProducts]
+            });
+          }
+        },
+        fail: () => {
+          wx.showToast({ title: '打开商品库失败', icon: 'none' });
         }
-      },
-      fail: () => {
-        wx.showToast({ title: '打开商品库失败', icon: 'none' });
       }
-    });
+    );
   },
 
   async onSave() {
@@ -164,7 +167,7 @@ Page({
       title: saveModeText,
       icon: 'none',
       success: () => {
-        setTimeout(() => wx.navigateBack(), 800);
+        setTimeout(() => navigateBackOrTab('/pages/groupOrder/index'), 800);
       }
     });
   }
