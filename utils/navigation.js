@@ -28,6 +28,18 @@ const getRouteQuery = url => {
 
 export const isTabPageUrl = url => TAB_PAGE_URLS.has(getRoutePath(url));
 
+const openFallbackUrl = (url) => {
+  const normalizedUrl = normalizeRouteUrl(url, DEFAULT_TAB_URL);
+  if (isTabPageUrl(normalizedUrl)) {
+    wx.switchTab({ url: getRoutePath(normalizedUrl) });
+    return;
+  }
+  wx.redirectTo({
+    url: normalizedUrl,
+    fail: () => wx.switchTab({ url: DEFAULT_TAB_URL }),
+  });
+};
+
 const rememberTabRouteQuery = (url) => {
   const routePath = getRoutePath(url);
   const query = getRouteQuery(url);
@@ -88,7 +100,7 @@ export const navigateByUrl = (url, options = {}) => {
         options.fail();
         return;
       }
-      wx.switchTab({ url: fallbackUrl });
+      openFallbackUrl(fallbackUrl);
     },
   });
 };
@@ -102,7 +114,7 @@ export const redirectByUrl = (url, options = {}) => {
       url: getRoutePath(normalizedUrl),
       success: options.success,
       complete: options.complete,
-      fail: () => wx.switchTab({ url: fallbackUrl }),
+      fail: () => openFallbackUrl(fallbackUrl),
     });
     return;
   }
@@ -110,7 +122,7 @@ export const redirectByUrl = (url, options = {}) => {
     url: normalizedUrl,
     success: options.success,
     complete: options.complete,
-    fail: () => wx.switchTab({ url: fallbackUrl }),
+    fail: () => openFallbackUrl(fallbackUrl),
   });
 };
 
@@ -119,9 +131,9 @@ export const navigateBackOrTab = (fallbackUrl = DEFAULT_TAB_URL) => {
   if (pages.length > 1) {
     wx.navigateBack({
       delta: 1,
-      fail: () => wx.switchTab({ url: normalizeRouteUrl(fallbackUrl, DEFAULT_TAB_URL) }),
+      fail: () => openFallbackUrl(fallbackUrl),
     });
     return;
   }
-  wx.switchTab({ url: normalizeRouteUrl(fallbackUrl, DEFAULT_TAB_URL) });
+  openFallbackUrl(fallbackUrl);
 };
