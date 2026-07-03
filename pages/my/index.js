@@ -1,6 +1,12 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseAdminPortal, canUseFeature, canUseProviderPortal } from '~/services/auth/roleScope';
+import {
+  AUTH_ROLES,
+  FEATURE_KEYS,
+  canUseAdminPortal,
+  canUseFeature,
+  canUseProviderPortal,
+} from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
 Page({
@@ -171,6 +177,15 @@ Page({
         list.push(item);
       }
     });
+
+    if (profile && profile.role === AUTH_ROLES.CUSTOMER) {
+      list.push({
+        name: '申请导游/领队',
+        icon: 'usergroup',
+        type: 'tourGuideApply',
+        url: '/pages/tourGuides/edit/index',
+      });
+    }
 
     return list;
   },

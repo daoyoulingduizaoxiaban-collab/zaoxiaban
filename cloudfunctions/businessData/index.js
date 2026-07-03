@@ -757,6 +757,8 @@ const validateDirectoryUserPayload = (user) => {
   return '';
 };
 
+const validateRequestedRole = role => ['guide', 'customer', 'provider'].includes(role);
+
 const userActions = {
   async listPending(payload, profile) {
     assertApprovedProfile(profile, ['owner', 'admin']);
@@ -791,6 +793,42 @@ const userActions = {
     };
     await getCollection('users').doc(String(target._id || target.id)).update({ data: updateData });
     return success(toId({ ...target, ...updateData }));
+  },
+
+  async applyForRole(payload, profile) {
+    assertProfile(profile);
+    const applicationPayload = payload || {};
+    const requestedRole = trimText(applicationPayload.requestedRole || 'guide');
+    if (!validateRequestedRole(requestedRole)) return failure('申请身份无效');
+    const result = await getCollection('users').where({ openId: profile.openId }).limit(1).get();
+    const target = result.data && result.data[0];
+    if (!target) return failure('未找到当前账号资料');
+    const currentStatus = normalizeReviewStatus(target.reviewStatus || target.status);
+    if (currentStatus === REVIEW_STATUS.PENDING && target.requestedRole === requestedRole) {
+      return failure('申请已提交，请等待管理员确认');
+    }
+    if (currentStatus === REVIEW_STATUS.DISABLED) return failure('当前账号已停用，请联系管理员');
+    if (target.role === requestedRole && currentStatus === REVIEW_STATUS.APPROVED) {
+      return failure('当前账号已是该身份');
+    }
+
+    const next = normalizeDirectoryUser({
+      ...target,
+      ...applicationPayload,
+      role: target.role || profile.role || 'customer',
+      requestedRole,
+      status: REVIEW_STATUS.PENDING,
+      reviewStatus: REVIEW_STATUS.PENDING,
+      reviewRemark: '',
+      reviewedBy: '',
+      reviewedAt: '',
+    }, target);
+    const validationError = validateDirectoryUserPayload(next);
+    if (validationError) return failure(validationError);
+    if (!isDurableProfileAvatarUrl(next.avatarUrl)) return failure('请重新上传头像后保存');
+
+    await getCollection('users').doc(String(target._id || target.id)).update({ data: toUpdateData(next) });
+    return success(toId({ ...next, _id: target._id || target.id }));
   },
 
   async listVisible(payload, profile) {

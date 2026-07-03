@@ -16,6 +16,6 @@
   </t-cell-group>
 
   <view class="submit-bar" wx:if="{{canSave && !pageErrorText}}">
-    <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bind:tap="onSave">保存导游/领队</t-button>
+    <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bind:tap="onSave">{{submitText}}</t-button>
   </view>
 </view>

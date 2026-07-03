@@ -1,5 +1,12 @@
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import {
+  AUTH_ROLES,
+  FEATURE_KEYS,
+  REVIEW_STATUS,
+  canUseFeature,
+  isOwnerOrAdmin,
+  normalizeReviewStatus,
+} from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
 
@@ -13,6 +20,8 @@ Page({
     pageErrorText: '',
     targetId: '',
     isSubmitting: false,
+    isApplicationMode: false,
+    submitText: '保存导游/领队',
     formData: {
       title: '',
       date: '',
@@ -24,22 +33,39 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const targetId = options.id || (profile && profile.role === 'guide' ? profile.id : '');
-    const canSave = Boolean(canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES) && (
+    const reviewStatus = normalizeReviewStatus(profile && (profile.reviewStatus || profile.status));
+    const isGuideApplicant = Boolean(profile && profile.requestedRole === AUTH_ROLES.GUIDE && reviewStatus === REVIEW_STATUS.PENDING);
+    const isApplicationMode = Boolean(
+      profile
+      && profile.role === AUTH_ROLES.CUSTOMER
+      && reviewStatus === REVIEW_STATUS.APPROVED
+      && !isGuideApplicant
+    );
+    const targetId = options.id || (profile && (profile.role === AUTH_ROLES.GUIDE || isApplicationMode || isGuideApplicant) ? profile.id : '');
+    const canSave = Boolean(isApplicationMode || (canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES) && (
       isOwnerOrAdmin(profile)
-      || (profile.role === 'guide' && String(targetId) === String(profile.id))
-    ));
+      || (profile.role === AUTH_ROLES.GUIDE && String(targetId) === String(profile.id))
+    )));
+    let disabledReason = '当前账号没有导游/领队资料维护权限。';
+    if (canSave) disabledReason = '';
+    if (isGuideApplicant) disabledReason = '导游/领队申请已提交，请等待管理员确认。';
+    let pageTitle = '编辑导游/领队';
+    if (isApplicationMode) pageTitle = '申请导游/领队';
+    if (isGuideApplicant) pageTitle = '导游/领队申请';
     this.setData({
       canSave,
+      isApplicationMode,
+      submitText: isApplicationMode ? '提交导游/领队申请' : '保存导游/领队',
       canEditStatus: isOwnerOrAdmin(profile),
-      disabledReason: canSave ? '' : '当前账号没有导游/领队资料维护权限。',
+      disabledReason,
       targetId,
     });
     if (targetId) {
       this.setData({
-        pageTitle: '编辑导游/领队',
+        pageTitle,
         isEdit: true,
       });
+      if (isGuideApplicant) return;
       this.fetchtourGuidesDetail(targetId);
     }
   },
@@ -101,19 +127,23 @@ Page({
       displayName: this.data.formData.title,
       city: this.data.formData.city,
       phone,
-      role: 'guide',
     };
+    if (!this.data.isApplicationMode) {
+      payload.role = AUTH_ROLES.GUIDE;
+    }
     if (this.data.canEditStatus) {
       payload.displayRole = this.data.formData.statusText;
     }
-    const res = await DirectoryRepository.saveUser(payload);
+    const res = this.data.isApplicationMode
+      ? await DirectoryRepository.applyForRole({ ...payload, requestedRole: AUTH_ROLES.GUIDE })
+      : await DirectoryRepository.saveUser(payload);
     this.setData({ isSubmitting: false });
     if (!res.success) {
       wx.showToast({ title: res.error || '保存导游/领队资料失败', icon: 'none' });
       return;
     }
     AuthService.updateCurrentProfile(res.data);
-    wx.showToast({ title: '导游/领队资料已保存', icon: 'success' });
+    wx.showToast({ title: this.data.isApplicationMode ? '申请已提交' : '导游/领队资料已保存', icon: 'success' });
     setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
   },
 

@@ -153,6 +153,48 @@ export const DirectoryRepository = {
     return { success: true, data: next, meta: { saveMode: 'local-directory-repository' } };
   },
 
+  async applyForRole(payload = {}) {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile) return { success: false, error: '请先登录后提交申请' };
+    const requestedRole = payload.requestedRole || AUTH_ROLES.GUIDE;
+    if (![AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.PROVIDER].includes(requestedRole)) {
+      return { success: false, error: '申请身份无效' };
+    }
+    const cloudRes = await callCloud('users', 'applyForRole', { ...payload, requestedRole });
+    if (cloudRes) return cloudRes;
+
+    const users = getLocalUsers().map(normalizeUser);
+    const existing = users.find(user => sameId(user.id, profile.id) || sameId(user.openId, profile.openId));
+    if (!existing) return { success: false, error: '未找到当前账号资料' };
+    const currentStatus = normalizeReviewStatus(existing.reviewStatus || existing.status || profile.reviewStatus || profile.status);
+    if (currentStatus === REVIEW_STATUS.PENDING && existing.requestedRole === requestedRole) {
+      return { success: false, error: '申请已提交，请等待管理员确认' };
+    }
+    if (currentStatus === REVIEW_STATUS.DISABLED) return { success: false, error: '当前账号已停用，请联系管理员' };
+    if (existing.role === requestedRole && currentStatus === REVIEW_STATUS.APPROVED) {
+      return { success: false, error: '当前账号已是该身份' };
+    }
+
+    const updatedAt = nowIso();
+    const next = normalizeUser({
+      ...existing,
+      ...payload,
+      id: existing.id,
+      openId: existing.openId || profile.openId,
+      unionId: existing.unionId || profile.unionId || '',
+      role: existing.role || profile.role || AUTH_ROLES.CUSTOMER,
+      requestedRole,
+      status: REVIEW_STATUS.PENDING,
+      reviewStatus: REVIEW_STATUS.PENDING,
+      reviewRemark: '',
+      reviewedBy: '',
+      reviewedAt: '',
+      updatedAt,
+    });
+    saveLocalUsers(users.map(user => (sameId(user.id, next.id) ? next : user)));
+    return { success: true, data: next, meta: { saveMode: 'local-directory-repository' } };
+  },
+
   async listGuides() {
     const res = await this.listUsers();
     if (!res.success) return res;
