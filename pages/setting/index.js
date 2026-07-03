@@ -24,14 +24,14 @@ Page({
       return '资料会同步保存';
     }
     if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
-      return '资料仅保存到当前设备';
+      return '资料已保存';
     }
     return '请登录后查看资料保存状态';
   },
 
   getCloudSettingNote(session) {
     if (session && session.cloudOpenIdVerified) return '账号已完成微信登录验证';
-    if (session && (session.qaOverride || session.isMockOpenId)) return '请使用微信登录同步账号资料';
+    if (session && (session.qaOverride || session.isMockOpenId)) return '请完成微信登录后同步账号资料';
     return '请先登录账号';
   },
 

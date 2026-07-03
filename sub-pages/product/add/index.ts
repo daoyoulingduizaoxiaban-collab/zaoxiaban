@@ -173,7 +173,7 @@ Page({
   chooseImage() {
     if (this.data.isChoosingImage || this.data.isSubmitting) return;
     if (!wx.chooseMedia) {
-      wx.showToast({ title: '当前设备不支持选择图片', icon: 'none' });
+      wx.showToast({ title: '暂时无法选择图片，请稍后重试', icon: 'none' });
       return;
     }
     const remainCount = 3 - this.data.currentProduct.pictureUrls.length;

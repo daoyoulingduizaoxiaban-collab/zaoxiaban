@@ -199,9 +199,9 @@ Page({
   toPersonalInfo(profile) {
     let authSourceText = '微信账号已验证';
     if (profile.qaOverride) {
-      authSourceText = '本机资料';
+      authSourceText = '账号资料已载入';
     } else if (profile.isMockOpenId) {
-      authSourceText = '本机资料';
+      authSourceText = '账号资料已载入';
     }
 
     return {
