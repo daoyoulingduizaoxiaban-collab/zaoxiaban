@@ -7,6 +7,8 @@ import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/r
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 
+const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
+
 Page({
   data: {
     pageTitle: '开团',
@@ -51,6 +53,29 @@ Page({
       });
       this.loadGroupOrder(groupOrderId);
     }
+  },
+
+  onShow() {
+    this.consumePickerFallbackResult();
+  },
+
+  consumePickerFallbackResult() {
+    let result = null;
+    try {
+      result = wx.getStorageSync(PICKER_RESULT_KEY);
+      wx.removeStorageSync(PICKER_RESULT_KEY);
+    } catch (err) {
+      result = null;
+    }
+    if (!result || !Array.isArray(result.products) || Date.now() - Number(result.createdAt || 0) > 5 * 60 * 1000) return;
+    const selectedProducts = this.normalizeGoods((result.products || []).map(item => new Product(item)));
+    if (!selectedProducts.length) return;
+    const existingIds = new Set(this.data.selectedGoods.map(item => String(item.id)));
+    const nextProducts = selectedProducts.filter(item => !existingIds.has(String(item.id)));
+    if (!nextProducts.length) return;
+    this.setData({
+      selectedGoods: [...this.data.selectedGoods, ...nextProducts],
+    });
   },
 
   async loadGroupOrder(groupOrderId) {

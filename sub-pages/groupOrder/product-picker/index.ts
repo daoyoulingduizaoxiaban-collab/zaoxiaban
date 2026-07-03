@@ -2,6 +2,8 @@ import { ProductService } from '~/services/product/productService';
 import { navigateBackOrTab } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 
+const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
+
 Page({
   data: {
     excludeIds: [],
@@ -165,6 +167,18 @@ Page({
     this.setData({ selectedCount: count });
   },
 
+  saveFallbackResult(products) {
+    try {
+      wx.setStorageSync(PICKER_RESULT_KEY, {
+        products,
+        createdAt: Date.now(),
+      });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  },
+
   confirmAdd() {
     const selectedItems = this.data.allProducts.filter(p => p.selected);
 
@@ -201,10 +215,15 @@ Page({
           }))
         });
       } catch (err) {
-        wx.showToast({
-          title: '返回商品选择结果失败',
-          icon: 'none'
-        });
+        const fallbackSaved = this.saveFallbackResult(selectedItems.map(item => ({
+          ...item,
+          selected: false,
+          disabled: false
+        })));
+        wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
+        if (fallbackSaved) {
+          navigateBackOrTab('/pages/groupOrder/index');
+        }
         return;
       }
 

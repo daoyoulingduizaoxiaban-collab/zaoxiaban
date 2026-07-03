@@ -6,6 +6,8 @@ import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/rol
 import { navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 
+const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
+
 Page({
   data: {
     groupOrderId: '',
@@ -34,6 +36,9 @@ Page({
   },
 
   onShow() {
+    if (this.consumePickerFallbackResult()) {
+      return;
+    }
     if (this.data.skipNextReload) {
       this.setData({
         skipNextReload: false
@@ -42,6 +47,37 @@ Page({
     }
 
     this.loadGroupProducts();
+  },
+
+  consumePickerFallbackResult() {
+    let result = null;
+    try {
+      result = wx.getStorageSync(PICKER_RESULT_KEY);
+      wx.removeStorageSync(PICKER_RESULT_KEY);
+    } catch (err) {
+      result = null;
+    }
+    if (!result || !Array.isArray(result.products) || Date.now() - Number(result.createdAt || 0) > 5 * 60 * 1000) return false;
+    if (!this.data.groupOrderId || !this.data.canManageGroupOrder) return false;
+    const selectedProducts = this.normalizeProducts((result.products || []).map(item => new Product(item)));
+    if (!selectedProducts.length) return false;
+    const existingIds = new Set(this.data.rawList.map(item => String(item.id)));
+    const nextProducts = selectedProducts.filter(item => !existingIds.has(String(item.id)));
+    if (!nextProducts.length) return true;
+    GroupOrderService.addProducts(this.data.groupOrderId, nextProducts).then((res) => {
+      if (!res.success) {
+        wx.showToast({ title: res.error || '加入商品失败', icon: 'none' });
+        return;
+      }
+      const rawList = this.normalizeProducts(res.data.productList || []);
+      this.setData({
+        rawList,
+        displayList: this.filterList(rawList, this.data.searchQuery),
+        skipNextReload: false,
+      });
+      wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+    });
+    return true;
   },
 
   async loadGroupProducts() {
