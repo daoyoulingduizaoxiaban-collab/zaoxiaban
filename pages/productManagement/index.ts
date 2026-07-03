@@ -23,6 +23,9 @@ Page({
     isLoggedIn: false,
     canUseBusiness: false,
     accessStateText: '',
+    detailVisible: false,
+    selectedProduct: null,
+    selectedPriceRules: [],
     productStatusTextMap: {
       1: getProductStatusTextByValue(1),
       2: getProductStatusTextByValue(2)
@@ -66,9 +69,10 @@ Page({
       return;
     }
 
+    const products = this.normalizeProducts(res.data);
     this.setData({
-      allProducts: res.data,
-      productList: res.data,
+      allProducts: products,
+      productList: products,
       roleScopeText: this.getRoleScopeText(),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       canManageProducts: this.canManageProducts(),
@@ -77,6 +81,14 @@ Page({
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
       isLoading: false,
     });
+  },
+
+  normalizeProducts(products: Product[] = []) {
+    return products.map(product => ({
+      ...product,
+      coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
+      priceSetting: product.priceSetting || product.priceSettings || [],
+    }));
   },
 
   // 2. 搜尋條件區塊邏輯
@@ -132,6 +144,35 @@ Page({
     wx.navigateTo({
       url: '/sub-pages/product/list/index',
       fail: () => wx.showToast({ title: '打开商品列表失败', icon: 'none' }),
+    });
+  },
+
+  onOpenDetail(e: any) {
+    const id = String(e.currentTarget.dataset.id);
+    const product = this.data.productList.find(item => String(item.id) === id);
+    if (!product) {
+      wx.showToast({ title: '未找到商品详情', icon: 'none' });
+      return;
+    }
+    this.setData({
+      selectedProduct: product,
+      selectedPriceRules: product.priceSetting || [],
+      detailVisible: true,
+    });
+  },
+
+  closeDetail() {
+    this.setData({ selectedProduct: null, selectedPriceRules: [], detailVisible: false });
+  },
+
+  stopDetailTap() {},
+
+  onImageError(e: any) {
+    const id = String(e.currentTarget.dataset.id);
+    const patchCover = product => (String(product.id) === id ? { ...product, coverUrl: '/static/icon_map.png' } : product);
+    this.setData({
+      productList: this.data.productList.map(patchCover),
+      allProducts: this.data.allProducts.map(patchCover),
     });
   },
 

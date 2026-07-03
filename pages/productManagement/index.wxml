@@ -29,9 +29,9 @@
     </view>
 
     <block wx:for="{{productList}}" wx:key="id">
-      <view class="product-card">
+      <view class="product-card" bindtap="onOpenDetail" data-id="{{item.id}}">
         <view class="product-card-body">
-          <image class="product-img" src="{{item.pictureUrls[0] || ''}}" mode="aspectFill"></image>
+          <image class="product-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
           <view class="product-info">
             <view class="title-row">
               <text class="title">{{item.title}}</text>
@@ -54,5 +54,34 @@
 
   <view class="fab-btn" wx:if="{{canManageProducts}}" bindtap="onAddProduct">
     <text class="plus">+</text>
+  </view>
+
+  <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">
+    <view class="detail-panel" catchtap="stopDetailTap">
+      <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" />
+      <view class="detail-content">
+        <view class="detail-title">{{selectedProduct.title}}</view>
+        <view class="detail-section">
+          <text class="detail-label">商品描述</text>
+          <text class="detail-text">{{selectedProduct.description || '暂无描述'}}</text>
+        </view>
+        <view class="detail-section">
+          <text class="detail-label">价格规则</text>
+          <block wx:if="{{selectedPriceRules.length}}">
+            <view class="price-rule" wx:for="{{selectedPriceRules}}" wx:key="minQuantity">
+              <text>{{item.minQuantity}} 件起</text>
+              <text>￥{{item.unitPrice}}</text>
+              <text wx:if="{{item.description}}" class="price-rule__note">{{item.description}}</text>
+            </view>
+          </block>
+          <text wx:else class="detail-text">未设置</text>
+        </view>
+        <view class="detail-section">
+          <text class="detail-label">供应来源</text>
+          <text class="detail-text">{{selectedProduct.sourceNote || '暂无'}}</text>
+        </view>
+      </view>
+      <button class="detail-close" bindtap="closeDetail">知道了</button>
+    </view>
   </view>
 </view>
