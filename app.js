@@ -46,6 +46,8 @@ App({
     AuthService.refreshSession().then((res) => {
       if (res && res.success) {
         this.globalData.userInfo = res.data.profile;
+      } else {
+        this.globalData.userInfo = AuthService.getCurrentProfile();
       }
     });
   },

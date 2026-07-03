@@ -279,6 +279,7 @@ Page({
 
   onLogout() {
     AuthService.logout();
+    getApp().globalData.userInfo = null;
     this.onShow();
     wx.showToast({ title: '已退出登录', icon: 'success' });
   },
