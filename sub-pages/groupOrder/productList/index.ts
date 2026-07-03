@@ -99,24 +99,14 @@ Page({
       this.setData({ rawList: [], displayList: [], isLoading: false, pageErrorText: errorText, canManageGroupOrder: false });
       return;
     }
-    if (!this.canManageGroupOrder(res.data)) {
-      const errorText = '当前账号不能管理本团商品';
-      this.setData({
-        rawList: [],
-        displayList: [],
-        isLoading: false,
-        pageErrorText: errorText,
-        canManageGroupOrder: false,
-      });
-      return;
-    }
+    const canManageGroupOrder = this.canManageGroupOrder(res.data);
     const groupProducts = this.normalizeProducts(res.data.productList || []);
 
     this.setData({
       rawList: groupProducts,
       isLoading: false,
       pageErrorText: '',
-      canManageGroupOrder: true,
+      canManageGroupOrder,
       displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
     this.openPendingProductDetail();
