@@ -3,7 +3,7 @@
 微信小程序项目，目标是为中国境内导游/领队提供开团、团单商品、商品库、客户订单和收款状态管理工具。
 
 ## Start Here
-Current work is controlled by `HANDOFF.md` and `MVP_COMPLETION_CHECKLIST.md`.
+`HANDOFF.md` is the only session entry point.
 
 Before coding, read:
 1. `HANDOFF.md`
@@ -14,7 +14,11 @@ Before coding, read:
 6. `DATA_MODEL_AND_PERMISSIONS.md`
 7. `QA/QA_SEED_REQUIREMENTS.md`
 
-`CURRENT_TASKS.md` and `NEXT_AGENT_TASK.md` are deprecated and must not be used as task sources.
+After reading `HANDOFF.md`, use `MVP_COMPLETION_CHECKLIST.md` as the only MVP gate / backlog / product-completion source. Use `QA/QA_BUG_REPORT_202607021815.md` only for atomic BUG / GUI issue evidence and retest status.
+
+Do not copy BUG rows, BUG ID lists, GUI subissue lists, or per-page defect ledgers into `MVP_COMPLETION_CHECKLIST.md`. The MVP checklist tracks gate-level categories; the BUG report tracks independently fixable and retestable rows.
+
+QA/AGENT work must stay separated: QA owns `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA` and QA evidence/bug-ledger work; development agents fix product code in the main worktree or their own development worktree and must not ask the user to do routine QA worktree creation, sync, or cleanup.
 
 ## Current State
 - Mixed mode: formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use local/QA fallback.
@@ -22,8 +26,9 @@ Before coding, read:
 - Formal OpenID login is verified through deployed `authLogin`.
 - Product library has local/QA repository implementation.
 - Product, group-order, customer-order, and payment persistence have cloud repository/cloud-function paths plus local/QA fallback.
-- Phase 5 customer ordering/payment workflow is implemented, with GUI/device retest still pending.
-- Full 27-route / real workflow GUI validation has not passed.
+- Phase 5 customer ordering/payment workflow is implemented, but GUI/device retest evidence is still pending.
+- Full 27-route / real workflow GUI validation has not passed; current MVP gate remains `不通過` until fresh GUI/true-device evidence exists.
+- Role-based feature-entry hiding now requires a gate-level role/function matrix before it can be considered complete.
 
 ## Main Routes
 - Group orders: `pages/groupOrder/index`
@@ -46,3 +51,4 @@ git diff --check
 - Do not push, deploy, create cloud resources, install packages, or use network unless explicitly asked.
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe QA/local fallback as production behavior.
+- Do not claim GUI, role, or real-user MVP pass from static inspection alone.

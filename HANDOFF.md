@@ -6,19 +6,20 @@
 - Current branch observed: `codex`
 - Dirty status expected: dirty as of 2026-07-02; do not overwrite existing QA screenshots, bug report edits, or `pages/dataCenter` edits unless they are in scope.
 - Start here: `HANDOFF.md`. This file is the only session entry point.
-- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` as the only work-item source. Use `QA/QA_BUG_REPORT_202607021815.md` only for BUG evidence and retest details.
+- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` as the only MVP gate / work-item source. Use `QA/QA_BUG_REPORT_202607021815.md` only for atomic BUG / GUI issue evidence and retest details. Never copy BUG row lists into the MVP checklist.
 - Current QA plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
 - Next QA result table: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+- QA worktree rule: QA owns `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA` and any `-QA` branch lifecycle; development agents only fix BUGs in their own worktree, and the user must not be burdened with routine QA worktree creation/sync/cleanup.
+- Precompact rule: before context compaction, QA must reread the current project files and overwrite the single `Precompact QA Handoff` block in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`; do not ask the user to reconstruct context.
 - Latest detailed retest attempt: pre-flight completed, but DevTools automation websocket was not connectable; see `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
-- Done definition: files changed + validation run + checklist/acceptance/handoff updated + unverified items listed.
+- Done definition: files changed + validation run + checklist/acceptance/handoff updated + not-pass items listed.
 
 ## Current Source Of Truth
 - Session entry point: `HANDOFF.md`.
-- Single work-item management source: `MVP_COMPLETION_CHECKLIST.md`. It is the only place for MVP backlog, unfinished items, phase progress, and development/QA work items.
-- BUG report / retest ledger: `QA/QA_BUG_REPORT_202607021815.md`. Use it for issue evidence and retest status only; do not create a separate BUG dispatch queue there or anywhere else.
-- Deprecated task files: `CURRENT_TASKS.md` and `NEXT_AGENT_TASK.md`. Do not use them for workflow, task assignment, or project status.
+- Single MVP gate source: `MVP_COMPLETION_CHECKLIST.md`. It is the only place for MVP backlog, unfinished gate categories, phase progress, and product completion judgment. It must not contain copied BUG rows, BUG ID lists, GUI subissue lists, or per-page defect ledgers.
+- BUG report / retest ledger: `QA/QA_BUG_REPORT_202607021815.md`. Use it for atomic issue evidence and retest status only; do not create a separate BUG dispatch queue there or anywhere else. Every open row must be independently fixable, independently retestable, and independently closable.
 - Product rules: `PROJECT_RULES.md`.
-- MVP roadmap, partially completed items, and missing backlog: `MVP_COMPLETION_CHECKLIST.md`.
+- MVP roadmap, open items, and missing backlog: `MVP_COMPLETION_CHECKLIST.md`.
 - Acceptance status: `ACCEPTANCE.md`.
 - Data-layer recommendation: `DATA_LAYER_DECISION.md`.
 - Data model and permissions: `DATA_MODEL_AND_PERMISSIONS.md`.
@@ -61,8 +62,12 @@
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
 - Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
-- BUG-fix rule: only `Fixed - Verified` closes a BUG/GUI item. Anything else, including `Partially Fixed`, `Fixed - Needs GUI Retest`, `Blocked / Unverified`, `Partial`, or `Blocked`, remains open and must either be fixed next or have a concrete external blocker and unblock step recorded.
-- Do not treat non-pass statuses as handoff completion. If the issue can be improved through code, data flow, UI, copy, route entry, or test automation, continue fixing instead of merely documenting it.
+- QA and development worktrees must stay separate. QA agents create, sync, reuse, and delete the `-QA` worktree themselves; BUG-fix/development agents do not manage QA worktrees, the user must not be asked to do routine QA worktree housekeeping, and QA does not fix product code in the QA worktree.
+- QA must retest a named commit or handoff point, record the tested commit in QA results, and avoid judging uncommitted development-agent work. If the tested commit is missing, no result row may be marked `通過`.
+- QA is responsible for classifying dirty files, preserving QA evidence, and cleaning or deleting the `-QA` worktree when the retest is complete. Escalate to the user only for true-device help, credentials, deploy/production-data risk, destructive cleanup of unresolved evidence, or product acceptance decisions.
+- Before any precompact/context-compression handoff, QA must reread `HANDOFF.md`, `MVP_COMPLETION_CHECKLIST.md`, `QA/QA_BUG_REPORT_202607021815.md`, `QA/QA_DETAILED_RETEST_PLAN_20260702.md`, and `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`, then overwrite the existing `Precompact QA Handoff` block in the QA detail results file. There must be only one such block.
+- BUG report status rule: only `通過` and `不通過` are allowed. If one original BUG has both verified and GUI/device-not-yet-verified parts, split it into multiple rows instead of using an in-between status. If a BUG row is too broad to verify in one pass, QA must split it instead of creating `partial fix` wording.
+- Do not treat `不通過` rows as handoff completion. If the issue can be improved through code, data flow, UI, copy, route entry, or test automation, continue fixing instead of merely documenting it.
 - QA retest evidence must stay traceable: tie each focused GUI/QA evidence set to a specific FLOW/PAGE/BUG row, update that row before claiming it passed, and avoid broad all-in-one pass claims unless explicitly requested.
 - This is not a development limit. Code fixes may batch related bugs when they share a module, data path, UI surface, or risk area; after fixing, map validation back to each affected BUG/FLOW/PAGE row.
 - QA screenshots must target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never save evidence that captures unrelated desktop/private work.
@@ -74,7 +79,7 @@ npm run lint
 git diff --check
 ```
 
-## Known Unverified Items
+## Known Not-Pass Items
 - Full 27-route GUI smoke test.
 - Product image upload through actual `wx.chooseMedia` GUI picker after the cloud upload code path.
 - Cloud database console security rules were not separately configured by CLI; permission checks are enforced in `businessData`, and pages do not directly access cloud DB.
@@ -91,8 +96,8 @@ git diff --check
 - The QA-only identity switch covers `guide`, `customer`, `owner`, `admin`, and `provider`. For this MVP gate, `guide` and `customer` are the required pass/fail roles; `owner`, `admin`, and `provider` are only for checking restricted/read-only/not-open/allowlist boundary states, not for declaring formal backend capability.
 - DevTools automation should connect to an existing session first. If the session is unreachable or stuck, restart is allowed, but record the reason in QA evidence/logs.
 - "Real image" testing means selecting an image through `wx.chooseMedia`; seed image URLs or hard-coded HTTPS URLs are not enough to verify BUG-002.
-- 2026-07-02 22:43 CST: Existing DevTools process was present. `miniprogram-automator.connect` failed on `9420`, `19512`, and `3799`; CLI `auto --port 13521 --auto-port 9420` completed, but connects still failed on `9420`, `13521`, and discovered WeChat/DevTools listening ports. No GUI pass evidence was generated in that attempt.
-- 2026-07-02 23:11 CST: QA retried CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project`; CLI completed, but websocket probes still failed on `9420`, `52632`, `63842`, `40725`, `21511`, `29848`, `32123`, and `13521`.
+- 2026-07-02 22:43 CST: Existing DevTools process was present. `miniprogram-automator.connect` returned 不通過 on `9420`, `19512`, and `3799`; CLI `auto --port 13521 --auto-port 9420` completed, but connects still returned 不通過 on `9420`, `13521`, and discovered WeChat/DevTools listening ports. No GUI pass evidence was generated in that attempt.
+- 2026-07-02 23:11 CST: QA retried CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project`; CLI completed, but websocket probes still returned 不通過 on `9420`, `52632`, `63842`, `40725`, `21511`, `29848`, `32123`, and `13521`.
 - 2026-07-02 23:16 CST: QA captured one valid DevTools window screenshot at `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`. It only verifies product library main page visibility; tab switching and deeper workflows were not reliable through Computer Use.
 - 2026-07-02 23:39 CST: QA captured one valid DevTools window screenshot at `QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`. It verifies the My page QA Seed role panel is visible and lists `owner/admin/guide/customer/provider`.
 - QA-only role/openId switch implementation is present and the panel is GUI-visible, but actual customer click-through and guide/customer order isolation are not yet verified because stale DevTools webview clicks returned to product library. Use the `pages/my` QA Seed panel for manual validation when the UI surface is stable.
@@ -131,14 +136,16 @@ git diff --check
 ## QA Bug Report 202607021815
 - Report location: `QA/QA_BUG_REPORT_202607021815.md`.
 - The report is not a work-item manager. Development/QA work items must be tracked in `MVP_COMPLETION_CHECKLIST.md`; this report records BUG evidence, retest result, status, suspected area, and next action.
-- Fixed BUG-001/003/005/007 and GUI-001/002/003/005 are currently closed; all other listed Partial/Blocked/Needs GUI Retest items remain open until QA changes them to `Fixed - Verified`.
+- BUG rows marked `通過` are closed; BUG/GUI rows marked `不通過` remain open and must stay mirrored in `MVP_COMPLETION_CHECKLIST.md`.
 - Added follow-up fixes for retest GUI residuals: home workbench, provider non-blank state, search starter hot words, data center layout/native wxss, chat disabled state, product add button style, and customer order role-scope text.
 - 2026-07-03 follow-up code fixes:
   - BUG-002: product add now separates formal cloud durable image copy from local/QA temporary preview copy, guards unsupported `wx.chooseMedia`, and prevents duplicate submit during image/product save.
   - BUG-004: home/settings/save-mode copy now branches by formal OpenID cloud save, QA override, and mock/local testing state.
   - BUG-006: customer order processing now uses a page-level action panel for payment method, payment remark, confirmed amount, confirmation remark, and cancel reason; local/cloud payment persistence keeps these fields.
   - BUG-006 follow-up: paid declaration action panel now supports payment proof image selection; service, local repository, and `businessData` reject empty paid declarations and non-positive guide confirmation amounts; formal cloud paths reject direct temporary product/proof image paths.
+  - GUI-004 follow-up: `pages/dataCenter` now uses TDesign navbar `fixed` + `placeholder` instead of a hard-coded top offset, so the page title should sit below the custom navbar on varied device safe areas.
   - GUI-006 follow-up: `pages/my` QA Seed panel now has dedicated guide/customer order-isolation check buttons that switch QA role and open `/pages/customerOrders/index`.
+  - BUG-009 workflow follow-up: home `开团` / `数据看板` now open non-tab pages through `navigateTo` instead of `switchTab`; profile/provider/tourGuide edit pages now implement the bound date click handler.
   - README follow-up: `README.md` now points to `HANDOFF.md` / `MVP_COMPLETION_CHECKLIST.md` and no longer states that the formal data layer or Phase 5 are missing.
 - BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
@@ -146,17 +153,19 @@ git diff --check
 ## How To Continue
 Start from this `HANDOFF.md` for project rules and current context, then choose work only from `MVP_COMPLETION_CHECKLIST.md`.
 
-Do not treat this section, `CURRENT_TASKS.md`, `NEXT_AGENT_TASK.md`, chat history, or the QA report as a task queue. If a missing task is discovered while reading those sources, add or update the corresponding unchecked item in `MVP_COMPLETION_CHECKLIST.md` first.
+Do not treat this section, chat history, or the QA report as a task queue. If a missing task is discovered while reading those sources, add or update the corresponding unchecked item in `MVP_COMPLETION_CHECKLIST.md` first.
 
 If continuing QA, use the new plan/result split:
 - Plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
 - Results: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+- Worktree: use or create `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA`; QA owns its create/sync/delete lifecycle and must not ask the BUG-fix agent or the user to manage routine worktree operations.
+- Before marking any row `通過`, fill the tested commit in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`; if QA cannot identify a tested commit from git/handoff files, keep the row `不通過` or `待測` and resolve the commit source first.
 - First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
 - Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
 - When performing QA from a checklist item, validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
 - For BUG-006, specifically retest the customer order bottom action panel: declare paid requires payment method, remark, or proof image; guide confirm requires a positive confirmed amount; order detail shows payment fields/proof count/history; and local/cloud repository history is preserved after reload.
 - For BUG-004, compare formal OpenID and QA/mock sessions on home, setting, product library, group-order create/detail, and data center; do not mark it verified from static copy inspection alone.
-- For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
+- For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, the TDesign navbar placeholder leaves visible top space, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
 - For GUI-006, use My -> QA Seed -> `切换导游并查看订单` and `切换客户并查看订单`, then compare role text and visible orders on `/pages/customerOrders/index`.
 - Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
 

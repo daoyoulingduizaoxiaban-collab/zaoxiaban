@@ -45,10 +45,16 @@ Page({
   },
 
   goRelease() {
-    wx.switchTab({ url: '/pages/release/index' });
+    wx.navigateTo({
+      url: '/pages/release/index',
+      fail: () => wx.showToast({ title: '打开开团入口失败', icon: 'none' }),
+    });
   },
 
   goDataCenter() {
-    wx.switchTab({ url: '/pages/dataCenter/index' });
+    wx.navigateTo({
+      url: '/pages/dataCenter/index',
+      fail: () => wx.showToast({ title: '打开数据看板失败', icon: 'none' }),
+    });
   },
 });

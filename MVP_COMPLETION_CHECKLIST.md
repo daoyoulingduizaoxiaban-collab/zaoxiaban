@@ -3,9 +3,20 @@
 ## 文件用途
 本文件是从当前 QA/demo 小程序推进到真人可用 MVP 的总路线图，也是唯一工作项目管理文件。
 
-所有开发/QA 工作项目、半成品、未做项、待补验项目，都必须在本文件维护。不要把工作项、派工队列、开放事项分散到 `CURRENT_TASKS.md`、`NEXT_AGENT_TASK.md`、`HANDOFF.md`、聊天记录或 QA report。
+所有开发/QA 工作项目、半成品、未做项、待补验项目，都必须在本文件维护。不要把工作项、派工队列、开放事项分散到其他文件、聊天记录或 QA report。
 
-`QA/QA_BUG_REPORT_202607021815.md` 只作为 BUG report / retest ledger：记录问题、证据、复测结果、Status、Suspected Area、Next Action。BUG report 里的未关闭问题如果需要变成项目工作，必须同步成本文里的 checklist 项目；真正管理进度以本文为准。
+`QA/QA_BUG_REPORT_202607021815.md` 只作为 BUG report / retest ledger：记录可单独验收的问题、证据、复测结果、Status、Suspected Area、Next Action。
+
+强制职责边界：
+
+- `MVP_COMPLETION_CHECKLIST.md` 只管理 MVP gate、阶段、产品完成度、剩余能力类别和验收门槛。
+- `QA/QA_BUG_REPORT_202607021815.md` 只管理原子化 BUG / GUI issue / retest row。
+- 禁止把 BUG row、BUG ID 清单、GUI 子项清单、逐页缺陷清单复制到本文；这会制造第二份 BUG 单，后续状态必然分裂。
+- 如果 BUG 单发现某类问题会影响 MVP，只能在本文保留或新增一个 gate 级类别，例如「正式/QA 文案隔离」「全角色入口权限」「真实 workflow smoke」；详细问题仍回到 BUG 单维护。
+- 如果本文出现 `BUG-00X-*`、`GUI-00X-*` 这类原子 BUG 清单，下一位 QA 必须把它移回 BUG 单，并把本文改回 gate 级描述。
+- AGENT 修 BUG 时看 BUG 单的原子 row；判断 MVP 是否可宣告时看本文的 gate 是否全部有证据。两个文件互相引用，但不得互相复制内容。
+
+QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA` 与 `codex-QA` 维护 QA docs/evidence/bug ledger；AGENT/开发修 BUG 使用主工作树或自己的开发工作树。AGENT 不负责创建、同步、删除 QA 工作树；QA 自己管理 QA 工作树。AGENT 修产品代码时以 BUG ledger 原子 row 为具体修复对象，以本文 gate 项为完成度背景。
 
 ## 产品定义
 - 产品：面向中国导游/领队的微信小程序。
@@ -24,7 +35,7 @@
 - Phase 3 导游团单 local/QA 保存闭环已完成；正式云端保存已通过 targeted automation 验证。
 - Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存已通过 targeted automation 验证。
 - 微信 DevTools 已可通过 CLI 打开项目；automation 可用于 targeted flow，逐 route GUI smoke test 尚未完成。
-- 2026-07-02 细测尝试已记录到 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`；现有 DevTools 进程可见，但 automation websocket 未能连接。本轮仅新增商品库主页面与「我的」页 QA Seed 面板有效 GUI 截图，不能代表完整 workflow smoke 通过。
+- 2026-07-03 Phase 2-5 full-system QA pass 已记录到 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`；27 routes、5 roles、14 feature groups 均在 scope 内，目前 0 route / 0 role 取得完整 formal full-screen pass evidence，full-system gate 仍为 `不通過`。
 
 ## 勾选规则
 - 只有已经实作且有验证信号的项目才能打勾。
@@ -32,27 +43,37 @@
 - 静态检查不等于 GUI 验证。
 - 后面阶段局部完成，不代表前面正式化缺口已经完成。
 - 如果项目只做了一半，正式项保持未勾，并新增后续补完项。
-- 未完成 backlog 必须留在本文件，不要移到 `CURRENT_TASKS.md`。
+- 未完成 backlog 必须留在本文件，不要移到其他文件。
 - Phase 1-5 先记录当前 local/QA MVP 功能完成度；正式云端、真 OpenID、GUI 验证统一放在 Phase 7/8 gate，不混在前置 Phase 里。
-- BUG/GUI 项目只有 `Fixed - Verified` 才能视为关闭。凡是 `Partially Fixed`、`Fixed - Needs GUI Retest`、`Blocked / Unverified`、`Not Fixed`、`Partial`、`Blocked`，都还是开放缺陷或开放验收项。
-- 开放缺陷不能只记录状态就停下：如果能从代码、资料流、UI、文案、测试脚本或入口设计修正，就要继续修正；只有真正受正式 OpenID、真机、图片选择器、DevTools session、外部权限等环境限制时，才可保留为 blocked，并必须写清楚具体阻塞和下一步解除方式。
-- 任何 BUG report 中 `Status` 不是 `Fixed - Verified` 的问题，必须在本文对应 Phase 中保留一个未勾项目，直到完成修正并取得足够验证信号。
+- BUG/GUI 项目在 BUG 单只允许 `通過` / `不通過` 两种状态；只有 `通過` 的 row 才能视为关闭。
+- 如果一个原始 BUG 同时包含已验证范围与未验证范围，必须拆成多条 BUG row：已验证 row 写 `通過`，未修完、未测完、或受外部环境限制的 row 写 `不通過`。
+- 任何 BUG report 中 `Status` 是 `不通過` 的 MVP gate 或正式使用风险，只能映射到本文对应 gate 类别，不得复制 BUG row。该 gate 类别必须保持未勾，直到相关 BUG row 全部修正并取得足够验证信号。
 
 ## 已做一半，后续要补完
-这些项目已有 local/QA 或设计基础，但还不能算真人可用 MVP 完成。
+这些是 MVP gate 层级的剩余工作，不在这里复制每一条 BUG。所有可单独验收的 BUG 细项维护在 `QA/QA_BUG_REPORT_202607021815.md`。
 
-- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但 2026-07-02 细测时 automation websocket 不可连接。目前只有商品库主页面与 My/QA Seed 面板截图，逐页点击/返回/表单仍未完整验证。
-- [ ] BUG-002 商品真图片上传：程式已补正式云端上传路径、选择图片失败/取消防护、本地/QA 临时图片提示与防重复提交；仍需用 `wx.chooseMedia` 选择真实本地/相册图片，确认保存 durable fileID/URL，重开后图片仍显示。
-- [ ] BUG-004 正式/QA 文案分流：程式已补首页、设置页与通用保存模式文案，仍需用正式 OpenID 与 mock/local 身份分别验证首页、设置、商品库、开团、资料看板的保存模式文案不误导真人使用者。
-- [ ] BUG-006 付款闭环 GUI：程式已补客户声明付款/导游确认收款/取消订单的页内表单、付款凭证上传入口、service/repository/cloud function 防呆与保存字段，仍需验证实收金额、备注、付款凭证、付款历史在真实 GUI 流程中可见且可追溯。
-- [ ] BUG-008 本团商品详情 GUI：从本团商品列表点击商品后显示只读详情面板，包含图片、描述、价格、来源、状态，不再是未完成提示。
-- [ ] GUI-004 资料中心 GUI：通过 workflow entry 截图确认 navbar/title/cards 不裁切、不破版。
-- [ ] GUI-006 角色与订单隔离：QA/mock role switch 已补「切换导游/客户并查看订单」入口以稳定进入客户订单列表；仍需 GUI/真机验证 guide/customer 订单列表文案与数据隔离正确；正式 OpenID 隔离另行标记验证状态。
+- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，27 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但完整逐页点击、返回、表单、角色、权限、copy、console/network、empty/error/loading 状态仍未完整验证。
+- [ ] 真图片与付款凭证 GUI/真机验证：需要实际 media picker、保存、重开后仍显示的证据。
+- [ ] 正式/QA 文案与内部测试工具隔离：正式角色不得看到 QA/local/test/Seed/mock/OpenID 未验证/MVP/后续/未完成等内部或开发进度文字。
+- [ ] 付款闭环 GUI 验证：客户声明付款、导游确认收款、付款历史、付款凭证必须分别有 GUI 证据。
+- [ ] 全系统角色功能入口自动隐藏与验收矩阵：
+  - 需求目标：系统必须根据当前用户角色、登录状态、正式 OpenID、QA override 与白名单状态，自动隐藏该用户不能使用的功能入口。正式用户不得先看到不可用入口，再靠 toast、禁用按钮、错误页、未完成文案、`MVP`、`后续`、QA/local/test/Seed/mock 文案挡住。
+  - AGENT 必交付物：先产出并维护一份「角色 x 功能入口」矩阵，再按矩阵修代码。矩阵必须落在 repo 内可追踪文件或本 checklist 的明确区块，且本项必须写出矩阵位置；不得只留在聊天记录、临时报告或 agent 口头说明里。矩阵每一列必须至少写清楚：页面/route、入口位置、按钮/CTA/列表项/分享或扫码入口、对应业务动作、允许角色、禁止角色、正式模式可见状态、QA override 可见状态、直达 route 行为、service/repository/cloud function 权限防线、QA 需要的证据。
+  - 必盘点角色：未登录/游客、`guide`、`customer`、`owner`、`admin`、`provider`、QA override 下的各角色、正式 OpenID 下的各角色、owner/admin/provider 白名单命中与未命中状态。不能只测 guide/customer 后宣称全角色完成。
+  - 必盘点范围：`app.json` 内全部 27 个 route、全部 tabBar/custom-tab-bar 入口、首页快捷入口、My 服务列表与 QA 工具、登录/设置入口、商品库新增/编辑/上下架/删除、团单新增/编辑/本团商品/客户入口/复制分享/导出、客户订单下单/声明付款/确认收款/取消/付款历史/凭证、资料中心、消息、聊天、发布、搜索、导游资料、客户资料、供应商资料、profile/tourGuide/provider 编辑页，以及所有列表项按钮、详情页按钮、空状态 CTA、分享路径、扫码/复制入口、返回后的 fallback 导航。
+  - 可见规则：当前角色不能使用、不能保存、不能查看、未正式开放、仅 QA/开发用途、或需要白名单但当前用户未获授权的功能，正式用户界面必须隐藏入口。若业务上允许某角色只读，矩阵必须明确标成「可见但只读」，且页面不得显示任何写入、保存、确认、取消、导出、分享、编辑或管理按钮。
+  - 直达 route 规则：用户通过 URL、分享路径、扫码、历史页面、fallback 导航或手动参数直达无权页面时，不能露出无权功能入口或内部开发说明；必须显示正式产品语言的安全空状态、返回上一页、或导向该角色可用页面，并保留可追溯错误处理。
+  - 权限防线规则：前端隐藏只解决入口外露，不代表权限完成。service、repository、cloud function、云数据库访问边界必须继续做角色/owner/admin 白名单/订单归属/团单归属校验；AGENT 不得因为前端隐藏而移除或放宽后端权限判断。
+  - QA 验收规则：QA 必须按矩阵逐角色验收，至少覆盖每个角色的登录后首屏、tab、首页快捷入口、My、核心列表页、核心详情页、直达 route、空状态 CTA、分享/扫码入口、返回 fallback。每个角色都要留下 fresh GUI/真机截图、操作记录或自动化 readback；只有代码静态检查、只看单一角色、只测可用入口、不测不可见入口，都不能算通过。矩阵缺项属于 AGENT 返工，不由 QA 自行猜测补齐。
+  - 不得勾选条件：没有矩阵位置、没有矩阵、矩阵缺角色、矩阵缺 route、矩阵缺按钮/CTA/分享/直达路径、正式用户仍看得到不可用入口、只能靠点击后报错阻挡、QA 工具外露给正式用户、内部文案外露、后端权限被放宽、或缺 fresh GUI/真机证据，任一项存在都不得勾选。
+- [ ] 真实 workflow smoke：tab、带 id 详情、eventChannel picker、客户分享入口、列表卡片、空状态 CTA、返回 fallback 必须用真实入口验证。
+- [ ] GUI layout/style 稳定性：资料中心、图示字体、固定 navbar、按钮/表单/弹窗/底部 tab 需完成全画面检查并无 console/style 阻塞。
 
-## Partially Fixed 当前分类
+## 不通過当前分类
 - 仍有可开发修补的项目：优先继续补程式缺口，并在本文件写明已补到哪里。
 - 只缺 GUI/真机证据的项目：不得打勾，必须保留在本节，直到有 DevTools/真机截图或操作记录。
-- 目前只缺 GUI/真机证据或外部状态的项目：BUG-002、BUG-004、BUG-006、BUG-008、GUI-004、GUI-006、Phase 7 GUI smoke test、BUG-009 workflow smoke。
+- 目前仍不通過、需继续取得 GUI/真机证据、外部状态或修正的原子 BUG：以 `QA/QA_BUG_REPORT_202607021815.md` 的 `Status = 不通過` rows 为准；MVP 文件不复制 BUG row 清单。
+- 2026-07-03 Phase 2-5 QA 已执行到当前环境可提供的证据范围；阻塞/Unable-to-test 不作为第三状态，仍视为 `不通過`，直到有命名修复 commit 与 fresh GUI/true-device evidence。
 
 ## 尚未开始或尚未正式化
 这些是明确剩余 backlog。除非使用者指定对应阶段，否则不要开始。

@@ -1,15 +1,15 @@
 # PROJECT_RULES
 
 ## Read Order For Every New Work Session
-1. `NEXT_AGENT_TASK.md`
-2. `CURRENT_TASKS.md`
-3. `PROJECT_RULES.md`
-4. `MVP_COMPLETION_CHECKLIST.md`
-5. `ACCEPTANCE.md`
-6. `HANDOFF.md`
-7. `DATA_LAYER_DECISION.md`
-8. `DATA_MODEL_AND_PERMISSIONS.md`
-9. `QA/QA_SEED_REQUIREMENTS.md`
+1. `HANDOFF.md`
+2. `PROJECT_RULES.md`
+3. `MVP_COMPLETION_CHECKLIST.md`
+4. `ACCEPTANCE.md`
+5. `DATA_LAYER_DECISION.md`
+6. `DATA_MODEL_AND_PERMISSIONS.md`
+7. `QA/QA_SEED_REQUIREMENTS.md`
+
+`HANDOFF.md` is the only session entry point. After reading it, use `MVP_COMPLETION_CHECKLIST.md` as the only MVP gate / backlog / product-completion source. Use `QA/QA_BUG_REPORT_202607021815.md` only for atomic BUG / GUI issue evidence and retest status.
 
 Do not rely on chat memory.
 
@@ -41,7 +41,8 @@ Do not rely on chat memory.
 - UI copy uses Simplified Chinese.
 - Keep the interface work-focused and operational.
 - Avoid TDesign starter wording and unrelated concepts.
-- Unfinished entries must show a clear unfinished/local/QA prompt.
+- Formal users must not see unavailable, unscoped, QA-only, local-only, or unfinished function entries. Hide those entries by role/status instead of exposing disabled buttons, unfinished prompts, QA/local/test/Seed/mock copy, or roadmap wording.
+- Local/mock/QA fallback surfaces must be visibly labeled as local/QA/demo mode when they are intentionally available in a QA context.
 
 ## Forbidden Without Explicit User Request
 - Start, restart, refocus, or preview WeChat DevTools.

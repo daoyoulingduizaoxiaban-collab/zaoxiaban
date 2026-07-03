@@ -111,7 +111,7 @@ These are not formal cloud-backed features.
 - 2026-07-02 detailed real workflow smoke: mostly blocked because DevTools automation websocket was not connectable after CLI `auto`; only product library main page and My/QA Seed role panel have valid manual screenshot evidence.
 - Product image upload through actual media picker in GUI.
 - Product image reopen/durable display after actual `wx.chooseMedia` upload.
-- QA retest follow-up GUI fixes listed above still need screenshot retest except product library main page visibility.
+- QA retest follow-up GUI fixes listed above still need screenshot retest except product library main page visibility; data center now has a fixed-navbar placeholder code fix, home non-tab workflow entries now use `navigateTo`, and QA display edit pages have date click handlers, but all still need fresh workflow screenshot evidence.
 - Cloud database console security rules were not separately configured by CLI; permission boundaries are enforced in `businessData` cloud function, and pages do not directly access cloud DB.
 - EventChannel listener success in actual DevTools.
 - Product library click flow in GUI.

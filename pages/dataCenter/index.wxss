@@ -4,7 +4,7 @@ page {
 
 .data-center {
   min-height: 100vh;
-  padding: 128rpx 32rpx 32rpx;
+  padding: 32rpx;
   box-sizing: border-box;
 }
 

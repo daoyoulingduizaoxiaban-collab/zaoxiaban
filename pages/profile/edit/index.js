@@ -26,6 +26,12 @@ Page({
     });
   },
 
+  showDatePicker() {
+    const today = new Date().toISOString().slice(0, 10);
+    this.setData({ 'formData.date': today });
+    wx.showToast({ title: '已填入今日维护日期', icon: 'none' });
+  },
+
   onSave() {
     wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
   },
