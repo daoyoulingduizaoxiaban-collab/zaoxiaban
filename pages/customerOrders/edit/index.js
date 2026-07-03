@@ -11,6 +11,8 @@ Page({
     productRows: [],
     totalPrice: 0,
     isSubmitting: false,
+    isLoading: false,
+    pageErrorText: '',
     accessDenied: false,
     accessStateText: '',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
@@ -38,17 +40,21 @@ Page({
 
     this.setData({
       groupOrderId,
+      pageErrorText: groupOrderId ? '' : '缺少团单入口，请从有效团单进入。',
       'formData.customerName': profile && profile.displayName ? profile.displayName : '',
       'formData.customerPhone': profile && profile.phone ? profile.phone : '',
     });
+    if (!groupOrderId) return;
     this.loadOrderEntry(groupOrderId);
   },
 
   async loadOrderEntry(groupOrderId) {
+    this.setData({ isLoading: true, pageErrorText: '' });
     const res = await CustomerOrderService.getOrderEntry(groupOrderId);
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载团单失败', icon: 'none' });
-      this.setData({ groupOrder: null, productRows: [] });
+      const errorText = res.error || '加载团单失败';
+      wx.showToast({ title: errorText, icon: 'none' });
+      this.setData({ groupOrder: null, productRows: [], isLoading: false, pageErrorText: errorText });
       return;
     }
 
@@ -58,6 +64,8 @@ Page({
       productRows: res.data.productList || [],
       totalPrice: 0,
       saveModeText: getSaveModeText(res.meta),
+      isLoading: false,
+      pageErrorText: '',
     });
   },
 
@@ -100,6 +108,10 @@ Page({
 
   async onSave() {
     if (this.data.isSubmitting) return;
+    if (this.data.pageErrorText || !this.data.groupOrder) {
+      wx.showToast({ title: this.data.pageErrorText || '未找到可下单团单', icon: 'none' });
+      return;
+    }
 
     const payload = {
       groupOrderId: this.data.groupOrderId,
