@@ -14,9 +14,9 @@
 
     <view class="price-filter">
       <text class="filter-label">起售价区间:</text>
-      <input type="number" placeholder="最低" bindinput="onMinPriceInput" />
+      <input type="number" placeholder="最低" value="{{minPrice}}" bindinput="onMinPriceInput" />
       <text class="separator">-</text>
-      <input type="number" placeholder="最高" bindinput="onMaxPriceInput" />
+      <input type="number" placeholder="最高" value="{{maxPrice}}" bindinput="onMaxPriceInput" />
     </view>
 
     <button class="search-confirm-btn" bindtap="executeSearch">搜索</button>
@@ -46,7 +46,7 @@
         </view>
       </view>
     </block>
-    <view class="empty-tip" wx:if="{{!isLoading && !pageErrorText && filteredList.length === 0}}">找不到符合条件的商品</view>
+    <view class="empty-tip" wx:if="{{!isLoading && !pageErrorText && filteredList.length === 0}}">{{emptyText}}</view>
   </scroll-view>
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">

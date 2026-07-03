@@ -1,4 +1,5 @@
 import { ProductService } from '~/services/product/productService';
+import { ProductStatus } from '~/enum/ProductStatus';
 
 Page({
   data: {
@@ -13,6 +14,7 @@ Page({
     selectedPriceRules: [],
     isLoading: true,
     pageErrorText: '',
+    emptyText: '当前没有可浏览商品',
   },
 
   onLoad() {
@@ -20,7 +22,8 @@ Page({
   },
 
   async loadProducts() {
-    const res = await ProductService.listVisible();
+    this.setData({ isLoading: true, pageErrorText: '' });
+    const res = await ProductService.listVisible({ status: ProductStatus.PUBLISHED });
     if (!res.success) {
       const errorText = res.error || '加载商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
@@ -33,6 +36,7 @@ Page({
       filteredList: products,
       isLoading: false,
       pageErrorText: '',
+      emptyText: products.length ? '' : '当前没有可浏览商品',
     });
   },
 
@@ -72,7 +76,13 @@ Page({
   },
 
   onClearSearch() {
-    this.setData({ searchKeyword: '', filteredList: this.data.allProducts });
+    this.setData({
+      searchKeyword: '',
+      minPrice: null,
+      maxPrice: null,
+      filteredList: this.data.allProducts,
+      emptyText: this.data.allProducts.length ? '' : '当前没有可浏览商品',
+    });
   },
 
   executeSearch() {
@@ -81,6 +91,15 @@ Page({
     const query = String(searchKeyword || '').trim().toLowerCase();
     const min = Number(minPrice || 0);
     const max = Number(maxPrice || 0);
+
+    if (min < 0 || max < 0) {
+      wx.showToast({ title: '价格区间不能为负数', icon: 'none' });
+      return;
+    }
+    if (min && max && min > max) {
+      wx.showToast({ title: '最低价不能高于最高价', icon: 'none' });
+      return;
+    }
 
     const results = allProducts.filter(item => {
       const matchKeyword = !query ||
@@ -95,7 +114,10 @@ Page({
       return matchKeyword && matchMinPrice && matchMaxPrice;
     });
 
-    this.setData({ filteredList: results });
+    this.setData({
+      filteredList: results,
+      emptyText: query || min || max ? '找不到符合条件的商品' : '当前没有可浏览商品',
+    });
   },
 
   openDetail(e) {

@@ -59,7 +59,7 @@ const FEATURE_ALLOWED_ROLES = Object.freeze({
   [FEATURE_KEYS.HOME]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN, AUTH_ROLES.PROVIDER],
   [FEATURE_KEYS.GROUP_ORDERS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.GROUP_ORDER_CREATE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
-  [FEATURE_KEYS.PRODUCTS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN, AUTH_ROLES.PROVIDER],
+  [FEATURE_KEYS.PRODUCTS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN, AUTH_ROLES.PROVIDER],
   [FEATURE_KEYS.PRODUCT_MANAGE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN, AUTH_ROLES.PROVIDER],
   [FEATURE_KEYS.CUSTOMER_ORDERS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.CUSTOMER_ORDER_CREATE]: [AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
@@ -119,6 +119,7 @@ export const getRoleScopeText = (profile, featureKey) => {
     },
     [FEATURE_KEYS.PRODUCTS]: {
       [AUTH_ROLES.GUIDE]: '仅显示你可管理或可使用的商品',
+      [AUTH_ROLES.CUSTOMER]: '仅显示可下单商品',
       [AUTH_ROLES.OWNER]: '当前为管理角色，可查看授权范围内商品',
       [AUTH_ROLES.ADMIN]: '当前为管理角色，可查看授权范围内商品',
       [AUTH_ROLES.PROVIDER]: '仅显示你提供的商品',
@@ -179,8 +180,13 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
 };
 
 export const filterProductsByRole = (products, profile) => {
-  if (!isApprovedProfile(profile)) return [];
   const activeProducts = products.filter(product => !product.deletedAt);
+  const publicProducts = activeProducts.filter(product => (
+    Number(product.status) === 2
+    && product.visibility !== 'private'
+  ));
+
+  if (!isApprovedProfile(profile)) return publicProducts;
   if (isOwnerOrAdmin(profile)) return activeProducts;
 
   if (profile.role === AUTH_ROLES.GUIDE) {
@@ -193,6 +199,10 @@ export const filterProductsByRole = (products, profile) => {
 
   if (profile.role === AUTH_ROLES.PROVIDER) {
     return activeProducts.filter(product => sameId(product.providerId, profile.providerId || profile.id));
+  }
+
+  if (profile.role === AUTH_ROLES.CUSTOMER) {
+    return publicProducts;
   }
 
   return [];

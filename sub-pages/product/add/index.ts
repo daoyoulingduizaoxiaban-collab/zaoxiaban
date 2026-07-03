@@ -21,21 +21,19 @@ Page({
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     imageModeTip: '图片会随商品资料一起保存，便于客户查看实物。',
 
-    // 當前正在編輯的商品
     currentProduct: {
       id: 0,
       title: '',
       description: '',
       pictureUrls: [],
-      priceSetting: [], // 這裡存放已加入的價格規則物件
+      priceSetting: [],
       providerId: '',
       status: ProductStatus.PUBLISHED,
       sourceNote: ''
     },
 
-    // 暫存：正在輸入的那一組價格規則 (對應你的 PriceSetting Class)
     tempPriceSetting: {
-      minQuantity: 1,  // 預設 1
+      minQuantity: 1,
       unitPrice: '',
       description: ''
     }
@@ -106,7 +104,6 @@ Page({
     return null;
   },
 
-  // 1. 處理商品基本資料輸入 (Title, Description)
   onProductInput(e) {
     const field = e.currentTarget.dataset.field;
     this.setData({
@@ -114,7 +111,6 @@ Page({
     });
   },
 
-  // 2. 處理價格規則輸入 (MinQty, UnitPrice, Desc)
   onPriceInput(e) {
     const field = e.currentTarget.dataset.field;
     this.setData({
@@ -122,11 +118,9 @@ Page({
     });
   },
 
-  // 3. 按下「＋」：將暫存的價格規則加入 currentProduct.priceSetting
   addPriceRule() {
     const { minQuantity, unitPrice, description } = this.data.tempPriceSetting;
 
-    // 驗證
     if (!minQuantity || minQuantity < 1) {
       return wx.showToast({ title: '起订量需大于 0', icon: 'none' });
     }
@@ -134,22 +128,19 @@ Page({
       return wx.showToast({ title: '请输入有效单价', icon: 'none' });
     }
 
-    // 建立新的規則物件 (符合你的 TypeScript 定義)
     const newRule = {
-      minQuantity: parseInt(minQuantity), // 轉為數字
-      unitPrice: parseFloat(unitPrice),   // 轉為數字
+      minQuantity: parseInt(minQuantity),
+      unitPrice: parseFloat(unitPrice),
       description: description || '',
       totalPrice: parseInt(minQuantity) * parseFloat(unitPrice)
     };
 
     const updatedPriceSettings = [...this.data.currentProduct.priceSetting, newRule];
 
-    // 排序：通常希望起訂量小的排前面 (1件 -> 10件 -> 50件)
     updatedPriceSettings.sort((a, b) => a.minQuantity - b.minQuantity);
 
     this.setData({
       'currentProduct.priceSetting': updatedPriceSettings,
-      // 清空輸入框，但起訂量可以預設回 1
       tempPriceSetting: { minQuantity: 1, unitPrice: '', description: '' }
     });
   },
@@ -163,7 +154,6 @@ Page({
     });
   },
 
-  // 移除某一條價格規則
   removePriceRule(e) {
     const index = e.currentTarget.dataset.index;
     const settings = this.data.currentProduct.priceSetting;
@@ -171,7 +161,6 @@ Page({
     this.setData({ 'currentProduct.priceSetting': settings });
   },
 
-  // 圖片處理 (與之前相同，略作簡化)
   chooseImage() {
     if (this.data.isChoosingImage || this.data.isSubmitting) return;
     if (!wx.chooseMedia) {
@@ -218,7 +207,6 @@ Page({
     this.setData({ 'currentProduct.pictureUrls': urls });
   },
 
-  // 4. 按下「储存此商品」
   async addProductToList() {
     if (this.data.isSubmitting) return;
     const p = this.data.currentProduct;
