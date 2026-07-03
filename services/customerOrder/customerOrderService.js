@@ -5,6 +5,7 @@ import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBu
 
 const normalizeNumber = value => Number(value || 0);
 const trimText = value => String(value || '').trim();
+const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
 const getBestPriceRule = (priceSetting = [], quantity = 0) => {
   const count = normalizeNumber(quantity);
@@ -38,14 +39,20 @@ const normalizeOrderListItem = order => ({
 
 const normalizeGroupOrderProducts = groupOrder => (groupOrder.productList || [])
   .filter(product => Number(product.status) === ProductStatus.PUBLISHED)
-  .map(product => ({
-    ...product,
-    coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
-    quantity: 0,
-    priceDisplay: getProductPriceDisplay(product),
-    lineTotal: 0,
-    selectedRuleText: '',
-  }));
+  .map(product => {
+    const coverUrl = product.coverUrl || (product.pictureUrls && product.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK;
+    const isImageFallback = product.isImageFallback || coverUrl === PRODUCT_IMAGE_FALLBACK;
+    return {
+      ...product,
+      coverUrl,
+      isImageFallback,
+      imageFallbackText: product.imageFallbackText || (isImageFallback ? '暂无商品图片' : ''),
+      quantity: 0,
+      priceDisplay: getProductPriceDisplay(product),
+      lineTotal: 0,
+      selectedRuleText: '',
+    };
+  });
 
 export const CustomerOrderService = {
   storageKey: CustomerOrderRepository.storageKey,

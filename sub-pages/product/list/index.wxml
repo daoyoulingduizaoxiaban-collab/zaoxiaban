@@ -27,7 +27,10 @@
     <view class="empty-tip" wx:elif="{{pageErrorText}}">{{pageErrorText}}</view>
     <block wx:else wx:for="{{filteredList}}" wx:key="id">
       <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
-        <image class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+        <view class="cover-image-wrap">
+          <image class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+          <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
+        </view>
         <view class="content-area">
           <view class="header">
             <text class="title">{{item.title}}</text>
@@ -51,7 +54,10 @@
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">
     <view class="detail-panel" catchtap="noop">
-      <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
+      <view class="detail-img-wrap">
+        <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
+        <view wx:if="{{selectedProduct.isImageFallback}}" class="detail-image-fallback-label">{{selectedProduct.imageFallbackText}}</view>
+      </view>
       <view class="detail-content">
         <view class="detail-title">{{selectedProduct.title}}</view>
         <view class="detail-section">

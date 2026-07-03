@@ -2,6 +2,8 @@ import { Product } from "~/models/Product";
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
+const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
+
 Page({
   data: {
     groupOrderId: '',
@@ -79,7 +81,9 @@ Page({
           : minPrice === maxPrice
             ? `￥${minPrice}`
             : `￥${minPrice} ~ ￥${maxPrice}`,
-        coverUrl: item.pictureUrls && item.pictureUrls[0] ? item.pictureUrls[0] : '/static/icon_map.png',
+        coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK,
+        isImageFallback: item.isImageFallback || !(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])),
+        imageFallbackText: item.imageFallbackText || (!(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])) ? '暂无商品图片' : ''),
       };
     });
   },
@@ -126,7 +130,7 @@ Page({
       selectedProduct: {
         ...product,
         statusText: Number(product.status) === 2 ? '已上架' : '已下架',
-        coverUrl: product.coverUrl || '/static/icon_map.png',
+        coverUrl: product.coverUrl || PRODUCT_IMAGE_FALLBACK,
       },
       selectedPriceRules,
       detailVisible: true,
@@ -145,7 +149,9 @@ Page({
 
   onImageError(e) {
     const { id } = e.currentTarget.dataset;
-    const patchCover = item => (String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item);
+    const patchCover = item => (String(item.id) === String(id)
+      ? { ...item, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+      : item);
     this.setData({
       rawList: this.data.rawList.map(patchCover),
       displayList: this.data.displayList.map(patchCover),
@@ -155,7 +161,9 @@ Page({
   onDetailImageError() {
     if (!this.data.selectedProduct) return;
     this.setData({
-      'selectedProduct.coverUrl': '/static/icon_map.png',
+      'selectedProduct.coverUrl': PRODUCT_IMAGE_FALLBACK,
+      'selectedProduct.isImageFallback': true,
+      'selectedProduct.imageFallbackText': '图片加载失败',
     });
   },
 

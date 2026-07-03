@@ -1,6 +1,8 @@
 import { ProductService } from '~/services/product/productService';
 import { ProductStatus } from '~/enum/ProductStatus';
 
+const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
+
 Page({
   data: {
     titleText: '商品列表',
@@ -41,13 +43,18 @@ Page({
   },
 
   normalizeProducts(products = []) {
-    return products.map(item => ({
-      ...item,
-      coverUrl: item.pictureUrls && item.pictureUrls[0] ? item.pictureUrls[0] : '/static/icon_map.png',
-      priceSetting: item.priceSetting || item.priceSettings || [],
-      priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
-      minUnitPrice: this.getMinUnitPrice(item.priceSetting || item.priceSettings || []),
-    }));
+    return products.map((item) => {
+      const coverUrl = item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK;
+      return {
+        ...item,
+        coverUrl,
+        isImageFallback: item.isImageFallback || coverUrl === PRODUCT_IMAGE_FALLBACK,
+        imageFallbackText: item.imageFallbackText || (coverUrl === PRODUCT_IMAGE_FALLBACK ? '暂无商品图片' : ''),
+        priceSetting: item.priceSetting || item.priceSettings || [],
+        priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
+        minUnitPrice: this.getMinUnitPrice(item.priceSetting || item.priceSettings || []),
+      };
+    });
   },
 
   getMinUnitPrice(priceSetting = []) {
@@ -130,7 +137,7 @@ Page({
     this.setData({
       selectedProduct: {
         ...product,
-        coverUrl: product.coverUrl || '/static/icon_map.png',
+        coverUrl: product.coverUrl || PRODUCT_IMAGE_FALLBACK,
       },
       selectedPriceRules: product.priceSetting || [],
       detailVisible: true,
@@ -150,10 +157,14 @@ Page({
   onImageError(e) {
     const { id } = e.currentTarget.dataset;
     const nextAll = this.data.allProducts.map(item => (
-      String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item
+      String(item.id) === String(id)
+        ? { ...item, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+        : item
     ));
     const nextFiltered = this.data.filteredList.map(item => (
-      String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item
+      String(item.id) === String(id)
+        ? { ...item, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+        : item
     ));
     this.setData({ allProducts: nextAll, filteredList: nextFiltered });
   },
@@ -161,7 +172,9 @@ Page({
   onDetailImageError() {
     if (!this.data.selectedProduct) return;
     this.setData({
-      'selectedProduct.coverUrl': '/static/icon_map.png',
+      'selectedProduct.coverUrl': PRODUCT_IMAGE_FALLBACK,
+      'selectedProduct.isImageFallback': true,
+      'selectedProduct.imageFallbackText': '图片加载失败',
     });
   },
 });

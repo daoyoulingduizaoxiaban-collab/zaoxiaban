@@ -11,19 +11,22 @@
 
   <scroll-view scroll-y class="product-list">
     <view wx:if="{{isLoading}}" class="empty-state">
-      <image src="/static/icon_map.png" class="empty-img" mode="aspectFit" />
+      <image src="/static/logo/zaoxiaban.png" class="empty-img" mode="aspectFit" />
       <text>正在加载本团商品</text>
     </view>
 
     <view wx:elif="{{pageErrorText}}" class="empty-state">
-      <image src="/static/icon_map.png" class="empty-img" mode="aspectFit" />
+      <image src="/static/logo/zaoxiaban.png" class="empty-img" mode="aspectFit" />
       <text>{{pageErrorText}}</text>
     </view>
 
     <block wx:elif="{{displayList.length > 0}}">
       <view class="product-card" wx:for="{{displayList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
         
-        <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError" />
+        <view class="p-img-wrap">
+          <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError" />
+          <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
+        </view>
         
         <view class="p-info">
           <text class="p-title">{{item.title}}</text>
@@ -46,7 +49,7 @@
     </block>
 
     <view wx:else class="empty-state">
-      <image src="/static/icon_map.png" class="empty-img" mode="aspectFit" />
+      <image src="/static/logo/zaoxiaban.png" class="empty-img" mode="aspectFit" />
       <text>本团当前没有商品</text>
       <text class="sub-text">点击下方按钮从商品库加入</text>
     </view>
@@ -62,7 +65,10 @@
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeProductDetail">
     <view class="detail-panel" catchtap="noop">
-      <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
+      <view class="detail-img-wrap">
+        <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
+        <view wx:if="{{selectedProduct.isImageFallback}}" class="detail-image-fallback-label">{{selectedProduct.imageFallbackText}}</view>
+      </view>
       <view class="detail-content">
         <view class="detail-header">
           <text class="detail-title">{{selectedProduct.title}}</text>

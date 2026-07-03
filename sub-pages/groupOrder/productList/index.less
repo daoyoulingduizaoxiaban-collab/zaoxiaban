@@ -9,14 +9,11 @@ page {
   display: flex;
   flex-direction: column;
   height: 100%;
-  // padding-top: 1 80rpx; /* 避開 sub-nav */
 }
 
-/* 搜尋區塊 */
 .search-section {
   padding: 0 24rpx 20rpx;
   background: #f7f8fa;
-  /* 與背景同色 */
 }
 
 .search-bar {
@@ -47,7 +44,6 @@ page {
   font-size: 24rpx;
 }
 
-/* 列表區 */
 .product-list {
   flex: 1;
   padding: 0 24rpx;
@@ -62,15 +58,34 @@ page {
   display: flex;
   align-items: center;
   position: relative;
-  /* 為了可能的定位 */
+}
+
+.p-img-wrap {
+  position: relative;
+  width: 140rpx;
+  height: 140rpx;
+  overflow: hidden;
+  border-radius: 12rpx;
+  background: #eef2f7;
+  flex-shrink: 0;
 }
 
 .p-img {
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 12rpx;
-  background: #eee;
-  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 6rpx 4rpx;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 18rpx;
+  line-height: 24rpx;
+  text-align: center;
 }
 
 .p-info {
@@ -118,7 +133,6 @@ page {
   margin-left: 10rpx;
 }
 
-/* 刪除按鈕區塊 */
 .p-action {
   display: flex;
   flex-direction: column;
@@ -166,7 +180,6 @@ page {
   height: 160rpx;
 }
 
-/* 底部按鈕 */
 .footer-bar {
   position: fixed;
   bottom: 0;
@@ -216,10 +229,30 @@ page {
   border-radius: 8rpx 8rpx 0 0;
 }
 
-.detail-img {
+.detail-img-wrap {
+  position: relative;
   width: 100%;
   height: 360rpx;
+  overflow: hidden;
   background: #f3f4f6;
+}
+
+.detail-img {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14rpx;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  text-align: center;
 }
 
 .detail-content {

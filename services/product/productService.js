@@ -5,6 +5,7 @@ import { AuthService } from '~/services/auth/authService';
 
 const normalizeNumber = value => Number(value || 0);
 const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
+const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
 export const calculatePriceRule = rule => ({
   minQuantity: normalizeNumber(rule.minQuantity),
@@ -21,12 +22,19 @@ export const getProductPriceDisplay = (priceSetting = []) => {
   return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
 };
 
-const normalizeProduct = product => ({
-  ...product,
-  priceSetting: product.priceSetting || product.priceSettings || [],
-  coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
-  priceDisplay: getProductPriceDisplay(product.priceSetting || product.priceSettings || []),
-});
+const normalizeProduct = (product) => {
+  const pictureUrls = product.pictureUrls || [];
+  const coverUrl = pictureUrls[0] || PRODUCT_IMAGE_FALLBACK;
+  return {
+    ...product,
+    pictureUrls,
+    priceSetting: product.priceSetting || product.priceSettings || [],
+    coverUrl,
+    isImageFallback: !pictureUrls[0],
+    imageFallbackText: pictureUrls[0] ? '' : '暂无商品图片',
+    priceDisplay: getProductPriceDisplay(product.priceSetting || product.priceSettings || []),
+  };
+};
 
 const hasInternalProductCopy = (product) => {
   const fields = [

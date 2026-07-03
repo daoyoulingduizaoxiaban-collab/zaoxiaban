@@ -11,7 +11,6 @@ page {
   height: 100%;
 }
 
-/* 搜尋列 */
 .search-box {
   background: #fff;
   padding: 20rpx 30rpx;
@@ -31,7 +30,6 @@ page {
   color: #333;
 }
 
-/* 商品列表 */
 .product-list {
   flex: 1;
   padding: 20rpx 30rpx;
@@ -45,23 +43,20 @@ page {
   margin-bottom: 24rpx;
   display: flex;
   align-items: center;
-  border: 2rpx solid transparent; /* 預留邊框位置 */
+  border: 2rpx solid transparent;
   transition: all 0.2s;
 }
 
-/* 選中狀態樣式 */
 .product-item.is-selected {
   border-color: #0052d9;
   background-color: #f3f7ff;
 }
 
-/* 已加入(Disabled)狀態樣式 */
 .product-item.is-disabled {
   opacity: 0.6;
   background-color: #fafafa;
 }
 
-/* 左側 Checkbox */
 .checkbox {
   width: 44rpx;
   height: 44rpx;
@@ -89,13 +84,42 @@ page {
   color: #999;
 }
 
-/* 圖片與資訊 */
-.p-img {
+.p-img-wrap {
   width: 120rpx;
   height: 120rpx;
   background: #eee;
   border-radius: 12rpx;
   flex-shrink: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.p-img-wrap.is-fallback {
+  background: #f3f6f8;
+}
+
+.p-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 34rpx;
+  line-height: 34rpx;
+  padding: 0 6rpx;
+  box-sizing: border-box;
+  background: rgba(28, 35, 43, 0.72);
+  color: #fff;
+  font-size: 18rpx;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .p-info {
@@ -138,7 +162,6 @@ page {
   text-align: center;
 }
 
-/* 底部按鈕區 */
 .footer-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;

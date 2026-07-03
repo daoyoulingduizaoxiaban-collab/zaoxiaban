@@ -21,8 +21,10 @@
           <t-icon wx:if="{{item.selected}}" name="check" size="32rpx" color="#fff" />
           <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
         </view>
-
-        <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+        <view class="p-img-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
+          <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+          <text wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText || '暂无商品图片'}}</text>
+        </view>
 
         <view class="p-info">
           <text class="p-title">{{item.title}}</text>

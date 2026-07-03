@@ -1,10 +1,12 @@
 import { ProductService } from '~/services/product/productService';
 
+const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
+
 Page({
   data: {
-    excludeIds: [], // 已經存在於團購中的商品ID
-    allProducts: [], // 原始資料
-    products: [],    // 顯示資料 (含 selected/disabled 狀態)
+    excludeIds: [],
+    allProducts: [],
+    products: [],
     searchQuery: '',
     selectedCount: 0,
     pageErrorText: '',
@@ -18,8 +20,8 @@ Page({
       if (eventChannel && typeof eventChannel.emit === 'function') {
         return eventChannel;
       }
-    } catch (err) {
-      // Direct page entry has no opener event channel.
+    } catch {
+      return null;
     }
     return null;
   },
@@ -31,7 +33,6 @@ Page({
       pageErrorText: hasEventChannel ? '' : '请从本团商品页进入，才能把商品加入团单。',
     });
 
-    // 1. 接收參數：要排除的 ID 列表
     if (options.excludeIds) {
       try {
         const ids = JSON.parse(options.excludeIds).map(id => String(id));
@@ -44,7 +45,6 @@ Page({
       }
     }
 
-    // 2. 載入商品庫
     this.loadProductLibrary();
   },
 
@@ -60,7 +60,9 @@ Page({
       const isExist = this.data.excludeIds.includes(String(item.id));
       return {
         ...item,
-        coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || '/static/icon_map.png',
+        coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK,
+        isImageFallback: item.isImageFallback || !(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])),
+        imageFallbackText: item.imageFallbackText || (!(item.coverUrl || (item.pictureUrls && item.pictureUrls[0])) ? '暂无商品图片' : ''),
         priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
         disabled: isExist,
         selected: false
@@ -74,7 +76,6 @@ Page({
     });
   },
 
-  // 搜尋功能
   onSearch(e) {
     const keyword = e.detail.value;
     this.setData({
@@ -131,12 +132,10 @@ Page({
     });
   },
 
-  // 切換選中狀態
   toggleSelect(e) {
     const { id } = e.currentTarget.dataset;
     const item = this.data.allProducts.find(product => String(product.id) === String(id));
 
-    // 防呆
     if (!item || item.disabled || this.data.pageErrorText) {
       return;
     }
@@ -146,7 +145,12 @@ Page({
 
   onImageError(e) {
     const { id } = e.currentTarget.dataset;
-    const patchCover = product => (String(product.id) === String(id) ? { ...product, coverUrl: '/static/icon_map.png' } : product);
+    const patchCover = product => (String(product.id) === String(id) ? {
+      ...product,
+      coverUrl: PRODUCT_IMAGE_FALLBACK,
+      isImageFallback: true,
+      imageFallbackText: '图片加载失败',
+    } : product);
     this.setData({
       allProducts: this.data.allProducts.map(patchCover),
       products: this.data.products.map(patchCover)
@@ -158,7 +162,6 @@ Page({
     this.setData({ selectedCount: count });
   },
 
-  // 確認加入
   confirmAdd() {
     const selectedItems = this.data.allProducts.filter(p => p.selected);
 

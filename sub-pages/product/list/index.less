@@ -8,7 +8,31 @@
   box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.08);
 }
 
-.cover-image { width: 100%; height: 320rpx; background: #eee; }
+.cover-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 320rpx;
+  overflow: hidden;
+  background: #eef2f7;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+}
+
+.image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 12rpx;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  text-align: center;
+}
 
 .content-area { padding: 24rpx; }
 
@@ -25,7 +49,6 @@
   display: block;
 }
 
-/* 價格階梯區塊 */
 .price-settings {
   background: #fafafa;
   border-radius: 8rpx;
@@ -149,10 +172,30 @@
   border-radius: 24rpx 24rpx 0 0;
 }
 
-.detail-img {
+.detail-img-wrap {
+  position: relative;
   width: 100%;
   height: 360rpx;
+  overflow: hidden;
   background: #eef2f7;
+}
+
+.detail-img {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14rpx;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  text-align: center;
 }
 
 .detail-content {

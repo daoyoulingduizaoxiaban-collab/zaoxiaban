@@ -8,11 +8,12 @@ import {
   getProductStatusTextByValue
 } from '~/enum/ProductStatus'
 
+const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
 Page({
   data: {
-    productList: [] as Product[], // 頁面顯示的清單
-    allProducts: [] as Product[], // 原始完整數據（用於搜尋過濾）
+    productList: [] as Product[],
+    allProducts: [] as Product[],
     searchQuery: '',
     titleText: '商品库',
     statusOptions: getProductStatusList(),
@@ -100,14 +101,18 @@ Page({
   },
 
   normalizeProducts(products: Product[] = []) {
-    return products.map(product => ({
-      ...product,
-      coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
-      priceSetting: product.priceSetting || product.priceSettings || [],
-    }));
+    return products.map((product) => {
+      const coverUrl = product.coverUrl || (product.pictureUrls && product.pictureUrls[0]) || PRODUCT_IMAGE_FALLBACK;
+      return {
+        ...product,
+        coverUrl,
+        isImageFallback: product.isImageFallback || coverUrl === PRODUCT_IMAGE_FALLBACK,
+        imageFallbackText: product.imageFallbackText || (coverUrl === PRODUCT_IMAGE_FALLBACK ? '暂无商品图片' : ''),
+        priceSetting: product.priceSetting || product.priceSettings || [],
+      };
+    });
   },
 
-  // 2. 搜尋條件區塊邏輯
   onSearchInput(e: any) {
     this.setData({
       searchQuery: e.detail.value
@@ -196,7 +201,9 @@ Page({
 
   onImageError(e: any) {
     const id = String(e.currentTarget.dataset.id);
-    const patchCover = product => (String(product.id) === id ? { ...product, coverUrl: '/static/icon_map.png' } : product);
+    const patchCover = product => (String(product.id) === id
+      ? { ...product, coverUrl: PRODUCT_IMAGE_FALLBACK, isImageFallback: true, imageFallbackText: '图片加载失败' }
+      : product);
     this.setData({
       productList: this.data.productList.map(patchCover),
       allProducts: this.data.allProducts.map(patchCover),
@@ -206,11 +213,12 @@ Page({
   onDetailImageError() {
     if (!this.data.selectedProduct) return;
     this.setData({
-      'selectedProduct.coverUrl': '/static/icon_map.png',
+      'selectedProduct.coverUrl': PRODUCT_IMAGE_FALLBACK,
+      'selectedProduct.isImageFallback': true,
+      'selectedProduct.imageFallbackText': '图片加载失败',
     });
   },
 
-  // 3. 下架/上架切換
   async onToggleStatus(e: any) {
     const id = String(e.currentTarget.dataset.id);
     const item = this.data.allProducts.find(product => String(product.id) === id);
@@ -232,7 +240,6 @@ Page({
     });
   },
 
-  // 3. 刪除功能
   onDelete(e: any) {
     const id = String(e.currentTarget.dataset.id);
 
@@ -253,7 +260,6 @@ Page({
     });
   },
 
-  // 監聽狀態切換
   async onStatusChange(e) {
     this.setData({
       currentStatus: e.detail.value

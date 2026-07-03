@@ -22,7 +22,10 @@
   <t-cell-group theme="card" title="*商品设置">
     <view class="goods-list" wx:if="{{selectedGoods.length > 0}}">
       <view class="goods-item" wx:for="{{selectedGoods}}" wx:key="id">
-        <image class="goods-thumb" src="{{item.coverUrl}}" mode="aspectFill" />
+        <view class="goods-thumb-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
+          <image class="goods-thumb" src="{{item.coverUrl}}" mode="aspectFill" data-index="{{index}}" binderror="onGoodsImageError" />
+          <text wx:if="{{item.isImageFallback}}" class="goods-fallback-label">{{item.imageFallbackText || '暂无商品图片'}}</text>
+        </view>
         <view class="goods-info">
           <view class="goods-title">{{item.title}}</view>
           <view class="price-tags-wrapper">

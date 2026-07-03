@@ -83,7 +83,7 @@
 }
 
 .product-list {
-  flex: 1; /* 自動佔滿剩餘高度 */
+  flex: 1;
   width: 100%;
   background-color: #f5f7fa;
   overflow-y: auto;
@@ -97,36 +97,46 @@
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
-/* 新增：卡片上半部的主體容器，負責左右排列 */
 .product-card-body {
   display: flex;
   flex-direction: row;
-  /* 讓圖片與內容頂部對齊 */
   align-items: flex-start; 
-  /* 與下方按鈕區保持距離 */
   margin-bottom: 20rpx; 
 }
 
-/* 新增：商品圖片樣式 */
-.product-img {
-  /* 設定固定大小 */
+.product-img-wrap {
+  position: relative;
   width: 140rpx;
   height: 140rpx;
-  /* 圖片圓角 */
-  border-radius: 12rpx;
-  /* 與右側文字保持距離 */
   margin-right: 24rpx;
-  /* 防止圖片被壓縮變形 */
   flex-shrink: 0;
-  background-color: #f0f0f0; /* 圖片加載前的佔位背景色 */
+  overflow: hidden;
+  border-radius: 12rpx;
+  background-color: #eef2f7;
 }
-/* 修改：商品資訊區塊 */
+
+.product-img {
+  width: 100%;
+  height: 100%;
+}
+
+.image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 6rpx 4rpx;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 18rpx;
+  line-height: 24rpx;
+  text-align: center;
+}
+
 .product-info {
-  /* 佔滿剩餘寬度 */
   flex: 1;
   display: flex;
   flex-direction: column;
-  /* 確保內容不會超出容器 */
   overflow: hidden;
 }
 .title-row {
@@ -143,14 +153,13 @@
   flex: 1;
 }
 
-/* 狀態標籤樣式 */
 .status-tag {
   font-size: 22rpx;
   padding: 4rpx 12rpx;
   border-radius: 6rpx;
   margin-left: 20rpx;
   text-align: center;
-  flex-shrink: 0; /* 防止標籤被壓縮 */
+  flex-shrink: 0;
 }
 
 .status-tag.online {
@@ -170,13 +179,11 @@
   color: #666;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-  /* 描述超過兩行自動省略 */
   -webkit-box-orient: vertical;
   overflow: hidden;
   margin-bottom: 25rpx;
 }
 
-/* 3. 操作按鈕區塊 */
 .action-bar {
   display: flex;
   justify-content: flex-end;
@@ -190,12 +197,10 @@
   border-radius: 40rpx;
 }
 
-/* 懸浮按鈕核心樣式 */
 .fab-btn {
   position: fixed;
   right: 40rpx;
   bottom: 180rpx;
-  /* 這裡要根據你的 TabBar 高度調整，確保不被擋住 */
   width: 100rpx;
   height: 100rpx;
   background-color: #0052d9;
@@ -205,7 +210,6 @@
   justify-content: center;
   box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.3);
   z-index: 999;
-  /* 確保在最上層 */
   transition: all 0.2s ease;
 }
 
@@ -229,10 +233,30 @@
   border-radius: 24rpx 24rpx 0 0;
 }
 
-.detail-img {
+.detail-img-wrap {
+  position: relative;
   width: 100%;
   height: 360rpx;
+  overflow: hidden;
   background: #eef2f7;
+}
+
+.detail-img {
+  width: 100%;
+  height: 100%;
+}
+
+.detail-image-fallback-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 14rpx;
+  background: rgba(15, 23, 42, 0.68);
+  color: #ffffff;
+  font-size: 24rpx;
+  line-height: 32rpx;
+  text-align: center;
 }
 
 .detail-content {
@@ -290,7 +314,6 @@
 
 .fab-btn:active {
   transform: scale(0.9);
-  /* 點擊縮小回饋 */
   background-color: #003cab;
 }
 
@@ -299,18 +322,14 @@
   font-size: 60rpx;
   font-weight: 300;
   margin-top: -6rpx;
-  /* 微調加號位置 */
 }
 
-/* 列表容器高度確保 */
 .product-list {
   height: calc(100vh - 100rpx);
-  /* 扣除搜尋框高度 */
   background-color: #f5f7fa;
 }
 
 
-/* 空狀態容器 */
 .empty-container {
   display: flex;
   flex-direction: column;
@@ -324,7 +343,6 @@
   height: 240rpx;
   margin-bottom: 30rpx;
   opacity: 0.5;
-  /* 稍微透明一點更有質感 */
 }
 
 .empty-text {
@@ -344,12 +362,10 @@
   width: 220rpx !important;
 }
 
-/* 懸浮按鈕保持不變 */
 .fab-btn {
   position: fixed;
   right: 40rpx;
   bottom: 180rpx;
-  /* 根據有無 TabBar 調整 */
   width: 110rpx;
   height: 110rpx;
   background-color: #0052d9;
