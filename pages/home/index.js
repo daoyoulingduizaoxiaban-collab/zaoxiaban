@@ -1,6 +1,8 @@
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
+import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
+import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 
 Page({
   data: {
@@ -11,6 +13,12 @@ Page({
     canUseBusiness: false,
     canCreateGroupOrder: false,
     canViewDataCenter: false,
+    isSummaryLoading: false,
+    summaryCards: [
+      { label: '进行中团单', value: 0 },
+      { label: '待确认收款', value: 0 },
+      { label: '客户订单', value: 0 },
+    ],
   },
 
   onLoad() {
@@ -49,6 +57,38 @@ Page({
       canUseBusiness,
       canCreateGroupOrder,
       canViewDataCenter,
+    });
+    if (canUseBusiness) {
+      this.loadSummary();
+    }
+  },
+
+  async loadSummary() {
+    this.setData({ isSummaryLoading: true });
+    const [groupOrderRes, customerOrderRes] = await Promise.all([
+      GroupOrderService.listVisible(),
+      CustomerOrderService.listVisible(),
+    ]);
+    if (!groupOrderRes.success || !customerOrderRes.success) {
+      this.setData({
+        isSummaryLoading: false,
+        summaryCards: [
+          { label: '进行中团单', value: 0 },
+          { label: '待确认收款', value: 0 },
+          { label: '客户订单', value: 0 },
+        ],
+      });
+      return;
+    }
+    const groupOrders = groupOrderRes.data || [];
+    const customerOrders = customerOrderRes.data || [];
+    this.setData({
+      isSummaryLoading: false,
+      summaryCards: [
+        { label: '进行中团单', value: groupOrders.filter(item => Number(item.status) === 1).length },
+        { label: '待确认收款', value: customerOrders.filter(item => Number(item.status) === 1).length },
+        { label: '客户订单', value: customerOrders.length },
+      ],
     });
   },
 

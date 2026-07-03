@@ -19,6 +19,13 @@
       <t-button wx:if="{{canCreateGroupOrder}}" theme="primary" size="small" bind:tap="goRelease">开团</t-button>
     </view>
 
+    <view class="home-summary" wx:if="{{canUseBusiness}}">
+      <view class="home-summary__card" wx:for="{{summaryCards}}" wx:key="label">
+        <view class="home-summary__label">{{item.label}}</view>
+        <view class="home-summary__value">{{isSummaryLoading ? '...' : item.value}}</view>
+      </view>
+    </view>
+
     <view class="quick-grid" wx:if="{{canUseBusiness}}">
       <view class="quick-item primary" bindtap="goGroupOrders">
         <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />

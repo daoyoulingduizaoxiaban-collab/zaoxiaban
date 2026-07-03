@@ -9,7 +9,13 @@ Page({
     summaryList: [
       { name: '团单', number: 0 },
       { name: '客户订单', number: 0 },
+      { name: '待确认收款', number: 0 },
+      { name: '已确认收款', number: 0 },
     ],
+    financeSummary: {
+      receivable: 0,
+      received: 0,
+    },
     dataModeText: '读取中',
     disabledReason: '',
     isLoading: false,
@@ -26,7 +32,10 @@ Page({
         summaryList: [
           { name: '团单', number: 0 },
           { name: '客户订单', number: 0 },
+          { name: '待确认收款', number: 0 },
+          { name: '已确认收款', number: 0 },
         ],
+        financeSummary: { receivable: 0, received: 0 },
         dataModeText: AuthService.getAccessStateText(profile),
         disabledReason: AuthService.getAccessStateText(profile),
         isLoading: false,
@@ -45,7 +54,10 @@ Page({
         summaryList: [
           { name: '团单', number: 0 },
           { name: '客户订单', number: 0 },
+          { name: '待确认收款', number: 0 },
+          { name: '已确认收款', number: 0 },
         ],
+        financeSummary: { receivable: 0, received: 0 },
         dataModeText: failed.error || '资料读取失败',
         disabledReason: failed.error || '资料读取失败，请稍后重试',
         isLoading: false,
@@ -53,11 +65,20 @@ Page({
       return;
     }
 
+    const orders = customerOrderRes.data || [];
+    const activeOrders = orders.filter(order => Number(order.status) !== 3);
+    const confirmedOrders = orders.filter(order => Number(order.status) === 2);
     this.setData({
       summaryList: [
         { name: '团单', number: groupOrderRes.data.length },
-        { name: '客户订单', number: customerOrderRes.data.length },
+        { name: '客户订单', number: orders.length },
+        { name: '待确认收款', number: orders.filter(order => Number(order.status) === 1).length },
+        { name: '已确认收款', number: confirmedOrders.length },
       ],
+      financeSummary: {
+        receivable: activeOrders.reduce((sum, order) => sum + Number(order.totalPrice || 0), 0),
+        received: confirmedOrders.reduce((sum, order) => sum + Number(order.confirmedAmount || order.totalPrice || 0), 0),
+      },
       dataModeText: getSaveModeText(groupOrderRes.meta),
       disabledReason: '',
       isLoading: false,

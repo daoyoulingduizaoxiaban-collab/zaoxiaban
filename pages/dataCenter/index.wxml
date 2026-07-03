@@ -22,6 +22,17 @@
     </view>
   </view>
 
+  <view class="finance-grid" wx:if="{{!disabledReason && !isLoading}}">
+    <view class="finance-card">
+      <view class="summary-label">应收金额</view>
+      <view class="finance-value">￥{{financeSummary.receivable}}</view>
+    </view>
+    <view class="finance-card">
+      <view class="summary-label">已收金额</view>
+      <view class="finance-value">￥{{financeSummary.received}}</view>
+    </view>
+  </view>
+
   <view class="panel" wx:if="{{!disabledReason && !isLoading}}">
     <view class="panel-title">经营分析</view>
     <view class="panel-desc">当前显示团单与客户订单汇总，便于核对开团进度与收款状态。</view>

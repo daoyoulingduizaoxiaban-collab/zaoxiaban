@@ -1,5 +1,4 @@
 import useToastBehavior from '~/behaviors/useToast';
-import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseAdminPortal, canUseFeature, canUseProviderPortal } from '~/services/auth/roleScope';
 
@@ -23,13 +22,6 @@ Page({
     accessStateText: '请先登录后继续使用',
     isNavigatingLogin: false,
     canUseBusiness: false,
-    qaSeedInfo: {},
-    canShowQaTools: false,
-    qaRoleOptions: AuthService.qaRoleOptions,
-    qaIsolationActions: [
-      { label: '切换导游并查看订单', role: 'guide' },
-      { label: '切换客户并查看订单', role: 'customer' },
-    ],
     gridList: [
       {
         name: '工作台',
@@ -64,7 +56,6 @@ Page({
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const canUseBusiness = AuthService.canUseBusiness(profile);
-    const canShowQaTools = AuthService.canShowQaTools(profile, session);
 
     this.setData({
       isLoad: Boolean(profile),
@@ -74,15 +65,9 @@ Page({
       canUseBusiness,
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
-      canShowQaTools,
       gridList: this.buildGridList(profile),
       settingList: this.buildSettingList(profile),
     });
-    if (canShowQaTools) {
-      this.loadQaSeed();
-    } else {
-      this.clearQaSeed();
-    }
   },
 
   buildGridList(profile) {
@@ -173,30 +158,6 @@ Page({
     return list;
   },
 
-  loadQaSeed() {
-    const seed = QaSeedMock.loadSeed();
-    this.setData({
-      qaSeedInfo: {
-        userCount: seed.users.length,
-        groupOrderCount: seed.groupOrders.length,
-        productCount: seed.products.length,
-        customerOrderCount: seed.customerOrders.length,
-      },
-      service: [
-        { name: '重置演示资料', icon: 'refresh', type: 'resetQaSeed' },
-        { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
-        { name: '管理员入口', icon: 'user-setting', type: 'admin' },
-      ],
-    });
-  },
-
-  clearQaSeed() {
-    this.setData({
-      qaSeedInfo: {},
-      service: [],
-    });
-  },
-
   toPersonalInfo(profile) {
     let authSourceText = '微信账号已验证';
     if (profile.qaOverride) {
@@ -241,58 +202,6 @@ Page({
     wx.navigateTo({ url });
   },
 
-  onResetQaSeed() {
-    if (!this.data.canShowQaTools) {
-      wx.showToast({ title: '当前账号不显示演示工具', icon: 'none' });
-      return;
-    }
-    QaSeedMock.resetSeed();
-    this.loadQaSeed();
-    wx.showToast({ title: '演示资料已重置', icon: 'success' });
-  },
-
-  applyQaRole(role) {
-    if (!this.data.canShowQaTools) {
-      wx.showToast({ title: '当前账号不显示演示工具', icon: 'none' });
-      return null;
-    }
-    const result = AuthService.applyQaOverride({ qaRoleOverride: role });
-    if (!result.success) {
-      wx.showToast({ title: result.error || '演示身份切换失败', icon: 'none' });
-      return null;
-    }
-
-    getApp().globalData.userInfo = result.data.profile;
-    this.onShow();
-    return result.data.profile;
-  },
-
-  onQaRoleSwitch(e) {
-    const { role } = e.currentTarget.dataset;
-    const profile = this.applyQaRole(role);
-    if (!profile) return;
-
-    wx.showToast({
-      title: `已切换：${profile.roleLabel}`,
-      icon: 'none',
-    });
-  },
-
-  onQaIsolationCheck(e) {
-    const { role } = e.currentTarget.dataset;
-    const profile = this.applyQaRole(role);
-    if (!profile) return;
-
-    wx.showToast({
-      title: `已切换：${profile.roleLabel}`,
-      icon: 'none',
-    });
-    wx.switchTab({
-      url: '/pages/customerOrders/index',
-      fail: () => wx.showToast({ title: '打开客户订单失败', icon: 'none' }),
-    });
-  },
-
   onLogout() {
     AuthService.logout();
     getApp().globalData.userInfo = null;
@@ -330,14 +239,6 @@ Page({
       });
       return;
     }
-    if (type === 'resetQaSeed' || type === 'qaSeed') {
-      if (!this.data.canShowQaTools) {
-        wx.showToast({ title: '当前账号不显示演示工具', icon: 'none' });
-        return;
-      }
-      this.onResetQaSeed();
-      return;
-    }
     if (type === 'admin') {
       const profile = AuthService.getCurrentProfile();
       if (!canUseAdminPortal(profile)) {
@@ -349,10 +250,9 @@ Page({
         });
         return;
       }
-      const admin = QaSeedMock.getAdmins()[0];
       wx.showModal({
-        title: admin.title,
-        content: `${admin.note}\n\n请使用已授权账号处理管理事项。`,
+        title: '系统管理员入口',
+        content: '请使用已授权账号处理管理事项。',
         showCancel: false,
         confirmText: '知道了',
       });

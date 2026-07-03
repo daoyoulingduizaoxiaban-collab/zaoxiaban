@@ -57,63 +57,6 @@
     </t-grid>
   </view>
 
-  <view class="qa-panel" wx:if="{{canShowQaTools}}">
-    <view class="qa-panel__title">演示资料工具</view>
-    <view class="qa-panel__meta">
-      <text>用户 {{qaSeedInfo.userCount}}</text>
-      <text>团单 {{qaSeedInfo.groupOrderCount}}</text>
-      <text>商品 {{qaSeedInfo.productCount}}</text>
-      <text>客户订单 {{qaSeedInfo.customerOrderCount}}</text>
-    </view>
-    <view class="qa-panel__role-title">演示身份切换</view>
-    <view class="qa-panel__roles">
-      <t-button
-        wx:for="{{qaRoleOptions}}"
-        wx:key="value"
-        theme="default"
-        variant="outline"
-        size="small"
-        data-role="{{item.value}}"
-        bindtap="onQaRoleSwitch"
-      >
-        {{item.label}}
-      </t-button>
-    </view>
-    <view class="qa-panel__role-title">订单隔离验证</view>
-    <view class="qa-panel__checks">
-      <t-button
-        wx:for="{{qaIsolationActions}}"
-        wx:key="role"
-        theme="primary"
-        variant="outline"
-        size="small"
-        data-role="{{item.role}}"
-        bindtap="onQaIsolationCheck"
-      >
-        {{item.label}}
-      </t-button>
-    </view>
-    <t-button theme="primary" size="large" block bindtap="onResetQaSeed">
-      一键重置演示资料
-    </t-button>
-  </view>
-
-  <view class="my-service" wx:if="{{canShowQaTools}}">
-    <view class="my-service--tips">演示工具</view>
-    <t-grid column="{{4}}" class="my-service__list">
-      <t-grid-item
-        class="my-service__list-item"
-        wx:for="{{service}}"
-        wx:key="item"
-        text="{{item.name}}"
-        image="{{item.image}}"
-        url="{{item.url}}"
-        data-data="{{item}}"
-        bindclick="onEleClick"
-      />
-    </t-grid>
-  </view>
-
   <t-cell-group wx:if="{{canUseBusiness}}" theme="card">
     <t-cell
       wx:for="{{settingList}}"
