@@ -1,7 +1,12 @@
+import { AuthService } from '~/services/auth/authService';
+import { canUseProviderPortal } from '~/services/auth/roleScope';
+
 Page({
   data: {
     pageTitle: '新增供应商',
     isEdit: false,
+    canSave: false,
+    disabledReason: '',
     formData: {
       title: '',
       date: '',
@@ -10,8 +15,13 @@ Page({
   },
 
   onLoad(options) {
+    const profile = AuthService.getCurrentProfile();
+    const canSave = canUseProviderPortal(profile);
+    this.setData({
+      canSave,
+      disabledReason: canSave ? '' : '当前账号没有供应商资料维护权限。',
+    });
     if (options.id) {
-      // 編輯模式
       this.setData({
         pageTitle: '编辑供应商',
         isEdit: true
@@ -34,7 +44,11 @@ Page({
   },
 
   onSave() {
-    wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
+    if (!this.data.canSave) {
+      wx.showToast({ title: '当前账号没有保存权限', icon: 'none' });
+      return;
+    }
+    wx.showToast({ title: '演示保存：资料仅保留在当前设备', icon: 'none' });
   },
 
   onBack() {

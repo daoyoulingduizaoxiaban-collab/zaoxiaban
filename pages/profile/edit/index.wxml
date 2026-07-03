@@ -1,13 +1,14 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
+  <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
   <t-cell-group theme="card">
     <t-input label="姓名" placeholder="请输入姓名" value="{{ formData.title }}" />
     <t-cell title="维护日期" note="{{ formData.date || '请选择' }}" arrow bind:tap="showDatePicker" />
     <t-input label="资料状态" value="{{ formData.statusText }}" disabled />
   </t-cell-group>
 
-  <view class="submit-bar">
+  <view class="submit-bar" wx:if="{{canSave}}">
     <t-button theme="primary" size="large" block bind:tap="onSave">保存个人资料</t-button>
   </view>
 </view>

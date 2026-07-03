@@ -60,10 +60,10 @@ Page({
 
   getRoleScopeText() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile) return '未登录，仅显示空列表';
+    if (!profile) return '请先登录后查看团单';
     if (profile.role === 'guide') return '仅显示你创建或被授权管理的团单';
     if (profile.role === 'customer') return '仅显示你下过订单关联的团单';
-    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看 QA 范围内团单';
+    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看授权范围内团单';
     return '当前角色暂无团单权限';
   },
 

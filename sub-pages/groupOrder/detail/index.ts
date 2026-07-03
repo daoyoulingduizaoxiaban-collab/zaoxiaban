@@ -16,7 +16,7 @@ Page({
     showConfirmDialog: false,
     selectedMemberOrderId: '',
     showCancelDialog: false,
-    saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
+    saveModeText: '演示保存：资料仅保留在当前设备',
   },
 
   onLoad(options) {
@@ -75,7 +75,7 @@ Page({
 
   onSave() {
     wx.showToast({
-      title: 'QA 展示模式，暂未保存',
+      title: '演示模式，暂不保存二维码',
       icon: 'none'
     });
   },
@@ -85,7 +85,7 @@ Page({
       itemList: ['导出为 PDF', '导出为 Excel', '发送到邮箱'],
       success: () => {
         wx.showToast({
-          title: 'QA 展示模式，暂未导出',
+          title: '当前页面暂不支持导出',
           icon: 'none'
         });
       }

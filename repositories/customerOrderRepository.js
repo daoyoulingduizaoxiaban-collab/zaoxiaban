@@ -104,7 +104,7 @@ const enrichSeedOrders = () => {
           toStatus: Number(order.status),
           actorUserId: order.customerUserId,
           actorRole: 'customer',
-          note: 'QA seed 初始状态',
+          note: '系统初始状态',
           createdAt: order.createdAt || nowIso(),
         },
       ],

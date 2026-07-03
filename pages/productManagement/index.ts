@@ -17,8 +17,9 @@ Page({
     statusOptions: getProductStatusList(),
     currentStatus: 0,
     roleScopeText: '',
-    saveModeText: '本地/QA 展示模式，尚未正式保存',
+    saveModeText: '演示保存：资料仅保留在当前设备',
     isLoading: false,
+    canManageProducts: false,
     productStatusTextMap: {
       1: getProductStatusTextByValue(1),
       2: getProductStatusTextByValue(2)
@@ -51,6 +52,7 @@ Page({
       productList: res.data,
       roleScopeText: this.getRoleScopeText(),
       saveModeText: getSaveModeText(res.meta),
+      canManageProducts: this.canManageProducts(),
       isLoading: false,
     });
   },
@@ -64,17 +66,22 @@ Page({
 
   getRoleScopeText() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile) return '未登录，仅显示空列表';
+    if (!profile) return '请先登录后查看商品库';
     if (profile.role === 'guide') return '仅显示你可管理或可使用的商品';
-    if (profile.role === 'customer') return '客户角色暂不开放商品库管理';
-    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看 QA 范围内商品';
+    if (profile.role === 'customer') return '客户可通过团单入口查看本团商品';
+    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看授权范围内商品';
     if (profile.role === 'provider') return '仅显示你提供的商品';
     return '当前角色暂无商品库权限';
   },
 
+  canManageProducts() {
+    const profile = AuthService.getCurrentProfile();
+    return Boolean(profile && ['guide', 'owner', 'admin', 'provider'].includes(profile.role));
+  },
+
   onAddProduct() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile || profile.role === 'customer') {
+    if (!this.canManageProducts()) {
       wx.showToast({ title: '当前角色不能新增商品', icon: 'none' });
       return;
     }

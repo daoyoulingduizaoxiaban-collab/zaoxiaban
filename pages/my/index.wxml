@@ -27,11 +27,11 @@
         <t-avatar slot="left-icon" icon="user" size="128rpx" />
       </t-cell>
     </t-cell-group>
-    <view class="auth-warning" wx:if="{{authSession.isMockOpenId}}">
-      当前使用本地 auth adapter，尚未验证正式微信 OpenID。
+    <view class="auth-warning" wx:if="{{authSession.isMockOpenId && !authSession.qaOverride}}">
+      当前为演示身份，资料仅保留在当前设备。
     </view>
     <view class="auth-warning auth-warning--qa" wx:if="{{authSession.qaOverride}}">
-      当前为 QA 身份切换，仅用于测试角色可见范围，不代表正式 OpenID。
+      当前为演示身份切换，仅用于预览角色可见范围。
     </view>
     <view class="auth-actions" wx:if="{{isLoggedIn}}">
       <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
@@ -51,15 +51,15 @@
     </t-grid>
   </view>
 
-  <view class="qa-panel">
-    <view class="qa-panel__title">QA Seed 展示模式</view>
+  <view class="qa-panel" wx:if="{{canShowQaTools}}">
+    <view class="qa-panel__title">演示资料工具</view>
     <view class="qa-panel__meta">
-      <text>测试用户 {{qaSeedInfo.userCount}}</text>
+      <text>用户 {{qaSeedInfo.userCount}}</text>
       <text>团单 {{qaSeedInfo.groupOrderCount}}</text>
       <text>商品 {{qaSeedInfo.productCount}}</text>
       <text>客户订单 {{qaSeedInfo.customerOrderCount}}</text>
     </view>
-    <view class="qa-panel__role-title">QA 身份切换</view>
+    <view class="qa-panel__role-title">演示身份切换</view>
     <view class="qa-panel__roles">
       <t-button
         wx:for="{{qaRoleOptions}}"
@@ -88,12 +88,12 @@
       </t-button>
     </view>
     <t-button theme="primary" size="large" block bindtap="onResetQaSeed">
-      一键加载/重置 QA Seed
+      一键重置演示资料
     </t-button>
   </view>
 
-  <view class="my-service">
-    <view class="my-service--tips">QA 工具与未完成入口</view>
+  <view class="my-service" wx:if="{{canShowQaTools}}">
+    <view class="my-service--tips">演示工具</view>
     <t-grid column="{{4}}" class="my-service__list">
       <t-grid-item
         class="my-service__list-item"

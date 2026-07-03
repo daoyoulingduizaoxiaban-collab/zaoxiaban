@@ -2,7 +2,7 @@
 <view class="page login-code">
   <view class="login-code__title">验证码登录已停用</view>
   <view class="login-code__tips">
-    MVP 使用微信登录初始化导游、客户或管理角色资料。短信验证码不作为当前正式登录入口。
+    请使用微信登录进入导游/领队或客户账号。
   </view>
   <view class="login-code__button">
     <t-button theme="primary" size="large" block bindtap="goToWechatLogin">返回微信登录</t-button>

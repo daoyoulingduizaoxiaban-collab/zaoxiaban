@@ -1,13 +1,14 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
+  <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
   <t-cell-group theme="card">
     <t-input label="供应商名称" placeholder="请输入供应商名称" value="{{ formData.title }}" />
     <t-cell title="最近维护日期" note="{{ formData.date || '请选择' }}" arrow bind:tap="showDatePicker" />
     <t-input label="供应商状态" value="{{ formData.statusText }}" disabled />
   </t-cell-group>
 
-  <view class="submit-bar">
+  <view class="submit-bar" wx:if="{{canSave}}">
     <t-button theme="primary" size="large" block bind:tap="onSave">保存供应商</t-button>
   </view>
 </view>

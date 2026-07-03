@@ -22,7 +22,7 @@ export const ProductMock = {
       code: data ? 200 : 404,
       data: data || new Product({
         title: '未找到商品',
-        description: 'QA 展示模式：未找到对应商品。',
+        description: '未找到对应商品。',
       }),
     }), 200));
   },

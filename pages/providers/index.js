@@ -14,8 +14,8 @@ Page({
     const providersList = QaSeedMock.getProviders();
     if (!canUseProviderPortal(profile)) {
       this.setData({
-        providersList,
-        disabledReason: '供应商后台暂未开放。当前 MVP 只保留最小提示入口，不提供供应商管理操作。',
+        providersList: [],
+        disabledReason: '当前账号没有供应商资料管理权限。',
       });
       return;
     }

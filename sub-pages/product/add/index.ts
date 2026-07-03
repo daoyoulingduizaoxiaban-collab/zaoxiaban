@@ -14,7 +14,7 @@ Page({
     isSubmitting: false,
     isChoosingImage: false,
     saveModeText: LOCAL_SAVE_MODE_TEXT,
-    imageModeTip: '本地/QA 测试模式会保留临时预览路径，不代表跨设备持久图片。',
+    imageModeTip: '演示保存会保留临时预览路径，不代表跨设备持久图片。',
 
     // 當前正在編輯的商品
     currentProduct: {
@@ -52,7 +52,7 @@ Page({
       }),
       imageModeTip: cloudEnabled
         ? '正式云端模式会先上传为持久图片，再保存商品。'
-        : '本地/QA 测试模式会保留临时预览路径，不代表跨设备持久图片。',
+        : '演示保存会保留临时预览路径，不代表跨设备持久图片。',
     });
   },
 

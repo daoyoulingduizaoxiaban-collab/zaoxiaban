@@ -13,6 +13,7 @@ Page({
     personalInfo: {},
     authSession: {},
     qaSeedInfo: {},
+    canShowQaTools: false,
     qaRoleOptions: AuthService.qaRoleOptions,
     qaIsolationActions: [
       { label: '切换导游并查看订单', role: 'guide' },
@@ -37,17 +38,9 @@ Page({
         type: 'published',
         url: '/pages/productManagement/index',
       },
-      {
-        name: 'QA Seed',
-        icon: 'file-copy',
-        type: 'qaSeed',
-        url: '',
-      },
     ],
 
     settingList: [
-      { name: '供应商资料', icon: 'shop', type: 'providers' },
-      { name: '系统管理员', icon: 'user-setting', type: 'admin' },
       { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
     ],
   },
@@ -65,7 +58,9 @@ Page({
       isLoggedIn: Boolean(profile),
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
+      canShowQaTools: AuthService.canShowQaTools(profile, session),
     });
+    this.loadQaSeed();
   },
 
   loadQaSeed() {
@@ -78,10 +73,9 @@ Page({
         customerOrderCount: seed.customerOrders.length,
       },
       service: [
-        { name: '重置 QA Seed', icon: 'refresh', type: 'resetQaSeed' },
-        { name: '供应商', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
-        { name: '管理员提示', icon: 'user-setting', type: 'admin' },
-        { name: '未完成功能', icon: 'info-circle', type: 'todo' },
+        { name: '重置演示资料', icon: 'refresh', type: 'resetQaSeed' },
+        { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
+        { name: '管理员入口', icon: 'user-setting', type: 'admin' },
       ],
     });
   },
@@ -89,9 +83,9 @@ Page({
   toPersonalInfo(profile) {
     let authSourceText = '微信 OpenID 已验证';
     if (profile.qaOverride) {
-      authSourceText = 'QA 身份切换';
+      authSourceText = '演示身份';
     } else if (profile.isMockOpenId) {
-      authSourceText = '本地身份验证';
+      authSourceText = '演示身份';
     }
 
     return {
@@ -116,13 +110,13 @@ Page({
   onResetQaSeed() {
     QaSeedMock.resetSeed();
     this.loadQaSeed();
-    wx.showToast({ title: 'QA Seed 已重置', icon: 'success' });
+    wx.showToast({ title: '演示资料已重置', icon: 'success' });
   },
 
   applyQaRole(role) {
     const result = AuthService.applyQaOverride({ qaRoleOverride: role });
     if (!result.success) {
-      wx.showToast({ title: result.error || 'QA 身份切换失败', icon: 'none' });
+      wx.showToast({ title: result.error || '演示身份切换失败', icon: 'none' });
       return null;
     }
 
@@ -173,6 +167,10 @@ Page({
       return;
     }
     if (type === 'resetQaSeed' || type === 'qaSeed') {
+      if (!this.data.canShowQaTools) {
+        wx.showToast({ title: '当前账号不显示演示工具', icon: 'none' });
+        return;
+      }
       this.onResetQaSeed();
       return;
     }
@@ -181,7 +179,7 @@ Page({
       if (!canUseAdminPortal(profile)) {
         wx.showModal({
           title: '系统管理员入口',
-          content: '当前角色无管理员权限。管理员后台尚未完成，不会开放全站管理。',
+          content: '当前账号没有管理员权限。',
           showCancel: false,
           confirmText: '知道了',
         });
@@ -190,7 +188,7 @@ Page({
       const admin = QaSeedMock.getAdmins()[0];
       wx.showModal({
         title: admin.title,
-        content: `${admin.note}\n\n管理员后台尚未完成，暂不提供全站管理操作。`,
+        content: `${admin.note}\n\n请使用已授权账号处理管理事项。`,
         showCancel: false,
         confirmText: '知道了',
       });
@@ -201,7 +199,7 @@ Page({
       if (!canUseProviderPortal(profile)) {
         wx.showModal({
           title: '供应商资料',
-          content: '供应商后台暂未开放。当前 MVP 只保留最小提示入口，不提供供应商管理操作。',
+          content: '当前账号没有供应商资料管理权限。',
           showCancel: false,
           confirmText: '知道了',
         });

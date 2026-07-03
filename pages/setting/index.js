@@ -21,16 +21,15 @@ Page({
       return '正式微信云端保存';
     }
     if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
-      return '本地/QA 测试模式，不代表正式保存';
+      return '演示保存：资料仅保留在当前设备';
     }
-    return '未完成正式 OpenID 验证，暂用本地/QA 测试模式';
+    return '请登录后查看资料保存状态';
   },
 
   getCloudSettingNote(session) {
-    if (session && session.cloudOpenIdVerified) return 'OpenID 已验证，云函数已接入';
-    if (session && session.qaOverride) return 'QA 身份切换中，未调用正式 OpenID';
-    if (session && session.isMockOpenId) return '本地 auth adapter，正式 OpenID 未验证';
-    return '未登录或未完成正式 OpenID 验证';
+    if (session && session.cloudOpenIdVerified) return '账号已完成微信登录验证';
+    if (session && (session.qaOverride || session.isMockOpenId)) return '当前为演示身份';
+    return '请先登录账号';
   },
 
   refreshSettingState() {
@@ -59,7 +58,7 @@ Page({
           },
           {
             title: '权限管理',
-            note: 'owner/admin 完整后台暂未开放',
+            note: '按账号角色显示可用功能入口',
             icon: 'secured',
           },
         ],

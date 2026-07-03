@@ -31,7 +31,7 @@
     <t-empty icon="info-circle" description="暂无团单" t-class-description="empty-text">
       <view slot="action">
         <t-button theme="primary" variant="outline" size="small">
-          QA 空状态
+          暂无可查看团单
         </t-button>
       </view>
     </t-empty>

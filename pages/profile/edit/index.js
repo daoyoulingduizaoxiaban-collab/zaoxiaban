@@ -1,15 +1,26 @@
+import { AuthService } from '~/services/auth/authService';
+import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+
 Page({
   data: {
     pageTitle: '新增个人资料',
     isEdit: false,
+    canSave: false,
+    disabledReason: '',
     formData: {
       title: '',
       date: '',
-      statusText: 'QA 展示资料'
+      statusText: '演示资料'
     }
   },
 
   onLoad(options) {
+    const profile = AuthService.getCurrentProfile();
+    const canSave = isOwnerOrAdmin(profile);
+    this.setData({
+      canSave,
+      disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',
+    });
     if (options.id) {
       this.setData({
         pageTitle: '编辑个人资料',
@@ -33,7 +44,11 @@ Page({
   },
 
   onSave() {
-    wx.showToast({ title: 'QA 展示模式，暂未保存', icon: 'none' });
+    if (!this.data.canSave) {
+      wx.showToast({ title: '当前账号没有保存权限', icon: 'none' });
+      return;
+    }
+    wx.showToast({ title: '演示保存：资料仅保留在当前设备', icon: 'none' });
   },
 
   onBack() {

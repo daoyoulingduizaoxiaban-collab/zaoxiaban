@@ -12,7 +12,7 @@ Page({
     input: '', // 输入框内容
     anchor: '', // 消息列表滚动到 id 与之相同的元素的位置
     keyboardHeight: 0, // 键盘当前高度(px)
-    disabledReason: '聊天能力暂未启用。MVP 当前以团单、商品库、客户订单和收款状态为主。',
+    disabledReason: '请先通过客户订单处理沟通和收款事项。',
   },
 
   /** 生命周期函数--监听页面加载 */
@@ -23,7 +23,7 @@ Page({
         eventChannel.on('update', this.update);
       }
     } catch (err) {
-      wx.showToast({ title: '聊天资料暂未加载', icon: 'none' });
+      wx.showToast({ title: '未找到沟通对象', icon: 'none' });
     }
   },
 
@@ -85,14 +85,14 @@ Page({
   /** 发送消息 */
   sendMessage() {
     if (this.data.disabledReason) {
-      wx.showToast({ title: '聊天能力暂未启用', icon: 'none' });
+      wx.showToast({ title: '请先查看客户订单', icon: 'none' });
       return;
     }
     const { userId, messages, input: content } = this.data;
     if (!content) return;
     const socket = this.getSocket();
     if (!socket) {
-      wx.showToast({ title: '聊天能力暂未启用', icon: 'none' });
+      wx.showToast({ title: '请先查看客户订单', icon: 'none' });
       return;
     }
     const message = { messageId: null, from: 0, content, time: Date.now(), read: true };

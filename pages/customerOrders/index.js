@@ -8,7 +8,7 @@ Page({
     customerOrdersList: [],
     roleScopeText: '',
     canCreateCustomerOrder: false,
-    saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
+    saveModeText: '演示保存：资料仅保留在当前设备',
     actionPanelVisible: false,
     actionType: '',
     actionOrderId: '',
@@ -52,7 +52,7 @@ Page({
   getRoleScopeText(meta = {}) {
     const profile = AuthService.getCurrentProfile();
     const role = meta.role || (profile && profile.role);
-    if (!role) return '未登录，仅显示空列表';
+    if (!role) return '请先登录后查看客户订单';
     if (role === 'guide') return '当前身份：导游/领队｜仅显示你管理团单下的客户订单';
     if (role === 'customer') return '当前身份：客户｜仅显示你自己的客户订单';
     if (role === 'owner' || role === 'admin') return '当前身份：管理角色｜可查看授权范围内客户订单';

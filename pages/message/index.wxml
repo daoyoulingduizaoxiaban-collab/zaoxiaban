@@ -2,7 +2,7 @@
 
 <view class="message-list">
   <t-cell-group theme="card">
-    <t-cell title="聊天能力暂未启用" description="MVP 当前以团单、商品库、客户订单和收款状态为主；聊天后续再接入。" />
+    <t-cell title="客户沟通" description="请通过客户订单查看付款声明、确认收款和取消订单。" />
     <t-cell title="待处理客户订单" description="请到客户订单页查看付款声明、确认收款和取消订单。" arrow bind:tap="goCustomerOrders" />
   </t-cell-group>
 </view>

@@ -7,7 +7,7 @@
         <view class="summary-title">今日团单工作台</view>
         <view class="summary-desc">开团、选品、客户订单和收款核对集中处理</view>
       </view>
-      <t-button theme="primary" size="small" bind:tap="goRelease">开团</t-button>
+      <t-button wx:if="{{canCreateGroupOrder}}" theme="primary" size="small" bind:tap="goRelease">开团</t-button>
     </view>
 
     <view class="quick-grid">
@@ -26,7 +26,7 @@
         <view class="quick-title">客户订单</view>
         <view class="quick-desc">处理付款声明和确认收款</view>
       </view>
-      <view class="quick-item" bindtap="goDataCenter">
+      <view class="quick-item" wx:if="{{canViewDataCenter}}" bindtap="goDataCenter">
         <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
         <view class="quick-title">数据看板</view>
         <view class="quick-desc">查看团单与订单汇总</view>

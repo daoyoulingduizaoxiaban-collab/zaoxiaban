@@ -1,10 +1,13 @@
 import { AuthService } from '~/services/auth/authService';
+import { isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
     titleText: '工作台',
-    modeText: '请先登录；正式 OpenID 登录后保存到微信云端，QA 身份仅本地测试。',
+    modeText: '请先登录；正式登录后资料保存到微信云端。',
+    canCreateGroupOrder: false,
+    canViewDataCenter: false,
   },
 
   onLoad() {
@@ -19,17 +22,20 @@ Page({
     const session = AuthService.getCurrentSession();
     const profile = AuthService.getCurrentProfile();
     const cloudEnabled = isCloudBusinessEnabled();
-    let modeText = '请先登录；正式 OpenID 登录后保存到微信云端，QA 身份仅本地测试。';
+    let modeText = '请先登录；正式登录后资料保存到微信云端。';
 
     if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
-      modeText = '当前使用正式微信 OpenID，业务资料保存到微信云端。';
+      modeText = '当前账号已通过微信登录，业务资料保存到微信云端。';
     } else if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
-      modeText = '当前使用本地/QA 身份，操作仅用于测试，不代表正式保存。';
+      modeText = '当前为演示身份，资料仅保留在当前设备。';
     } else if (profile) {
-      modeText = '当前未完成正式 OpenID 验证，业务操作会使用本地/QA 测试模式。';
+      modeText = '当前账号未通过云端验证，资料仅保留在当前设备。';
     }
 
-    this.setData({ modeText });
+    const canCreateGroupOrder = Boolean(profile && (profile.role === 'guide' || isOwnerOrAdmin(profile)));
+    const canViewDataCenter = Boolean(profile && ['guide', 'customer', 'owner', 'admin'].includes(profile.role));
+
+    this.setData({ modeText, canCreateGroupOrder, canViewDataCenter });
   },
 
   goGroupOrders() {
@@ -45,6 +51,10 @@ Page({
   },
 
   goRelease() {
+    if (!this.data.canCreateGroupOrder) {
+      wx.showToast({ title: '当前账号不能新建团单', icon: 'none' });
+      return;
+    }
     wx.navigateTo({
       url: '/pages/release/index',
       fail: () => wx.showToast({ title: '打开开团入口失败', icon: 'none' }),
@@ -52,6 +62,10 @@ Page({
   },
 
   goDataCenter() {
+    if (!this.data.canViewDataCenter) {
+      wx.showToast({ title: '当前账号不能查看数据看板', icon: 'none' });
+      return;
+    }
     wx.navigateTo({
       url: '/pages/dataCenter/index',
       fail: () => wx.showToast({ title: '打开数据看板失败', icon: 'none' }),

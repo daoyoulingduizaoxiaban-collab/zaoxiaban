@@ -29,7 +29,7 @@ export const GroupOrderMock = {
         title: '未找到团单',
         status: GroupOrderStatus.STOPPED,
         statusText: getGroupOrderStatusTextByValue(GroupOrderStatus.STOPPED),
-        description: 'QA 展示模式：未找到对应团单，请从团单列表重新进入。',
+        description: '未找到对应团单，请从团单列表重新进入。',
         productList: [],
         memberOrderList: [],
       }),

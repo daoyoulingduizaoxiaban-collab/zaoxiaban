@@ -6,7 +6,7 @@ Page({
     roleOptions: AuthService.roleOptions,
     selectedRole: AUTH_ROLES.GUIDE,
     isSubmitting: false,
-    authNotice: '将调用 wx.login 并通过 authLogin 云函数初始化资料。owner/admin 需云端白名单授权，当前登录入口只开放导游/客户。',
+    authNotice: '当前登录入口开放导游/领队与客户身份。管理角色由已授权账号进入。',
   },
 
   onRoleChange(e) {
@@ -24,7 +24,7 @@ Page({
     try {
       const res = await AuthService.login({ role: this.data.selectedRole });
       const { profile, session } = res.data;
-      const title = session.isMockOpenId ? '已进入本地身份验证' : `登录成功：${profile.roleLabel}`;
+      const title = session.isMockOpenId ? '已进入演示身份' : `登录成功：${profile.roleLabel}`;
 
       wx.showToast({
         title,
@@ -34,7 +34,7 @@ Page({
       wx.switchTab({
         url: '/pages/my/index',
         fail: () => {
-          wx.navigateTo({ url: '/pages/my/index' });
+          wx.showToast({ title: '打开我的页面失败', icon: 'none' });
         },
       });
 

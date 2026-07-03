@@ -2,11 +2,11 @@
 
 <view class="page">
   <view class="release-container">
-    <view class="box">
+    <view class="box" wx:if="{{canCreateGroupOrder}}">
       <t-cell title="新建团单" description="进入导游开团表单；正式登录后保存到微信云端" arrow bind:tap="goCreateGroupOrder" />
     </view>
-    <view class="box">
-      <t-cell title="发布动态已停用" description="MVP 不提供社交发布；请使用团单、商品库、客户订单流程。" />
+    <view class="box" wx:else>
+      <t-cell title="开团入口" description="当前账号不能新建团单，请切换导游/领队账号。" />
     </view>
   </view>
 </view>

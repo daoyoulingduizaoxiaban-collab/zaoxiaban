@@ -10,7 +10,7 @@ Page({
     productRows: [],
     totalPrice: 0,
     isSubmitting: false,
-    saveModeText: '本地/QA 展示模式，尚未正式保存到云端',
+    saveModeText: '演示保存：资料仅保留在当前设备',
     formData: {
       customerName: '',
       customerPhone: '',

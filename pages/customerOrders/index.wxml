@@ -70,7 +70,7 @@
     <view wx:else class="action-form">
       <view class="action-field">
         <text class="action-label">取消原因</text>
-        <textarea class="action-textarea" placeholder="选填，方便后续追踪" value="{{actionForm.cancelRemark}}" data-field="cancelRemark" bindinput="onActionInput" />
+        <textarea class="action-textarea" placeholder="选填，方便持续追踪" value="{{actionForm.cancelRemark}}" data-field="cancelRemark" bindinput="onActionInput" />
       </view>
     </view>
 

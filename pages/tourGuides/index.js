@@ -1,21 +1,47 @@
 import { QaSeedMock } from '~/mock/qaSeed';
+import { AuthService } from '~/services/auth/authService';
+import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
+
+const sameId = (a, b) => String(a) === String(b);
 
 Page({
   data: {
     titleText: '导游/领队',
-    tourGuidesList: []
+    tourGuidesList: [],
+    canCreateTourGuide: false,
+    disabledReason: '',
   },
 
   onLoad() {
+    this.loadTourGuides();
+  },
+
+  loadTourGuides() {
+    const profile = AuthService.getCurrentProfile();
+    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.GUIDE)) {
+      this.setData({
+        tourGuidesList: [],
+        canCreateTourGuide: false,
+        disabledReason: '当前账号没有导游/领队资料查看权限。',
+      });
+      return;
+    }
+
+    const guideUsers = QaSeedMock.getUsers().filter(user => user.role === 'owner' || user.role === 'guide');
+    const visibleUsers = isOwnerOrAdmin(profile)
+      ? guideUsers
+      : guideUsers.filter(user => sameId(user.id, profile.id) || sameId(user.openId, profile.openId));
+
     this.setData({
-      tourGuidesList: QaSeedMock.getUsers()
-        .filter(user => user.role === 'owner' || user.role === 'guide')
+      tourGuidesList: visibleUsers
         .map(user => ({
           id: user.id,
           title: user.name,
           statusText: user.displayRole,
-          description: `${user.city}｜测试手机号 ${user.phone}`,
-        }))
+          description: `${user.city}｜手机号 ${user.phone}`,
+        })),
+      canCreateTourGuide: isOwnerOrAdmin(profile),
+      disabledReason: visibleUsers.length ? '' : '当前账号没有可查看的导游/领队资料。',
     });
   },
 
@@ -24,7 +50,7 @@ Page({
     const item = this.data.tourGuidesList.find(guide => guide.id === id);
     wx.showModal({
       title: item ? item.title : '导游/领队',
-      content: item ? `${item.statusText}\n${item.description}\nQA 展示模式，详情页暂未开发。` : '未找到导游/领队资料。',
+      content: item ? `${item.statusText}\n${item.description}` : '未找到导游/领队资料。',
       showCancel: false,
       confirmText: '知道了'
     });
@@ -39,6 +65,10 @@ Page({
   },
 
   onGoToEdit(e) {
+    if (!this.data.canCreateTourGuide) {
+      wx.showToast({ title: '当前账号不能新增导游/领队资料', icon: 'none' });
+      return;
+    }
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/tourGuides/edit/index?id=${id}` : '/pages/tourGuides/edit/index';
 

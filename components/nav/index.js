@@ -20,11 +20,6 @@ Component({
         isSidebar: true,
       },
       {
-        title: '供应商管理',
-        url: 'pages/providers/index',
-        isSidebar: false,
-      },
-      {
         title: '搜索页',
         url: 'pages/search/index',
         isSidebar: false,
@@ -103,7 +98,7 @@ Component({
           url: `/${url}`,
           success: () => that.setData({ visible: false }),
           fail: () => {
-            wx.showToast({ title: '页面暂未开放', icon: 'none' });
+            wx.showToast({ title: '暂时无法打开该页面', icon: 'none' });
           },
         });
       }

@@ -4,7 +4,7 @@
 
 <view class="chat-container">
   <view wx:if="{{disabledReason}}" class="disabled-card">
-    <view class="disabled-title">聊天能力暂未启用</view>
+    <view class="disabled-title">客户沟通入口</view>
     <view class="disabled-desc">{{disabledReason}}</view>
     <t-button theme="primary" size="large" block bind:tap="onGoOrders">查看客户订单</t-button>
   </view>

@@ -166,6 +166,18 @@ export const AuthService = {
     return safeGetStorage(AUTH_SESSION_KEY, null);
   },
 
+  isFormalSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
+    return Boolean(profile && session && !profile.isMockOpenId && session.cloudOpenIdVerified);
+  },
+
+  isDemoSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
+    return Boolean(profile && (profile.isMockOpenId || (session && session.qaOverride)));
+  },
+
+  canShowQaTools(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
+    return Boolean(config.isMock && profile && (profile.isMockOpenId || (session && session.qaOverride)));
+  },
+
   async login({ role = AUTH_ROLES.GUIDE } = {}) {
     const loginResult = await wxLogin();
     let profileSource = normalizeMockProfile(role);
@@ -216,7 +228,7 @@ export const AuthService = {
     if (!config.isMock) {
       return {
         success: false,
-        error: 'QA 身份切换仅允许在 mock/QA 模式使用',
+        error: '演示身份切换仅允许在开发预览模式使用',
       };
     }
 
@@ -235,7 +247,7 @@ export const AuthService = {
       cloudOpenIdVerified: false,
       wxLoginCalled: false,
       wxLoginCodeAvailable: false,
-      fallbackReason: 'QA-only 身份切换，未调用正式 wx.login/OpenID',
+      fallbackReason: '演示身份切换，未调用正式登录',
       updatedAt: nowIso(),
     };
 
