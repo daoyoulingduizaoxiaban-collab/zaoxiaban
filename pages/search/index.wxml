@@ -8,7 +8,6 @@
       t-class-input-container="t-class__input-container"
       t-class-input="t-search__input"
       value="{{searchValue}}"
-      leftIcon="search"
       action="取消"
       shape="round"
       placeholder="搜索团单、商品或客户订单"
@@ -75,7 +74,7 @@
           data-index="{{index}}"
           wx:key="*this"
         >
-          <t-tag class="popular-item margin-12" max-width="{{343}}" variant="light" icon="search"> {{item}} </t-tag>
+          <t-tag class="popular-item margin-12" max-width="{{343}}" variant="light"> {{item}} </t-tag>
         </view>
       </view>
     </view>

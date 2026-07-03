@@ -15,10 +15,11 @@
       arrow="{{false}}"
       url="{{carditem.url}}"
       bordered="true"
-      leftIcon="{{carditem.icon}}"
       data-data="{{carditem}}"
       bindclick="onEleClick"
-    />
+    >
+      <t-icon slot="left-icon" name="{{carditem.icon}}" size="44rpx" color="#0052d9" />
+    </t-cell>
   </t-cell-group>
 </view>
 
