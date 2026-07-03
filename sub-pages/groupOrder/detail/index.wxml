@@ -12,16 +12,43 @@
     {{detailErrorText}}
   </view>
 
-  <t-cell-group wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" theme="card">
-    <t-input label="团单名称" placeholder="请输入1~20个字符" value="{{ groupOrder.title }}" />
-    <t-input label="收单状态" value="{{ groupOrder.statusText }}" />
-    <t-input label="描述" value="{{ groupOrder.description }}" />
-    <t-input label="出团时间" value="{{ groupOrder.startAt || '未填写' }}" />
-    <t-input label="收单截止" value="{{ groupOrder.endAt || '未填写' }}" />
-    <t-input label="取货/集合" value="{{ groupOrder.pickupNote || '未填写' }}" />
-    <t-input label="付款说明" value="{{ groupOrder.paymentNote || '未填写' }}" />
-    <t-input label="联系人" value="{{ groupOrder.contactName || '未填写' }}" />
-    <t-input label="联系电话" value="{{ groupOrder.contactPhone || '未填写' }}" />
+  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="detail-info-card">
+    <view class="detail-info-row">
+      <text class="detail-info-label">团单名称</text>
+      <text class="detail-info-value">{{groupOrder.title || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">收单状态</text>
+      <text class="detail-info-value">{{groupOrder.statusText || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">描述</text>
+      <text class="detail-info-value">{{groupOrder.description || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">出团时间</text>
+      <text class="detail-info-value">{{groupOrder.startAt || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">收单截止</text>
+      <text class="detail-info-value">{{groupOrder.endAt || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">取货/集合</text>
+      <text class="detail-info-value">{{groupOrder.pickupNote || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">付款说明</text>
+      <text class="detail-info-value">{{groupOrder.paymentNote || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">联系人</text>
+      <text class="detail-info-value">{{groupOrder.contactName || '未填写'}}</text>
+    </view>
+    <view class="detail-info-row">
+      <text class="detail-info-label">联系电话</text>
+      <text class="detail-info-value">{{groupOrder.contactPhone || '未填写'}}</text>
+    </view>
     <view class="qr-container" bindtap="previewQR">
       <image wx:if="{{groupOrder.qrCodeUrl}}" class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
         show-menu-by-longpress />
@@ -35,7 +62,7 @@
         <t-button size="small" theme="default" bindtap="onCopyCustomerEntry" disabled="{{!groupOrderId}}">复制入口</t-button>
       </view>
     </view>
-  </t-cell-group>
+  </view>
 
   <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="statistics-card">
     <view class="stat-item">
