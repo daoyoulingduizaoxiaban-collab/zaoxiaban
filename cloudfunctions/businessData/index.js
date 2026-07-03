@@ -675,8 +675,12 @@ const customerOrderActions = {
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {
       return failure('请填写有效实收金额');
     }
-    if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) > Number(target.totalPrice || 0)) {
-      return failure('实收金额不能超过订单金额');
+    if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED) {
+      const targetDeclaredAmount = Number(target.declaredAmount || 0);
+      const maxPayableAmount = targetDeclaredAmount > 0 ? targetDeclaredAmount : Number(target.totalPrice || 0);
+      if (maxPayableAmount > 0 && Number(confirmedAmount || 0) > maxPayableAmount) {
+        return failure(targetDeclaredAmount > 0 ? '实收金额不能超过申报金额' : '实收金额不能超过订单金额');
+      }
     }
 
     const updatedAt = nowIso();

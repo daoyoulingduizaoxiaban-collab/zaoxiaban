@@ -394,8 +394,15 @@ export const CustomerOrderRepository = {
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) <= 0) {
       return { success: false, error: '请填写有效实收金额' };
     }
-    if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) > Number(target.totalPrice || 0)) {
-      return { success: false, error: '实收金额不能超过订单金额' };
+    if (nextStatusValue === MemberOrderStatus.CONFIRMED) {
+      const declaredAmount = Number(target.declaredAmount || 0);
+      const maxPayableAmount = declaredAmount > 0 ? declaredAmount : Number(target.totalPrice || 0);
+      if (maxPayableAmount > 0 && Number(payload.confirmedAmount || 0) > maxPayableAmount) {
+        return {
+          success: false,
+          error: declaredAmount > 0 ? '实收金额不能超过申报金额' : '实收金额不能超过订单金额',
+        };
+      }
     }
 
     const historyItem = appendHistory(target, nextStatusValue, note, profile);

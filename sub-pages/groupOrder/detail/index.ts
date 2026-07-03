@@ -264,7 +264,7 @@ Page({
       showConfirmDialog: true,
       selectedMemberOrderId: id,
       confirmForm: {
-        confirmedAmount: selectedOrder ? String(selectedOrder.totalPrice || selectedOrder.originalTotalPrice || '') : '',
+        confirmedAmount: selectedOrder ? String(selectedOrder.declaredAmount || selectedOrder.totalPrice || selectedOrder.originalTotalPrice || '') : '',
         confirmRemark: '',
       },
     });
@@ -336,13 +336,15 @@ Page({
     const confirmRemark = String(this.data.confirmForm.confirmRemark || '').trim();
     const selectedOrder = (this.data.groupOrder.memberOrderList || [])
       .find(order => String(order.id) === String(this.data.selectedMemberOrderId));
+    const declaredAmount = Number(selectedOrder && selectedOrder.declaredAmount ? selectedOrder.declaredAmount : 0);
     const totalPrice = Number(selectedOrder && selectedOrder.totalPrice ? selectedOrder.totalPrice : 0);
+    const maxPayableAmount = declaredAmount > 0 ? declaredAmount : totalPrice;
     if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
       wx.showToast({ title: '请填写有效实收金额', icon: 'none' });
       return;
     }
-    if (totalPrice > 0 && confirmedAmount > totalPrice) {
-      wx.showToast({ title: '实收金额不能超过订单金额', icon: 'none' });
+    if (maxPayableAmount > 0 && confirmedAmount > maxPayableAmount) {
+      wx.showToast({ title: declaredAmount > 0 ? '实收金额不能超过申报金额' : '实收金额不能超过订单金额', icon: 'none' });
       return;
     }
 
