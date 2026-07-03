@@ -27,6 +27,7 @@ Page({
   },
 
   async onLoad() {
+    await AuthService.refreshSession();
     await this.fetchItineraryList();
   },
 
@@ -142,13 +143,14 @@ Page({
     });
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'groupOrder'
       });
     }
-    this.fetchItineraryList();
+    await this.fetchItineraryList();
   },
 
   addItinerary(e) {

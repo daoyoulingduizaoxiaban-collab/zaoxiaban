@@ -12,12 +12,14 @@ Page({
     disabledReason: '',
   },
 
-  onLoad() {
-    this.loadProfiles();
+  async onLoad() {
+    await AuthService.refreshSession();
+    await this.loadProfiles();
   },
 
-  onShow() {
-    this.loadProfiles();
+  async onShow() {
+    await AuthService.refreshSession();
+    await this.loadProfiles();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'my'

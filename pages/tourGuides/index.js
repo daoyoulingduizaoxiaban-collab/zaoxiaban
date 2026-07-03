@@ -12,12 +12,14 @@ Page({
     disabledReason: '',
   },
 
-  onLoad() {
-    this.loadTourGuides();
+  async onLoad() {
+    await AuthService.refreshSession();
+    await this.loadTourGuides();
   },
 
-  onShow() {
-    this.loadTourGuides();
+  async onShow() {
+    await AuthService.refreshSession();
+    await this.loadTourGuides();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'my'

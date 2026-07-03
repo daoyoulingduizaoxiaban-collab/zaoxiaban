@@ -14,8 +14,9 @@ Page({
     providerActionLabel: '新增供应商',
   },
 
-  onLoad() {
-    this.loadProviders();
+  async onLoad() {
+    await AuthService.refreshSession();
+    await this.loadProviders();
   },
 
   async loadProviders() {
@@ -61,8 +62,9 @@ Page({
     });
   },
 
-  onShow() {
-    this.loadProviders();
+  async onShow() {
+    await AuthService.refreshSession();
+    await this.loadProviders();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'providers'

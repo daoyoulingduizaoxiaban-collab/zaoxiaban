@@ -94,10 +94,11 @@ Page({
     });
   },
 
-  onLoad(options = {}) {
+  async onLoad(options = {}) {
+    await AuthService.refreshSession();
     const pendingOrderId = options.orderId || options.id || '';
     this.setData({ pendingOrderId: pendingOrderId ? String(pendingOrderId) : '' });
-    this.loadQaOrders();
+    await this.loadQaOrders();
   },
 
   consumePendingRouteQuery() {
@@ -507,14 +508,15 @@ Page({
     wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'customerOrders'
       });
     }
     this.consumePendingRouteQuery();
-    this.loadQaOrders();
+    await this.loadQaOrders();
   },
 
   onGoToEdit(e) {

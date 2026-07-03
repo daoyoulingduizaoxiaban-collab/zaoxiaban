@@ -36,12 +36,14 @@ Page({
     },
   },
 
-  onLoad() {
-    this.fetchData();
+  async onLoad() {
+    await AuthService.refreshSession();
+    await this.fetchData();
   },
 
-  onShow() {
-    this.fetchData();
+  async onShow() {
+    await AuthService.refreshSession();
+    await this.fetchData();
   },
 
   resetDetailState(extraState = {}) {
