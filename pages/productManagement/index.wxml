@@ -36,31 +36,33 @@
       <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
     </view>
 
-    <block wx:else wx:for="{{productList}}" wx:key="id">
-      <view class="product-card" bindtap="onOpenDetail" data-id="{{item.id}}">
-        <view class="product-card-body">
-          <view class="product-img-wrap">
-            <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="product-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
-            <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
-          </view>
-          <view class="product-info">
-            <view class="title-row">
-              <text class="title">{{item.title}}</text>
-              <text
-                class="status-tag {{item.status === 2 ? 'online' : 'offline'}}">{{productStatusTextMap[item.status]}}</text>
+    <block wx:else>
+      <block wx:for="{{productList}}" wx:key="id">
+        <view class="product-card" bindtap="onOpenDetail" data-id="{{item.id}}">
+          <view class="product-card-body">
+            <view class="product-img-wrap">
+              <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="product-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+              <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
             </view>
-            <text class="description">{{item.description || '暂无描述'}}</text>
-            <text class="description">{{item.sourceNote || '暂无供应来源备注'}}</text>
+            <view class="product-info">
+              <view class="title-row">
+                <text class="title">{{item.title}}</text>
+                <text
+                  class="status-tag {{item.status === 2 ? 'online' : 'offline'}}">{{productStatusTextMap[item.status]}}</text>
+              </view>
+              <text class="description">{{item.description || '暂无描述'}}</text>
+              <text class="description">{{item.sourceNote || '暂无供应来源备注'}}</text>
+            </view>
+          </view>
+          <view class="action-bar" wx:if="{{canManageProducts}}">
+            <button size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
+            <button size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
+            <button size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">
+              {{item.status === 2 ? '下架' : '上架'}}
+            </button>
           </view>
         </view>
-        <view class="action-bar" wx:if="{{canManageProducts}}">
-          <button size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
-          <button size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
-          <button size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">
-            {{item.status === 2 ? '下架' : '上架'}}
-          </button>
-        </view>
-      </view>
+      </block>
     </block>
   </scroll-view>
 

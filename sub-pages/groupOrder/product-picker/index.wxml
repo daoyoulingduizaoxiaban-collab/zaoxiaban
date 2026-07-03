@@ -12,29 +12,31 @@
     <view wx:if="{{isLoading}}" class="empty-state">正在加载商品库</view>
     <view wx:elif="{{pageErrorText}}" class="empty-state">{{pageErrorText}}</view>
 
-    <block wx:else wx:for="{{products}}" wx:key="id">
-      <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}"
-            bindtap="toggleSelect"
-            data-id="{{item.id}}">
-        
-        <view class="checkbox">
-          <t-icon wx:if="{{item.selected}}" name="check" size="32rpx" color="#fff" />
-          <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
-        </view>
-        <view class="p-img-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
-          <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
-          <text wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText || '暂无商品图片'}}</text>
-        </view>
+    <block wx:else>
+      <block wx:for="{{products}}" wx:key="id">
+        <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}"
+              bindtap="toggleSelect"
+              data-id="{{item.id}}">
 
-        <view class="p-info">
-          <text class="p-title">{{item.title}}</text>
-          <text class="p-desc">{{item.description || '暂无描述'}}</text>
-          <view class="p-price-row">
-            <text class="p-price">{{item.priceDisplay}}</text>
+          <view class="checkbox">
+            <t-icon wx:if="{{item.selected}}" name="check" size="32rpx" color="#fff" />
+            <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
           </view>
+          <view class="p-img-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
+            <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+            <text wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText || '暂无商品图片'}}</text>
+          </view>
+
+          <view class="p-info">
+            <text class="p-title">{{item.title}}</text>
+            <text class="p-desc">{{item.description || '暂无描述'}}</text>
+            <view class="p-price-row">
+              <text class="p-price">{{item.priceDisplay}}</text>
+            </view>
+          </view>
+
         </view>
-        
-      </view>
+      </block>
     </block>
     
     <view class="footer-spacer"></view>

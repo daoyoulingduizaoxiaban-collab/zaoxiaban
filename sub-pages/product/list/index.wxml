@@ -25,29 +25,31 @@
   <scroll-view scroll-y class="product-list">
     <view class="empty-tip" wx:if="{{isLoading}}">正在加载商品</view>
     <view class="empty-tip" wx:elif="{{pageErrorText}}">{{pageErrorText}}</view>
-    <block wx:else wx:for="{{filteredList}}" wx:key="id">
-      <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
-        <view class="cover-image-wrap">
-          <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
-          <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
-        </view>
-        <view class="content-area">
-          <view class="header">
-            <text class="title">{{item.title}}</text>
+    <block wx:else>
+      <block wx:for="{{filteredList}}" wx:key="id">
+        <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
+          <view class="cover-image-wrap">
+            <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
+            <view wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText}}</view>
           </view>
-          <text class="description">{{item.description}}</text>
-          <text class="description">{{item.sourceNote}}</text>
-          <text class="description">{{item.priceDisplay}}</text>
-          <view class="price-settings">
-            <view class="setting-item" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
-              <text class="q-range">满 {{price.minQuantity}} 件:</text>
-              <text class="u-price">￥{{price.unitPrice}}/件</text>
-              <text class="t-price" wx:if="{{price.totalPrice}}">(共 ¥{{price.totalPrice}})</text>
-              <text class="p-desc" wx:if="{{price.description}}">{{price.description}}</text>
+          <view class="content-area">
+            <view class="header">
+              <text class="title">{{item.title}}</text>
+            </view>
+            <text class="description">{{item.description}}</text>
+            <text class="description">{{item.sourceNote}}</text>
+            <text class="description">{{item.priceDisplay}}</text>
+            <view class="price-settings">
+              <view class="setting-item" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
+                <text class="q-range">满 {{price.minQuantity}} 件:</text>
+                <text class="u-price">￥{{price.unitPrice}}/件</text>
+                <text class="t-price" wx:if="{{price.totalPrice}}">(共 ¥{{price.totalPrice}})</text>
+                <text class="p-desc" wx:if="{{price.description}}">{{price.description}}</text>
+              </view>
             </view>
           </view>
         </view>
-      </view>
+      </block>
     </block>
     <view class="empty-tip" wx:if="{{!isLoading && !pageErrorText && filteredList.length === 0}}">{{emptyText}}</view>
   </scroll-view>
