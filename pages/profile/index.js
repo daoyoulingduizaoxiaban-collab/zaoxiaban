@@ -61,6 +61,10 @@ Page({
   },
 
   onGoToEdit(e) {
+    if (!AuthService.getCurrentProfile()) {
+      wx.showToast({ title: '请先登录后编辑个人资料', icon: 'none' });
+      return;
+    }
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/profile/edit/index?id=${id}` : '/pages/profile/edit/index';
 
