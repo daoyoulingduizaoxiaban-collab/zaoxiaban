@@ -1,5 +1,6 @@
 import { ProductService } from '~/services/product/productService';
 import { ProductStatus } from '~/enum/ProductStatus';
+import { AuthService } from '~/services/auth/authService';
 
 const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
 
@@ -17,6 +18,8 @@ Page({
     isLoading: true,
     pageErrorText: '',
     emptyText: '当前没有可浏览商品',
+    canUseBusiness: false,
+    accessStateText: '',
   },
 
   onLoad() {
@@ -24,6 +27,19 @@ Page({
   },
 
   async loadProducts() {
+    const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) {
+      this.setData({
+        isLoading: false,
+        pageErrorText: AuthService.getAccessStateText(profile),
+        accessStateText: AuthService.getAccessStateText(profile),
+        canUseBusiness: false,
+        allProducts: [],
+        filteredList: [],
+      });
+      return;
+    }
+
     this.setData({ isLoading: true, pageErrorText: '' });
     const res = await ProductService.listVisible({ status: ProductStatus.PUBLISHED });
     if (!res.success) {
@@ -38,6 +54,8 @@ Page({
       filteredList: products,
       isLoading: false,
       pageErrorText: '',
+      accessStateText: AuthService.getAccessStateText(profile),
+      canUseBusiness: true,
       emptyText: products.length ? '' : '当前没有可浏览商品',
     });
   },
