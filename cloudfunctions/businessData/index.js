@@ -509,6 +509,9 @@ const validateCustomerOrderPayload = (payload) => {
   const invalidItem = payload.items.find(item => Number(item.amount || item.quantity || 0) <= 0 || Number(item.totalPrice || 0) <= 0);
   if (invalidItem) return '商品数量和金额必须大于 0';
   if (Number(payload.totalPrice || 0) <= 0) return '订单金额必须大于 0';
+  const hasPaymentMethod = Boolean(trimText(payload.paymentMethod));
+  const hasPaymentProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
+  if (hasPaymentMethod !== hasPaymentProof) return '付款方式与付款凭证需同时填写';
   return '';
 };
 
@@ -564,6 +567,10 @@ const customerOrderActions = {
     if (Number(groupOrder.status) !== GROUP_ORDER_STATUS.OPEN) return failure('当前团单已停止收单');
 
     const createdAt = nowIso();
+    const hasInitialPayment = Boolean(trimText(payload.paymentMethod))
+      && Array.isArray(payload.paymentProofUrls)
+      && payload.paymentProofUrls.length > 0;
+    const initialStatus = hasInitialPayment ? MEMBER_ORDER_STATUS.PAID : MEMBER_ORDER_STATUS.UNPAID;
     const order = normalizeOrder({
       groupOrderId: groupOrder.id || groupOrder._id,
       guideUserId: groupOrder.guideUserId,
@@ -573,8 +580,8 @@ const customerOrderActions = {
       customerName: payload.customerName || profile.displayName || '客户',
       customerPhone: payload.customerPhone || profile.phone || '',
       title: `${groupOrder.title} - ${payload.customerName || profile.displayName || '客户'}`,
-      status: MEMBER_ORDER_STATUS.UNPAID,
-      paymentStatus: MEMBER_ORDER_STATUS.UNPAID,
+      status: initialStatus,
+      paymentStatus: initialStatus,
       totalPrice: Number(payload.totalPrice || 0),
       originalTotalPrice: Number(payload.totalPrice || 0),
       items: payload.items || [],
@@ -591,7 +598,12 @@ const customerOrderActions = {
     });
     const created = await getCollection('customerOrders').add({ data: order });
     const orderWithId = normalizeOrder({ ...order, _id: created._id });
-    const history = await appendPaymentHistory(orderWithId, MEMBER_ORDER_STATUS.UNPAID, '客户提交订单', profile);
+    const history = await appendPaymentHistory(
+      orderWithId,
+      initialStatus,
+      hasInitialPayment ? '客户提交订单并声明已付款' : '客户提交订单',
+      profile,
+    );
     orderWithId.paymentHistory = [history];
     await getCollection('customerOrders').doc(created._id).update({ data: { paymentHistory: [history] } });
     return success(orderWithId);

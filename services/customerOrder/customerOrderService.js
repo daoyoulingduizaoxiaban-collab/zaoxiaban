@@ -140,6 +140,9 @@ export const CustomerOrderService = {
     if (!Array.isArray(payload.items) || payload.items.length === 0) return '请至少选择一个商品';
     const invalidItem = payload.items.find(item => normalizeNumber(item.amount) <= 0 || normalizeNumber(item.totalPrice) <= 0);
     if (invalidItem) return '商品数量和金额必须大于 0';
+    const hasPaymentMethod = Boolean(trimText(payload.paymentMethod));
+    const hasPaymentProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
+    if (hasPaymentMethod !== hasPaymentProof) return '付款方式与付款凭证需同时填写';
     return '';
   },
 

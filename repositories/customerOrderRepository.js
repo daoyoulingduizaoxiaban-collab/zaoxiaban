@@ -274,6 +274,10 @@ export const CustomerOrderRepository = {
 
     const state = getStoredState();
     const createdAt = nowIso();
+    const hasInitialPayment = Boolean(trimText(orderData.paymentMethod))
+      && Array.isArray(orderData.paymentProofUrls)
+      && orderData.paymentProofUrls.length > 0;
+    const initialStatus = hasInitialPayment ? MemberOrderStatus.PAID : MemberOrderStatus.UNPAID;
     const nextOrder = normalizeOrder({
       id: Date.now(),
       groupOrderId: groupOrder.id,
@@ -282,9 +286,9 @@ export const CustomerOrderRepository = {
       customerName: orderData.customerName || profile.displayName || '客户',
       customerPhone: orderData.customerPhone || profile.phone || '',
       title: `${groupOrder.title} - ${orderData.customerName || profile.displayName || '客户'}`,
-      status: MemberOrderStatus.UNPAID,
-      paymentStatus: MemberOrderStatus.UNPAID,
-      statusText: getStatusText(MemberOrderStatus.UNPAID),
+      status: initialStatus,
+      paymentStatus: initialStatus,
+      statusText: getStatusText(initialStatus),
       totalPrice: orderData.totalPrice,
       originalTotalPrice: orderData.totalPrice,
       items: orderData.items,
@@ -304,10 +308,10 @@ export const CustomerOrderRepository = {
           id: `${createdAt}-created`,
           customerOrderId: '',
           fromStatus: '',
-          toStatus: MemberOrderStatus.UNPAID,
+          toStatus: initialStatus,
           actorUserId: profile.id,
           actorRole: profile.role,
-          note: '客户提交订单',
+          note: hasInitialPayment ? '客户提交订单并声明已付款' : '客户提交订单',
           createdAt,
         },
       ],
