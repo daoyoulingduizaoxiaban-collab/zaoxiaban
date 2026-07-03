@@ -317,6 +317,19 @@ const normalizeGroupOrderPayload = (payload, profile, existing = {}) => ({
   deletedAt: existing.deletedAt || '',
 });
 
+const validateGroupOrderPayload = (groupOrder) => {
+  if (!trimText(groupOrder.title)) return '请输入团单名称';
+  if (trimText(groupOrder.title).length > 20) return '团单名称最多 20 个字';
+  if (trimText(groupOrder.description).length > 200) return '团单描述最多 200 个字';
+  if (!trimText(groupOrder.startAt)) return '请输入出团或活动时间';
+  if (!trimText(groupOrder.endAt)) return '请输入收单截止时间';
+  if (!trimText(groupOrder.pickupNote)) return '请输入取货/交付/集合说明';
+  if (!trimText(groupOrder.paymentNote)) return '请输入付款方式或付款备注';
+  if (!trimText(groupOrder.contactName)) return '请输入导游/领队联系人';
+  if (!trimText(groupOrder.contactPhone)) return '请输入联系电话';
+  return '';
+};
+
 const syncGroupOrderProducts = async (groupOrder, products, actorProfile) => {
   await Promise.all((products || []).map(product => getCollection('groupOrderProducts').add({
     data: {
@@ -365,6 +378,8 @@ const groupOrderActions = {
       createdAt,
       updatedAt: createdAt,
     }, profile);
+    const validationError = validateGroupOrderPayload(groupOrder);
+    if (validationError) return failure(validationError);
     const result = await getCollection('groupOrders').add({ data: groupOrder });
     const sharePath = `/pages/customerOrders/edit/index?groupOrderId=${result._id}`;
     await getCollection('groupOrders').doc(result._id).update({ data: { sharePath } });
@@ -381,6 +396,8 @@ const groupOrderActions = {
       ...data,
       updatedAt: nowIso(),
     }, profile, target);
+    const validationError = validateGroupOrderPayload(updated);
+    if (validationError) return failure(validationError);
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({ data: toUpdateData(updated) });
     return success(toId({ ...updated, _id: target._id || target.id }));
   },
