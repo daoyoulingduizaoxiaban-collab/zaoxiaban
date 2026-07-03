@@ -19,12 +19,15 @@ Page({
     pageErrorText: '',
     isLoading: true,
     canManageGroupOrder: false,
+    pendingProductId: '',
   },
 
   onLoad(options) {
-    const groupOrderId = options.id ? String(options.id) : '';
+    const groupOrderId = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
+    const pendingProductId = options.productId ? String(options.productId) : '';
     this.setData({
       groupOrderId,
+      pendingProductId,
       pageErrorText: groupOrderId ? '' : '缺少团单 ID，请返回团单详情重新进入。',
       isLoading: Boolean(groupOrderId),
     });
@@ -80,6 +83,7 @@ Page({
       canManageGroupOrder: true,
       displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
+    this.openPendingProductDetail();
   },
 
   normalizeProducts(products) {
@@ -126,6 +130,17 @@ Page({
 
   goToDetail(e) {
     const id = e.currentTarget.dataset.id;
+    this.openProductDetailById(id);
+  },
+
+  openPendingProductDetail() {
+    const id = this.data.pendingProductId;
+    if (!id || this.data.pageErrorText) return;
+    this.setData({ pendingProductId: '' });
+    this.openProductDetailById(id);
+  },
+
+  openProductDetailById(id) {
     const product = this.data.rawList.find(item => String(item.id) === String(id));
     if (!product) {
       wx.showToast({ title: '未找到商品详情', icon: 'none' });

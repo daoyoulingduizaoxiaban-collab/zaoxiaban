@@ -19,9 +19,12 @@ Page({
     emptyText: '当前没有可浏览商品',
     canUseBusiness: false,
     accessStateText: '',
+    pendingProductId: '',
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    const pendingProductId = options.productId || options.id || '';
+    this.setData({ pendingProductId: pendingProductId ? String(pendingProductId) : '' });
     this.loadProducts();
   },
 
@@ -49,6 +52,7 @@ Page({
       canUseBusiness,
       emptyText: products.length ? '' : '当前没有可浏览商品',
     });
+    this.openPendingProductDetail();
   },
 
   normalizeProducts(products = []) {
@@ -134,6 +138,17 @@ Page({
 
   openDetail(e) {
     const { id } = e.currentTarget.dataset;
+    this.openProductDetailById(id);
+  },
+
+  openPendingProductDetail() {
+    const id = this.data.pendingProductId;
+    if (!id) return;
+    this.setData({ pendingProductId: '' });
+    this.openProductDetailById(id);
+  },
+
+  openProductDetailById(id) {
     const product = this.data.allProducts.find(item => String(item.id) === String(id));
     if (!product) {
       wx.showToast({ title: '未找到商品详情', icon: 'none' });

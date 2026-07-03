@@ -211,11 +211,11 @@ Page({
       return;
     }
     if (type === 'customerOrder') {
-      navigateByUrl('/pages/customerOrders/index');
+      navigateByUrl(`/pages/customerOrders/index?orderId=${encodeURIComponent(String(id))}`);
       return;
     }
     if (type === 'product') {
-      navigateByUrl('/pages/productManagement/index');
+      navigateByUrl(`/sub-pages/product/list/index?productId=${encodeURIComponent(String(id))}`);
     }
   },
 

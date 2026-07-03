@@ -23,6 +23,7 @@ Page({
     accessStateText: '',
     isLoading: false,
     loadErrorText: '',
+    pendingOrderId: '',
     actionPanelVisible: false,
     actionType: '',
     actionOrderId: '',
@@ -39,7 +40,9 @@ Page({
     },
   },
 
-  onLoad() {
+  onLoad(options = {}) {
+    const pendingOrderId = options.orderId || options.id || '';
+    this.setData({ pendingOrderId: pendingOrderId ? String(pendingOrderId) : '' });
     this.loadQaOrders();
   },
 
@@ -95,6 +98,7 @@ Page({
       isLoading: false,
       loadErrorText: '',
     });
+    this.openPendingOrderDetail();
   },
 
   filterOrdersByStatus(list = [], status = -1) {
@@ -131,6 +135,17 @@ Page({
 
   async goToDetail(e) {
     const { id } = e.currentTarget.dataset;
+    await this.openOrderDetailById(id);
+  },
+
+  async openPendingOrderDetail() {
+    const id = this.data.pendingOrderId;
+    if (!id || this.data.loadErrorText || !this.data.canUseBusiness) return;
+    this.setData({ pendingOrderId: '' });
+    await this.openOrderDetailById(id);
+  },
+
+  async openOrderDetailById(id) {
     const res = await CustomerOrderService.getById(id);
     const item = res.success ? res.data : null;
 
