@@ -61,7 +61,7 @@
         <view class="price-item" wx:for="{{currentProduct.priceSetting}}" wx:key="index">
           <view class="p-info">
             <text class="p-qty">满 {{item.minQuantity}} 件</text>
-            <text class="p-val">${{item.unitPrice}}</text>
+            <text class="p-val">¥{{item.unitPrice}}</text>
             <text class="p-desc" wx:if="{{item.description}}">({{item.description}})</text>
           </view>
           <view class="p-del" bindtap="removePriceRule" data-index="{{index}}">删除</view>
