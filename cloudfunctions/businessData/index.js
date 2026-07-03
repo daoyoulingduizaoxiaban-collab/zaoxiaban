@@ -34,6 +34,13 @@ const MEMBER_ORDER_STATUS = {
   CANCELLED: 3,
 };
 
+const REVIEW_STATUS = {
+  PENDING: 'pending_review',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  DISABLED: 'disabled',
+};
+
 const STATUS_TEXT = {
   [MEMBER_ORDER_STATUS.UNPAID]: '未付款',
   [MEMBER_ORDER_STATUS.PAID]: '客户付款',
@@ -44,6 +51,7 @@ const STATUS_TEXT = {
 const nowIso = () => new Date().toISOString();
 const sameId = (a, b) => String(a) === String(b);
 const trimText = value => String(value || '').trim();
+const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APPROVED : (status || REVIEW_STATUS.PENDING));
 const getCollection = name => db.collection(name);
 const toId = doc => ({ ...doc, id: doc.id || doc._id });
 const toUpdateData = (doc) => {
@@ -85,6 +93,8 @@ const getCurrentProfile = async () => {
     id: profile._id,
     openId,
     role: profile.role || 'guide',
+    status: normalizeReviewStatus(profile.reviewStatus || profile.status),
+    reviewStatus: normalizeReviewStatus(profile.reviewStatus || profile.status),
   };
 };
 
@@ -94,6 +104,16 @@ const isOwnerOrAdmin = profile => (
 
 const assertProfile = (profile) => {
   if (!profile) throw new Error('请先完成微信登录');
+};
+
+const assertApprovedProfile = (profile, allowedRoles = []) => {
+  assertProfile(profile);
+  if (normalizeReviewStatus(profile.reviewStatus || profile.status) !== REVIEW_STATUS.APPROVED) {
+    throw new Error('当前账号尚未通过管理员审核');
+  }
+  if (allowedRoles.length && !allowedRoles.includes(profile.role)) {
+    throw new Error('当前账号没有此操作权限');
+  }
 };
 
 const canManageProduct = (product, profile) => {
@@ -188,7 +208,7 @@ const normalizeProductPayload = (payload, profile, existing = {}) => ({
 
 const productActions = {
   async listVisible({ keyword = '', status = 0 }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const products = (await getAllActive('products')).filter(product => canViewProduct(product, profile));
     const statusValue = Number(status || 0);
     const statusFiltered = statusValue ? products.filter(product => Number(product.status) === statusValue) : products;
@@ -196,7 +216,7 @@ const productActions = {
   },
 
   async create(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     if (!['guide', 'owner', 'admin', 'provider'].includes(profile.role)) return failure('当前角色不能新增商品');
     if (!hasOnlyDurableAssetUrls(payload.pictureUrls || [])) {
       return failure('正式云端商品图片必须先上传为持久图片');
@@ -212,7 +232,7 @@ const productActions = {
   },
 
   async updateStatus({ id, status }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const product = await getById('products', id);
     if (!canManageProduct(product, profile)) return failure('当前角色不能修改此商品');
     const updatedAt = nowIso();
@@ -223,7 +243,7 @@ const productActions = {
   },
 
   async softDelete({ id }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const product = await getById('products', id);
     if (!canManageProduct(product, profile)) return failure('当前角色不能删除此商品');
     const deletedAt = nowIso();
@@ -280,7 +300,7 @@ const syncGroupOrderProducts = async (groupOrder, products, actorProfile) => {
 
 const groupOrderActions = {
   async listVisible({ keyword = '', status = 0 }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const all = await getAllActive('groupOrders');
     const visibilityResults = await Promise.all(all.map(async order => ({
       order,
@@ -293,13 +313,14 @@ const groupOrderActions = {
   },
 
   async getById({ id }, profile) {
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const groupOrder = await getById('groupOrders', id);
     if (!await canViewGroupOrder(groupOrder, profile)) return failure('当前角色不能查看此团单');
     return success(groupOrder);
   },
 
   async create(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     if (!['guide', 'owner', 'admin'].includes(profile.role)) return failure('当前角色不能新建团单');
     const createdAt = nowIso();
     const groupOrder = normalizeGroupOrderPayload({
@@ -316,7 +337,7 @@ const groupOrderActions = {
   },
 
   async update({ id, data }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     const target = await getById('groupOrders', id);
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能编辑此团单');
     const updated = normalizeGroupOrderPayload({
@@ -328,7 +349,7 @@ const groupOrderActions = {
   },
 
   async addProducts({ groupOrderId, products = [] }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     const target = await getById('groupOrders', groupOrderId);
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能管理本团商品');
     const existingIds = (target.productList || []).map(product => String(product.id || product._id));
@@ -345,7 +366,7 @@ const groupOrderActions = {
   },
 
   async removeProduct({ groupOrderId, productId }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     const target = await getById('groupOrders', groupOrderId);
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能移除本团商品');
     const nextProducts = (target.productList || []).filter(product => !sameId(product.id || product._id, productId));
@@ -411,7 +432,7 @@ const appendPaymentHistory = async (order, nextStatus, note, profile) => {
 
 const customerOrderActions = {
   async listVisible(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const orders = (await getAllActive('customerOrders')).map(normalizeOrder);
     const visibilityResults = await Promise.all(orders.map(async order => ({
       order,
@@ -422,7 +443,7 @@ const customerOrderActions = {
   },
 
   async listByGroupOrder({ groupOrderId }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const groupOrder = await getById('groupOrders', groupOrderId);
     if (!await canViewGroupOrder(groupOrder, profile)) return failure('当前角色不能查看此团单订单');
     const orders = (await getAllActive('customerOrders'))
@@ -433,7 +454,7 @@ const customerOrderActions = {
   },
 
   async getById({ id }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const rawOrder = await getById('customerOrders', id);
     if (!rawOrder) return failure('未找到订单资料');
     const order = normalizeOrder(rawOrder);
@@ -442,13 +463,14 @@ const customerOrderActions = {
   },
 
   async getGroupOrderEntry({ groupOrderId }, profile) {
+    assertApprovedProfile(profile, ['customer', 'owner', 'admin']);
     const groupOrder = await getById('groupOrders', groupOrderId);
     if (!await canViewGroupOrder(groupOrder, profile)) return failure('当前角色不能进入此团单');
     return success(groupOrder);
   },
 
   async create(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['customer', 'owner', 'admin']);
     if (profile.role !== 'customer' && !isOwnerOrAdmin(profile)) return failure('当前角色不能提交客户订单');
     if (!hasOnlyDurableAssetUrls(payload.paymentProofUrls || [])) {
       return failure('正式云端付款凭证必须先上传为持久图片');
@@ -502,7 +524,7 @@ const customerOrderActions = {
     confirmRemark = '',
     cancelRemark = '',
   }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const rawTarget = await getById('customerOrders', id);
     if (!rawTarget) return failure('未找到订单资料');
     const target = normalizeOrder(rawTarget);
@@ -587,7 +609,12 @@ const normalizeDirectoryUser = (payload, existing = {}) => ({
   role: payload.role || existing.role || 'guide',
   roleLabel: payload.roleLabel || existing.roleLabel || '',
   displayRole: payload.displayRole || existing.displayRole || payload.roleLabel || existing.role || 'guide',
-  status: payload.status || existing.status || 'active',
+  status: payload.status || existing.status || REVIEW_STATUS.PENDING,
+  reviewStatus: payload.reviewStatus || existing.reviewStatus || payload.status || existing.status || REVIEW_STATUS.PENDING,
+  requestedRole: payload.requestedRole || existing.requestedRole || payload.role || existing.role || 'customer',
+  reviewedBy: payload.reviewedBy || existing.reviewedBy || '',
+  reviewedAt: payload.reviewedAt || existing.reviewedAt || '',
+  reviewRemark: payload.reviewRemark || existing.reviewRemark || '',
   updatedAt: nowIso(),
   createdAt: existing.createdAt || payload.createdAt || nowIso(),
 });
@@ -601,8 +628,43 @@ const canEditDirectoryUser = (target, profile) => Boolean(
 );
 
 const userActions = {
+  async listPending(payload, profile) {
+    assertApprovedProfile(profile, ['owner', 'admin']);
+    const users = await getAllActive('users');
+    return success(users.filter(user => normalizeReviewStatus(user.reviewStatus || user.status) === REVIEW_STATUS.PENDING));
+  },
+
+  async review({ id, reviewStatus, role, reviewRemark = '' }, profile) {
+    assertApprovedProfile(profile, ['owner', 'admin']);
+    const target = await getById('users', id);
+    if (!target) return failure('未找到用户');
+    if (target.role === 'owner') return failure('不能修改 owner 账号');
+    if (profile.role === 'admin' && (role === 'owner' || target.role === 'admin')) {
+      return failure('管理员不能指派 owner 或修改管理员账号');
+    }
+    const nextStatus = normalizeReviewStatus(reviewStatus);
+    if (![REVIEW_STATUS.APPROVED, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED, REVIEW_STATUS.PENDING].includes(nextStatus)) {
+      return failure('审核状态无效');
+    }
+    const nextRole = nextStatus === REVIEW_STATUS.APPROVED ? (role || target.requestedRole || target.role || 'customer') : (target.role || role || 'customer');
+    if (nextRole === 'owner') return failure('不能通过审核入口指派 owner');
+    const updatedAt = nowIso();
+    const updateData = {
+      role: nextRole,
+      reviewStatus: nextStatus,
+      status: nextStatus,
+      reviewedBy: profile.openId,
+      reviewedByUserId: profile.id,
+      reviewedAt: updatedAt,
+      reviewRemark: trimText(reviewRemark),
+      updatedAt,
+    };
+    await getCollection('users').doc(String(target._id || target.id)).update({ data: updateData });
+    return success(toId({ ...target, ...updateData }));
+  },
+
   async listVisible(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile);
     if (isOwnerOrAdmin(profile)) {
       const users = await getAllActive('users');
       return success(users);
@@ -612,14 +674,14 @@ const userActions = {
   },
 
   async getById({ id }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile);
     const target = await getById('users', id);
     if (!canEditDirectoryUser(target, profile)) return failure('当前账号没有资料查看权限');
     return success(target);
   },
 
   async save(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile);
     const target = payload.id ? await getById('users', payload.id) : null;
     if (payload.id && !canEditDirectoryUser(target, profile)) return failure('当前账号没有保存权限');
     if (!payload.id && !isOwnerOrAdmin(profile)) return failure('当前账号不能新增资料');
@@ -653,20 +715,20 @@ const normalizeProviderPayload = (payload, existing = {}) => ({
 
 const providerActions = {
   async listVisible(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['owner', 'admin']);
     if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料管理权限');
     return success(await getAllActive('providers'));
   },
 
   async getById({ id }, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['owner', 'admin']);
     if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料查看权限');
     const provider = await getById('providers', id);
     return provider ? success(provider) : failure('未找到供应商资料');
   },
 
   async save(payload, profile) {
-    assertProfile(profile);
+    assertApprovedProfile(profile, ['owner', 'admin']);
     if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料维护权限');
     const target = payload.id ? await getById('providers', payload.id) : null;
     const normalized = normalizeProviderPayload(payload, target || {});

@@ -12,6 +12,9 @@ Page({
     service: [],
     personalInfo: {},
     authSession: {},
+    accessState: 'logged_out',
+    accessStateText: '请先登录后继续使用',
+    canUseBusiness: false,
     qaSeedInfo: {},
     canShowQaTools: false,
     qaRoleOptions: AuthService.qaRoleOptions,
@@ -56,10 +59,14 @@ Page({
   async onShow() {
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
+    const canUseBusiness = AuthService.canUseBusiness(profile);
 
     this.setData({
       isLoad: Boolean(profile),
       isLoggedIn: Boolean(profile),
+      accessState: AuthService.getAccessState(profile),
+      accessStateText: AuthService.getAccessStateText(profile),
+      canUseBusiness,
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
       canShowQaTools: AuthService.canShowQaTools(profile, session),
@@ -70,6 +77,8 @@ Page({
   },
 
   buildGridList(profile) {
+    if (!AuthService.canUseBusiness(profile)) return [];
+
     const list = [
       {
         name: '工作台',
@@ -132,14 +141,20 @@ Page({
 
   buildSettingList(profile) {
     const list = [
+      { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
+    ];
+
+    if (!AuthService.canUseBusiness(profile)) return list;
+
+    list.unshift(
       { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index' },
       { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index' },
-      { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
-      { name: '客户沟通', icon: 'chat', type: 'chat', url: '/pages/chat/index' },
-    ];
+    );
+    list.push({ name: '客户沟通', icon: 'chat', type: 'chat', url: '/pages/chat/index' });
 
     if (isOwnerOrAdmin(profile)) {
       list.splice(1, 0,
+        { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index' },
         { name: '导游/领队资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index' },
         { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
       );
@@ -245,9 +260,14 @@ Page({
     wx.showToast({ title: '已退出登录', icon: 'success' });
   },
 
+  onRefreshAccessState() {
+    this.onShow();
+    wx.showToast({ title: '状态已刷新', icon: 'none' });
+  },
+
   onEleClick(e) {
     const { name, url, type } = e.currentTarget.dataset.data;
-    const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter'];
+    const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter', 'userReview'];
     if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
       this.onLogin();
       return;

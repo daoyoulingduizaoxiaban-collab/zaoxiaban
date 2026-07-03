@@ -1,5 +1,5 @@
 import config from '~/config';
-import { getRoleLabel, MVP_ROLE_OPTIONS, AUTH_ROLES } from './roleScope';
+import { getRoleLabel, MVP_ROLE_OPTIONS, AUTH_ROLES, REVIEW_STATUS, isApprovedProfile, normalizeReviewStatus } from './roleScope';
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
@@ -121,7 +121,9 @@ const normalizeCloudProfile = (data, requestedRole) => {
     avatarUrl: profile.avatarUrl || '/static/avatar1.png',
     city: profile.city || defaults.city,
     providerId: profile.providerId || defaults.providerId || '',
-    status: profile.status || 'active',
+    status: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
+    reviewStatus: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
+    reviewRemark: profile.reviewRemark || data.reviewRemark || '',
     authSource: 'wechat-cloud',
     isMockOpenId: false,
   };
@@ -142,6 +144,7 @@ const normalizeMockProfile = (role, overrides = {}) => {
     avatarUrl: '/static/avatar1.png',
     city: defaults.city,
     status: 'active',
+    reviewStatus: REVIEW_STATUS.APPROVED,
     authSource: 'mock-auth-adapter',
     isMockOpenId: true,
     qaOverride: Boolean(overrides.qaOverride),
@@ -177,6 +180,38 @@ export const AuthService = {
 
   isFormalSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
     return Boolean(profile && session && !profile.isMockOpenId && session.cloudOpenIdVerified);
+  },
+
+  normalizeReviewStatus,
+
+  isApproved(profile = this.getCurrentProfile()) {
+    return isApprovedProfile(profile);
+  },
+
+  getAccessState(profile = this.getCurrentProfile()) {
+    if (!profile) return 'logged_out';
+    if (profile.isMockOpenId || profile.qaOverride) return 'approved';
+    const status = normalizeReviewStatus(profile.reviewStatus || profile.status);
+    if (status === REVIEW_STATUS.APPROVED) return 'approved';
+    if (status === REVIEW_STATUS.REJECTED) return 'rejected';
+    if (status === REVIEW_STATUS.DISABLED) return 'disabled';
+    return 'pending_review';
+  },
+
+  canUseBusiness(profile = this.getCurrentProfile()) {
+    return this.getAccessState(profile) === 'approved';
+  },
+
+  getAccessStateText(profile = this.getCurrentProfile()) {
+    const state = this.getAccessState(profile);
+    const textMap = {
+      logged_out: '请先登录后继续使用',
+      pending_review: '已提交使用申请，等待管理员确认身份',
+      rejected: '当前账号暂不能使用，请联系管理员',
+      disabled: '当前账号已停用，请联系管理员',
+      approved: '账号已通过审核',
+    };
+    return textMap[state] || textMap.logged_out;
   },
 
   isDemoSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
@@ -231,6 +266,7 @@ export const AuthService = {
       wxLoginCalled: authStatus.wxLoginCalled,
       wxLoginCodeAvailable: authStatus.wxLoginCodeAvailable,
       fallbackReason: authStatus.fallbackReason,
+      reviewStatus: profile.reviewStatus || profile.status || '',
       updatedAt: nowIso(),
     };
 

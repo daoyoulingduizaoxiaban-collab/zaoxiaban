@@ -6,6 +6,9 @@ Page({
   data: {
     titleText: '工作台',
     modeText: '请先登录；正式登录后资料保存到微信云端。',
+    accessState: 'logged_out',
+    accessStateText: '请先登录后继续使用',
+    canUseBusiness: false,
     canCreateGroupOrder: false,
     canViewDataCenter: false,
   },
@@ -22,9 +25,13 @@ Page({
     const session = AuthService.getCurrentSession();
     const profile = AuthService.getCurrentProfile();
     const cloudEnabled = isCloudBusinessEnabled();
+    const accessState = AuthService.getAccessState(profile);
+    const canUseBusiness = AuthService.canUseBusiness(profile);
     let modeText = '请先登录；正式登录后资料保存到微信云端。';
 
-    if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
+    if (!canUseBusiness) {
+      modeText = AuthService.getAccessStateText(profile);
+    } else if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
       modeText = '当前账号已通过微信登录，业务资料保存到微信云端。';
     } else if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
       modeText = '当前未连接微信云端保存。';
@@ -32,21 +39,52 @@ Page({
       modeText = '当前账号未通过云端验证。';
     }
 
-    const canCreateGroupOrder = Boolean(profile && (profile.role === 'guide' || isOwnerOrAdmin(profile)));
-    const canViewDataCenter = Boolean(profile && ['guide', 'customer', 'owner', 'admin'].includes(profile.role));
+    const canCreateGroupOrder = Boolean(canUseBusiness && profile && (profile.role === 'guide' || isOwnerOrAdmin(profile)));
+    const canViewDataCenter = Boolean(canUseBusiness && profile && ['guide', 'customer', 'owner', 'admin'].includes(profile.role));
 
-    this.setData({ modeText, canCreateGroupOrder, canViewDataCenter });
+    this.setData({
+      modeText,
+      accessState,
+      accessStateText: AuthService.getAccessStateText(profile),
+      canUseBusiness,
+      canCreateGroupOrder,
+      canViewDataCenter,
+    });
+  },
+
+  goLogin() {
+    wx.navigateTo({
+      url: '/pages/login/login',
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
+  },
+
+  refreshAccessState() {
+    this.refreshModeText();
+    wx.showToast({ title: '状态已刷新', icon: 'none' });
   },
 
   goGroupOrders() {
+    if (!this.data.canUseBusiness) {
+      this.goLogin();
+      return;
+    }
     wx.switchTab({ url: '/pages/groupOrder/index' });
   },
 
   goProducts() {
+    if (!this.data.canUseBusiness) {
+      this.goLogin();
+      return;
+    }
     wx.switchTab({ url: '/pages/productManagement/index' });
   },
 
   goCustomerOrders() {
+    if (!this.data.canUseBusiness) {
+      this.goLogin();
+      return;
+    }
     wx.switchTab({ url: '/pages/customerOrders/index' });
   },
 

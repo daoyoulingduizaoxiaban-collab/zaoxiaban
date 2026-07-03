@@ -1,6 +1,7 @@
 import {
   BOTTOM_BAR_LIST
 } from '../config'
+import { AuthService } from '../services/auth/authService';
 
 Component({
   data: {
@@ -11,7 +12,7 @@ Component({
   lifetimes: {
     attached() {
       this.setData({
-        list: BOTTOM_BAR_LIST
+        list: AuthService.canUseBusiness() ? BOTTOM_BAR_LIST : BOTTOM_BAR_LIST.filter(item => item.value === 'my')
       });
     },
     ready() {
@@ -61,6 +62,10 @@ Component({
     },
     handleChange(e) {
       try {
+        const nextList = AuthService.canUseBusiness() ? BOTTOM_BAR_LIST : BOTTOM_BAR_LIST.filter(item => item.value === 'my');
+        if (nextList.length !== this.data.list.length) {
+          this.setData({ list: nextList });
+        }
         const {
           value
         } = e.detail;

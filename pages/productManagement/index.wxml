@@ -1,7 +1,7 @@
 <nav nav-type="productManagement" titleText="{{titleText}}" />
 
 <view class="container">
-  <view class="search-section">
+  <view class="search-section" wx:if="{{canUseBusiness}}">
     <t-search value="{{searchQuery}}" placeholder="搜索商品名称或描述" bind:change="onSearchInput" t-class="search-bar" />
     <t-dropdown-menu t-class="dropdown-custom">
       <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
@@ -14,7 +14,13 @@
     <text wx:if="{{saveModeText}}">{{saveModeText}}</text>
   </view>
 
-  <scroll-view scroll-y="true" class="product-list">
+  <view class="access-card" wx:if="{{!canUseBusiness}}">
+    <view class="access-title">{{accessStateText}}</view>
+    <view class="access-desc">通过管理员确认身份后，可查看与你角色对应的商品库。</view>
+    <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
+  </view>
+
+  <scroll-view scroll-y="true" class="product-list" wx:if="{{canUseBusiness}}">
     <view class="empty-container" wx:if="{{productList.length === 0}}">
       <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
       <text class="empty-text">当前没有商品</text>

@@ -18,6 +18,8 @@ Page({
     roleScopeText: '',
     canCreateGroupOrder: false,
     isLoggedIn: false,
+    canUseBusiness: false,
+    accessStateText: '',
   },
 
   // 初始化
@@ -33,6 +35,19 @@ Page({
   },
 
   async fetchItineraryList() {
+    const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) {
+      this.setData({
+        itineraryList: [],
+        roleScopeText: AuthService.getAccessStateText(profile),
+        canCreateGroupOrder: false,
+        isLoggedIn: Boolean(profile),
+        canUseBusiness: false,
+        accessStateText: AuthService.getAccessStateText(profile),
+      });
+      return;
+    }
+
     wx.showLoading({
       title: '加载中'
     });
@@ -47,7 +62,9 @@ Page({
           itineraryList: list,
           roleScopeText: this.getRoleScopeText(),
           canCreateGroupOrder: this.canCreateGroupOrder(),
-          isLoggedIn: Boolean(AuthService.getCurrentProfile())
+          isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+          canUseBusiness: true,
+          accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
         });
       }
     } catch (err) {
@@ -62,6 +79,7 @@ Page({
 
   getRoleScopeText() {
     const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
     if (!profile) return '请先登录后查看团单';
     if (profile.role === 'guide') return '仅显示你创建或被授权管理的团单';
     if (profile.role === 'customer') return '仅显示你下过订单关联的团单';
@@ -71,7 +89,7 @@ Page({
 
   canCreateGroupOrder() {
     const profile = AuthService.getCurrentProfile();
-    return Boolean(profile && (profile.role === 'guide' || profile.role === 'owner' || profile.role === 'admin'));
+    return Boolean(AuthService.canUseBusiness(profile) && (profile.role === 'guide' || profile.role === 'owner' || profile.role === 'admin'));
   },
 
   onLogin() {
@@ -152,6 +170,7 @@ Page({
 
   // 核心篩選邏輯
   async applyFilters() {
+    if (!this.data.canUseBusiness) return;
     const {
       searchKeyword,
       currentStatus

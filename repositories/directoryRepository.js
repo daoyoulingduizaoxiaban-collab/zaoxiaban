@@ -106,6 +106,42 @@ export const DirectoryRepository = {
     };
   },
 
+  async listPendingUsers() {
+    const profile = AuthService.getCurrentProfile();
+    if (!isOwnerOrAdmin(profile)) return { success: false, error: '当前账号没有用户审核权限' };
+    const cloudRes = await callCloud('users', 'listPending', {});
+    if (cloudRes) return cloudRes;
+    return {
+      success: true,
+      data: getLocalUsers().map(normalizeUser).filter(user => user.status === 'pending_review' || user.reviewStatus === 'pending_review'),
+      meta: { saveMode: 'local-directory-repository' },
+    };
+  },
+
+  async reviewUser(payload = {}) {
+    const profile = AuthService.getCurrentProfile();
+    if (!isOwnerOrAdmin(profile)) return { success: false, error: '当前账号没有用户审核权限' };
+    const cloudRes = await callCloud('users', 'review', payload);
+    if (cloudRes) return cloudRes;
+
+    const users = getLocalUsers().map(normalizeUser);
+    const target = users.find(user => sameId(user.id, payload.id));
+    if (!target) return { success: false, error: '未找到用户' };
+    const updatedAt = nowIso();
+    const next = normalizeUser({
+      ...target,
+      role: payload.role || target.role,
+      status: payload.reviewStatus,
+      reviewStatus: payload.reviewStatus,
+      reviewRemark: payload.reviewRemark || '',
+      reviewedAt: updatedAt,
+      reviewedBy: profile.openId || profile.id,
+      updatedAt,
+    });
+    saveLocalUsers(users.map(user => (sameId(user.id, next.id) ? next : user)));
+    return { success: true, data: next, meta: { saveMode: 'local-directory-repository' } };
+  },
+
   async listGuides() {
     const res = await this.listUsers();
     if (!res.success) return res;

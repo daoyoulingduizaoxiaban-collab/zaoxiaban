@@ -1,0 +1,35 @@
+<nav title-text="{{titleText}}" />
+
+<view class="review-page">
+  <view class="no-access" wx:if="{{!canReview}}">
+    <t-empty icon="info-circle" description="当前账号没有用户审核权限" />
+  </view>
+
+  <view wx:else>
+    <view class="review-summary">待确认身份的用户</view>
+    <t-cell-group theme="card" wx:if="{{users.length}}">
+      <view class="review-card" wx:for="{{users}}" wx:key="id">
+        <t-cell title="{{item.displayName || item.name || '微信用户'}}" description="申请身份：{{item.requestedRole || item.role || 'customer'}}" note="{{item.openId ? '微信账号已登录' : '账号资料待补充'}}" />
+        <view class="role-row">
+          <button
+            wx:for="{{roleOptions}}"
+            wx:for-item="roleItem"
+            wx:key="value"
+            class="role-chip {{selectedRoleById[item.id || item._id] === roleItem.value ? 'role-chip--active' : ''}}"
+            data-id="{{item.id || item._id}}"
+            data-role="{{roleItem.value}}"
+            bindtap="onRoleChange"
+          >
+            {{roleItem.label}}
+          </button>
+        </view>
+        <view class="action-row">
+          <t-button theme="primary" size="small" data-id="{{item.id || item._id}}" data-status="approved" bindtap="reviewUser">通过</t-button>
+          <t-button theme="danger" variant="outline" size="small" data-id="{{item.id || item._id}}" data-status="rejected" bindtap="reviewUser">拒绝</t-button>
+          <t-button theme="default" variant="outline" size="small" data-id="{{item.id || item._id}}" data-status="disabled" bindtap="reviewUser">停用</t-button>
+        </view>
+      </view>
+    </t-cell-group>
+    <t-empty wx:else icon="info-circle" description="暂无待审核用户" />
+  </view>
+</view>

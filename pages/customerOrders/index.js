@@ -10,6 +10,8 @@ Page({
     canCreateCustomerOrder: false,
     saveModeText: '',
     isLoggedIn: false,
+    canUseBusiness: false,
+    accessStateText: '',
     actionPanelVisible: false,
     actionType: '',
     actionOrderId: '',
@@ -31,6 +33,20 @@ Page({
   },
 
   async loadQaOrders() {
+    const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) {
+      this.setData({
+        customerOrdersList: [],
+        roleScopeText: AuthService.getAccessStateText(profile),
+        canCreateCustomerOrder: false,
+        saveModeText: '',
+        isLoggedIn: Boolean(profile),
+        canUseBusiness: false,
+        accessStateText: AuthService.getAccessStateText(profile),
+      });
+      return;
+    }
+
     const res = await CustomerOrderService.listVisible();
     if (!res.success) {
       wx.showToast({ title: res.error || '加载客户订单失败', icon: 'none' });
@@ -43,12 +59,14 @@ Page({
       canCreateCustomerOrder: this.canCreateCustomerOrder(),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+      canUseBusiness: true,
+      accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
     });
   },
 
   canCreateCustomerOrder() {
     const profile = AuthService.getCurrentProfile();
-    return Boolean(profile && (profile.role === 'customer' || profile.role === 'owner' || profile.role === 'admin'));
+    return Boolean(AuthService.canUseBusiness(profile) && (profile.role === 'customer' || profile.role === 'owner' || profile.role === 'admin'));
   },
 
   onLogin() {
@@ -60,6 +78,7 @@ Page({
 
   getRoleScopeText(meta = {}) {
     const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
     const role = meta.role || (profile && profile.role);
     if (!role) return '请先登录后查看客户订单';
     if (role === 'guide') return '当前身份：导游/领队｜仅显示你管理团单下的客户订单';

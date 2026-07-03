@@ -1,6 +1,11 @@
 <sub-nav title="{{pageTitle}}" />
 
-<view class="add-container">
+<view class="access-card" wx:if="{{accessDenied}}">
+  <view class="access-title">{{accessStateText || '当前账号不能新建团单'}}</view>
+  <view class="access-desc">请使用已通过审核的导游/领队或管理员账号。</view>
+</view>
+
+<view class="add-container" wx:else>
   <view class="mode-tip">{{saveModeText}}</view>
   <t-cell-group theme="card" title="基本信息">
     <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" bindchange="onInput" data-field="title" />

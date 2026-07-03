@@ -6,7 +6,7 @@ Page({
     roleOptions: AuthService.roleOptions,
     selectedRole: AUTH_ROLES.GUIDE,
     isSubmitting: false,
-    authNotice: '当前登录入口开放导游/领队与客户身份。管理角色由已授权账号进入。',
+    authNotice: '登录后会提交使用申请，正式角色以管理员审核结果为准。管理角色由已授权账号进入。',
   },
 
   onRoleChange(e) {
@@ -37,7 +37,7 @@ Page({
         return;
       }
       const { profile, session } = res.data;
-      const title = `登录成功：${profile.roleLabel}`;
+      const title = AuthService.canUseBusiness(profile) ? `登录成功：${profile.roleLabel}` : AuthService.getAccessStateText(profile);
 
       wx.showToast({
         title,

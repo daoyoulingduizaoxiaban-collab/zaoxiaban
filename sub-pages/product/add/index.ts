@@ -1,5 +1,6 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductService } from '~/services/product/productService';
+import { AuthService } from '~/services/auth/authService';
 import {
   CLOUD_SAVE_MODE,
   CLOUD_SAVE_MODE_TEXT,
@@ -13,6 +14,8 @@ Page({
     productList: [], // 最終提交的大清單
     isSubmitting: false,
     isChoosingImage: false,
+    accessDenied: false,
+    accessStateText: '',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     imageModeTip: '正式云端模式会先上传为持久图片，再保存商品。',
 
@@ -37,6 +40,15 @@ Page({
   },
 
   onLoad() {
+    const profile = AuthService.getCurrentProfile();
+    const canCreate = AuthService.canUseBusiness(profile) && ['guide', 'owner', 'admin', 'provider'].includes(profile.role);
+    if (!canCreate) {
+      this.setData({
+        accessDenied: true,
+        accessStateText: AuthService.getAccessStateText(profile),
+      });
+      return;
+    }
     this.refreshSaveModeText();
   },
 

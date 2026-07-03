@@ -6,6 +6,13 @@ export const AUTH_ROLES = Object.freeze({
   PROVIDER: 'provider',
 });
 
+export const REVIEW_STATUS = Object.freeze({
+  PENDING: 'pending_review',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
+  DISABLED: 'disabled',
+});
+
 export const ROLE_LABELS = Object.freeze({
   [AUTH_ROLES.OWNER]: '产品拥有者',
   [AUTH_ROLES.ADMIN]: '运营管理员',
@@ -20,8 +27,19 @@ export const MVP_ROLE_OPTIONS = [
   { label: ROLE_LABELS[AUTH_ROLES.PROVIDER], value: AUTH_ROLES.PROVIDER },
 ];
 
+export const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APPROVED : (status || ''));
+
+export const isApprovedProfile = profile => Boolean(
+  profile
+  && (
+    profile.isMockOpenId
+    || profile.qaOverride
+    || normalizeReviewStatus(profile.reviewStatus || profile.status) === REVIEW_STATUS.APPROVED
+  )
+);
+
 export const isOwnerOrAdmin = profile => (
-  profile && (profile.role === AUTH_ROLES.OWNER || profile.role === AUTH_ROLES.ADMIN)
+  isApprovedProfile(profile) && (profile.role === AUTH_ROLES.OWNER || profile.role === AUTH_ROLES.ADMIN)
 );
 
 export const getRoleLabel = role => ROLE_LABELS[role] || '未定义角色';
@@ -33,7 +51,7 @@ export const canUseAdminPortal = profile => isOwnerOrAdmin(profile);
 const sameId = (a, b) => String(a) === String(b);
 
 export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = []) => {
-  if (!profile) return [];
+  if (!isApprovedProfile(profile)) return [];
   if (isOwnerOrAdmin(profile)) return groupOrders;
 
   if (profile.role === AUTH_ROLES.GUIDE) {
@@ -54,7 +72,7 @@ export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = [
 };
 
 export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile) => {
-  if (!profile) return [];
+  if (!isApprovedProfile(profile)) return [];
   if (isOwnerOrAdmin(profile)) return customerOrders;
 
   if (profile.role === AUTH_ROLES.GUIDE) {
@@ -75,7 +93,7 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
 };
 
 export const filterProductsByRole = (products, profile) => {
-  if (!profile) return [];
+  if (!isApprovedProfile(profile)) return [];
   const activeProducts = products.filter(product => !product.deletedAt);
   if (isOwnerOrAdmin(profile)) return activeProducts;
 
@@ -95,7 +113,7 @@ export const filterProductsByRole = (products, profile) => {
 };
 
 export const canManageProduct = (product, profile) => {
-  if (!profile || !product) return false;
+  if (!isApprovedProfile(profile) || !product) return false;
   if (isOwnerOrAdmin(profile)) return true;
   if (profile.role === AUTH_ROLES.GUIDE) {
     return !product.ownerUserId || sameId(product.ownerUserId, profile.id);

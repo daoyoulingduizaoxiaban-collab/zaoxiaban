@@ -2,6 +2,7 @@ import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { AuthService } from '~/services/auth/authService';
 
 Page({
   data: {
@@ -11,6 +12,8 @@ Page({
     selectedGoods: [] as Product[],
     isSubmitting: false,
     saveModeText: CLOUD_SAVE_MODE_TEXT,
+    accessDenied: false,
+    accessStateText: '',
     formData: {
       title: '',
       description: '',
@@ -26,6 +29,15 @@ Page({
   },
 
   onLoad(options) {
+    const profile = AuthService.getCurrentProfile();
+    const canCreate = AuthService.canUseBusiness(profile) && ['guide', 'owner', 'admin'].includes(profile.role);
+    if (!canCreate) {
+      this.setData({
+        accessDenied: true,
+        accessStateText: AuthService.getAccessStateText(profile),
+      });
+      return;
+    }
     const groupOrderId = options.id ? String(options.id) : '';
     if (groupOrderId) {
       this.setData({

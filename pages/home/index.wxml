@@ -2,7 +2,16 @@
 
 <view class="home-container">
   <view class="home-content">
-    <view class="summary-band">
+    <view class="access-card" wx:if="{{!canUseBusiness}}">
+      <view class="access-title">{{accessStateText}}</view>
+      <view class="access-desc">通过管理员确认后，会开放与你身份对应的团单、商品库、客户订单和数据入口。</view>
+      <view class="access-actions">
+        <t-button wx:if="{{accessState === 'logged_out'}}" theme="primary" size="small" bind:tap="goLogin">微信登录</t-button>
+        <t-button wx:else theme="primary" size="small" bind:tap="refreshAccessState">重新检查状态</t-button>
+      </view>
+    </view>
+
+    <view class="summary-band" wx:if="{{canUseBusiness}}">
       <view>
         <view class="summary-title">今日团单工作台</view>
         <view class="summary-desc">开团、选品、客户订单和收款核对集中处理</view>
@@ -10,7 +19,7 @@
       <t-button wx:if="{{canCreateGroupOrder}}" theme="primary" size="small" bind:tap="goRelease">开团</t-button>
     </view>
 
-    <view class="quick-grid">
+    <view class="quick-grid" wx:if="{{canUseBusiness}}">
       <view class="quick-item primary" bindtap="goGroupOrders">
         <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
         <view class="quick-title">团单</view>

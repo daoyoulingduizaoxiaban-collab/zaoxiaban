@@ -4,7 +4,7 @@
   <view class="login__subtitle">用于开团、团单、商品库和客户订单的身份识别。</view>
 
   <view class="login__content">
-    <view class="login__section-title">选择登录角色</view>
+    <view class="login__section-title">申请使用身份</view>
     <view class="login__roles">
       <view
         wx:for="{{roleOptions}}"
@@ -21,7 +21,7 @@
 
     <view class="login__button">
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
-        微信登录并初始化资料
+        微信登录并提交申请
       </button>
       <button class="login__secondary-button" disabled="{{isSubmitting}}" bindtap="goLoginCode">
         使用验证码登录

@@ -5,7 +5,7 @@ import { AuthService } from '~/services/auth/authService';
 import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
 const canViewDataCenter = profile => Boolean(
-  profile && (
+  AuthService.canUseBusiness(profile) && (
     profile.role === AUTH_ROLES.GUIDE
     || profile.role === AUTH_ROLES.CUSTOMER
     || isOwnerOrAdmin(profile)
@@ -34,8 +34,8 @@ Page({
           { name: '团单', number: 0 },
           { name: '客户订单', number: 0 },
         ],
-        dataModeText: '当前账号没有数据中心查看权限。',
-        disabledReason: '当前账号没有数据中心查看权限。',
+        dataModeText: AuthService.getAccessStateText(profile),
+        disabledReason: AuthService.getAccessStateText(profile),
       });
       return;
     }

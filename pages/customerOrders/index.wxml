@@ -4,7 +4,13 @@
 <view class="save-mode" wx:if="{{saveModeText}}">{{saveModeText}}</view>
 
 <view class="customerOrders-container">
-  <t-cell-group theme="card">
+  <view class="access-card" wx:if="{{!canUseBusiness}}">
+    <view class="access-title">{{accessStateText}}</view>
+    <view class="access-desc">通过管理员确认身份后，可查看与你相关的客户订单。</view>
+    <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
+  </view>
+
+  <t-cell-group theme="card" wx:if="{{canUseBusiness}}">
     <block wx:for="{{ customerOrdersList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow
         bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
@@ -17,7 +23,7 @@
     </block>
   </t-cell-group>
 
-  <view wx:if="{{ customerOrdersList.length === 0 }}" class="empty-state">
+  <view wx:if="{{canUseBusiness && customerOrdersList.length === 0 }}" class="empty-state">
     <t-empty icon="info-circle" description="暂无客户订单" />
     <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>

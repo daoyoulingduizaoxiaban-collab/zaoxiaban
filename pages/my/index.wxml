@@ -33,6 +33,11 @@
     <view class="auth-warning auth-warning--qa" wx:if="{{authSession.qaOverride}}">
       当前为演示身份切换，仅用于预览角色可见范围。
     </view>
+    <view class="access-card" wx:if="{{isLoggedIn && !canUseBusiness}}">
+      <view class="access-title">{{accessStateText}}</view>
+      <view class="access-desc">管理员确认身份后，会开放与你角色对应的正式功能。</view>
+      <t-button theme="primary" variant="outline" size="small" bindtap="onRefreshAccessState">重新检查状态</t-button>
+    </view>
     <view class="auth-actions" wx:if="{{isLoggedIn}}">
       <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
     </view>
@@ -40,7 +45,7 @@
       <t-button t-class="login-action" theme="primary" size="small" bindtap="onLogin">登录后继续</t-button>
     </view>
     <t-divider t-class="divider-class" />
-    <t-grid t-class="grid-class">
+    <t-grid t-class="grid-class" wx:if="{{canUseBusiness}}">
       <t-grid-item
         wx:for="{{gridList}}"
         wx:for-item="gridItem"

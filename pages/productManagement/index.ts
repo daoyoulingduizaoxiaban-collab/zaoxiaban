@@ -21,6 +21,8 @@ Page({
     isLoading: false,
     canManageProducts: false,
     isLoggedIn: false,
+    canUseBusiness: false,
+    accessStateText: '',
     productStatusTextMap: {
       1: getProductStatusTextByValue(1),
       2: getProductStatusTextByValue(2)
@@ -36,6 +38,22 @@ Page({
   },
 
   async fetchData() {
+    const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) {
+      this.setData({
+        allProducts: [],
+        productList: [],
+        roleScopeText: AuthService.getAccessStateText(profile),
+        saveModeText: '',
+        canManageProducts: false,
+        isLoggedIn: Boolean(profile),
+        canUseBusiness: false,
+        accessStateText: AuthService.getAccessStateText(profile),
+        isLoading: false,
+      });
+      return;
+    }
+
     this.setData({ isLoading: true });
     const res = await ProductService.listVisible({
       keyword: this.data.searchQuery,
@@ -55,6 +73,8 @@ Page({
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       canManageProducts: this.canManageProducts(),
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+      canUseBusiness: true,
+      accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
       isLoading: false,
     });
   },
@@ -68,6 +88,7 @@ Page({
 
   getRoleScopeText() {
     const profile = AuthService.getCurrentProfile();
+    if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
     if (!profile) return '请先登录后查看商品库';
     if (profile.role === 'guide') return '仅显示你可管理或可使用的商品';
     if (profile.role === 'customer') return '客户可通过团单入口查看本团商品';
@@ -78,7 +99,7 @@ Page({
 
   canManageProducts() {
     const profile = AuthService.getCurrentProfile();
-    return Boolean(profile && ['guide', 'owner', 'admin', 'provider'].includes(profile.role));
+    return Boolean(AuthService.canUseBusiness(profile) && ['guide', 'owner', 'admin', 'provider'].includes(profile.role));
   },
 
   onAddProduct() {

@@ -1,6 +1,11 @@
 <sub-nav title="{{ pageTitle }}" />
 
-<view class="page-container">
+<view class="access-card" wx:if="{{accessDenied}}">
+  <view class="access-title">{{accessStateText || '当前账号不能新增商品'}}</view>
+  <view class="access-desc">请使用已通过审核且具备商品管理权限的账号。</view>
+</view>
+
+<view class="page-container" wx:else>
   <view class="content-scroll">
     <view class="mode-banner">{{saveModeText}}</view>
 

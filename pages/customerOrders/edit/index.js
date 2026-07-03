@@ -10,6 +10,8 @@ Page({
     productRows: [],
     totalPrice: 0,
     isSubmitting: false,
+    accessDenied: false,
+    accessStateText: '',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     formData: {
       customerName: '',
@@ -23,6 +25,14 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
+    const canCreate = AuthService.canUseBusiness(profile) && ['customer', 'owner', 'admin'].includes(profile.role);
+    if (!canCreate) {
+      this.setData({
+        accessDenied: true,
+        accessStateText: AuthService.getAccessStateText(profile),
+      });
+      return;
+    }
     const groupOrderId = options.groupOrderId || options.id || '';
 
     this.setData({

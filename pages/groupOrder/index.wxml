@@ -1,5 +1,5 @@
 <nav nav-type="groupOrder" titleText="{{titleText}}" />
-<view class="filter-section">
+<view class="filter-section" wx:if="{{canUseBusiness}}">
   <t-search 
     value="{{searchKeyword}}" 
     placeholder="搜索团单名称或描述"
@@ -18,7 +18,13 @@
 <view class="role-scope">{{roleScopeText}}</view>
 
 <view class="itinerary-container">
-  <t-cell-group theme="card">
+  <view class="access-card" wx:if="{{!canUseBusiness}}">
+    <view class="access-title">{{accessStateText}}</view>
+    <view class="access-desc">通过管理员确认身份后，可查看与你相关的团单。</view>
+    <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
+  </view>
+
+  <t-cell-group theme="card" wx:if="{{canUseBusiness}}">
     <block wx:for="{{ itineraryList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
         bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
@@ -27,7 +33,7 @@
     </block>
   </t-cell-group>
 
-  <view wx:if="{{ itineraryList.length === 0 }}" class="empty-wrapper">
+  <view wx:if="{{canUseBusiness && itineraryList.length === 0}}" class="empty-wrapper">
     <t-empty icon="info-circle" description="暂无团单" t-class-description="empty-text">
       <view slot="action">
         <t-button theme="primary" variant="outline" size="small">
