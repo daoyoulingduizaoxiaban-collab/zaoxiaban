@@ -9,6 +9,7 @@ Page({
     isEdit: false,
     canSave: false,
     disabledReason: '',
+    pageErrorText: '',
     targetId: '',
     isSubmitting: false,
     formData: {
@@ -41,11 +42,14 @@ Page({
   async fetchprovidersDetail(id) {
     const res = await DirectoryRepository.getProviderById(id);
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载供应商资料失败', icon: 'none' });
+      const errorText = res.error || '加载供应商资料失败';
+      this.setData({ pageErrorText: errorText });
+      wx.showToast({ title: errorText, icon: 'none' });
       return;
     }
     const provider = res.data;
     this.setData({
+      pageErrorText: '',
       'formData.title': provider.title || '',
       'formData.date': (provider.updatedAt || '').slice(0, 10),
       'formData.contact': provider.contact || '',
@@ -70,6 +74,10 @@ Page({
   async onSave() {
     if (!this.data.canSave) {
       wx.showToast({ title: '当前账号没有保存权限', icon: 'none' });
+      return;
+    }
+    if (this.data.pageErrorText) {
+      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
       return;
     }
     if (!String(this.data.formData.title || '').trim()) {

@@ -9,6 +9,7 @@ Page({
     isEdit: false,
     canSave: false,
     disabledReason: '',
+    pageErrorText: '',
     targetId: '',
     isSubmitting: false,
     formData: {
@@ -44,11 +45,14 @@ Page({
   async fetchprofileDetail(id) {
     const res = await DirectoryRepository.getUserById(id);
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载个人资料失败', icon: 'none' });
+      const errorText = res.error || '加载个人资料失败';
+      this.setData({ pageErrorText: errorText });
+      wx.showToast({ title: errorText, icon: 'none' });
       return;
     }
     const user = res.data;
     this.setData({
+      pageErrorText: '',
       'formData.title': user.name || user.displayName || '',
       'formData.date': (user.updatedAt || '').slice(0, 10),
       'formData.city': user.city || '',
@@ -73,6 +77,10 @@ Page({
   async onSave() {
     if (!this.data.canSave) {
       wx.showToast({ title: '当前账号没有保存权限', icon: 'none' });
+      return;
+    }
+    if (this.data.pageErrorText) {
+      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
       return;
     }
     if (!String(this.data.formData.title || '').trim()) {

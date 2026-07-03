@@ -4,6 +4,9 @@
   <view wx:if="{{!canSave}}" class="empty-state">
     <t-empty icon="info-circle" description="{{disabledReason}}" />
   </view>
+  <view wx:elif="{{pageErrorText}}" class="empty-state">
+    <t-empty icon="info-circle" description="{{pageErrorText}}" />
+  </view>
   <t-cell-group wx:else theme="card">
     <t-input label="姓名" placeholder="请输入姓名" value="{{ formData.title }}" data-field="title" bind:change="onInputChange" />
     <t-input label="城市" placeholder="请输入城市" value="{{ formData.city }}" data-field="city" bind:change="onInputChange" />
@@ -12,7 +15,7 @@
     <t-input label="资料状态" value="{{ formData.statusText }}" data-field="statusText" bind:change="onInputChange" />
   </t-cell-group>
 
-  <view class="submit-bar" wx:if="{{canSave}}">
+  <view class="submit-bar" wx:if="{{canSave && !pageErrorText}}">
     <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bind:tap="onSave">保存个人资料</t-button>
   </view>
 </view>
