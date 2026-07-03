@@ -1,6 +1,6 @@
 <wxs src="./index.wxs" module="utils" />
 
-<t-navbar class="nav-bar" title="{{ name }}" left-arrow />
+<t-navbar class="nav-bar" title="{{ name }}" left-arrow fixed="{{true}}" placeholder="{{true}}" />
 
 <view class="chat-container">
   <view wx:if="{{disabledReason}}" class="disabled-card">

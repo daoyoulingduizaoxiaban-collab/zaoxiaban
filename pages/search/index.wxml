@@ -1,4 +1,4 @@
-<t-navbar title="搜索" left-arrow />
+<t-navbar title="搜索" left-arrow fixed="{{true}}" placeholder="{{true}}" />
 <view class="page search-page">
   <view wx:if="{{!canUseSearch}}" class="result-wrap">
     <t-empty icon="info-circle" description="{{accessStateText}}" />

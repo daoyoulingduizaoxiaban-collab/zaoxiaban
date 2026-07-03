@@ -1,4 +1,4 @@
-<t-navbar title="开团入口" left-arrow />
+<t-navbar title="开团入口" left-arrow fixed="{{true}}" placeholder="{{true}}" />
 
 <view class="page">
   <view class="release-container">

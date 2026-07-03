@@ -1,4 +1,4 @@
-<t-navbar left-arrow title="个人信息" />
+<t-navbar left-arrow title="个人信息" fixed="{{true}}" placeholder="{{true}}" />
 <view wx:if="{{!canEdit}}" class="info-edit">
   <t-empty icon="info-circle" description="{{disabledReason}}" />
   <t-button wx:if="{{accessState === 'logged_out'}}" theme="primary" size="medium" block bind:tap="onLogin">去登录</t-button>
