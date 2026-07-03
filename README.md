@@ -27,7 +27,7 @@ QA/AGENT work must stay separated by responsibility: QA reports only in the BUG 
 - Product library has local/QA repository implementation.
 - Product, group-order, customer-order, and payment persistence have cloud repository/cloud-function paths plus local/QA fallback.
 - Phase 5 customer ordering/payment workflow is implemented, but GUI/device retest evidence is still pending.
-- Full 27-route / real workflow GUI validation has not passed; current MVP gate remains `不通過` until fresh GUI/true-device evidence exists.
+- Full 28-route / real workflow GUI validation has not passed; current MVP gate remains `不通過` until fresh GUI/true-device evidence exists.
 - Role-based feature-entry hiding now requires a gate-level role/function matrix before it can be considered complete.
 
 ## Main Routes

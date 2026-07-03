@@ -34,7 +34,7 @@
 - Phase 3 guide group-order persistence: cloud repository plus local/QA fallback is implemented.
 - Product library: Phase 4 cloud repository plus local/QA fallback is implemented.
 - Phase 5 customer ordering/payment workflow: cloud repository plus local/QA fallback is implemented.
-- WeChat DevTools validation: targeted automation flow passed; full 27-route behavior verification is still not done.
+- WeChat DevTools validation: targeted automation flow passed; full 28-route behavior verification is still not done.
 
 ## Implemented Boundaries
 - Auth uses `services/auth/authService.js` and `services/auth/roleScope.js`.
@@ -78,13 +78,13 @@ git diff --check
 ```
 
 ## Known Not-Pass Items
-- Full 27-route behavior verification.
+- Full 28-route behavior verification.
 - Product image upload through actual `wx.chooseMedia` picker after the cloud upload code path.
 - Cloud database console security rules were not separately configured by CLI; permission checks are enforced in `businessData`, and pages do not directly access cloud DB.
 - WeChat DevTools route verification.
 - WeChat DevTools automation connect now works against `ws://127.0.0.1:9420` for targeted login verification; full route behavior verification is still not done.
 - WeChat DevTools `auto-replay --replay-all` completed, but does not by itself replace complete route-by-route behavior verification.
-- 27-route static file existence check passed.
+- 28-route static file existence check passed.
 - Product library flow: create -> list refresh -> status toggle -> soft delete.
 - Phase 5 flow: customer entry -> select products -> submit order -> declare paid -> guide confirm/cancel.
 - Guide full workflow: group order -> product selection -> reopen.
@@ -109,7 +109,7 @@ git diff --check
 - 导游资料页允许 guide 维护自己的导游/领队资料；供应商页允许 provider 维护自己的供应商资料。
 - `ROLE_FEATURE_ACCESS_MATRIX.md` 已同步 provider/guide 正式开放后的入口与后端 guard。
 - 本轮验证：`npm run lint`、`git diff --check` 均通过。
-- 仍未勾：GUI/真机/DevTools 相关项、27-route smoke、图片/付款凭证真机选择、付款闭环 GUI 证据、全系统入口矩阵 GUI 验收、登录/待审核固定画面 GUI 证据、owner/admin allowlist 实际值验证、customer 分享下单规则实机验收。
+- 仍未勾：GUI/真机/DevTools 相关项、28-route smoke、图片/付款凭证真机选择、付款闭环 GUI 证据、全系统入口矩阵 GUI 验收、登录/待审核固定画面 GUI 证据、owner/admin allowlist 实际值验证、customer 分享下单规则实机验收。
 
 ## Phase 8 Auth Verification
 - Cloud environment list returned `cloud1-3gwlqssy1f1972a9`.
@@ -156,7 +156,7 @@ git diff --check
   - GUI-006 follow-up: `pages/my` QA Seed panel now has dedicated guide/customer order-isolation check buttons that switch QA role and open `/pages/customerOrders/index`.
   - BUG-009 workflow follow-up: home `开团` / `数据看板` now open non-tab pages through `navigateTo` instead of `switchTab`; profile/provider/tourGuide edit pages now implement the bound date click handler.
   - README follow-up: `README.md` now points to `HANDOFF.md` / `MVP_COMPLETION_CHECKLIST.md` and no longer states that the formal data layer or Phase 5 are missing.
-- BUG-009 remains: full 27-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
+- BUG-009 remains: full 28-route GUI smoke test still needs to be re-executed before checking the final MVP gate.
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
 ## How To Continue
@@ -168,7 +168,7 @@ If continuing QA:
 - Record the tested commit directly in `QA/QA_BUG_REPORT_202607021815.md`.
 - Before marking any row `通過`, identify the tested commit. If QA cannot identify a tested commit, keep the row `不通過` and resolve the commit source first.
 - First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
-- Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
+- Use real workflow smoke as the MVP GUI gate; keep direct 28-route route-open results as diagnostics.
 - When performing QA from a checklist item, validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
 - For BUG-006, specifically retest the customer order bottom action panel: declare paid requires payment method, remark, or proof image; guide confirm requires a positive confirmed amount; order detail shows payment fields/proof count/history; and local/cloud repository history is preserved after reload.
 - For BUG-004, compare formal OpenID and QA/mock sessions on home, setting, product library, group-order create/detail, and data center; do not mark it verified from static copy inspection alone.
@@ -179,4 +179,4 @@ If continuing QA:
 ## User Assistance Needed For Phase 8
 - Provide owner/admin OpenID allowlist values for formal role assignment, or approve keeping all new cloud users as guide/customer until admin tooling exists.
 - If strict database console rules are required in addition to cloud-function permission checks, configure them manually in WeChat Cloud console or provide a CLI/API path.
-- Provide a working DevTools automation ticket/session, or manually assist with the 27-route GUI smoke test if automation becomes unstable.
+- Provide a working DevTools automation ticket/session, or manually assist with the 28-route GUI smoke test if automation becomes unstable.
