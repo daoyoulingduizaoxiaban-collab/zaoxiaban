@@ -6,6 +6,18 @@
   <view class="login__content">
     <view class="login__section-title">提交使用申请</view>
     <view class="login__notice">{{authNotice}}</view>
+    <view class="login__role-title">申请身份</view>
+    <view class="login__role-list">
+      <button
+        wx:for="{{roleOptions}}"
+        wx:key="value"
+        class="login__role-button {{selectedRole === item.value ? 'login__role-button--active' : ''}}"
+        data-role="{{item.value}}"
+        bindtap="onRoleSelect"
+      >
+        {{item.label}}
+      </button>
+    </view>
 
     <view class="login__button">
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">

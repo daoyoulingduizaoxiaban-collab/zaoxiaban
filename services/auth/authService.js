@@ -115,6 +115,7 @@ const normalizeCloudProfile = (data, requestedRole) => {
     openId: data.openId,
     unionId: data.unionId || '',
     role,
+    requestedRole: profile.requestedRole || data.requestedRole || role,
     roleLabel: getRoleLabel(role),
     displayName: profile.displayName || defaults.displayName,
     phone: profile.phone || '',

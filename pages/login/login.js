@@ -24,6 +24,8 @@ Page({
     isSubmitting: false,
     authNotice: '登录后会提交使用申请，管理员确认身份后开放对应功能。',
     redirectTo: '/pages/my/index',
+    roleOptions: AuthService.roleOptions,
+    selectedRole: AuthService.roleOptions[0] && AuthService.roleOptions[0].value,
   },
 
   onLoad(options = {}) {
@@ -39,7 +41,7 @@ Page({
     wx.showLoading({ title: '登录中...' });
 
     try {
-      const res = await AuthService.login();
+      const res = await AuthService.login({ role: this.data.selectedRole });
       if (!res.success) {
         wx.showToast({
           title: res.error || '登录失败，请稍后重试',
@@ -81,5 +83,11 @@ Page({
       url: redirectTo,
       fail: () => wx.switchTab({ url: '/pages/my/index' }),
     });
+  },
+
+  onRoleSelect(e) {
+    const { role } = e.currentTarget.dataset;
+    if (!role) return;
+    this.setData({ selectedRole: role });
   },
 });
