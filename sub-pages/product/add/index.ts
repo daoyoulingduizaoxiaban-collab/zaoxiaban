@@ -12,12 +12,12 @@ import {
 Page({
   data: {
     pageTitle: '新增商品',
-    productList: [], // 最終提交的大清單
     isEdit: false,
     isSubmitting: false,
     isChoosingImage: false,
     accessDenied: false,
     accessStateText: '',
+    pageErrorText: '',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     imageModeTip: '图片会随商品资料一起保存，便于客户查看实物。',
 
@@ -76,11 +76,17 @@ Page({
   async loadProduct(productId) {
     const res = await ProductService.getById(productId);
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
+      const errorText = res.error || '加载商品失败';
+      this.setData({
+        pageErrorText: errorText,
+        saveModeText: errorText,
+      });
+      wx.showToast({ title: errorText, icon: 'none' });
       return;
     }
 
     this.setData({
+      pageErrorText: '',
       currentProduct: {
         ...this.data.currentProduct,
         ...res.data,
@@ -98,8 +104,8 @@ Page({
       if (eventChannel && typeof eventChannel.emit === 'function') {
         return eventChannel;
       }
-    } catch (err) {
-      // Direct page entry has no opener event channel.
+    } catch {
+      return null;
     }
     return null;
   },
@@ -209,6 +215,10 @@ Page({
 
   async addProductToList() {
     if (this.data.isSubmitting) return;
+    if (this.data.pageErrorText) {
+      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
+      return;
+    }
     const p = this.data.currentProduct;
     const error = ProductService.validateProduct(p);
     if (error) return wx.showToast({ title: error, icon: 'none' });

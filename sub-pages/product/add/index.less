@@ -1,10 +1,9 @@
-/* 全局設定 */
 page {
-  background-color: #f7f8fa; /* 淺灰背景 */
+  background-color: #f7f8fa;
   color: #333;
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
-  padding-bottom: calc(140rpx + env(safe-area-inset-bottom)); /* 留出底部按鈕空間 */
+  padding-bottom: calc(140rpx + env(safe-area-inset-bottom));
 }
 
 .page-container {
@@ -13,7 +12,6 @@ page {
   width: 100%;
 }
 
-/* 標題區 */
 .header-section {
   padding: 30rpx 40rpx;
   background: #fff;
@@ -29,7 +27,6 @@ page {
   color: #888;
 }
 
-/* 內容區 */
 .content-scroll {
   padding: 24rpx;
 }
@@ -44,7 +41,6 @@ page {
   line-height: 36rpx;
 }
 
-/* 通用卡片樣式 */
 .card {
   background: #fff;
   border-radius: 16rpx;
@@ -73,7 +69,6 @@ page {
   margin-left: 4rpx;
 }
 
-/* 輸入框美化 */
 .input-box {
   background: #f5f5f5;
   height: 80rpx;
@@ -81,7 +76,7 @@ page {
   padding: 0 24rpx;
   font-size: 30rpx;
   width: 100%;
-  box-sizing: border-box; /* 關鍵：避免 padding 撐大 */
+  box-sizing: border-box;
 }
 
 .textarea-box {
@@ -94,7 +89,6 @@ page {
   min-height: 160rpx;
 }
 
-/* 圖片網格 */
 .image-grid {
   display: flex;
   flex-wrap: wrap;
@@ -145,20 +139,19 @@ page {
   margin-top: -6rpx;
 }
 
-/* --- 價格設定區 (重寫) --- */
 .price-input-row {
   display: flex;
-  align-items: flex-end; /* 底部對齊 */
+  align-items: flex-end;
   gap: 16rpx;
   margin-top: 20rpx;
 }
 
 .col-small {
-  flex: 1.2; /* 權重：佔比小一點 */
-  min-width: 0; /* 讓 flex item 可以縮小 */
+  flex: 1.2;
+  min-width: 0;
 }
 .col-large {
-  flex: 2;   /* 權重：佔比大一點 */
+  flex: 2;
   min-width: 0;
 }
 .col-btn {
@@ -179,7 +172,6 @@ page {
   padding: 0 16rpx;
   text-align: center;
 }
-/* 讓說明欄靠左對齊 */
 .col-large .input-box {
   text-align: left;
 }
@@ -196,7 +188,6 @@ page {
   font-weight: bold;
 }
 
-/* 價格列表樣式 */
 .price-list {
   background: #f8faff;
   border: 1px dashed #dbe9ff;
@@ -238,7 +229,6 @@ page {
   font-size: 28rpx;
 }
 
-/* --- 預覽列表區 --- */
 .list-section {
   padding: 0 10rpx;
 }
@@ -294,7 +284,6 @@ page {
   font-size: 40rpx;
 }
 
-/* --- 底部按鈕 --- */
 .footer-bar {
   position: fixed;
   bottom: 0;
@@ -302,7 +291,7 @@ page {
   right: 0;
   background: #fff;
   padding: 20rpx 30rpx;
-  padding-bottom: calc(20rpx + env(safe-area-inset-bottom)); /* 支援 iPhone X */
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
   box-shadow: 0 -4rpx 16rpx rgba(0,0,0,0.05);
   z-index: 100;
 }

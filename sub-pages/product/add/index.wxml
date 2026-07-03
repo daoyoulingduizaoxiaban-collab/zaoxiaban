@@ -5,6 +5,11 @@
   <view class="access-desc">请使用已通过审核且具备商品管理权限的账号。</view>
 </view>
 
+<view class="access-card" wx:elif="{{pageErrorText}}">
+  <view class="access-title">{{pageErrorText}}</view>
+  <view class="access-desc">请返回商品库后重新选择商品。</view>
+</view>
+
 <view class="page-container" wx:else>
   <view class="content-scroll">
     <view class="mode-banner">{{saveModeText}}</view>
