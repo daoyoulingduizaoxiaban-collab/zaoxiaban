@@ -475,6 +475,7 @@ const normalizeOrder = order => ({
   paymentMethod: order.paymentMethod || '',
   paymentRemark: order.paymentRemark || '',
   paymentProofUrls: order.paymentProofUrls || [],
+  declaredAmount: order.declaredAmount || '',
   confirmedAmount: order.confirmedAmount || '',
   confirmRemark: order.confirmRemark || '',
   cancelRemark: order.cancelRemark || '',
@@ -605,6 +606,7 @@ const customerOrderActions = {
       paymentMethod: payload.paymentMethod || '',
       paymentRemark: payload.paymentRemark || '',
       paymentProofUrls: payload.paymentProofUrls || [],
+      declaredAmount: hasInitialPayment ? Number(payload.declaredAmount || payload.totalPrice || 0) : '',
       hostRemark: '',
       createdAt,
       updatedAt: createdAt,
@@ -631,6 +633,7 @@ const customerOrderActions = {
     paymentMethod = '',
     paymentRemark = '',
     paymentProofUrls = [],
+    declaredAmount = '',
     confirmedAmount = '',
     confirmRemark = '',
     cancelRemark = '',
@@ -662,6 +665,9 @@ const customerOrderActions = {
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.PAID) {
       const hasProof = Array.isArray(paymentProofUrls) && paymentProofUrls.length > 0;
+      const declaredAmountValue = Number(declaredAmount || 0);
+      if (declaredAmountValue <= 0) return failure('请填写有效付款金额');
+      if (declaredAmountValue > Number(target.totalPrice || 0)) return failure('付款金额不能超过订单金额');
       if (!trimText(paymentMethod)) return failure('请填写付款方式');
       if (!hasProof) return failure('请上传付款凭证');
       if (!hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('请重新上传付款凭证后提交');
@@ -685,6 +691,7 @@ const customerOrderActions = {
       paymentMethod: trimText(paymentMethod) || target.paymentMethod || '',
       paymentRemark: trimText(paymentRemark) || target.paymentRemark || '',
       paymentProofUrls: Array.isArray(paymentProofUrls) && paymentProofUrls.length ? paymentProofUrls : (target.paymentProofUrls || []),
+      declaredAmount: declaredAmount || target.declaredAmount || '',
       confirmedAmount: confirmedAmount || target.confirmedAmount || '',
       confirmRemark: trimText(confirmRemark) || target.confirmRemark || '',
       cancelRemark: trimText(cancelRemark) || target.cancelRemark || '',
@@ -699,6 +706,7 @@ const customerOrderActions = {
           customerOrderId: target.id || target._id,
           groupOrderId: target.groupOrderId,
           amount: Number(target.totalPrice || 0),
+          declaredAmount: Number(updated.declaredAmount || target.totalPrice || 0),
           confirmedAmount: Number(confirmedAmount || target.totalPrice || 0),
           method: paymentMethod || target.paymentMethod || 'manual',
           status: 'confirmed',

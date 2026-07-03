@@ -178,6 +178,7 @@ export const CustomerOrderService = {
       paymentMethod: String(payload.paymentMethod || '').trim(),
       paymentRemark: String(payload.paymentRemark || '').trim(),
       paymentProofUrls,
+      declaredAmount: paymentProofUrls.length ? normalizeNumber(payload.totalPrice) : '',
       totalPrice: normalizeNumber(payload.totalPrice),
     });
   },
@@ -185,8 +186,12 @@ export const CustomerOrderService = {
   async declarePaid(id, payload = {}) {
     const paymentMethod = trimText(payload.paymentMethod);
     const paymentRemark = trimText(payload.paymentRemark);
+    const declaredAmount = normalizeNumber(payload.declaredAmount);
     let paymentProofUrls = payload.paymentProofUrls || [];
 
+    if (declaredAmount <= 0) {
+      return { success: false, error: '请填写有效付款金额' };
+    }
     if (!paymentMethod) {
       return { success: false, error: '请填写付款方式' };
     }
@@ -206,8 +211,9 @@ export const CustomerOrderService = {
       ...payload,
       paymentMethod,
       paymentRemark,
+      declaredAmount,
       paymentProofUrls,
-      note: payload.note || `客户声明已付款：${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
+      note: payload.note || `客户声明已付款：￥${declaredAmount}｜${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
     };
     return CustomerOrderRepository.updatePaymentStatus(id, MemberOrderStatus.PAID, nextPayload.note, nextPayload);
   },

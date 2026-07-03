@@ -34,6 +34,7 @@ Page({
       paymentMethod: '',
       paymentRemark: '',
       paymentProofUrls: [],
+      declaredAmount: '',
       confirmedAmount: '',
       confirmRemark: '',
       cancelRemark: '',
@@ -45,6 +46,7 @@ Page({
       paymentMethod: '',
       paymentRemark: '',
       paymentProofUrls: [],
+      declaredAmount: '',
       confirmedAmount: '',
       confirmRemark: '',
       cancelRemark: '',
@@ -230,6 +232,7 @@ Page({
       item.paymentMethod ? `付款方式：${item.paymentMethod}` : '',
       item.paymentRemark ? `付款备注：${item.paymentRemark}` : '',
       item.paymentProofUrls && item.paymentProofUrls.length ? `付款凭证：${item.paymentProofUrls.length} 张` : '',
+      item.declaredAmount ? `申报金额：￥${item.declaredAmount}` : '',
       item.confirmedAmount ? `实收金额：￥${item.confirmedAmount}` : '',
       item.confirmRemark ? `确认备注：${item.confirmRemark}` : '',
     ].filter(Boolean).join('\n');
@@ -275,6 +278,16 @@ Page({
     const config = panelConfig[action];
     if (!config) return;
 
+    const order = [...this.data.customerOrdersList, ...this.data.allCustomerOrdersList]
+      .find(item => String(item.id) === String(id));
+    const actionForm = this.getEmptyActionForm();
+    if (action === 'declarePaid' && order) {
+      actionForm.declaredAmount = String(order.totalPrice || '');
+    }
+    if (action === 'confirmPayment' && order) {
+      actionForm.confirmedAmount = String(order.declaredAmount || order.totalPrice || '');
+    }
+
     this.setData({
       actionPanelVisible: true,
       actionType: action,
@@ -282,7 +295,7 @@ Page({
       actionPanelTitle: config.title,
       actionSubmitText: config.submitText,
       isSubmittingAction: false,
-      actionForm: this.getEmptyActionForm(),
+      actionForm,
     });
   },
 
@@ -381,11 +394,21 @@ Page({
     const paymentMethod = String(actionForm.paymentMethod || '').trim();
     const paymentRemark = String(actionForm.paymentRemark || '').trim();
     const paymentProofUrls = actionForm.paymentProofUrls || [];
+    const declaredAmountText = String(actionForm.declaredAmount || '').trim();
     const confirmedAmountText = String(actionForm.confirmedAmount || '').trim();
     const confirmRemark = String(actionForm.confirmRemark || '').trim();
     const cancelRemark = String(actionForm.cancelRemark || '').trim();
 
     if (actionType === 'declarePaid') {
+      const declaredAmount = Number(declaredAmountText);
+      const order = this.getActionOrder();
+      const totalPrice = Number(order && order.totalPrice ? order.totalPrice : 0);
+      if (!declaredAmountText || Number.isNaN(declaredAmount) || declaredAmount <= 0) {
+        return { error: '请填写有效付款金额' };
+      }
+      if (totalPrice > 0 && declaredAmount > totalPrice) {
+        return { error: '付款金额不能超过订单金额' };
+      }
       if (!paymentMethod) {
         return { error: '请填写付款方式' };
       }
@@ -397,7 +420,8 @@ Page({
           paymentMethod,
           paymentRemark,
           paymentProofUrls,
-          note: `客户声明已付款：${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
+          declaredAmount,
+          note: `客户声明已付款：￥${declaredAmount}｜${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
         },
       };
     }

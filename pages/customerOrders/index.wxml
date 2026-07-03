@@ -56,6 +56,10 @@
 
     <view wx:if="{{actionType === 'declarePaid'}}" class="action-form">
       <view class="action-field">
+        <text class="action-label">付款金额</text>
+        <input class="action-input" type="digit" placeholder="请输入实际付款金额" value="{{actionForm.declaredAmount}}" data-field="declaredAmount" bindinput="onActionInput" />
+      </view>
+      <view class="action-field">
         <text class="action-label">付款方式</text>
         <input class="action-input" placeholder="微信/支付宝/现金/转账" value="{{actionForm.paymentMethod}}" data-field="paymentMethod" bindinput="onActionInput" />
       </view>
@@ -75,7 +79,7 @@
           </view>
         </view>
       </view>
-      <view class="action-hint">请填写付款方式并上传至少一张付款凭证，方便导游核对收款。</view>
+      <view class="action-hint">请填写付款金额、付款方式并上传至少一张付款凭证，方便导游核对收款。</view>
     </view>
 
     <view wx:elif="{{actionType === 'confirmPayment'}}" class="action-form">

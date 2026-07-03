@@ -53,6 +53,7 @@ const normalizeOrder = (order) => ({
   paymentMethod: order.paymentMethod || '',
   paymentRemark: order.paymentRemark || '',
   paymentProofUrls: order.paymentProofUrls || [],
+  declaredAmount: order.declaredAmount || '',
   confirmedAmount: order.confirmedAmount || '',
   confirmRemark: order.confirmRemark || '',
   cancelRemark: order.cancelRemark || '',
@@ -297,6 +298,7 @@ export const CustomerOrderRepository = {
       paymentMethod: orderData.paymentMethod || '',
       paymentRemark: orderData.paymentRemark || '',
       paymentProofUrls: orderData.paymentProofUrls || [],
+      declaredAmount: hasInitialPayment ? Number(orderData.declaredAmount || orderData.totalPrice || 0) : '',
       confirmedAmount: '',
       confirmRemark: '',
       cancelRemark: '',
@@ -375,6 +377,13 @@ export const CustomerOrderRepository = {
     }
     if (nextStatusValue === MemberOrderStatus.PAID) {
       const hasProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
+      const declaredAmount = Number(payload.declaredAmount || 0);
+      if (declaredAmount <= 0) {
+        return { success: false, error: '请填写有效付款金额' };
+      }
+      if (declaredAmount > Number(target.totalPrice || 0)) {
+        return { success: false, error: '付款金额不能超过订单金额' };
+      }
       if (!trimText(payload.paymentMethod)) {
         return { success: false, error: '请填写付款方式' };
       }
@@ -400,6 +409,7 @@ export const CustomerOrderRepository = {
       paymentMethod: trimText(payload.paymentMethod) || target.paymentMethod || '',
       paymentRemark: trimText(payload.paymentRemark) || target.paymentRemark || '',
       paymentProofUrls: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length ? payload.paymentProofUrls : (target.paymentProofUrls || []),
+      declaredAmount: payload.declaredAmount || target.declaredAmount || '',
       confirmedAmount: payload.confirmedAmount || target.confirmedAmount || '',
       confirmRemark: trimText(payload.confirmRemark) || target.confirmRemark || '',
       cancelRemark: trimText(payload.cancelRemark) || target.cancelRemark || '',
@@ -413,6 +423,7 @@ export const CustomerOrderRepository = {
         customerOrderId: target.id,
         groupOrderId: target.groupOrderId,
         amount: target.totalPrice,
+        declaredAmount: Number(updatedOrder.declaredAmount || target.totalPrice || 0),
         confirmedAmount: Number(payload.confirmedAmount || target.totalPrice || 0),
         method: payload.paymentMethod || target.paymentMethod || 'manual',
         status: 'confirmed',
