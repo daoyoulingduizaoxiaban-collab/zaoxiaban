@@ -7,6 +7,13 @@ import { consumeTabRouteQuery, navigateByUrl, parseRouteQuery } from '~/utils/na
 
 const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
   .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
+const ROLE_TEXT = {
+  customer: '客户',
+  guide: '导游/领队',
+  owner: '产品拥有者',
+  admin: '运营管理员',
+  provider: '供应商',
+};
 
 Page({
   data: {
@@ -223,8 +230,11 @@ Page({
     const historyLines = (item.paymentHistory || [])
       .map(history => [
         history.createdAt || '',
-        history.actorRole ? `操作者：${history.actorRole}` : '',
+        (history.actorName || history.actorRole) ? `操作者：${[history.actorName, ROLE_TEXT[history.actorRole] || history.actorRole].filter(Boolean).join(' / ')}` : '',
         history.toStatus !== undefined ? `状态：${MEMBER_ORDER_STATUS_TEXT[history.toStatus] || history.toStatus}` : '',
+        Number(history.amount || 0) > 0 ? `金额：￥${history.amount}` : '',
+        history.paymentMethod ? `方式：${history.paymentMethod}` : '',
+        Number(history.proofCount || 0) > 0 ? `凭证：${history.proofCount} 张` : '',
         history.note || '',
       ].filter(Boolean).join('｜'))
       .join('\n');

@@ -104,7 +104,11 @@ const enrichSeedOrders = () => {
           fromStatus: '',
           toStatus: Number(order.status),
           actorUserId: order.customerUserId,
+          actorName: order.customerName || '客户',
           actorRole: 'customer',
+          amount: Number(order.totalPrice || 0),
+          paymentMethod: order.paymentMethod || '',
+          proofCount: (order.paymentProofUrls || []).length || 0,
           note: '系统初始状态',
           createdAt: order.createdAt || nowIso(),
         },
@@ -157,13 +161,19 @@ const canViewSharedGroupOrder = (groupOrder, profile) => {
   return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
 
-const appendHistory = (order, nextStatus, note, profile) => ({
+const appendHistory = (order, nextStatus, note, profile, payload = {}) => ({
   id: `${order.id}-${Date.now()}`,
   customerOrderId: order.id,
   fromStatus: Number(order.status),
   toStatus: Number(nextStatus),
   actorUserId: profile && profile.id,
+  actorName: (profile && profile.displayName) || '',
   actorRole: profile && profile.role,
+  amount: Number(payload.confirmedAmount || payload.declaredAmount || order.totalPrice || 0),
+  paymentMethod: trimText(payload.paymentMethod) || order.paymentMethod || '',
+  proofCount: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length
+    ? payload.paymentProofUrls.length
+    : ((order.paymentProofUrls || []).length || 0),
   note,
   createdAt: nowIso(),
 });
@@ -312,7 +322,11 @@ export const CustomerOrderRepository = {
           fromStatus: '',
           toStatus: initialStatus,
           actorUserId: profile.id,
+          actorName: profile.displayName || '客户',
           actorRole: profile.role,
+          amount: Number(orderData.totalPrice || 0),
+          paymentMethod: orderData.paymentMethod || '',
+          proofCount: (orderData.paymentProofUrls || []).length || 0,
           note: hasInitialPayment ? '客户提交订单并声明已付款' : '客户提交订单',
           createdAt,
         },
@@ -405,7 +419,7 @@ export const CustomerOrderRepository = {
       }
     }
 
-    const historyItem = appendHistory(target, nextStatusValue, note, profile);
+    const historyItem = appendHistory(target, nextStatusValue, note, profile, payload);
     const updatedOrder = normalizeOrder({
       ...target,
       status: nextStatusValue,

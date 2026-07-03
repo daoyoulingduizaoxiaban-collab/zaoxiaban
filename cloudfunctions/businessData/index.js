@@ -228,7 +228,7 @@ const validateProductPayload = (product) => {
   if (!trimText(product.description)) return '请输入商品描述';
   if (!trimText(product.sourceNote)) return '请输入供应来源或备注';
   if ([product.title, product.description, product.sourceNote].some(value => INTERNAL_PRODUCT_COPY_RE.test(String(value || '')))) {
-    return '商品资料不能包含内部测试文字';
+    return '商品资料包含不适合公开展示的文字，请调整后保存';
   }
   if (!Array.isArray(product.pictureUrls) || product.pictureUrls.length === 0) return '请至少上传一张商品图片';
   if (!Array.isArray(product.priceSetting) || product.priceSetting.length === 0) return '请至少设置一组价格';
@@ -500,14 +500,20 @@ const canViewOrder = async (order, profile) => {
   return canManageOrder(order, profile);
 };
 
-const appendPaymentHistory = async (order, nextStatus, note, profile) => {
+const appendPaymentHistory = async (order, nextStatus, note, profile, payload = {}) => {
   const history = {
     customerOrderId: order.id || order._id,
     fromStatus: Number(order.status),
     toStatus: Number(nextStatus),
     actorUserId: profile.id,
     actorOpenId: profile.openId,
+    actorName: profile.displayName || '',
     actorRole: profile.role,
+    amount: Number(payload.confirmedAmount || payload.declaredAmount || order.totalPrice || 0),
+    paymentMethod: trimText(payload.paymentMethod) || order.paymentMethod || '',
+    proofCount: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length
+      ? payload.paymentProofUrls.length
+      : ((order.paymentProofUrls || []).length || 0),
     note,
     createdAt: nowIso(),
   };
@@ -620,6 +626,7 @@ const customerOrderActions = {
       initialStatus,
       hasInitialPayment ? '客户提交订单并声明已付款' : '客户提交订单',
       profile,
+      payload,
     );
     orderWithId.paymentHistory = [history];
     await getCollection('customerOrders').doc(created._id).update({ data: { paymentHistory: [history] } });
@@ -684,7 +691,12 @@ const customerOrderActions = {
     }
 
     const updatedAt = nowIso();
-    const history = await appendPaymentHistory(target, nextStatusValue, note, profile);
+    const history = await appendPaymentHistory(target, nextStatusValue, note, profile, {
+      paymentMethod,
+      paymentProofUrls,
+      declaredAmount,
+      confirmedAmount,
+    });
     const updated = normalizeOrder({
       ...target,
       status: nextStatusValue,

@@ -14,7 +14,9 @@ const SUPPORTED_ICON_NAMES = new Set([
   'home',
   'info-circle',
   'location',
+  'message',
   'none',
+  'order',
   'root-list',
   'search',
   'secured',
@@ -22,6 +24,7 @@ const SUPPORTED_ICON_NAMES = new Set([
   'setting',
   'shop',
   'success',
+  'time',
   'upload',
   'user',
   'user-setting',
@@ -31,10 +34,17 @@ const SUPPORTED_ICON_NAMES = new Set([
 
 const ICON_NAME_ALIASES = {
   close: 'close-circle-filled',
+  data: 'data-display',
+  dashboard: 'data-display',
   list: 'view-list',
+  message: 'chat',
+  money: 'discount',
+  orders: 'order',
   product: 'shop',
   products: 'shop',
   profile: 'user',
+  release: 'add',
+  review: 'user-setting',
   users: 'usergroup',
 };
 

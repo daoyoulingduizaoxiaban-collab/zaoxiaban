@@ -3,6 +3,14 @@ import { getRoleLabel, MVP_ROLE_OPTIONS, AUTH_ROLES, REVIEW_STATUS, isApprovedPr
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
+const SESSION_STORAGE_KEYS = Object.freeze([
+  'dao_you_ling_product_picker_result',
+  'dao_you_ling_read_messages',
+  'dao_you_ling_search_history',
+]);
+const SESSION_STORAGE_PREFIXES = Object.freeze([
+  'dao_you_ling_tab_route_query:',
+]);
 
 const nowIso = () => new Date().toISOString();
 
@@ -55,6 +63,28 @@ const safeSetStorage = (key, value) => {
     return false;
   }
   return true;
+};
+
+const safeRemoveStorage = (key) => {
+  try {
+    wx.removeStorageSync(key);
+  } catch (err) {
+    return false;
+  }
+  return true;
+};
+
+const clearSessionStorage = () => {
+  SESSION_STORAGE_KEYS.forEach(key => safeRemoveStorage(key));
+  try {
+    const info = wx.getStorageInfoSync ? wx.getStorageInfoSync() : null;
+    const keys = info && Array.isArray(info.keys) ? info.keys : [];
+    keys
+      .filter(key => SESSION_STORAGE_PREFIXES.some(prefix => String(key).indexOf(prefix) === 0))
+      .forEach(key => safeRemoveStorage(key));
+  } catch (err) {
+    // Session cleanup is best effort; auth state is still removed below.
+  }
 };
 
 const ignorePreviewProfileInFormalMode = profile => (
@@ -380,12 +410,10 @@ export const AuthService = {
   },
 
   logout() {
-    try {
-      wx.removeStorageSync(AUTH_PROFILE_KEY);
-      wx.removeStorageSync(AUTH_SESSION_KEY);
-    } catch (err) {
-      return false;
-    }
+    const removedProfile = safeRemoveStorage(AUTH_PROFILE_KEY);
+    const removedSession = safeRemoveStorage(AUTH_SESSION_KEY);
+    clearSessionStorage();
+    if (!removedProfile || !removedSession) return false;
     return true;
   },
 };

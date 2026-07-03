@@ -104,7 +104,7 @@ export const ProductService = {
     const session = AuthService.getCurrentSession();
     const isFormalSession = AuthService.isFormalSession(profile, session);
     if (isFormalSession && hasInternalProductCopy(normalizedProduct)) {
-      return { success: false, error: '商品资料不能包含内部测试文字' };
+      return { success: false, error: '商品资料包含不适合公开展示的文字，请调整后保存' };
     }
     const error = this.validateProduct(normalizedProduct, { requireImage: isFormalSession });
     if (error) return { success: false, error };
@@ -140,7 +140,7 @@ export const ProductService = {
     const session = AuthService.getCurrentSession();
     const isFormalSession = AuthService.isFormalSession(profile, session);
     if (isFormalSession && hasInternalProductCopy(normalizedProduct)) {
-      return { success: false, error: '商品资料不能包含内部测试文字' };
+      return { success: false, error: '商品资料包含不适合公开展示的文字，请调整后保存' };
     }
     const error = this.validateProduct(normalizedProduct, { requireImage: isFormalSession });
     if (error) return { success: false, error };

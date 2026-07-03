@@ -71,7 +71,7 @@
   border: 2px solid currentColor;
   border-bottom: 0;
   border-radius: 3px 3px 0 0;
-  background: #fff;
+  background: transparent;
   transform: translate(-50%, -50%);
 }
 
@@ -171,13 +171,25 @@
   content: "";
   position: absolute;
   left: 50%;
-  top: 18%;
+  top: 22%;
   width: 2px;
   height: 2px;
   border-radius: 999px;
   background: currentColor;
   transform: translateX(-50%);
-  box-shadow: 0 0.22em 0 currentColor, 0 0.34em 0 currentColor, 0 0.46em 0 currentColor;
+  box-shadow: 0 0.24em 0 currentColor, 0 0.36em 0 currentColor, 0 0.48em 0 currentColor;
+}
+
+.local-icon--info-circle .local-icon__shape::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 2px;
+  height: 32%;
+  border-radius: 99px;
+  background: currentColor;
+  transform: translateX(-50%);
 }
 
 .local-icon--close-circle-filled .local-icon__shape::before,
@@ -370,7 +382,7 @@
   height: 28%;
   border-left: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
-  background: #fff;
+  background: transparent;
   transform: rotate(-18deg);
 }
 
@@ -440,7 +452,7 @@
   height: 28%;
   border: 2px solid currentColor;
   border-radius: 999px;
-  background: #fff;
+  background: transparent;
 }
 
 .local-icon--server .local-icon__shape,
@@ -479,7 +491,7 @@
   border: 2px solid currentColor;
   border-bottom: 0;
   border-radius: 999px 999px 0 0;
-  background: #fff;
+  background: transparent;
 }
 
 .local-icon--cloud .local-icon__shape::before {
@@ -573,4 +585,48 @@
   border: 2px solid currentColor;
   border-radius: 999px;
   transform: translate(-50%, -50%);
+}
+
+.local-icon--order .local-icon__shape {
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+
+.local-icon--order .local-icon__shape::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: 26%;
+  width: 64%;
+  height: 2px;
+  border-radius: 99px;
+  background: currentColor;
+  box-shadow: 0 0.26em 0 currentColor, 0 0.52em 0 currentColor;
+}
+
+.local-icon--time .local-icon__shape {
+  border: 2px solid currentColor;
+  border-radius: 999px;
+}
+
+.local-icon--time .local-icon__shape::before,
+.local-icon--time .local-icon__shape::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2px;
+  border-radius: 99px;
+  background: currentColor;
+  transform-origin: 50% 0;
+}
+
+.local-icon--time .local-icon__shape::before {
+  height: 30%;
+  transform: translate(-50%, -2%) rotate(0deg);
+}
+
+.local-icon--time .local-icon__shape::after {
+  height: 24%;
+  transform: translate(-50%, -2%) rotate(120deg);
 }
