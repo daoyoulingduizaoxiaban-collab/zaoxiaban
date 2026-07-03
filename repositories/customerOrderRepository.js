@@ -80,7 +80,7 @@ const enrichSeedOrders = () => {
       return {
         ...item,
         productId: item.productId,
-        title: product.title || `商品 #${item.productId}`,
+        title: product.title || '商品资料',
         unitPrice: Number(item.amount) > 0 ? Number(item.totalPrice || 0) / Number(item.amount) : 0,
         pictureUrl: (product.pictureUrls && product.pictureUrls[0]) || '',
       };
@@ -395,7 +395,7 @@ export const CustomerOrderRepository = {
       cancelledAt: nextStatusValue === MemberOrderStatus.CANCELLED ? nowIso() : target.cancelledAt,
       paymentMethod: trimText(payload.paymentMethod) || target.paymentMethod || '',
       paymentRemark: trimText(payload.paymentRemark) || target.paymentRemark || '',
-      paymentProofUrls: payload.paymentProofUrls || target.paymentProofUrls || [],
+      paymentProofUrls: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length ? payload.paymentProofUrls : (target.paymentProofUrls || []),
       confirmedAmount: payload.confirmedAmount || target.confirmedAmount || '',
       confirmRemark: trimText(payload.confirmRemark) || target.confirmRemark || '',
       cancelRemark: trimText(payload.cancelRemark) || target.cancelRemark || '',

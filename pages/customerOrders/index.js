@@ -85,7 +85,7 @@ Page({
       allCustomerOrdersList: orders,
       customerOrdersList: this.filterOrdersByStatus(orders, this.data.currentStatus),
       roleScopeText: this.getRoleScopeText(res.meta),
-      canCreateCustomerOrder: this.canCreateCustomerOrder(),
+      canCreateCustomerOrder: this.canCreateCustomerOrder() && orders.some(order => order.groupOrderId),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       canUseBusiness: true,
@@ -144,7 +144,7 @@ Page({
     }
 
     const productLines = (item.items || item.productList || [])
-      .map(product => `${product.title || `商品 #${product.productId}`} x ${product.amount || product.quantity}：￥${product.totalPrice}`)
+      .map(product => `${product.title || '商品资料'} x ${product.amount || product.quantity}：￥${product.totalPrice}`)
       .join('\n');
     const historyLines = (item.paymentHistory || [])
       .map(history => [
@@ -441,8 +441,12 @@ Page({
       return;
     }
 
-    const firstOrder = this.data.customerOrdersList[0];
+    const firstOrder = this.data.allCustomerOrdersList.find(order => order.groupOrderId);
     const groupOrderId = firstOrder && firstOrder.groupOrderId;
+    if (!groupOrderId) {
+      wx.showToast({ title: '请从有效团单进入客户下单', icon: 'none' });
+      return;
+    }
     const url = `/pages/customerOrders/edit/index${groupOrderId ? `?groupOrderId=${groupOrderId}` : ''}`;
 
     wx.navigateTo({

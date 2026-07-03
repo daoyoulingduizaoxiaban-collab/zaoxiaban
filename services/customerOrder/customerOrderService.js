@@ -79,7 +79,7 @@ export const CustomerOrderService = {
       .reduce((sum, order) => sum + normalizeNumber(order.totalPrice), 0);
     const totalReceived = memberOrderList
       .filter(order => Number(order.status) === MemberOrderStatus.CONFIRMED)
-      .reduce((sum, order) => sum + normalizeNumber(order.totalPrice), 0);
+      .reduce((sum, order) => sum + normalizeNumber(order.confirmedAmount || order.totalPrice), 0);
 
     return {
       ...entryResult,

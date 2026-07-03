@@ -139,8 +139,44 @@
   </view>
 </t-popup>
 
-<t-dialog visible="{{showConfirmDialog}}" title="确认到账" content="是否确认该笔订单（编号：#{{selectedMemberOrderId}}）款项已实际入账？"
-  confirm-btn="确认" cancel-btn="取消" bind:confirm="handleDialogConfirm" bind:cancel="handleDialogClose" />
+<view wx:if="{{showConfirmDialog}}" class="action-mask" catchtap="handleDialogClose">
+  <view class="action-panel" catchtap="stopPanelTap">
+    <view class="action-panel__header">
+      <text class="action-panel__title">确认收款</text>
+      <text class="action-panel__close" bindtap="handleDialogClose">关闭</text>
+    </view>
+    <view class="action-form">
+      <view class="action-field">
+        <text class="action-label">实收金额</text>
+        <input class="action-input" type="digit" placeholder="请输入实际到账金额" value="{{confirmForm.confirmedAmount}}" data-field="confirmedAmount" bindinput="onConfirmInput" />
+      </view>
+      <view class="action-field">
+        <text class="action-label">确认备注</text>
+        <textarea class="action-textarea" placeholder="例：已核对微信到账，少付/多付说明" value="{{confirmForm.confirmRemark}}" data-field="confirmRemark" bindinput="onConfirmInput" />
+      </view>
+    </view>
+    <view class="action-panel__footer">
+      <t-button size="large" variant="outline" bindtap="handleDialogClose">取消</t-button>
+      <t-button size="large" theme="primary" bindtap="handleDialogConfirm">确认收款</t-button>
+    </view>
+  </view>
+</view>
 
-<t-dialog visible="{{showCancelDialog}}" title="取消订单" content="是否取消该笔订单（编号：#{{selectedMemberOrderId}}）？"
-  confirm-btn="取消订单" cancel-btn="返回" bind:confirm="handleCancelDialogConfirm" bind:cancel="handleCancelDialogClose" />
+<view wx:if="{{showCancelDialog}}" class="action-mask" catchtap="handleCancelDialogClose">
+  <view class="action-panel" catchtap="stopPanelTap">
+    <view class="action-panel__header">
+      <text class="action-panel__title">取消订单</text>
+      <text class="action-panel__close" bindtap="handleCancelDialogClose">关闭</text>
+    </view>
+    <view class="action-form">
+      <view class="action-field">
+        <text class="action-label">取消原因</text>
+        <textarea class="action-textarea" placeholder="选填，方便持续追踪" value="{{cancelForm.cancelRemark}}" data-field="cancelRemark" bindinput="onCancelInput" />
+      </view>
+    </view>
+    <view class="action-panel__footer">
+      <t-button size="large" variant="outline" bindtap="handleCancelDialogClose">返回</t-button>
+      <t-button size="large" theme="danger" bindtap="handleCancelDialogConfirm">取消订单</t-button>
+    </view>
+  </view>
+</view>

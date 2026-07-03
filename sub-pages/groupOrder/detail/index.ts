@@ -18,6 +18,13 @@ Page({
     showConfirmDialog: false,
     selectedMemberOrderId: '',
     showCancelDialog: false,
+    confirmForm: {
+      confirmedAmount: '',
+      confirmRemark: '',
+    },
+    cancelForm: {
+      cancelRemark: '',
+    },
     saveModeText: '读取团单资料中',
     customerEntryPath: '',
     isDetailLoaded: false,
@@ -248,9 +255,15 @@ Page({
     const {
       id
     } = e.currentTarget.dataset;
+    const selectedOrder = (this.data.groupOrder.memberOrderList || [])
+      .find(order => String(order.id) === String(id));
     this.setData({
       showConfirmDialog: true,
-      selectedMemberOrderId: id
+      selectedMemberOrderId: id,
+      confirmForm: {
+        confirmedAmount: selectedOrder ? String(selectedOrder.totalPrice || selectedOrder.originalTotalPrice || '') : '',
+        confirmRemark: '',
+      },
     });
 
   },
@@ -272,7 +285,10 @@ Page({
     } = e.currentTarget.dataset;
     this.setData({
       showCancelDialog: true,
-      selectedMemberOrderId: id
+      selectedMemberOrderId: id,
+      cancelForm: {
+        cancelRemark: '',
+      },
     });
   },
 
@@ -283,11 +299,15 @@ Page({
   },
 
   async handleCancelDialogConfirm() {
+    const cancelRemark = String(this.data.cancelForm.cancelRemark || '').trim();
     wx.showLoading({
       title: '处理中...'
     });
 
-    const res = await CustomerOrderService.cancelOrder(this.data.selectedMemberOrderId);
+    const res = await CustomerOrderService.cancelOrder(this.data.selectedMemberOrderId, {
+      cancelRemark,
+      note: cancelRemark ? `订单已取消：${cancelRemark}` : '订单已取消',
+    });
     wx.hideLoading();
     this.setData({
       showCancelDialog: false
@@ -310,16 +330,29 @@ Page({
 
   // 彈窗點擊確認
   async handleDialogConfirm() {
+    const confirmedAmountText = String(this.data.confirmForm.confirmedAmount || '').trim();
+    const confirmedAmount = Number(confirmedAmountText);
+    const confirmRemark = String(this.data.confirmForm.confirmRemark || '').trim();
+    const selectedOrder = (this.data.groupOrder.memberOrderList || [])
+      .find(order => String(order.id) === String(this.data.selectedMemberOrderId));
+    const totalPrice = Number(selectedOrder && selectedOrder.totalPrice ? selectedOrder.totalPrice : 0);
+    if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
+      wx.showToast({ title: '请填写有效实收金额', icon: 'none' });
+      return;
+    }
+    if (totalPrice > 0 && confirmedAmount > totalPrice) {
+      wx.showToast({ title: '实收金额不能超过订单金额', icon: 'none' });
+      return;
+    }
+
     wx.showLoading({
       title: '处理中...'
     });
 
-    const selectedOrder = (this.data.groupOrder.memberOrderList || [])
-      .find(order => String(order.id) === String(this.data.selectedMemberOrderId));
-    const confirmedAmount = selectedOrder && (selectedOrder.totalPrice || selectedOrder.originalTotalPrice);
     const res = await CustomerOrderService.confirmPayment(this.data.selectedMemberOrderId, {
       confirmedAmount,
-      confirmRemark: '团单详情确认到账',
+      confirmRemark,
+      note: `导游确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
     });
     wx.hideLoading();
     this.setData({
@@ -434,5 +467,21 @@ Page({
 
   canManageGroupOrder() {
     return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDER_CREATE);
+  },
+
+  stopPanelTap() {},
+
+  onConfirmInput(e) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
+    if (!field) return;
+    this.setData({ [`confirmForm.${field}`]: value });
+  },
+
+  onCancelInput(e) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
+    if (!field) return;
+    this.setData({ [`cancelForm.${field}`]: value });
   }
 });
