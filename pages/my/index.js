@@ -260,7 +260,8 @@ Page({
     wx.showToast({ title: '已退出登录', icon: 'success' });
   },
 
-  onRefreshAccessState() {
+  async onRefreshAccessState() {
+    await AuthService.refreshSession();
     this.onShow();
     wx.showToast({ title: '状态已刷新', icon: 'none' });
   },

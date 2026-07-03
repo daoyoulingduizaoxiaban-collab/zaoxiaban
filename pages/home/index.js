@@ -59,7 +59,8 @@ Page({
     });
   },
 
-  refreshAccessState() {
+  async refreshAccessState() {
+    await AuthService.refreshSession();
     this.refreshModeText();
     wx.showToast({ title: '状态已刷新', icon: 'none' });
   },

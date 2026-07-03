@@ -276,6 +276,42 @@ export const AuthService = {
     return { success: true, data: { profile, session } };
   },
 
+  async refreshSession() {
+    const currentProfile = this.getCurrentProfile();
+    const currentSession = this.getCurrentSession();
+    if (!currentProfile || currentProfile.isMockOpenId || !currentSession || !currentSession.cloudOpenIdVerified) {
+      return { success: false, error: '当前没有可刷新的正式登录状态' };
+    }
+
+    const loginResult = await wxLogin();
+    if (!loginResult.success || !loginResult.code) {
+      return { success: false, error: loginResult.error || '微信登录状态刷新失败' };
+    }
+
+    const cloudResult = await callCloudAuth(loginResult.code, currentProfile.requestedRole || currentProfile.role);
+    if (!cloudResult.success || !cloudResult.data || !cloudResult.data.openId) {
+      return { success: false, error: cloudResult.error || '云端账号状态刷新失败' };
+    }
+
+    const profile = mergeProfileTimestamps(normalizeCloudProfile(cloudResult.data, currentProfile.role));
+    const session = {
+      ...currentSession,
+      openId: profile.openId,
+      role: profile.role,
+      authSource: profile.authSource,
+      isMockOpenId: false,
+      cloudOpenIdVerified: true,
+      wxLoginCalled: true,
+      wxLoginCodeAvailable: true,
+      fallbackReason: '',
+      reviewStatus: profile.reviewStatus || profile.status || '',
+      updatedAt: nowIso(),
+    };
+    safeSetStorage(AUTH_PROFILE_KEY, profile);
+    safeSetStorage(AUTH_SESSION_KEY, session);
+    return { success: true, data: { profile, session } };
+  },
+
   applyQaOverride({ qaRoleOverride = AUTH_ROLES.GUIDE, qaOpenIdOverride = '' } = {}) {
     if (!config.isMock) {
       return {

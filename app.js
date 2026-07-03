@@ -2,6 +2,7 @@
 import config from './config';
 import Mock from './mock/index';
 import createBus from './utils/eventBus';
+import { AuthService } from './services/auth/authService';
 import {
   connectSocket,
   fetchUnreadNum
@@ -40,6 +41,13 @@ App({
 
     this.getUnreadNum();
     // this.connect();
+  },
+  onShow() {
+    AuthService.refreshSession().then((res) => {
+      if (res && res.success) {
+        this.globalData.userInfo = res.data.profile;
+      }
+    });
   },
   globalData: {
     userInfo: null,
