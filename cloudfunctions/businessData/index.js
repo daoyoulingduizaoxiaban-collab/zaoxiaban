@@ -548,7 +548,7 @@ const customerOrderActions = {
   },
 
   async getGroupOrderEntry({ groupOrderId }, profile) {
-    assertApprovedProfile(profile, ['customer', 'owner', 'admin']);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const groupOrder = await getById('groupOrders', groupOrderId);
     if (!await canViewGroupOrder(groupOrder, profile)) return failure('当前角色不能进入此团单');
     return success(groupOrder);
