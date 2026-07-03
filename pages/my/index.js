@@ -3,6 +3,13 @@ import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseAdminPortal, canUseFeature, canUseProviderPortal } from '~/services/auth/roleScope';
 
+const TAB_PAGE_URLS = new Set([
+  '/pages/groupOrder/index',
+  '/pages/customerOrders/index',
+  '/pages/productManagement/index',
+  '/pages/my/index',
+]);
+
 Page({
   behaviors: [useToastBehavior],
 
@@ -299,7 +306,8 @@ Page({
       return;
     }
     if (url) {
-      wx.navigateTo({
+      const navigate = TAB_PAGE_URLS.has(url) ? wx.switchTab : wx.navigateTo;
+      navigate({
         url,
         fail: () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' }),
       });
