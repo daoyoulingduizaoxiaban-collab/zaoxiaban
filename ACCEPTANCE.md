@@ -81,7 +81,7 @@
   - Formal product listing filters cloud records containing internal QA/test/automation wording, and formal product creation rejects those terms.
   - Group-order detail waits for data before showing the form, avoids initial demo-save placeholder flashes, and always derives a customer entry path from `groupOrderId` when the cloud record lacks `sharePath`.
 - Documentation hygiene:
-  - `README.md` now reflects the current source-of-truth workflow, confirmed WeChat Cloud data layer, implemented Phase 5 workflow, and remaining GUI gate.
+  - Project entry and business logic rules are centralized in `PROJECT_RULES.md` and `BUSINESS_LOGIC_PRINCIPLES.md`.
 - Phase 6 UI cleanup is complete for the scoped starter pages:
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
