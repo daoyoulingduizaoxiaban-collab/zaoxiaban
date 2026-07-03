@@ -2,15 +2,7 @@ import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
-
-const canViewDataCenter = profile => Boolean(
-  AuthService.canUseBusiness(profile) && (
-    profile.role === AUTH_ROLES.GUIDE
-    || profile.role === AUTH_ROLES.CUSTOMER
-    || isOwnerOrAdmin(profile)
-  )
-);
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 Page({
   data: {
@@ -28,7 +20,7 @@ Page({
 
   async loadSummary() {
     const profile = AuthService.getCurrentProfile();
-    if (!canViewDataCenter(profile)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.DATA_CENTER)) {
       this.setData({
         summaryList: [
           { name: '团单', number: 0 },

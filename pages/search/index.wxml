@@ -15,6 +15,31 @@
     ></t-search>
   </view>
   <view class="search-wrap">
+    <view class="result-wrap" wx:if="{{hasSearched}}">
+      <view class="search-header">
+        <text class="search-title">搜索结果</text>
+      </view>
+      <view class="loading-row" wx:if="{{isSearching}}">正在搜索</view>
+      <block wx:elif="{{resultGroups.length}}">
+        <view class="result-group" wx:for="{{resultGroups}}" wx:key="title">
+          <view class="result-group-title">{{item.title}}</view>
+          <view
+            class="result-item"
+            wx:for="{{item.items}}"
+            wx:for-item="result"
+            wx:key="id"
+            data-type="{{result.type}}"
+            data-id="{{result.id}}"
+            bindtap="openResult"
+          >
+            <view class="result-title">{{result.title}}</view>
+            <view class="result-desc">{{result.desc}}</view>
+          </view>
+        </view>
+      </block>
+      <t-empty wx:else icon="search" description="{{accessStateText || '没有找到符合条件的结果'}}" />
+    </view>
+
     <view class="history-wrap">
       <view class="search-header">
         <text class="search-title">最近搜索</text>

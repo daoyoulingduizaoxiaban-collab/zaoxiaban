@@ -3,6 +3,7 @@ import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 Page({
   data: {
@@ -30,7 +31,7 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const canCreate = AuthService.canUseBusiness(profile) && ['guide', 'owner', 'admin'].includes(profile.role);
+    const canCreate = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
     if (!canCreate) {
       this.setData({
         accessDenied: true,

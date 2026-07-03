@@ -1,6 +1,7 @@
 import { Product } from '../../models/Product';
 import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import {
   getProductStatusList,
@@ -101,17 +102,11 @@ Page({
   getRoleScopeText() {
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
-    if (!profile) return '请先登录后查看商品库';
-    if (profile.role === 'guide') return '仅显示你可管理或可使用的商品';
-    if (profile.role === 'customer') return '客户可通过团单入口查看本团商品';
-    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看授权范围内商品';
-    if (profile.role === 'provider') return '仅显示你提供的商品';
-    return '当前角色暂无商品库权限';
+    return getRoleScopeText(profile, FEATURE_KEYS.PRODUCTS);
   },
 
   canManageProducts() {
-    const profile = AuthService.getCurrentProfile();
-    return Boolean(AuthService.canUseBusiness(profile) && ['guide', 'owner', 'admin', 'provider'].includes(profile.role));
+    return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.PRODUCT_MANAGE);
   },
 
   onAddProduct() {
@@ -135,6 +130,23 @@ Page({
             title: this.data.saveModeText,
             icon: 'none'
           });
+        }
+      }
+    });
+  },
+
+  onEditProduct(e: any) {
+    const id = String(e.currentTarget.dataset.id || '');
+    if (!id || !this.canManageProducts()) {
+      wx.showToast({ title: '当前角色不能编辑商品', icon: 'none' });
+      return;
+    }
+    wx.navigateTo({
+      url: `/sub-pages/product/add/index?id=${id}`,
+      fail: () => wx.showToast({ title: '打开商品表单失败', icon: 'none' }),
+      events: {
+        refreshList: () => {
+          this.fetchData();
         }
       }
     });

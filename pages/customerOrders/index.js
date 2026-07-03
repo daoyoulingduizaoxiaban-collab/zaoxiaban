@@ -1,11 +1,16 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
 
 Page({
   data: {
     titleText: '客户订单',
+    allCustomerOrdersList: [],
     customerOrdersList: [],
+    statusOptions: [{ label: '全部', value: -1 }, ...getMemberOrderStatusList()],
+    currentStatus: -1,
     roleScopeText: '',
     canCreateCustomerOrder: false,
     saveModeText: '',
@@ -37,6 +42,7 @@ Page({
     if (!AuthService.canUseBusiness(profile)) {
       this.setData({
         customerOrdersList: [],
+        allCustomerOrdersList: [],
         roleScopeText: AuthService.getAccessStateText(profile),
         canCreateCustomerOrder: false,
         saveModeText: '',
@@ -53,8 +59,10 @@ Page({
       return;
     }
 
+    const orders = res.data || [];
     this.setData({
-      customerOrdersList: res.data,
+      allCustomerOrdersList: orders,
+      customerOrdersList: this.filterOrdersByStatus(orders, this.data.currentStatus),
       roleScopeText: this.getRoleScopeText(res.meta),
       canCreateCustomerOrder: this.canCreateCustomerOrder(),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
@@ -64,9 +72,22 @@ Page({
     });
   },
 
+  filterOrdersByStatus(list = [], status = -1) {
+    const statusValue = Number(status);
+    if (statusValue < 0) return list;
+    return list.filter(order => Number(order.status) === statusValue);
+  },
+
+  onStatusChange(e) {
+    const status = Number(e.detail.value);
+    this.setData({
+      currentStatus: status,
+      customerOrdersList: this.filterOrdersByStatus(this.data.allCustomerOrdersList, status),
+    });
+  },
+
   canCreateCustomerOrder() {
-    const profile = AuthService.getCurrentProfile();
-    return Boolean(AuthService.canUseBusiness(profile) && (profile.role === 'customer' || profile.role === 'owner' || profile.role === 'admin'));
+    return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.CUSTOMER_ORDER_CREATE);
   },
 
   onLogin() {
@@ -80,11 +101,7 @@ Page({
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
     const role = meta.role || (profile && profile.role);
-    if (!role) return '请先登录后查看客户订单';
-    if (role === 'guide') return '当前身份：导游/领队｜仅显示你管理团单下的客户订单';
-    if (role === 'customer') return '当前身份：客户｜仅显示你自己的客户订单';
-    if (role === 'owner' || role === 'admin') return '当前身份：管理角色｜可查看授权范围内客户订单';
-    return '当前角色暂无客户订单权限';
+    return getRoleScopeText({ ...profile, role }, FEATURE_KEYS.CUSTOMER_ORDERS);
   },
 
   async goToDetail(e) {

@@ -200,7 +200,7 @@ const normalizeProductPayload = (payload, profile, existing = {}) => ({
   pictureUrls: payload.pictureUrls || existing.pictureUrls || [],
   priceSetting: payload.priceSetting || payload.priceSettings || existing.priceSetting || [],
   priceSettings: payload.priceSetting || payload.priceSettings || existing.priceSettings || [],
-  providerId: payload.providerId || existing.providerId || '',
+  providerId: payload.providerId || existing.providerId || (profile.role === 'provider' ? (profile.providerId || profile.id) : ''),
   sourceNote: String(payload.sourceNote || existing.sourceNote || '').trim(),
   status: Number(payload.status || existing.status || PRODUCT_STATUS.PUBLISHED),
   deletedAt: existing.deletedAt || '',
@@ -240,6 +240,23 @@ const productActions = {
       data: { status: Number(status), updatedAt },
     });
     return success({ ...product, status: Number(status), updatedAt });
+  },
+
+  async update(payload, profile) {
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
+    const product = await getById('products', payload.id);
+    if (!canManageProduct(product, profile)) return failure('当前角色不能修改此商品');
+    if (!hasOnlyDurableAssetUrls(payload.pictureUrls || [])) {
+      return failure('正式云端商品图片必须先上传为持久图片');
+    }
+    const updatedAt = nowIso();
+    const updateData = normalizeProductPayload({
+      ...payload,
+      id: product.id || product._id,
+      updatedAt,
+    }, profile, product);
+    await getCollection('products').doc(String(product._id || product.id)).update({ data: toUpdateData(updateData) });
+    return success(toId({ ...product, ...updateData }));
   },
 
   async softDelete({ id }, profile) {
@@ -704,6 +721,7 @@ const userActions = {
 
 const normalizeProviderPayload = (payload, existing = {}) => ({
   ...existing,
+  id: payload.id || existing.id || existing._id || '',
   title: trimText(payload.title || existing.title),
   contact: trimText(payload.contact || existing.contact),
   statusText: trimText(payload.statusText || existing.statusText || '可显示资料'),
@@ -715,23 +733,31 @@ const normalizeProviderPayload = (payload, existing = {}) => ({
 
 const providerActions = {
   async listVisible(payload, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin']);
-    if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料管理权限');
-    return success(await getAllActive('providers'));
+    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    const providers = await getAllActive('providers');
+    if (isOwnerOrAdmin(profile)) return success(providers);
+    return success(providers.filter(provider => sameId(provider._id || provider.id, profile.providerId || profile.id)));
   },
 
   async getById({ id }, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin']);
-    if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料查看权限');
+    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
     const provider = await getById('providers', id);
+    if (provider && !isOwnerOrAdmin(profile) && !sameId(provider._id || provider.id, profile.providerId || profile.id)) {
+      return failure('当前账号没有供应商资料查看权限');
+    }
     return provider ? success(provider) : failure('未找到供应商资料');
   },
 
   async save(payload, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin']);
-    if (!isOwnerOrAdmin(profile)) return failure('当前账号没有供应商资料维护权限');
-    const target = payload.id ? await getById('providers', payload.id) : null;
-    const normalized = normalizeProviderPayload(payload, target || {});
+    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    const scopedPayload = isOwnerOrAdmin(profile)
+      ? payload
+      : { ...payload, id: payload.id || profile.providerId || profile.id };
+    const target = scopedPayload.id ? await getById('providers', scopedPayload.id) : null;
+    if (target && !isOwnerOrAdmin(profile) && !sameId(target._id || target.id, profile.providerId || profile.id)) {
+      return failure('当前账号没有供应商资料维护权限');
+    }
+    const normalized = normalizeProviderPayload(scopedPayload, target || {});
     if (target) {
       await getCollection('providers').doc(String(target._id || target.id)).update({ data: toUpdateData(normalized) });
       return success(toId({ ...normalized, _id: target._id || target.id }));

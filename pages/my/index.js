@@ -1,7 +1,7 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, canUseAdminPortal, canUseProviderPortal, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseAdminPortal, canUseFeature, canUseProviderPortal } from '~/services/auth/roleScope';
 
 Page({
   behaviors: [useToastBehavior],
@@ -118,7 +118,7 @@ Page({
       },
     ];
 
-    if (profile && [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN].includes(profile.role)) {
+    if (canUseFeature(profile, FEATURE_KEYS.DATA_CENTER)) {
       list.push({
         name: '数据中心',
         icon: 'data-display',
@@ -127,7 +127,7 @@ Page({
       });
     }
 
-    if (profile && [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN].includes(profile.role)) {
+    if (canUseFeature(profile, FEATURE_KEYS.RELEASE)) {
       list.push({
         name: '开团',
         icon: 'add',
@@ -146,19 +146,20 @@ Page({
 
     if (!AuthService.canUseBusiness(profile)) return list;
 
-    list.unshift(
-      { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index' },
-      { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index' },
-    );
-    list.push({ name: '客户沟通', icon: 'chat', type: 'chat', url: '/pages/chat/index' });
+    const roleEntries = [
+      { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index', feature: FEATURE_KEYS.PROFILE },
+      { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index', feature: FEATURE_KEYS.INFO_EDIT },
+      { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index', feature: FEATURE_KEYS.USER_REVIEW },
+      { name: '导游/领队资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
+      { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index', feature: FEATURE_KEYS.PROVIDERS },
+    ];
 
-    if (isOwnerOrAdmin(profile)) {
-      list.splice(1, 0,
-        { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index' },
-        { name: '导游/领队资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index' },
-        { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
-      );
-    }
+    roleEntries.forEach((entry) => {
+      if (canUseFeature(profile, entry.feature)) {
+        const { feature, ...item } = entry;
+        list.push(item);
+      }
+    });
 
     return list;
   },

@@ -1,6 +1,7 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import {
   CLOUD_SAVE_MODE,
   CLOUD_SAVE_MODE_TEXT,
@@ -12,6 +13,7 @@ Page({
   data: {
     pageTitle: '新增商品',
     productList: [], // 最終提交的大清單
+    isEdit: false,
     isSubmitting: false,
     isChoosingImage: false,
     accessDenied: false,
@@ -39,15 +41,20 @@ Page({
     }
   },
 
-  onLoad() {
+  onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const canCreate = AuthService.canUseBusiness(profile) && ['guide', 'owner', 'admin', 'provider'].includes(profile.role);
+    const canCreate = canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE);
     if (!canCreate) {
       this.setData({
         accessDenied: true,
         accessStateText: AuthService.getAccessStateText(profile),
       });
       return;
+    }
+    const productId = options && options.id ? String(options.id) : '';
+    if (productId) {
+      this.setData({ pageTitle: '编辑商品', isEdit: true });
+      this.loadProduct(productId);
     }
     this.refreshSaveModeText();
   },
@@ -65,6 +72,25 @@ Page({
       imageModeTip: cloudEnabled
         ? '正式云端模式会先上传为持久图片，再保存商品。'
         : '当前环境未连接云端图片上传，图片仅用于本次预览。',
+    });
+  },
+
+  async loadProduct(productId) {
+    const res = await ProductService.getById(productId);
+    if (!res.success) {
+      wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
+      return;
+    }
+
+    this.setData({
+      currentProduct: {
+        ...this.data.currentProduct,
+        ...res.data,
+        id: res.data.id || res.data._id || productId,
+        pictureUrls: res.data.pictureUrls || [],
+        priceSetting: res.data.priceSetting || res.data.priceSettings || [],
+      },
+      saveModeText: getSaveModeText(res.meta),
     });
   },
 
@@ -206,7 +232,9 @@ Page({
       wx.showLoading({ title: '保存并上传图片...' });
     }
 
-    const res = await ProductService.create(p);
+    const res = this.data.isEdit
+      ? await ProductService.update(p)
+      : await ProductService.create(p);
     this.setData({ isSubmitting: false });
     wx.hideLoading();
     if (!res.success) {

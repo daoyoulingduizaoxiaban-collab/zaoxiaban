@@ -7,6 +7,7 @@ import {
   getGroupOrderStatusTextByValue
 } from '~/enum/GroupOrderStatus'
 import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 
 Page({
   data: {
@@ -80,16 +81,11 @@ Page({
   getRoleScopeText() {
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
-    if (!profile) return '请先登录后查看团单';
-    if (profile.role === 'guide') return '仅显示你创建或被授权管理的团单';
-    if (profile.role === 'customer') return '仅显示你下过订单关联的团单';
-    if (profile.role === 'owner' || profile.role === 'admin') return '当前为管理角色，可查看授权范围内团单';
-    return '当前角色暂无团单权限';
+    return getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS);
   },
 
   canCreateGroupOrder() {
-    const profile = AuthService.getCurrentProfile();
-    return Boolean(AuthService.canUseBusiness(profile) && (profile.role === 'guide' || profile.role === 'owner' || profile.role === 'admin'));
+    return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDER_CREATE);
   },
 
   onLogin() {

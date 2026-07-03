@@ -2,7 +2,7 @@ import { Product } from '~/models/Product';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { canManageProduct, filterProductsByRole } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole } from '~/services/auth/roleScope';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
 
 const PRODUCT_STORAGE_KEY = 'dao_you_ling_local_products';
@@ -78,6 +78,15 @@ export const ProductRepository = {
     return { ...result, data };
   },
 
+  async getById(id) {
+    const result = await this.listVisible();
+    if (!result.success) return result;
+    const product = (result.data || []).find(item => String(item.id || item._id) === String(id));
+    return product
+      ? { ...result, data: product }
+      : { success: false, error: '未找到商品资料' };
+  },
+
   async create(productData) {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({
@@ -88,7 +97,7 @@ export const ProductRepository = {
     }
 
     const profile = AuthService.getCurrentProfile();
-    if (!profile || !['guide', 'owner', 'admin', 'provider'].includes(profile.role)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE)) {
       return { success: false, error: '当前角色不能新增商品' };
     }
 
@@ -98,6 +107,7 @@ export const ProductRepository = {
       ...productData,
       id: Date.now(),
       ownerUserId: productData.ownerUserId || profile.id,
+      providerId: productData.providerId || (profile.role === 'provider' ? (profile.providerId || profile.id) : ''),
       status: Number(productData.status || ProductStatus.PUBLISHED),
       createdAt,
       updatedAt: createdAt,
@@ -142,6 +152,44 @@ export const ProductRepository = {
     return {
       success: true,
       data: updatedProducts.find(product => String(product.id) === String(id)),
+      meta: { saveMode: 'local-product-repository' },
+    };
+  },
+
+  async update(productData) {
+    if (isCloudBusinessEnabled()) {
+      return callBusinessData({
+        resource: 'products',
+        action: 'update',
+        data: productData,
+      });
+    }
+
+    const profile = AuthService.getCurrentProfile();
+    const allProducts = getAllProducts();
+    const target = allProducts.find(product => String(product.id) === String(productData.id));
+    if (!canManageProduct(target, profile)) {
+      return { success: false, error: '当前角色不能修改此商品' };
+    }
+
+    const updatedAt = nowIso();
+    const updatedProducts = allProducts.map((product) => {
+      if (String(product.id) !== String(productData.id)) return product;
+      return new Product({
+        ...product,
+        ...productData,
+        id: product.id,
+        ownerUserId: product.ownerUserId,
+        providerId: product.providerId || productData.providerId || (profile.role === 'provider' ? (profile.providerId || profile.id) : ''),
+        status: Number(productData.status || product.status || ProductStatus.PUBLISHED),
+        updatedAt,
+      });
+    });
+    saveStoredProducts(updatedProducts);
+
+    return {
+      success: true,
+      data: updatedProducts.find(product => String(product.id) === String(productData.id)),
       meta: { saveMode: 'local-product-repository' },
     };
   },

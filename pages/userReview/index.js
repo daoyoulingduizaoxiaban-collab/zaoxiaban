@@ -1,17 +1,12 @@
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, isOwnerOrAdmin, REVIEW_STATUS } from '~/services/auth/roleScope';
+import { AUTH_ROLES, REVIEW_ROLE_OPTIONS, REVIEW_STATUS, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
 Page({
   data: {
     titleText: '用户审核',
     users: [],
-    roleOptions: [
-      { label: '导游/领队', value: AUTH_ROLES.GUIDE },
-      { label: '客户', value: AUTH_ROLES.CUSTOMER },
-      { label: '供应商', value: AUTH_ROLES.PROVIDER },
-      { label: '运营管理员', value: AUTH_ROLES.ADMIN },
-    ],
+    roleOptions: REVIEW_ROLE_OPTIONS,
     canReview: false,
     selectedRoleById: {},
     isLoading: false,

@@ -1,8 +1,27 @@
 <nav nav-type="title" title-text="消息" />
 
 <view class="message-list">
-  <t-cell-group theme="card">
-    <t-cell title="客户沟通" description="请通过客户订单查看付款声明、确认收款和取消订单。" />
-    <t-cell title="待处理客户订单" description="请到客户订单页查看付款声明、确认收款和取消订单。" arrow bind:tap="goCustomerOrders" />
+  <view wx:if="{{disabledReason}}">
+    <t-empty icon="info-circle" description="{{disabledReason}}" />
+  </view>
+  <view wx:elif="{{isLoading}}">
+    <t-loading theme="spinner" size="48rpx" />
+  </view>
+  <t-cell-group wx:elif="{{messages.length}}" theme="card">
+    <t-cell
+      wx:for="{{messages}}"
+      wx:key="id"
+      title="{{item.title}}"
+      description="{{item.desc}}"
+      note="{{item.isRead ? '已读' : '未读'}}"
+      arrow
+      data-id="{{item.id}}"
+      data-order-id="{{item.orderId}}"
+      bind:tap="openOrder"
+    />
   </t-cell-group>
+  <view wx:else>
+    <t-empty icon="chat" description="暂无消息" />
+    <t-button theme="primary" size="large" block bind:tap="goCustomerOrders">查看客户订单</t-button>
+  </view>
 </view>

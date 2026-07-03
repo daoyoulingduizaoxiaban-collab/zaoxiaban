@@ -7,6 +7,7 @@ Page({
     titleText: '导游/领队',
     tourGuidesList: [],
     canCreateTourGuide: false,
+    canEditOwnTourGuide: false,
     disabledReason: '',
   },
 
@@ -29,6 +30,7 @@ Page({
       this.setData({
         tourGuidesList: [],
         canCreateTourGuide: false,
+        canEditOwnTourGuide: false,
         disabledReason: '当前账号没有导游/领队资料查看权限。',
       });
       return;
@@ -46,6 +48,7 @@ Page({
           description: `${user.city}｜手机号 ${user.phone}`,
         })),
       canCreateTourGuide: isOwnerOrAdmin(profile),
+      canEditOwnTourGuide: profile.role === AUTH_ROLES.GUIDE,
       disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的导游/领队资料。'),
     });
   },
@@ -62,11 +65,13 @@ Page({
   },
 
   onGoToEdit(e) {
-    if (!this.data.canCreateTourGuide) {
-      wx.showToast({ title: '当前账号不能新增导游/领队资料', icon: 'none' });
+    const profile = AuthService.getCurrentProfile();
+    if (!this.data.canCreateTourGuide && !this.data.canEditOwnTourGuide) {
+      wx.showToast({ title: '当前账号不能维护导游/领队资料', icon: 'none' });
       return;
     }
-    const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
+    const id = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id)
+      || (!this.data.canCreateTourGuide && profile ? profile.id : '');
     const url = id ? `/pages/tourGuides/edit/index?id=${id}` : '/pages/tourGuides/edit/index';
 
     wx.navigateTo({

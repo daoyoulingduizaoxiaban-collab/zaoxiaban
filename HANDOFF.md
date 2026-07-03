@@ -27,7 +27,7 @@
 - Branch: `codex`.
 - Product: WeChat mini program for China-based guides/tour leaders to manage group orders.
 - Current runtime mode: mixed mode. Formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use QA/local fallback.
-- `config.js`: `isMock: true`, `baseUrl: ''`, `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`.
+- `config.js`: `isMock: false`, `baseUrl: ''`, `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`.
 - Formal data layer direction: user confirmed WeChat Cloud Database + Cloud Functions, behind service/repository boundaries.
 - Formal OpenID login: verified through deployed `authLogin`.
 - Cloud `users` profile initialization: verified for current OpenID through DevTools automation.
@@ -99,6 +99,17 @@ git diff --check
 - 2026-07-02 23:16 CST: Product library main page was visible in the WeChat DevTools window, but tab switching and deeper workflows were not completed, so affected rows remain `不通過`.
 - 2026-07-02 23:39 CST: My page QA Seed role panel was visible and listed `owner/admin/guide/customer/provider`.
 - QA-only role/openId switch implementation is present. Codex App QA must operate customer click-through and guide/customer order isolation through the WeChat DevTools interface or a real device before marking related rows `通過`; CLI QA may use CLI/scripts/automation if that is the available runner.
+
+## 2026-07-03 MVP Backlog Development Pass
+- `MVP_COMPLETION_CHECKLIST.md` 明确开发需求第一段 15 项已补齐并打勾：角色规则、角色申请审核、My/设置、商品新增编辑、开团、付款管理、导游资料、供应商资料、资料中心、消息、搜索、聊天入口处理、发布入口。
+- Provider 已改为正式开放角色：`authLogin` / 用户审核 / roleScope / 商品权限 / 供应商资料 repository / `businessData` 均支持 provider 申请、审核、商品管理与供应商自资料维护；owner/admin 仍可管理全部。
+- 商品库新增完整编辑链路：`products.update` cloud action、`ProductRepository.update/getById`、`ProductService.update/getById`、商品管理页编辑入口、商品表单按 id 回填并保存。
+- 客户订单页新增付款状态筛选，并保留付款凭证、声明付款、确认收款、取消订单与详情处理。
+- 消息中心改为从客户订单产生正式消息，支持已读状态与空状态；搜索页改为读取可见团单、商品与客户订单并可跳转结果。
+- 导游资料页允许 guide 维护自己的导游/领队资料；供应商页允许 provider 维护自己的供应商资料。
+- `ROLE_FEATURE_ACCESS_MATRIX.md` 已同步 provider/guide 正式开放后的入口与后端 guard。
+- 本轮验证：`npm run lint`、`git diff --check` 均通过。
+- 仍未勾：GUI/真机/DevTools 相关项、27-route smoke、图片/付款凭证真机选择、付款闭环 GUI 证据、全系统入口矩阵 GUI 验收、登录/待审核固定画面 GUI 证据、owner/admin allowlist 实际值验证、customer 分享下单规则实机验收。
 
 ## Phase 8 Auth Verification
 - Cloud environment list returned `cloud1-3gwlqssy1f1972a9`.

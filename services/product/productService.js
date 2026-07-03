@@ -50,6 +50,15 @@ export const ProductService = {
     };
   },
 
+  async getById(id) {
+    const result = await ProductRepository.getById(id);
+    if (!result.success) return result;
+    return {
+      ...result,
+      data: normalizeProduct(result.data),
+    };
+  },
+
   validateProduct(product) {
     if (!String(product.title || '').trim()) return '请输入商品名称';
     if (!String(product.description || '').trim()) return '请输入商品描述';
@@ -88,6 +97,41 @@ export const ProductService = {
     if (error) return { success: false, error };
 
     const result = await ProductRepository.create(normalizedProduct);
+    if (!result.success) return result;
+    return {
+      ...result,
+      data: normalizeProduct(result.data),
+    };
+  },
+
+  async update(product) {
+    let pictureUrls = product.pictureUrls || [];
+    if (isCloudBusinessEnabled() && pictureUrls.length) {
+      const uploadResult = await uploadProductImages(pictureUrls);
+      if (!uploadResult.success) {
+        return { success: false, error: uploadResult.error || '商品图片上传失败，已停止保存' };
+      }
+      pictureUrls = uploadResult.data;
+    }
+
+    const normalizedProduct = {
+      ...product,
+      pictureUrls,
+      title: String(product.title || '').trim(),
+      description: String(product.description || '').trim(),
+      sourceNote: String(product.sourceNote || '').trim(),
+      status: Number(product.status || ProductStatus.PUBLISHED),
+      priceSetting: (product.priceSetting || []).map(calculatePriceRule),
+    };
+    const profile = AuthService.getCurrentProfile();
+    const session = AuthService.getCurrentSession();
+    if (AuthService.isFormalSession(profile, session) && hasInternalProductCopy(normalizedProduct)) {
+      return { success: false, error: '商品资料不能包含内部测试文字' };
+    }
+    const error = this.validateProduct(normalizedProduct);
+    if (error) return { success: false, error };
+
+    const result = await ProductRepository.update(normalizedProduct);
     if (!result.success) return result;
     return {
       ...result,

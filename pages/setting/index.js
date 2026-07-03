@@ -37,39 +37,60 @@ Page({
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const cloudEnabled = isCloudBusinessEnabled();
+    const menuData = [
+      [
+        {
+          title: '当前角色',
+          note: profile ? `${profile.displayName}｜${profile.roleLabel}` : '未登录',
+          icon: 'user',
+        },
+        {
+          title: '资料模式',
+          note: this.getDataModeNote(profile, session, cloudEnabled),
+          icon: 'server',
+        },
+      ],
+    ];
+
+    if (profile) {
+      menuData.push([
+        {
+          title: '账号资料',
+          note: '查看与修改名称、电话和头像',
+          icon: 'edit',
+          url: '/pages/my/info-edit/index',
+        },
+      ]);
+    }
+
+    menuData.push([
+      {
+        title: '正式云端设置',
+        note: this.getCloudSettingNote(session),
+        icon: 'cloud',
+      },
+      {
+        title: '权限管理',
+        note: '首次登录需管理员审核；导游/领队、客户与管理员按角色开放功能',
+        icon: 'secured',
+      },
+    ]);
+
     this.setData({
       isLoggedIn: Boolean(profile),
-      menuData: [
-        [
-          {
-            title: '当前角色',
-            note: profile ? `${profile.displayName}｜${profile.roleLabel}` : '未登录',
-            icon: 'user',
-          },
-          {
-            title: '资料模式',
-            note: this.getDataModeNote(profile, session, cloudEnabled),
-            icon: 'server',
-          },
-        ],
-        [
-          {
-            title: '正式云端设置',
-            note: this.getCloudSettingNote(session),
-            icon: 'cloud',
-          },
-          {
-            title: '权限管理',
-            note: '导游/领队、客户、供应商可直接登录；管理员按 OpenID 白名单识别',
-            icon: 'secured',
-          },
-        ],
-      ],
+      menuData,
     });
   },
 
   onEleClick(e) {
-    const { title, note } = e.currentTarget.dataset.data;
+    const { title, note, url } = e.currentTarget.dataset.data;
+    if (url) {
+      wx.navigateTo({
+        url,
+        fail: () => wx.showToast({ title: '打开账号资料失败', icon: 'none' }),
+      });
+      return;
+    }
     this.onShowToast('#t-toast', `${title}：${note}`);
   },
 

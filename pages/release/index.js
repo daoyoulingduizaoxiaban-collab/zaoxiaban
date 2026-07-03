@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 Page({
   data: {
@@ -9,7 +9,7 @@ Page({
   onShow() {
     const profile = AuthService.getCurrentProfile();
     this.setData({
-      canCreateGroupOrder: Boolean(profile && (profile.role === 'guide' || isOwnerOrAdmin(profile))),
+      canCreateGroupOrder: canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
     });
   },
 

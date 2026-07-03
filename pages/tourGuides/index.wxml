@@ -15,5 +15,8 @@
   </view>
 
   <t-fab wx:if="{{canCreateTourGuide}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增导游/领队" style="right: 32rpx; bottom: 180rpx;" />
+  <view wx:elif="{{canEditOwnTourGuide}}" class="own-edit">
+    <t-button theme="primary" size="large" block bind:tap="onGoToEdit">编辑我的导游/领队资料</t-button>
+  </view>
 
 </view>

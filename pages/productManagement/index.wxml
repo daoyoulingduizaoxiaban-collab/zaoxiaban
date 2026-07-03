@@ -43,8 +43,9 @@
           </view>
         </view>
         <view class="action-bar" wx:if="{{canManageProducts}}">
-          <button size="mini" type="warn" plain bindtap="onDelete" data-id="{{item.id}}">删除</button>
-          <button size="mini" plain bindtap="onToggleStatus" data-id="{{item.id}}">
+          <button size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
+          <button size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
+          <button size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">
             {{item.status === 2 ? '下架' : '上架'}}
           </button>
         </view>
@@ -81,6 +82,7 @@
           <text class="detail-text">{{selectedProduct.sourceNote || '暂无'}}</text>
         </view>
       </view>
+      <button wx:if="{{canManageProducts}}" class="detail-close" data-id="{{selectedProduct.id}}" bindtap="onEditProduct">编辑商品</button>
       <button class="detail-close" bindtap="closeDetail">知道了</button>
     </view>
   </view>

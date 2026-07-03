@@ -10,6 +10,12 @@
     <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>
 
+  <view class="order-filter" wx:if="{{canUseBusiness}}">
+    <t-dropdown-menu>
+      <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
+    </t-dropdown-menu>
+  </view>
+
   <t-cell-group theme="card" wx:if="{{canUseBusiness}}">
     <block wx:for="{{ customerOrdersList }}" wx:key="id">
       <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow

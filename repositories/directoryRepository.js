@@ -1,7 +1,7 @@
 import { QaSeedMock } from '~/mock/qaSeed';
 import { callBusinessData, getSaveModeText, isCloudBusinessEnabled } from './cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
 const USERS_STORAGE_KEY = 'dao_you_ling_local_users';
 const PROVIDERS_STORAGE_KEY = 'dao_you_ling_local_providers';
@@ -189,22 +189,28 @@ export const DirectoryRepository = {
 
   async listProviders() {
     const profile = AuthService.getCurrentProfile();
-    if (!isOwnerOrAdmin(profile)) return { success: false, error: '当前账号没有供应商资料管理权限' };
+    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.PROVIDER)) return { success: false, error: '当前账号没有供应商资料管理权限' };
     const cloudRes = await callCloud('providers', 'listVisible', {});
     if (cloudRes) return cloudRes;
+    const providers = getLocalProviders().map(normalizeProvider);
     return {
       success: true,
-      data: getLocalProviders().map(normalizeProvider),
+      data: isOwnerOrAdmin(profile)
+        ? providers
+        : providers.filter(provider => sameId(provider.id, profile.providerId || profile.id)),
       meta: { saveMode: 'local-directory-repository' },
     };
   },
 
   async getProviderById(id) {
     const profile = AuthService.getCurrentProfile();
-    if (!isOwnerOrAdmin(profile)) return { success: false, error: '当前账号没有供应商资料查看权限' };
+    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.PROVIDER)) return { success: false, error: '当前账号没有供应商资料查看权限' };
     const cloudRes = await callCloud('providers', 'getById', { id });
     if (cloudRes) return cloudRes;
     const provider = getLocalProviders().map(normalizeProvider).find(item => sameId(item.id, id));
+    if (provider && !isOwnerOrAdmin(profile) && !sameId(provider.id, profile.providerId || profile.id)) {
+      return { success: false, error: '当前账号没有供应商资料查看权限' };
+    }
     return provider
       ? { success: true, data: provider, meta: { saveMode: 'local-directory-repository' } }
       : { success: false, error: '未找到供应商资料' };
@@ -212,16 +218,19 @@ export const DirectoryRepository = {
 
   async saveProvider(payload = {}) {
     const profile = AuthService.getCurrentProfile();
-    if (!isOwnerOrAdmin(profile)) return { success: false, error: '当前账号没有供应商资料维护权限' };
-    const cloudRes = await callCloud('providers', 'save', payload);
+    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.PROVIDER)) return { success: false, error: '当前账号没有供应商资料维护权限' };
+    const scopedPayload = isOwnerOrAdmin(profile)
+      ? payload
+      : { ...payload, id: payload.id || profile.providerId || profile.id };
+    const cloudRes = await callCloud('providers', 'save', scopedPayload);
     if (cloudRes) return cloudRes;
 
     const providers = getLocalProviders().map(normalizeProvider);
-    const existing = providers.find(item => sameId(item.id, payload.id));
+    const existing = providers.find(item => sameId(item.id, scopedPayload.id));
     const updatedAt = nowIso();
     const next = normalizeProvider({
       ...(existing || {}),
-      ...payload,
+      ...scopedPayload,
       updatedAt,
       createdAt: (existing && existing.createdAt) || updatedAt,
     });

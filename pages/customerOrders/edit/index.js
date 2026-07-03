@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 Page({
   data: {
@@ -25,7 +26,7 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const canCreate = AuthService.canUseBusiness(profile) && ['customer', 'owner', 'admin'].includes(profile.role);
+    const canCreate = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDER_CREATE);
     if (!canCreate) {
       this.setData({
         accessDenied: true,

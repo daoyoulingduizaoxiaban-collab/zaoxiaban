@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 
 Page({
@@ -39,8 +39,8 @@ Page({
       modeText = '当前账号未通过云端验证。';
     }
 
-    const canCreateGroupOrder = Boolean(canUseBusiness && profile && (profile.role === 'guide' || isOwnerOrAdmin(profile)));
-    const canViewDataCenter = Boolean(canUseBusiness && profile && ['guide', 'customer', 'owner', 'admin'].includes(profile.role));
+    const canCreateGroupOrder = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
+    const canViewDataCenter = canUseFeature(profile, FEATURE_KEYS.DATA_CENTER);
 
     this.setData({
       modeText,
@@ -66,7 +66,7 @@ Page({
   },
 
   goGroupOrders() {
-    if (!this.data.canUseBusiness) {
+    if (!canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDERS)) {
       this.goLogin();
       return;
     }
@@ -74,7 +74,7 @@ Page({
   },
 
   goProducts() {
-    if (!this.data.canUseBusiness) {
+    if (!canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.PRODUCTS)) {
       this.goLogin();
       return;
     }
@@ -82,7 +82,7 @@ Page({
   },
 
   goCustomerOrders() {
-    if (!this.data.canUseBusiness) {
+    if (!canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.CUSTOMER_ORDERS)) {
       this.goLogin();
       return;
     }
