@@ -16,8 +16,9 @@ const saveReadMessageIds = (ids) => {
   try {
     wx.setStorageSync(READ_MESSAGE_KEY, ids);
   } catch (err) {
-    // Read state is a local convenience and should not block message display.
+    return false;
   }
+  return true;
 };
 
 Page({

@@ -5,23 +5,11 @@
   </view>
 </t-navbar>
 
-<!-- 
-  <t-navbar title="{{ titleText }}">
-    <view slot="left">
-      <view class="home-navbar__left">
-        <t-icon class="home-navbar__icon" bind:tap="openDrawer" name="view-list" size="48rpx" />
-        <t-search
-          shape="round"
-          placeholder="请搜索你想要的内容"
-          bindtap="searchTurn"
-          wx:if="{{navType === 'search'}}"
-        />
-      </view>
-    </view>
-    <view slot="left" class="navbar-left-content">
-      <image class="logo" src="/static/logo/zaoxiaban.png" mode="aspectFit" />
-      <t-icon wx:if="{{ navType === 'search' }}" name="view-list" size="48rpx" bind:tap="openDrawer" />
-    </view>
-  </t-navbar>
-  <t-drawer style="padding-top: {{statusHeight}}px;" visible="{{visible}}" items="{{sidebar}}" placement="left"
-    title="页面目录" bind:item-click="itemClick" /> -->
+<t-drawer
+  style="padding-top: {{statusHeight}}px;"
+  visible="{{visible}}"
+  items="{{sidebar}}"
+  placement="left"
+  title="页面导航"
+  bind:item-click="itemClick"
+/>

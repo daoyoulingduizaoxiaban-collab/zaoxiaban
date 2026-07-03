@@ -1,21 +1,18 @@
-// pages/chat/index.js
 const app = getApp();
 
 Page({
-  /** 页面的初始数据 */
   data: {
-    myAvatar: '/static/chat/avatar.png', // 自己的头像
-    userId: null, // 对方userId
-    avatar: '', // 对方头像
-    name: '', // 对方昵称
-    messages: [], // 消息列表 { messageId, from, content, time, read }
-    input: '', // 输入框内容
-    anchor: '', // 消息列表滚动到 id 与之相同的元素的位置
-    keyboardHeight: 0, // 键盘当前高度(px)
+    myAvatar: '/static/chat/avatar.png',
+    userId: null,
+    avatar: '',
+    name: '',
+    messages: [],
+    input: '',
+    anchor: '',
+    keyboardHeight: 0,
     disabledReason: '请先通过客户订单处理沟通和收款事项。',
   },
 
-  /** 生命周期函数--监听页面加载 */
   onLoad(options) {
     try {
       const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
@@ -27,36 +24,27 @@ Page({
     }
   },
 
-  /** 生命周期函数--监听页面初次渲染完成 */
   onReady() {},
 
-  /** 生命周期函数--监听页面显示 */
   onShow() {},
 
-  /** 生命周期函数--监听页面隐藏 */
   onHide() {},
 
-  /** 生命周期函数--监听页面卸载 */
   onUnload() {
     app.eventBus.off('update', this.update);
   },
 
-  /** 页面相关事件处理函数--监听用户下拉动作 */
   onPullDownRefresh() {},
 
-  /** 页面上拉触底事件的处理函数 */
   onReachBottom() {},
 
-  /** 用户点击右上角分享 */
   onShareAppMessage() {},
 
-  /** 更新数据 */
   update({ userId, avatar, name, messages }) {
     this.setData({ userId, avatar, name, messages: [...messages] });
     wx.nextTick(this.scrollToBottom);
   },
 
-  /** 处理唤起键盘事件 */
   handleKeyboardHeightChange(event) {
     const { height } = event.detail;
     if (!height) return;
@@ -64,12 +52,10 @@ Page({
     wx.nextTick(this.scrollToBottom);
   },
 
-  /** 处理收起键盘事件 */
   handleBlur() {
     this.setData({ keyboardHeight: 0 });
   },
 
-  /** 处理输入事件 */
   handleInput(event) {
     this.setData({ input: event.detail.value });
   },
@@ -82,7 +68,6 @@ Page({
     return socket;
   },
 
-  /** 发送消息 */
   sendMessage() {
     if (this.data.disabledReason) {
       wx.showToast({ title: '请先查看客户订单', icon: 'none' });
@@ -102,7 +87,6 @@ Page({
     wx.nextTick(this.scrollToBottom);
   },
 
-  /** 消息列表滚动到底部 */
   scrollToBottom() {
     this.setData({ anchor: 'bottom' });
   },
