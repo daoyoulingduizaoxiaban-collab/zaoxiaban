@@ -8,6 +8,7 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
+const buildCustomerEntryPath = id => `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(id || ''))}`;
 
 Page({
   data: {
@@ -34,11 +35,11 @@ Page({
   },
 
   onLoad(options) {
-    const id = options.id ? String(options.id) : '';
+    const id = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
     if (id) {
       this.setData({
         groupOrderId: id,
-        customerEntryPath: `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+        customerEntryPath: buildCustomerEntryPath(id),
       });
       this.fetchGroupOrderDetail(id);
     } else {
@@ -55,7 +56,7 @@ Page({
     const groupOrder = this.data.groupOrder || {};
     return {
       title: `${groupOrder.title || '团单'}｜客户下单入口`,
-      path: groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`,
+      path: groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId),
     };
   },
 
@@ -66,11 +67,11 @@ Page({
       if (res.success) {
         const groupOrder = {
           ...res.data,
-          sharePath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+          sharePath: res.data.sharePath || buildCustomerEntryPath(id),
         };
         this.setData({
           groupOrder,
-          customerEntryPath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+          customerEntryPath: res.data.sharePath || buildCustomerEntryPath(id),
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
           isDetailLoaded: true,
@@ -103,7 +104,7 @@ Page({
   },
 
   onSave() {
-    const path = this.data.groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`;
+    const path = this.data.groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId);
     if (!this.data.groupOrderId) {
       wx.showToast({
         title: '缺少团单 ID',
@@ -388,7 +389,7 @@ Page({
       return;
     }
 
-    navigateByUrl(`/pages/customerOrders/edit/index?groupOrderId=${id}`, {
+    navigateByUrl(buildCustomerEntryPath(id), {
       fail: () => {
         wx.showToast({
           title: '打开客户下单页失败',
@@ -403,7 +404,7 @@ Page({
       wx.showToast({ title: '当前账号不能复制客户下单入口', icon: 'none' });
       return;
     }
-    const path = this.data.groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`;
+    const path = this.data.groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId);
     wx.setClipboardData({
       data: path,
       success: () => wx.showToast({ title: '客户入口已复制', icon: 'none' }),

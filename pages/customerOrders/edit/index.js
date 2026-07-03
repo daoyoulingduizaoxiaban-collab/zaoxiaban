@@ -4,6 +4,8 @@ import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusin
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
+const buildCustomerEntryPath = groupOrderId => `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(groupOrderId || ''))}`;
+
 Page({
   data: {
     pageTitle: '客户下单',
@@ -16,6 +18,8 @@ Page({
     pageErrorText: '',
     accessDenied: false,
     accessStateText: '',
+    isLoggedIn: false,
+    loginRedirectTo: '/pages/customerOrders/index',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     formData: {
       customerName: '',
@@ -29,24 +33,38 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
+    const groupOrderId = options.groupOrderId || options.id || '';
+    const loginRedirectTo = groupOrderId ? buildCustomerEntryPath(groupOrderId) : '/pages/customerOrders/index';
     const canCreate = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDER_CREATE);
     if (!canCreate) {
       this.setData({
+        groupOrderId,
         accessDenied: true,
         accessStateText: AuthService.getAccessStateText(profile),
+        isLoggedIn: Boolean(profile),
+        loginRedirectTo,
       });
       return;
     }
-    const groupOrderId = options.groupOrderId || options.id || '';
 
     this.setData({
       groupOrderId,
+      accessDenied: false,
+      accessStateText: '',
+      isLoggedIn: Boolean(profile),
+      loginRedirectTo,
       pageErrorText: groupOrderId ? '' : '缺少团单入口，请从有效团单进入。',
       'formData.customerName': profile && profile.displayName ? profile.displayName : '',
       'formData.customerPhone': profile && profile.phone ? profile.phone : '',
     });
     if (!groupOrderId) return;
     this.loadOrderEntry(groupOrderId);
+  },
+
+  onLogin() {
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent(this.data.loginRedirectTo)}`, {
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
   },
 
   async loadOrderEntry(groupOrderId) {

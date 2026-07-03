@@ -3,6 +3,7 @@
 <view class="access-card" wx:if="{{accessDenied}}">
   <view class="access-title">{{accessStateText || '当前账号不能提交客户订单'}}</view>
   <view class="access-desc">请使用已通过审核的客户账号，或从有效团单入口进入。</view>
+  <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bind:tap="onLogin">去登录</t-button>
 </view>
 
 <view class="edit-container" wx:else>

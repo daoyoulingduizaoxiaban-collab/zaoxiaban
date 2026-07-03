@@ -24,7 +24,9 @@
 }
 
 .local-icon--add .local-icon__shape::before,
-.local-icon--add .local-icon__shape::after {
+.local-icon--add .local-icon__shape::after,
+.local-icon--action .local-icon__shape::before,
+.local-icon--action .local-icon__shape::after {
   content: "";
   position: absolute;
   left: 50%;
@@ -36,7 +38,8 @@
   transform: translate(-50%, -50%);
 }
 
-.local-icon--add .local-icon__shape::after {
+.local-icon--add .local-icon__shape::after,
+.local-icon--action .local-icon__shape::after {
   transform: translate(-50%, -50%) rotate(90deg);
 }
 
