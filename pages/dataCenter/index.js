@@ -15,7 +15,7 @@ Page({
     isLoading: false,
   },
 
-  onLoad() {
+  onShow() {
     this.loadSummary();
   },
 
