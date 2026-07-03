@@ -1,24 +1,9 @@
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES } from '~/services/auth/roleScope';
 
 Page({
   data: {
-    roleOptions: AuthService.roleOptions,
-    selectedRole: AUTH_ROLES.GUIDE,
     isSubmitting: false,
-    authNotice: '登录后会提交使用申请，正式角色以管理员审核结果为准。管理角色由已授权账号进入。',
-  },
-
-  onRoleChange(e) {
-    this.setData({
-      selectedRole: e.detail.value,
-    });
-  },
-
-  onRoleTap(e) {
-    const { role } = e.currentTarget.dataset;
-    if (!role) return;
-    this.setData({ selectedRole: role });
+    authNotice: '登录后会提交使用申请，管理员确认身份后开放对应功能。',
   },
 
   async login() {
@@ -28,7 +13,7 @@ Page({
     wx.showLoading({ title: '登录中...' });
 
     try {
-      const res = await AuthService.login({ role: this.data.selectedRole });
+      const res = await AuthService.login();
       if (!res.success) {
         wx.showToast({
           title: res.error || '登录失败，请稍后重试',
