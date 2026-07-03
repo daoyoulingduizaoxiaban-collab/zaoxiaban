@@ -131,12 +131,19 @@ exports.main = async (event = {}) => {
     const privilegedRole = allowlistRole || bootstrapRole;
     const currentRole = profile.role || normalizeRequestedRole(event.requestedRole);
     const currentReviewStatus = normalizeReviewStatus(profile.reviewStatus || profile.status || REVIEW_STATUS.PENDING);
-    const canSwitchRuntimeRole = currentRole === ROLE_GUIDE || currentRole === ROLE_CUSTOMER || currentRole === ROLE_PROVIDER;
-    const nextRole = privilegedRole || (currentReviewStatus === REVIEW_STATUS.PENDING && canSwitchRuntimeRole ? normalizeRequestedRole(event.requestedRole) : currentRole);
+    const canUpdateRequestedRole = currentReviewStatus === REVIEW_STATUS.PENDING
+      && [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER].includes(currentRole);
+    const nextRole = privilegedRole || currentRole;
+    let nextRequestedRole = profile.requestedRole || currentRole;
+    if (privilegedRole) {
+      nextRequestedRole = profile.requestedRole || nextRole;
+    } else if (canUpdateRequestedRole) {
+      nextRequestedRole = normalizeRequestedRole(event.requestedRole);
+    }
     const updateData = {
       unionId: profile.unionId || unionId,
       role: nextRole,
-      requestedRole: privilegedRole ? (profile.requestedRole || nextRole) : normalizeRequestedRole(event.requestedRole),
+      requestedRole: nextRequestedRole,
       status: privilegedRole ? REVIEW_STATUS.APPROVED : currentReviewStatus,
       reviewStatus: privilegedRole ? REVIEW_STATUS.APPROVED : currentReviewStatus,
       updatedAt: db.serverDate(),
