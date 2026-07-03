@@ -40,7 +40,7 @@
       <t-empty wx:else icon="search" description="{{accessStateText || '没有找到符合条件的结果'}}" />
     </view>
 
-    <view class="history-wrap">
+    <view class="history-wrap" wx:if="{{historyWords.length}}">
       <view class="search-header">
         <text class="search-title">最近搜索</text>
         <t-icon name="delete" size="large" class="search-clear" bind:click="handleClearHistory" />

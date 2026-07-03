@@ -5,7 +5,7 @@ import { ProductService } from '~/services/product/productService';
 
 Page({
   data: {
-    historyWords: ['华东五日团', '龙井茶叶', '未付款订单'],
+    historyWords: [],
     popularWords: ['团单', '本团商品', '商品库', '客户订单', '收款状态'],
     searchValue: '',
     isSearching: false,
@@ -59,11 +59,6 @@ Page({
     wx.setStorageSync('dao_you_ling_search_history', historyWords);
   },
 
-  /**
-   * 清空历史记录的再次确认框
-   * 后期可能需要增加一个向后端请求的接口
-   * @returns {Promise<void>}
-   */
   confirm() {
     const { historyWords } = this.data;
     const { deleteType, deleteIndex } = this;
@@ -205,6 +200,10 @@ Page({
 
   openResult(e) {
     const { type, id } = e.currentTarget.dataset;
+    if (!id) {
+      wx.showToast({ title: '未找到对应资料', icon: 'none' });
+      return;
+    }
     if (type === 'groupOrder') {
       wx.navigateTo({ url: `/sub-pages/groupOrder/detail/index?id=${id}&readonly=1` });
       return;

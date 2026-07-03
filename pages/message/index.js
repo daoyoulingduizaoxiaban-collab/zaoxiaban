@@ -49,7 +49,10 @@ Page({
     const res = await CustomerOrderService.listVisible();
     this.setData({ isLoading: false });
     if (!res.success) {
-      this.setData({ disabledReason: res.error || '暂时无法读取消息' });
+      this.setData({
+        messages: [],
+        disabledReason: res.error || '暂时无法读取消息',
+      });
       return;
     }
 
