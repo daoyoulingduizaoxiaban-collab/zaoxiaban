@@ -46,7 +46,7 @@ Page({
           id: user.id,
           title: user.name || user.displayName,
           statusText: user.displayRole,
-          description: `${user.city}｜手机号 ${user.phone}`,
+          description: `${user.city || '城市未填写'}｜手机号 ${user.phone || '未填写'}`,
         })),
       canCreateTourGuide: isOwnerOrAdmin(profile),
       canEditOwnTourGuide: profile.role === AUTH_ROLES.GUIDE,
