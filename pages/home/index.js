@@ -25,15 +25,16 @@ Page({
     ],
   },
 
-  onLoad() {
-    this.refreshModeText();
+  async onLoad() {
+    await this.refreshModeText();
   },
 
-  onShow() {
-    this.refreshModeText();
+  async onShow() {
+    await this.refreshModeText();
   },
 
-  refreshModeText() {
+  async refreshModeText() {
+    await AuthService.refreshSession();
     const session = AuthService.getCurrentSession();
     const profile = AuthService.getCurrentProfile();
     const cloudEnabled = isCloudBusinessEnabled();

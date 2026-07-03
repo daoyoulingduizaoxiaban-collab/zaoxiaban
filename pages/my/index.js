@@ -56,6 +56,7 @@ Page({
   },
 
   async onShow() {
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const canUseBusiness = AuthService.canUseBusiness(profile);
