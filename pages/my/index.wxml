@@ -4,7 +4,7 @@
   <nav title-text="我的" />
   <view class="my-info">
     <t-cell-group>
-      <t-cell wx:if="{{isLoad}}" bordered="{{false}}">
+      <t-cell wx:if="{{isLoad && canUseBusiness}}" bordered="{{false}}">
         <t-avatar image="{{personalInfo.image}}" slot="left-icon" size="large" />
         <view class="my-info__person" slot="description">
           <view class="name">{{personalInfo.name}}</view>
@@ -16,16 +16,13 @@
         </view>
         <t-icon slot="right-icon" name="edit" size="40rpx" color="#000000e6" bindtap="onNavigateTo" />
       </t-cell>
-      <t-cell
-        wx:if="{{!isLoad}}"
-        title="请先登录/注册"
-        bordered="{{false}}"
-        t-class-title="cell-class-title"
-        t-class-center="cell-class-center"
-        bindtap="onLogin"
-      >
-        <t-avatar slot="left-icon" icon="user" size="128rpx" />
-      </t-cell>
+      <view wx:if="{{!isLoggedIn}}" class="login-card-entry" catchtap="onLogin" bindtouchend="onLoginTouchEnd">
+        <t-avatar icon="user" size="128rpx" />
+        <view class="login-card-entry__text">
+          <view class="login-card-entry__title">请先登录/注册</view>
+          <view class="login-card-entry__desc">登录后继续</view>
+        </view>
+      </view>
     </t-cell-group>
     <view class="auth-warning" wx:if="{{authSession.isMockOpenId && !authSession.qaOverride}}">
       当前为演示身份，资料仅保留在当前设备。
@@ -37,14 +34,15 @@
       <view class="access-title">{{accessStateText}}</view>
       <view class="access-desc">管理员确认身份后，会开放与你角色对应的正式功能。</view>
       <t-button theme="primary" variant="outline" size="small" bindtap="onRefreshAccessState">重新检查状态</t-button>
+      <t-button theme="default" variant="outline" size="small" bindtap="onContactAdmin">联系管理员</t-button>
     </view>
     <view class="auth-actions" wx:if="{{isLoggedIn}}">
       <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
     </view>
     <view class="auth-actions" wx:else>
-      <t-button t-class="login-action" theme="primary" size="small" bindtap="onLogin">登录后继续</t-button>
+      <button class="login-action-native" catchtap="onLogin" bindtouchend="onLoginTouchEnd">登录后继续</button>
     </view>
-    <t-divider t-class="divider-class" />
+    <t-divider wx:if="{{canUseBusiness}}" t-class="divider-class" />
     <t-grid t-class="grid-class" wx:if="{{canUseBusiness}}">
       <t-grid-item
         wx:for="{{gridList}}"
@@ -116,7 +114,7 @@
     </t-grid>
   </view>
 
-  <t-cell-group theme="card">
+  <t-cell-group wx:if="{{canUseBusiness}}" theme="card">
     <t-cell
       wx:for="{{settingList}}"
       wx:for-item="item"

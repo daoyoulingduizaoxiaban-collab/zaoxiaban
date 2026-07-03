@@ -109,27 +109,32 @@ Component({
         //   label: '首頁'
         // },
         {
-          icon: 'home',
+          icon: 'bulletpoint',
+          symbol: '单',
           value: 'groupOrder',
           label: '团单'
         },
         {
-          icon: 'home',
+          icon: 'user',
+          symbol: '导',
           value: 'tourGuides',
           label: '导游管理'
         },
         {
-          icon: 'home',
+          icon: 'usergroup',
+          symbol: '客',
           value: 'customerOrders',
           label: '客户订单'
         },
         {
-          icon: 'home',
+          icon: 'shop',
+          symbol: '供',
           value: 'providers',
           label: '供应商'
         },
         {
-          icon: 'home',
+          icon: 'user',
+          symbol: '我',
           value: 'profile',
           label: '我的'
         },

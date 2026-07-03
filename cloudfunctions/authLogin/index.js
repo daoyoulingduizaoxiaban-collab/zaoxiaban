@@ -5,6 +5,7 @@ cloud.init({
 });
 
 const db = cloud.database();
+const _ = db.command;
 const users = db.collection('users');
 
 const ROLE_GUIDE = 'guide';
@@ -31,11 +32,23 @@ const getPrivilegedRole = (openId) => {
   return '';
 };
 
+const getBootstrapRole = async () => {
+  const existingPrivileged = await users.where({
+    role: _.in([ROLE_OWNER, ROLE_ADMIN]),
+    reviewStatus: REVIEW_STATUS.APPROVED,
+    deletedAt: null,
+  }).limit(1).get();
+  return existingPrivileged.data && existingPrivileged.data.length ? '' : ROLE_OWNER;
+};
+
 const normalizeRequestedRole = role => (
   [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER].includes(role) ? role : ROLE_GUIDE
 );
 
 const normalizeReviewStatus = status => (status === ACTIVE_STATUS ? REVIEW_STATUS.APPROVED : (status || REVIEW_STATUS.PENDING));
+
+const getSystemReviewer = bootstrapRole => (bootstrapRole ? 'system-bootstrap-owner' : 'system-allowlist');
+const getSystemReviewRemark = bootstrapRole => (bootstrapRole ? '首位管理者初始化' : '管理员白名单账号');
 
 const ensureUsersCollection = async () => {
   try {
@@ -48,8 +61,8 @@ const ensureUsersCollection = async () => {
   }
 };
 
-const buildDefaultProfile = (openId, unionId, requestedRole) => {
-  const privilegedRole = getPrivilegedRole(openId);
+const buildDefaultProfile = (openId, unionId, requestedRole, bootstrapRole = '') => {
+  const privilegedRole = getPrivilegedRole(openId) || bootstrapRole;
   const normalizedRole = privilegedRole || normalizeRequestedRole(requestedRole);
   const reviewStatus = privilegedRole ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.PENDING;
   const now = db.serverDate();
@@ -63,9 +76,9 @@ const buildDefaultProfile = (openId, unionId, requestedRole) => {
     avatarUrl: '',
     status: reviewStatus,
     reviewStatus,
-    reviewedBy: privilegedRole ? 'system-allowlist' : '',
+    reviewedBy: privilegedRole ? getSystemReviewer(bootstrapRole) : '',
     reviewedAt: privilegedRole ? now : '',
-    reviewRemark: privilegedRole ? '管理员白名单账号' : '',
+    reviewRemark: privilegedRole ? getSystemReviewRemark(bootstrapRole) : '',
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
@@ -113,7 +126,9 @@ exports.main = async (event = {}) => {
 
   if (existing.data && existing.data.length) {
     const profile = existing.data[0];
-    const privilegedRole = getPrivilegedRole(openId);
+    const allowlistRole = getPrivilegedRole(openId);
+    const bootstrapRole = allowlistRole ? '' : await getBootstrapRole();
+    const privilegedRole = allowlistRole || bootstrapRole;
     const currentRole = profile.role || normalizeRequestedRole(event.requestedRole);
     const currentReviewStatus = normalizeReviewStatus(profile.reviewStatus || profile.status || REVIEW_STATUS.PENDING);
     const canSwitchRuntimeRole = currentRole === ROLE_GUIDE || currentRole === ROLE_CUSTOMER || currentRole === ROLE_PROVIDER;
@@ -127,9 +142,9 @@ exports.main = async (event = {}) => {
       updatedAt: db.serverDate(),
     };
     if (privilegedRole && currentReviewStatus !== REVIEW_STATUS.APPROVED) {
-      updateData.reviewedBy = 'system-allowlist';
+      updateData.reviewedBy = getSystemReviewer(bootstrapRole);
       updateData.reviewedAt = db.serverDate();
-      updateData.reviewRemark = '管理员白名单账号';
+      updateData.reviewRemark = getSystemReviewRemark(bootstrapRole);
     }
     if (nextRole === ROLE_PROVIDER && !profile.providerId) {
       updateData.providerId = `provider-${openId}`;
@@ -149,7 +164,8 @@ exports.main = async (event = {}) => {
     };
   }
 
-  const profile = buildDefaultProfile(openId, unionId, event.requestedRole);
+  const bootstrapRole = await getBootstrapRole();
+  const profile = buildDefaultProfile(openId, unionId, event.requestedRole, bootstrapRole);
   const created = await users.add({ data: profile });
 
   return {

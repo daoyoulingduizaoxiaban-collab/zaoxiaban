@@ -14,6 +14,7 @@ Page({
     authSession: {},
     accessState: 'logged_out',
     accessStateText: '请先登录后继续使用',
+    isNavigatingLogin: false,
     canUseBusiness: false,
     qaSeedInfo: {},
     canShowQaTools: false,
@@ -198,10 +199,24 @@ Page({
     };
   },
 
-  onLogin(e) {
+  onLoginTouchEnd() {
+    this.onLogin();
+  },
+
+  onLogin() {
+    if (this.data.isNavigatingLogin) return;
+    this.setData({ isNavigatingLogin: true });
     wx.navigateTo({
       url: '/pages/login/login',
-      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+      complete: () => {
+        setTimeout(() => this.setData({ isNavigatingLogin: false }), 600);
+      },
+      fail: (error) => wx.showModal({
+        title: '登录入口',
+        content: `打开登录页失败：${error && error.errMsg ? error.errMsg : '请稍后重试'}`,
+        showCancel: false,
+        confirmText: '知道了',
+      }),
     });
   },
 
@@ -265,6 +280,15 @@ Page({
     await AuthService.refreshSession();
     this.onShow();
     wx.showToast({ title: '状态已刷新', icon: 'none' });
+  },
+
+  onContactAdmin() {
+    wx.showModal({
+      title: '联系管理员',
+      content: '请联系运营管理员确认账号身份与使用权限。',
+      showCancel: false,
+      confirmText: '知道了',
+    });
   },
 
   onEleClick(e) {

@@ -1,5 +1,6 @@
 {
   "pages": [
+    "pages/my/index",
     "pages/productManagement/index",
     "sub-pages/groupOrder/detail/index",
     "sub-pages/groupOrder/productList/index",
@@ -18,8 +19,7 @@
     "pages/profile/index",
     "pages/profile/edit/index",
     "pages/home/index",
-    "pages/message/index",
-    "pages/my/index"
+    "pages/message/index"
   ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast",

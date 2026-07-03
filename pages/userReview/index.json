@@ -1,6 +1,6 @@
 {
   "usingComponents": {
-    "nav": "/components/navigation-bar/navigation-bar",
+    "nav": "/components/nav",
     "t-button": "tdesign-miniprogram/button/button",
     "t-empty": "tdesign-miniprogram/empty/empty",
     "t-cell": "tdesign-miniprogram/cell/cell",
