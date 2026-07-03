@@ -695,6 +695,9 @@ const normalizeDirectoryUser = (payload, existing = {}) => ({
   name: trimText(payload.name || payload.displayName || existing.name || existing.displayName),
   phone: trimText(payload.phone || existing.phone),
   city: trimText(payload.city || existing.city),
+  gender: Number(payload.gender !== undefined ? payload.gender : (existing.gender || 0)),
+  birth: trimText(payload.birth || existing.birth),
+  introduction: trimText(payload.introduction || existing.introduction),
   avatarUrl: payload.avatarUrl || existing.avatarUrl || '',
   role: payload.role || existing.role || 'guide',
   roleLabel: payload.roleLabel || existing.roleLabel || '',
@@ -721,6 +724,9 @@ const validateDirectoryUserPayload = (user) => {
   if (!trimText(user.displayName || user.name)) return '请填写姓名';
   const phone = trimText(user.phone);
   if (phone && !/^1[3-9]\d{9}$/.test(phone)) return '请输入 11 位中国大陆手机号';
+  const birth = trimText(user.birth);
+  if (birth && !/^\d{4}-\d{2}-\d{2}$/.test(birth)) return '生日格式无效';
+  if (birth && birth > new Date().toISOString().slice(0, 10)) return '生日不能晚于今天';
   return '';
 };
 

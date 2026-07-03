@@ -28,7 +28,7 @@ Page({
     ],
     birthVisible: false,
     birthStart: '1970-01-01',
-    birthEnd: '2025-03-01',
+    birthEnd: new Date().toISOString().slice(0, 10),
     birthTime: 0,
     birthFilter: (type, options) => (type === 'year' ? options.sort((a, b) => b.value - a.value) : options),
     addressText: '',
@@ -68,6 +68,8 @@ Page({
       personInfo: {
         ...this.data.personInfo,
         name: profile.displayName || '',
+        gender: Number(profile.gender || 0),
+        birth: profile.birth || '',
         address,
         introduction: profile.introduction || '',
         photos: profile.avatarUrl ? [{ url: profile.avatarUrl }] : [],
@@ -98,7 +100,6 @@ Page({
     const { column, index } = e.detail;
     const { provinces } = this.data;
 
-    // 更改省份则更新城市列表
     if (column === 0) {
       const cities = this.getCities(provinces[index].value);
       this.setData({ cities });
@@ -111,7 +112,8 @@ Page({
       [`${mode}Visible`]: true,
     });
     if (mode === 'address') {
-      const cities = this.getCities(this.data.personInfo.address[0]);
+      const provinceValue = this.data.personInfo.address[0] || (this.data.provinces[0] && this.data.provinces[0].value);
+      const cities = this.getCities(provinceValue);
       this.setData({ cities });
     }
   },
@@ -192,11 +194,17 @@ Page({
       wx.showToast({ title: '请填写用户名', icon: 'none' });
       return;
     }
+    if (personInfo.birth && personInfo.birth > this.data.birthEnd) {
+      wx.showToast({ title: '生日不能晚于今天', icon: 'none' });
+      return;
+    }
     this.setData({ isSubmitting: true });
     const res = await DirectoryRepository.saveUser({
       id: profile.id,
       name,
       displayName: name,
+      gender: Number(personInfo.gender || 0),
+      birth: personInfo.birth || '',
       city: addressText,
       introduction: String(personInfo.introduction || '').trim(),
       avatarUrl: personInfo.photos && personInfo.photos[0] ? (personInfo.photos[0].url || personInfo.photos[0].path || '') : '',
