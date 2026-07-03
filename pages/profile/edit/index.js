@@ -22,6 +22,16 @@ Page({
     }
   },
 
+  getEmptyFormData() {
+    return {
+      title: '',
+      date: '',
+      city: '',
+      phone: '',
+      statusText: '可显示资料'
+    };
+  },
+
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
     const targetId = options.id || (profile && profile.id) || '';
@@ -33,8 +43,11 @@ Page({
       canSave,
       canEditStatus: isOwnerOrAdmin(profile),
       disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',
+      pageErrorText: canSave ? '' : '当前账号没有个人资料维护权限。',
       targetId,
+      formData: canSave ? this.data.formData : this.getEmptyFormData(),
     });
+    if (!canSave) return;
     if (targetId) {
       this.setData({
         pageTitle: '编辑个人资料',
@@ -48,7 +61,10 @@ Page({
     const res = await DirectoryRepository.getUserById(id);
     if (!res.success) {
       const errorText = res.error || '加载个人资料失败';
-      this.setData({ pageErrorText: errorText });
+      this.setData({
+        pageErrorText: errorText,
+        formData: this.getEmptyFormData(),
+      });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
     }

@@ -31,6 +31,16 @@ Page({
     }
   },
 
+  getEmptyFormData() {
+    return {
+      title: '',
+      date: '',
+      city: '',
+      phone: '',
+      statusText: '导游/领队'
+    };
+  },
+
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
     const reviewStatus = normalizeReviewStatus(profile && (profile.reviewStatus || profile.status));
@@ -58,8 +68,11 @@ Page({
       submitText: isApplicationMode ? '提交导游/领队申请' : '保存导游/领队',
       canEditStatus: isOwnerOrAdmin(profile),
       disabledReason,
+      pageErrorText: canSave ? '' : disabledReason,
       targetId,
+      formData: canSave ? this.data.formData : this.getEmptyFormData(),
     });
+    if (!canSave) return;
     if (targetId) {
       this.setData({
         pageTitle,
@@ -74,7 +87,10 @@ Page({
     const res = await DirectoryRepository.getUserById(id);
     if (!res.success) {
       const errorText = res.error || '加载导游/领队资料失败';
-      this.setData({ pageErrorText: errorText });
+      this.setData({
+        pageErrorText: errorText,
+        formData: this.getEmptyFormData(),
+      });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
     }

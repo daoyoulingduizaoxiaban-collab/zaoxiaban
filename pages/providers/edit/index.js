@@ -21,6 +21,16 @@ Page({
     }
   },
 
+  getEmptyFormData() {
+    return {
+      title: '',
+      date: '',
+      contact: '',
+      note: '',
+      statusText: '可显示资料'
+    };
+  },
+
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
     const targetId = options.id || (profile && profile.role === 'provider' ? (profile.providerId || profile.id) : '');
@@ -28,8 +38,11 @@ Page({
     this.setData({
       canSave,
       disabledReason: canSave ? '' : '当前账号没有供应商资料维护权限。',
+      pageErrorText: canSave ? '' : '当前账号没有供应商资料维护权限。',
       targetId,
+      formData: canSave ? this.data.formData : this.getEmptyFormData(),
     });
+    if (!canSave) return;
     if (targetId) {
       this.setData({
         pageTitle: '编辑供应商',
@@ -43,7 +56,10 @@ Page({
     const res = await DirectoryRepository.getProviderById(id);
     if (!res.success) {
       const errorText = res.error || '加载供应商资料失败';
-      this.setData({ pageErrorText: errorText });
+      this.setData({
+        pageErrorText: errorText,
+        formData: this.getEmptyFormData(),
+      });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
     }

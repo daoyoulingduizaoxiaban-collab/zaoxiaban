@@ -59,6 +59,18 @@ Page({
     disabledReason: '请先登录后编辑个人信息',
   },
 
+  getEmptyPersonInfo() {
+    return {
+      name: '',
+      phone: '',
+      gender: 0,
+      birth: '',
+      address: [],
+      introduction: '',
+      photos: [],
+    };
+  },
+
   onLoad() {
     this.initAreaData();
     this.getPersonalInfo();
@@ -71,6 +83,11 @@ Page({
         canEdit: false,
         accessState: AuthService.getAccessState(profile),
         disabledReason: AuthService.getAccessStateText(profile),
+        personInfo: this.getEmptyPersonInfo(),
+        addressText: '',
+        birthVisible: false,
+        addressVisible: false,
+        isSubmitting: false,
       });
       return;
     }
