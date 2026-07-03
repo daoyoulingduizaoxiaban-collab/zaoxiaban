@@ -203,6 +203,13 @@ Page({
     });
   },
 
+  onDetailImageError() {
+    if (!this.data.selectedProduct) return;
+    this.setData({
+      'selectedProduct.coverUrl': '/static/icon_map.png',
+    });
+  },
+
   // 3. 下架/上架切換
   async onToggleStatus(e: any) {
     const id = String(e.currentTarget.dataset.id);

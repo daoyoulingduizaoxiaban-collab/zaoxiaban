@@ -157,6 +157,13 @@ Page({
     });
   },
 
+  onDetailImageError() {
+    if (!this.data.selectedProduct) return;
+    this.setData({
+      'selectedProduct.coverUrl': '/static/icon_map.png',
+    });
+  },
+
   // 4. 刪除商品
   onDelete(e) {
     const { id } = e.currentTarget.dataset;

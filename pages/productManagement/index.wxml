@@ -70,7 +70,7 @@
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">
     <view class="detail-panel" catchtap="stopDetailTap">
-      <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" />
+      <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" binderror="onDetailImageError" />
       <view class="detail-content">
         <view class="detail-title">{{selectedProduct.title}}</view>
         <view class="detail-section">
