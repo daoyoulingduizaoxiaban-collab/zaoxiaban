@@ -68,8 +68,9 @@ Page({
         priceDisplay: prices.length === 0
           ? ''
           : minPrice === maxPrice
-            ? `$${minPrice}`
-            : `$${minPrice} ~ $${maxPrice}`
+            ? `￥${minPrice}`
+            : `￥${minPrice} ~ ￥${maxPrice}`,
+        coverUrl: item.pictureUrls && item.pictureUrls[0] ? item.pictureUrls[0] : '/static/icon_map.png',
       };
     });
   },
@@ -118,7 +119,7 @@ Page({
       selectedProduct: {
         ...product,
         statusText: Number(product.status) === 2 ? '已上架' : '已下架',
-        coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
+        coverUrl: product.coverUrl || '/static/icon_map.png',
       },
       selectedPriceRules,
       detailVisible: true,
@@ -134,6 +135,15 @@ Page({
   },
 
   noop() {},
+
+  onImageError(e) {
+    const { id } = e.currentTarget.dataset;
+    const patchCover = item => (String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item);
+    this.setData({
+      rawList: this.data.rawList.map(patchCover),
+      displayList: this.data.displayList.map(patchCover),
+    });
+  },
 
   // 4. 刪除商品
   onDelete(e) {

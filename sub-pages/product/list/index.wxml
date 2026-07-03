@@ -24,8 +24,8 @@
 
   <scroll-view scroll-y class="product-list">
     <block wx:for="{{filteredList}}" wx:key="id">
-      <view class="product-card">
-        <image class="cover-image" src="{{item.pictureUrls[0] || '/static/icon_map.png'}}" mode="aspectFill"></image>
+      <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
+        <image class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
         <view class="content-area">
           <view class="header">
             <text class="title">{{item.title}}</text>
@@ -35,7 +35,7 @@
           <view class="price-settings">
             <view class="setting-item" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
               <text class="q-range">满 {{price.minQuantity}} 件:</text>
-              <text class="u-price">¥{{price.unitPrice}}/件</text>
+              <text class="u-price">￥{{price.unitPrice}}/件</text>
               <text class="t-price" wx:if="{{price.totalPrice}}">(共 ¥{{price.totalPrice}})</text>
               <text class="p-desc" wx:if="{{price.description}}">{{price.description}}</text>
             </view>
@@ -45,4 +45,33 @@
     </block>
     <view class="empty-tip" wx:if="{{filteredList.length === 0}}">找不到符合条件的商品</view>
   </scroll-view>
+
+  <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">
+    <view class="detail-panel" catchtap="noop">
+      <image class="detail-img" src="{{selectedProduct.coverUrl}}" mode="aspectFill" />
+      <view class="detail-content">
+        <view class="detail-title">{{selectedProduct.title}}</view>
+        <view class="detail-section">
+          <text class="detail-label">商品描述</text>
+          <text class="detail-text">{{selectedProduct.description || '暂无描述'}}</text>
+        </view>
+        <view class="detail-section">
+          <text class="detail-label">价格规则</text>
+          <block wx:if="{{selectedPriceRules.length}}">
+            <view class="price-rule" wx:for="{{selectedPriceRules}}" wx:key="minQuantity">
+              <text>{{item.minQuantity}} 件起</text>
+              <text>￥{{item.unitPrice}}</text>
+              <text wx:if="{{item.description}}" class="price-rule__note">{{item.description}}</text>
+            </view>
+          </block>
+          <text wx:else class="detail-text">未设置</text>
+        </view>
+        <view class="detail-section">
+          <text class="detail-label">供应来源</text>
+          <text class="detail-text">{{selectedProduct.sourceNote || '暂无'}}</text>
+        </view>
+      </view>
+      <button class="detail-close" bindtap="closeDetail">知道了</button>
+    </view>
+  </view>
 </view>

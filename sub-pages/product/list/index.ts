@@ -7,7 +7,10 @@ Page({
     filteredList: [],
     searchKeyword: '',
     minPrice: null,
-    maxPrice: null
+    maxPrice: null,
+    detailVisible: false,
+    selectedProduct: null,
+    selectedPriceRules: [],
   },
 
   onLoad() {
@@ -21,9 +24,17 @@ Page({
       return;
     }
     this.setData({
-      allProducts: res.data,
-      filteredList: res.data
+      allProducts: this.normalizeProducts(res.data),
+      filteredList: this.normalizeProducts(res.data)
     });
+  },
+
+  normalizeProducts(products = []) {
+    return products.map(item => ({
+      ...item,
+      coverUrl: item.pictureUrls && item.pictureUrls[0] ? item.pictureUrls[0] : '/static/icon_map.png',
+      priceSetting: item.priceSetting || item.priceSettings || [],
+    }));
   },
 
   onInputKeyword(e) {
@@ -58,5 +69,40 @@ Page({
     });
 
     this.setData({ filteredList: results });
-  }
+  },
+
+  openDetail(e) {
+    const { id } = e.currentTarget.dataset;
+    const product = this.data.allProducts.find(item => String(item.id) === String(id));
+    if (!product) {
+      wx.showToast({ title: '未找到商品详情', icon: 'none' });
+      return;
+    }
+    this.setData({
+      selectedProduct: product,
+      selectedPriceRules: product.priceSetting || [],
+      detailVisible: true,
+    });
+  },
+
+  closeDetail() {
+    this.setData({
+      selectedProduct: null,
+      selectedPriceRules: [],
+      detailVisible: false,
+    });
+  },
+
+  noop() {},
+
+  onImageError(e) {
+    const { id } = e.currentTarget.dataset;
+    const nextAll = this.data.allProducts.map(item => (
+      String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item
+    ));
+    const nextFiltered = this.data.filteredList.map(item => (
+      String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item
+    ));
+    this.setData({ allProducts: nextAll, filteredList: nextFiltered });
+  },
 });

@@ -13,7 +13,7 @@
     <block wx:if="{{displayList.length > 0}}">
       <view class="product-card" wx:for="{{displayList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
         
-        <image class="p-img" src="{{item.pictureUrls[0] || '/static/icon_map.png'}}" mode="aspectFill" />
+        <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError" />
         
         <view class="p-info">
           <text class="p-title">{{item.title}}</text>
