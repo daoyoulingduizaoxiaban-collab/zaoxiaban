@@ -32,7 +32,7 @@ Page({
     if (canUseSearch) this.loadLocalSearchWords();
     this.setData({
       canUseSearch,
-      accessStateText: getRoleScopeText(profile, FEATURE_KEYS.SEARCH),
+      accessStateText: canUseSearch ? '' : getRoleScopeText(profile, FEATURE_KEYS.SEARCH),
       historyWords: canUseSearch ? this.data.historyWords : [],
       resultGroups: canUseSearch ? this.data.resultGroups : [],
       hasSearched: canUseSearch ? this.data.hasSearched : false,
@@ -54,7 +54,7 @@ Page({
   setHistoryWords(searchValue) {
     if (!searchValue) return;
 
-    const { historyWords } = this.data;
+    const historyWords = [...this.data.historyWords];
     const index = historyWords.indexOf(searchValue);
 
     if (index !== -1) {
@@ -70,7 +70,7 @@ Page({
   },
 
   confirm() {
-    const { historyWords } = this.data;
+    const historyWords = [...this.data.historyWords];
     const { deleteType, deleteIndex } = this;
 
     if (deleteType === 0) {
