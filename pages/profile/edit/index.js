@@ -8,6 +8,7 @@ Page({
     pageTitle: '新增个人资料',
     isEdit: false,
     canSave: false,
+    canEditStatus: false,
     disabledReason: '',
     pageErrorText: '',
     targetId: '',
@@ -30,6 +31,7 @@ Page({
     );
     this.setData({
       canSave,
+      canEditStatus: isOwnerOrAdmin(profile),
       disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',
       targetId,
     });
@@ -93,14 +95,17 @@ Page({
       return;
     }
     this.setData({ isSubmitting: true });
-    const res = await DirectoryRepository.saveUser({
+    const payload = {
       id: this.data.targetId,
       name: this.data.formData.title,
       displayName: this.data.formData.title,
       city: this.data.formData.city,
       phone,
-      displayRole: this.data.formData.statusText,
-    });
+    };
+    if (this.data.canEditStatus) {
+      payload.displayRole = this.data.formData.statusText;
+    }
+    const res = await DirectoryRepository.saveUser(payload);
     this.setData({ isSubmitting: false });
     if (!res.success) {
       wx.showToast({ title: res.error || '保存个人资料失败', icon: 'none' });

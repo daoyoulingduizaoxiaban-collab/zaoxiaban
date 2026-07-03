@@ -12,7 +12,7 @@
     <t-input label="城市" placeholder="请输入城市" value="{{ formData.city }}" data-field="city" bind:change="onInputChange" />
     <t-input label="手机号" placeholder="请输入手机号" value="{{ formData.phone }}" data-field="phone" bind:change="onInputChange" />
     <t-cell title="维护日期" note="{{ formData.date || '请选择' }}" arrow bind:tap="showDatePicker" />
-    <t-input label="资料状态" value="{{ formData.statusText }}" data-field="statusText" bind:change="onInputChange" />
+    <t-input wx:if="{{canEditStatus}}" label="资料状态" value="{{ formData.statusText }}" data-field="statusText" bind:change="onInputChange" />
   </t-cell-group>
 
   <view class="submit-bar" wx:if="{{canSave && !pageErrorText}}">
