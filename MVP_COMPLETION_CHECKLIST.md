@@ -274,7 +274,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [ ] 底部 tab 状态已验证。
 - [ ] toast/modal/floating button/tab 布局已验证。
 - [ ] 表单输入、返回导航、重新进入已验证。
-- [x] 历史结果曾写入 `ACCEPTANCE.md` 与 `HANDOFF.md`；后续 QA/AGENT 不再被要求更新额外文件。
+- [x] 历史 GUI 结果曾写入项目状态文件；后续 QA/AGENT 不再被要求更新额外交接或进度文件。
 
 ## Phase 8 - 真人可用 MVP Gate
 声明真人可用 MVP 前，以下项目必须全部成立：

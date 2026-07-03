@@ -3,18 +3,15 @@
 微信小程序项目，目标是为中国境内导游/领队提供开团、团单商品、商品库、客户订单和收款状态管理工具。
 
 ## Start Here
-`HANDOFF.md` is the only session entry point.
+`PROJECT_RULES.md` is the session entry point.
 
 Before coding, read:
-1. `HANDOFF.md`
-2. `PROJECT_RULES.md`
+1. `PROJECT_RULES.md`
+2. `BUSINESS_LOGIC_PRINCIPLES.md`
 3. `MVP_COMPLETION_CHECKLIST.md`
-4. `ACCEPTANCE.md`
-5. `DATA_LAYER_DECISION.md`
-6. `DATA_MODEL_AND_PERMISSIONS.md`
-7. `QA/QA_SEED_REQUIREMENTS.md`
+4. `ACCEPTANCE.md` only when the task needs current validation status.
 
-After reading `HANDOFF.md`, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for QA problem reports, retest notes, evidence, and pass/fail status.
+Use `BUSINESS_LOGIC_PRINCIPLES.md` as the only business-logic source of truth. Use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` only when explicitly fixing current QA not-pass rows.
 
 Do not copy BUG rows, BUG ID lists, GUI subissue lists, or per-page defect ledgers into `MVP_COMPLETION_CHECKLIST.md`. The MVP checklist tracks gate-level categories; the BUG report tracks independently fixable and retestable rows.
 
@@ -27,7 +24,7 @@ QA/AGENT work must stay separated by responsibility: QA reports only in the BUG 
 - Product library has local/QA repository implementation.
 - Product, group-order, customer-order, and payment persistence have cloud repository/cloud-function paths plus local/QA fallback.
 - Phase 5 customer ordering/payment workflow is implemented, but GUI/device retest evidence is still pending.
-- Full 28-route / real workflow GUI validation has not passed; current MVP gate remains `不通過` until fresh GUI/true-device evidence exists.
+- Full 29-route / real workflow GUI validation has not passed; current MVP gate remains `不通過` until fresh GUI/true-device evidence exists.
 - Role-based feature-entry hiding now requires a gate-level role/function matrix before it can be considered complete.
 
 ## Main Routes

@@ -1,15 +1,12 @@
 # PROJECT_RULES
 
 ## Read Order For Every New Work Session
-1. `HANDOFF.md`
-2. `PROJECT_RULES.md`
+1. `PROJECT_RULES.md`
+2. `BUSINESS_LOGIC_PRINCIPLES.md`
 3. `MVP_COMPLETION_CHECKLIST.md`
-4. `ACCEPTANCE.md`
-5. `DATA_LAYER_DECISION.md`
-6. `DATA_MODEL_AND_PERMISSIONS.md`
-7. `QA/QA_SEED_REQUIREMENTS.md`
+4. `ACCEPTANCE.md` only when the task needs current validation status.
 
-`HANDOFF.md` is the only session entry point. After reading it, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for current not-pass problem rows. The BUG report is not a history log and must not store proof-shortage wording.
+`BUSINESS_LOGIC_PRINCIPLES.md` is the only business-logic source of truth. Do not use deleted or historical handoff/data-model/QA-seed documents as decision sources. Use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` only when explicitly fixing current QA not-pass rows.
 
 QA and AGENT must not create extra planning, handoff, result, matrix, or progress documents unless the user explicitly asks. QA reports only current `不通過` rows in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA verification.
 
@@ -18,12 +15,13 @@ Do not rely on chat memory.
 ## Product Definition
 - WeChat mini program for China-based guides/tour leaders.
 - Core terms: `开团`, `团单`, `本团商品`, `商品库`, `客户订单`, `收款状态`.
-- First real MVP focuses on guide/tour-leader workflow only.
-- Customer, supplier, and admin capabilities stay minimal until explicitly scoped.
+- MVP business logic is defined in `BUSINESS_LOGIC_PRINCIPLES.md`.
+- Provider is a formal MVP role, not a future placeholder.
+- Customer logic must distinguish direct registration from restricted share-ordering, and one OpenID may have multiple scenario roles.
 
 ## Current Technical Truth
 - The app is in mixed mode: formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use QA/local fallback.
-- `config.js` has `isMock: true`, `baseUrl: ''`, and `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`.
+- `config.js` currently has `isMock: false`, `baseUrl: ''`, `cloudEnvId: 'cloud1-3gwlqssy1f1972a9'`, and `useCloudBusinessData: true`.
 - Formal data layer direction is confirmed by the user: WeChat Cloud Database + Cloud Functions behind service/repository boundaries.
 - Formal OpenID is verified through deployed `authLogin`.
 - Cloud `users` profile initialization is verified for the current OpenID.
@@ -56,7 +54,7 @@ Do not rely on chat memory.
 - Install new packages.
 - Use network.
 - Submit `resume/preview-info.json` or `resume/preview-qr.png`.
-- Extend Phase 5 beyond the scoped MVP customer order/payment workflow.
+- Add business scope beyond `BUSINESS_LOGIC_PRINCIPLES.md` or `MVP_COMPLETION_CHECKLIST.md` without explicit user approval.
 
 ## Required Validation
 ```bash
