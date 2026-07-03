@@ -100,48 +100,8 @@ Component({
     //   });
     // },
 
-    // 初始化下方BAR
     initTabBar() {
-      const menu = [
-        // {
-        //   icon: 'home',
-        //   value: 'home',
-        //   label: '首頁'
-        // },
-        {
-          icon: 'bulletpoint',
-          symbol: '单',
-          value: 'groupOrder',
-          label: '团单'
-        },
-        {
-          icon: 'user',
-          symbol: '导',
-          value: 'tourGuides',
-          label: '导游管理'
-        },
-        {
-          icon: 'usergroup',
-          symbol: '客',
-          value: 'customerOrders',
-          label: '客户订单'
-        },
-        {
-          icon: 'shop',
-          symbol: '供',
-          value: 'providers',
-          label: '供应商'
-        },
-        {
-          icon: 'user',
-          symbol: '我',
-          value: 'profile',
-          label: '我的'
-        },
-      ];
-      this.setData({
-        list: menu
-      });
+      this.setData({ list: BOTTOM_BAR_LIST });
     },
   },
 });

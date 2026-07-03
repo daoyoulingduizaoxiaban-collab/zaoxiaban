@@ -5,7 +5,7 @@ import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 Page({
   data: {
     titleText: '工作台',
-    modeText: '请先登录；正式登录后资料保存到微信云端。',
+    modeText: '请先登录；通过审核后即可使用业务功能。',
     accessState: 'logged_out',
     accessStateText: '请先登录后继续使用',
     canUseBusiness: false,
@@ -27,16 +27,16 @@ Page({
     const cloudEnabled = isCloudBusinessEnabled();
     const accessState = AuthService.getAccessState(profile);
     const canUseBusiness = AuthService.canUseBusiness(profile);
-    let modeText = '请先登录；正式登录后资料保存到微信云端。';
+    let modeText = '请先登录；通过审核后即可使用业务功能。';
 
     if (!canUseBusiness) {
       modeText = AuthService.getAccessStateText(profile);
     } else if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
       modeText = '当前账号已通过微信登录，业务资料保存到微信云端。';
     } else if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
-      modeText = '当前未连接微信云端保存。';
+      modeText = '当前资料仅保存到本设备。';
     } else if (profile) {
-      modeText = '当前账号未通过云端验证。';
+      modeText = '当前账号状态待确认，请重新检查或联系管理员。';
     }
 
     const canCreateGroupOrder = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);

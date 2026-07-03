@@ -4,6 +4,8 @@ import {
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 
 Page({
@@ -19,6 +21,7 @@ Page({
     saveModeText: '读取团单资料中',
     customerEntryPath: '',
     isDetailLoaded: false,
+    canManageGroupOrder: false,
   },
 
   onLoad(options) {
@@ -58,6 +61,7 @@ Page({
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
           isDetailLoaded: true,
+          canManageGroupOrder: this.canManageGroupOrder(),
         });
       } else {
         this.setData({ isDetailLoaded: true, saveModeText: res.error || '加载团单失败' });
@@ -100,6 +104,10 @@ Page({
   },
 
   onExportReport() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能导出团单报表', icon: 'none' });
+      return;
+    }
     const groupOrder = this.data.groupOrder || {};
     const orders = groupOrder.memberOrderList || [];
     const lines = [
@@ -227,6 +235,10 @@ Page({
   },
 
   onConfirmPayment(e) {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能确认收款', icon: 'none' });
+      return;
+    }
     const {
       id
     } = e.currentTarget.dataset;
@@ -245,6 +257,10 @@ Page({
   },
 
   onCancelOrder(e) {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能取消订单', icon: 'none' });
+      return;
+    }
     const {
       id
     } = e.currentTarget.dataset;
@@ -320,6 +336,10 @@ Page({
   },
 
   onCustomerOrderEntry() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能生成客户下单入口', icon: 'none' });
+      return;
+    }
     const id = this.data.groupOrderId;
     if (!id) {
       wx.showToast({
@@ -341,6 +361,10 @@ Page({
   },
 
   onCopyCustomerEntry() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能复制客户下单入口', icon: 'none' });
+      return;
+    }
     const path = this.data.groupOrder.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${this.data.groupOrderId}`;
     wx.setClipboardData({
       data: path,
@@ -350,6 +374,10 @@ Page({
   },
 
   onEditGroupOrder() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能编辑团单', icon: 'none' });
+      return;
+    }
     const id = this.data.groupOrderId;
     if (!id) {
       wx.showToast({
@@ -371,13 +399,17 @@ Page({
   },
 
   onManageProducts() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能管理本团商品', icon: 'none' });
+      return;
+    }
     const id = this.data.groupOrderId;
     if (id) {
       wx.navigateTo({
         url: `/sub-pages/groupOrder/productList/index?id=${id}`,
         fail: () => {
           wx.showToast({
-            title: '跳轉商品管理失敗',
+            title: '打开本团商品失败',
             icon: 'none'
           });
         }
@@ -386,11 +418,15 @@ Page({
       const app = getApp();
       wx.showModal({
         title: '提示',
-        content: '很抱歉，系統發生錯誤',
+        content: '缺少团单 ID，请返回团单列表重新进入。',
         showCancel: false,
-        confirmText: '我知道了',
+        confirmText: '知道了',
         confirmColor: app.globalData.themeColor
       })
     }
+  },
+
+  canManageGroupOrder() {
+    return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDER_CREATE);
   }
 });

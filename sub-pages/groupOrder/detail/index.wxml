@@ -23,7 +23,7 @@
         show-menu-by-longpress />
       <view class="qr-label">点一下放大，长按分享</view>
     </view>
-    <view class="share-entry">
+    <view class="share-entry" wx:if="{{canManageGroupOrder}}">
       <view class="share-path">{{customerEntryPath || '客户入口加载中'}}</view>
       <view class="share-actions">
         <t-button size="small" theme="primary" open-type="share" disabled="{{!groupOrderId}}">分享给客户</t-button>
@@ -72,11 +72,11 @@
           <text class="label">应付总额：</text>
           <text class="value price">￥{{memberOrder.totalPrice}}</text>
         </view>
-        <view class="action-section" wx:if="{{memberOrder.status === 1}}">
+        <view class="action-section" wx:if="{{canManageGroupOrder && memberOrder.status === 1}}">
           <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
             data-id="{{memberOrder.id}}">确认已到账</t-button>
         </view>
-        <view class="action-section" wx:if="{{memberOrder.status !== 2 && memberOrder.status !== 3}}">
+        <view class="action-section" wx:if="{{canManageGroupOrder && memberOrder.status !== 2 && memberOrder.status !== 3}}">
           <t-button theme="danger" size="small" block variant="outline" catchtap="onCancelOrder"
             data-id="{{memberOrder.id}}">取消订单</t-button>
         </view>
@@ -88,7 +88,7 @@
     当前团单暂无客户订单
   </view>
 
-  <view wx:if="{{isDetailLoaded && groupOrderId}}" class="footer-action-bar">
+  <view wx:if="{{isDetailLoaded && groupOrderId && canManageGroupOrder}}" class="footer-action-bar">
     <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onEditGroupOrder"
       disabled="{{!groupOrderId}}">
       编辑团单

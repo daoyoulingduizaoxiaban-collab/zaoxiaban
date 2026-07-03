@@ -19,7 +19,7 @@ Page({
     accessDenied: false,
     accessStateText: '',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
-    imageModeTip: '正式云端模式会先上传为持久图片，再保存商品。',
+    imageModeTip: '图片会随商品资料一起保存，便于客户查看实物。',
 
     // 當前正在編輯的商品
     currentProduct: {
@@ -70,8 +70,8 @@ Page({
         saveMode: cloudEnabled ? CLOUD_SAVE_MODE : 'local-product-repository',
       }),
       imageModeTip: cloudEnabled
-        ? '正式云端模式会先上传为持久图片，再保存商品。'
-        : '当前环境未连接云端图片上传，图片仅用于本次预览。',
+        ? '图片会随商品资料一起保存，便于客户查看实物。'
+        : '当前环境无法保存图片，请稍后重试或联系管理员。',
     });
   },
 

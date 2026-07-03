@@ -154,10 +154,6 @@ export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = [
     return groupOrders.filter(order => visibleGroupOrderIds.includes(String(order.id)));
   }
 
-  if (profile.role === AUTH_ROLES.PROVIDER) {
-    return activeProducts.filter(product => sameId(product.providerId, profile.providerId || profile.id));
-  }
-
   return [];
 };
 
@@ -193,6 +189,10 @@ export const filterProductsByRole = (products, profile) => {
       || sameId(product.ownerUserId, profile.id)
       || product.visibility === 'public'
     ));
+  }
+
+  if (profile.role === AUTH_ROLES.PROVIDER) {
+    return activeProducts.filter(product => sameId(product.providerId, profile.providerId || profile.id));
   }
 
   return [];

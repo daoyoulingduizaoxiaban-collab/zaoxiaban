@@ -216,7 +216,7 @@ Page({
 
     wx.showModal({
       title: '提示',
-      content: `确定要软删除此商品吗？${this.data.saveModeText}`,
+      content: `确定要删除此商品吗？删除后将不再展示给客户。${this.data.saveModeText}`,
       success: async (modalRes) => {
         if (modalRes.confirm) {
           const res = await ProductService.softDelete(id);
