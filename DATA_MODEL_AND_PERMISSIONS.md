@@ -1,7 +1,7 @@
 # DATA_MODEL_AND_PERMISSIONS
 
 ## 目的
-本文件是资料模型与权限边界说明。当前 MVP 已采用微信云开发数据库 + 云函数，并通过 service/repository 边界接入；完整 27-route GUI smoke test 仍未完成。
+本文件是资料模型与权限边界说明。当前 MVP 已采用微信云开发数据库 + 云函数，并通过 service/repository 边界接入；完整 28-route GUI smoke test 仍未完成。
 
 `mock/qaSeed.ts` 后续只保留为测试资料来源和 QA 展示 seed，不可作为真人操作的唯一资料来源。正式页面应通过资料存取层读取 mock/cloud/API，而不是直接散落读取 seed、storage 或数据库 SDK。
 
@@ -198,4 +198,4 @@
 - Formal WeChat OpenID binding is verified for the current DevTools user through `authLogin`.
 - Owner/admin role assignment still needs cloud-function environment allowlists: `OWNER_OPENIDS` / `ADMIN_OPENIDS`.
 - Cloud repository boundaries exist for core business data, with local/QA fallback for mock identities.
-- Formal business persistence has targeted verification; full 27-route GUI smoke is still pending.
+- Formal business persistence has targeted verification; full 28-route GUI smoke is still pending.
