@@ -1,3 +1,49 @@
+const SUPPORTED_ICON_NAMES = new Set([
+  'action',
+  'add',
+  'app',
+  'bulletpoint',
+  'chat',
+  'check',
+  'close-circle-filled',
+  'cloud',
+  'data-display',
+  'delete',
+  'discount',
+  'edit',
+  'home',
+  'info-circle',
+  'location',
+  'none',
+  'root-list',
+  'search',
+  'secured',
+  'server',
+  'setting',
+  'shop',
+  'success',
+  'upload',
+  'user',
+  'user-setting',
+  'usergroup',
+  'view-list',
+]);
+
+const ICON_NAME_ALIASES = {
+  close: 'close-circle-filled',
+  list: 'view-list',
+  product: 'shop',
+  products: 'shop',
+  profile: 'user',
+  users: 'usergroup',
+};
+
+const normalizeIconName = (name = '') => {
+  const normalized = String(name || '').trim();
+  const aliased = ICON_NAME_ALIASES[normalized] || normalized;
+  return SUPPORTED_ICON_NAMES.has(aliased) ? aliased : 'none';
+};
+
 Component({
   externalClasses: ['t-class'],
   options: {
@@ -40,14 +86,19 @@ Component({
   },
   data: {
     iconStyle: '',
+    iconName: 'none',
   },
   observers: {
     'color, size, customStyle, style': function updateIconStyle() {
       this.setIconStyle();
     },
+    name: function updateIconName(name) {
+      this.setData({ iconName: normalizeIconName(name) });
+    },
   },
   lifetimes: {
     attached() {
+      this.setData({ iconName: normalizeIconName(this.data.name) });
       this.setIconStyle();
     },
   },

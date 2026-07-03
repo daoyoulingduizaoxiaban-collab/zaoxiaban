@@ -157,6 +157,7 @@
 }
 
 .local-icon--close-circle-filled .local-icon__shape,
+.local-icon--info-circle .local-icon__shape,
 .local-icon--delete .local-icon__shape {
   border: 2px solid currentColor;
   border-radius: 999px;
@@ -164,6 +165,19 @@
 
 .local-icon--close-circle-filled .local-icon__shape {
   background: currentColor;
+}
+
+.local-icon--info-circle .local-icon__shape::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  width: 2px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+  transform: translateX(-50%);
+  box-shadow: 0 0.22em 0 currentColor, 0 0.34em 0 currentColor, 0 0.46em 0 currentColor;
 }
 
 .local-icon--close-circle-filled .local-icon__shape::before,
@@ -262,9 +276,6 @@
 
 .local-icon--usergroup .local-icon__shape {
   transform: scale(0.88);
-}
-
-.local-icon--usergroup .local-icon__shape {
   box-shadow: -0.28em 0.2em 0 -0.12em currentColor, 0.28em 0.2em 0 -0.12em currentColor;
 }
 
@@ -316,7 +327,6 @@
   content: "";
   border: 2px solid currentColor;
   border-radius: 4px;
-  box-shadow: 0.5em 0 0 -2px transparent, 0 0.5em 0 -2px transparent;
 }
 
 .local-icon--upload .local-icon__shape {
@@ -431,24 +441,6 @@
   border: 2px solid currentColor;
   border-radius: 999px;
   background: #fff;
-}
-
-.local-icon--info-circle .local-icon__shape {
-  border: 2px solid currentColor;
-  border-radius: 999px;
-}
-
-.local-icon--info-circle .local-icon__shape::before {
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 18%;
-  width: 2px;
-  height: 2px;
-  border-radius: 999px;
-  background: currentColor;
-  transform: translateX(-50%);
-  box-shadow: 0 0.22em 0 currentColor, 0 0.34em 0 currentColor, 0 0.46em 0 currentColor;
 }
 
 .local-icon--server .local-icon__shape,

@@ -1,5 +1,5 @@
 <view
-  class="local-icon local-icon--{{name}} t-class"
+  class="local-icon local-icon--{{iconName}} t-class"
   style="{{iconStyle}}"
   bindtap="onTap"
   aria-hidden="{{ariaHidden}}"
