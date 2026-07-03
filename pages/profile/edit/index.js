@@ -21,16 +21,17 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const canSave = isOwnerOrAdmin(profile);
+    const targetId = options.id || (profile && profile.id) || '';
+    const canSave = Boolean(profile && (!targetId || isOwnerOrAdmin(profile) || String(targetId) === String(profile.id)));
     this.setData({
       canSave,
       disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',
+      targetId,
     });
     if (options.id) {
       this.setData({
         pageTitle: '编辑个人资料',
         isEdit: true,
-        targetId: options.id,
       });
       this.fetchprofileDetail(options.id);
     }

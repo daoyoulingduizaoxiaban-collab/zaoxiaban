@@ -15,6 +15,12 @@ Page({
     });
   },
 
+  onRoleTap(e) {
+    const { role } = e.currentTarget.dataset;
+    if (!role) return;
+    this.setData({ selectedRole: role });
+  },
+
   async login() {
     if (this.data.isSubmitting) return;
 
@@ -23,6 +29,13 @@ Page({
 
     try {
       const res = await AuthService.login({ role: this.data.selectedRole });
+      if (!res.success) {
+        wx.showToast({
+          title: res.error || '登录失败，请稍后重试',
+          icon: 'none',
+        });
+        return;
+      }
       const { profile, session } = res.data;
       const title = session.isMockOpenId ? '已进入演示身份' : `登录成功：${profile.roleLabel}`;
 

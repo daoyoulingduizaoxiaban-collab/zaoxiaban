@@ -180,7 +180,7 @@ export const AuthService = {
 
   async login({ role = AUTH_ROLES.GUIDE } = {}) {
     const loginResult = await wxLogin();
-    let profileSource = normalizeMockProfile(role);
+    let profileSource = config.isMock ? normalizeMockProfile(role) : null;
     let authStatus = {
       wxLoginCalled: loginResult.success,
       wxLoginCodeAvailable: Boolean(loginResult.code),
@@ -203,6 +203,13 @@ export const AuthService = {
           fallbackReason: cloudResult.error || '云函数未返回 openId',
         };
       }
+    }
+
+    if (!profileSource) {
+      return {
+        success: false,
+        error: authStatus.fallbackReason || '微信登录验证失败',
+      };
     }
 
     const profile = mergeProfileTimestamps(profileSource);

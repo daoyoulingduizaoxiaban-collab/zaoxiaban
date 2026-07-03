@@ -16,14 +16,17 @@ Page({
     showConfirmDialog: false,
     selectedMemberOrderId: '',
     showCancelDialog: false,
-    saveModeText: '演示保存：资料仅保留在当前设备',
+    saveModeText: '读取团单资料中',
+    customerEntryPath: '',
+    isDetailLoaded: false,
   },
 
   onLoad(options) {
     const id = options.id ? String(options.id) : '';
     if (id) {
       this.setData({
-        groupOrderId: id
+        groupOrderId: id,
+        customerEntryPath: `/pages/customerOrders/edit/index?groupOrderId=${id}`,
       });
       this.fetchGroupOrderDetail(id);
     } else {
@@ -47,11 +50,17 @@ Page({
       const res = await CustomerOrderService.getGroupOrderDetail(id)
       if (res.success) {
         this.setData({
-          groupOrder: res.data,
+          groupOrder: {
+            ...res.data,
+            sharePath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+          },
+          customerEntryPath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
+          isDetailLoaded: true,
         });
       } else {
+        this.setData({ isDetailLoaded: true, saveModeText: res.error || '加载团单失败' });
         wx.showToast({
           title: res.error || '加载团单失败',
           icon: 'none'
@@ -59,6 +68,7 @@ Page({
       }
 
     } catch (err) {
+      this.setData({ isDetailLoaded: true, saveModeText: '加载团单失败' });
       wx.showToast({
         title: '加载团单失败',
         icon: 'none'

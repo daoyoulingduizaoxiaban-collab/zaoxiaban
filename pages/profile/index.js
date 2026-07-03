@@ -44,7 +44,7 @@ Page({
         statusText: user.displayRole,
         description: `${user.city}｜手机号 ${user.phone}`,
       })),
-      canCreateProfile: isOwnerOrAdmin(currentProfile),
+      canCreateProfile: Boolean(currentProfile),
       disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的个人资料。'),
     });
   },
@@ -61,10 +61,6 @@ Page({
   },
 
   onGoToEdit(e) {
-    if (!this.data.canCreateProfile) {
-      wx.showToast({ title: '当前账号不能新增个人资料', icon: 'none' });
-      return;
-    }
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/profile/edit/index?id=${id}` : '/pages/profile/edit/index';
 

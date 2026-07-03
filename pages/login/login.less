@@ -45,4 +45,42 @@
   &__button {
     margin-top: 28rpx;
   }
+
+  &__roles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16rpx;
+  }
+
+  &__role {
+    min-height: 88rpx;
+    border: 2rpx solid #d8dee8;
+    border-radius: 8rpx;
+    color: #334155;
+    font-size: 28rpx;
+    line-height: 88rpx;
+    text-align: center;
+    background: #ffffff;
+  }
+
+  &__role--active {
+    border-color: #0052d9;
+    color: #0052d9;
+    background: #eef4ff;
+    font-weight: 600;
+  }
+
+  &__native-button {
+    width: 100%;
+    height: 88rpx;
+    border-radius: 8rpx;
+    background: #0052d9;
+    color: #ffffff;
+    font-size: 30rpx;
+    line-height: 88rpx;
+  }
+
+  &__native-button[disabled] {
+    opacity: 0.6;
+  }
 }

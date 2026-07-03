@@ -1,26 +1,28 @@
-<t-navbar left-arrow />
+<t-navbar title="微信登录" left-arrow fixed="{{true}}" placeholder="{{true}}" />
 <view class="page login">
   <view class="login__title">登录导游领队早下班</view>
   <view class="login__subtitle">用于开团、团单、商品库和客户订单的身份识别。</view>
 
   <view class="login__content">
     <view class="login__section-title">选择登录角色</view>
-    <t-radio-group value="{{selectedRole}}" bind:change="onRoleChange">
-      <t-radio
+    <view class="login__roles">
+      <view
         wx:for="{{roleOptions}}"
         wx:key="value"
-        label="{{item.label}}"
-        value="{{item.value}}"
-        borderless="{{false}}"
-      />
-    </t-radio-group>
+        class="login__role {{selectedRole === item.value ? 'login__role--active' : ''}}"
+        data-role="{{item.value}}"
+        bindtap="onRoleTap"
+      >
+        {{item.label}}
+      </view>
+    </view>
 
     <view class="login__notice">{{authNotice}}</view>
 
     <view class="login__button">
-      <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
+      <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
         微信登录并初始化资料
-      </t-button>
+      </button>
     </view>
   </view>
 </view>

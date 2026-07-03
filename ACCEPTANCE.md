@@ -76,6 +76,10 @@
   - Home and setting save-mode copy now separates formal OpenID cloud save, QA override, and mock/local testing states by reading the current auth session.
   - Profile, tour guide, and provider list/edit pages now use `DirectoryRepository` instead of page-level seed reads; edit forms bind input values, validate required names, save through local fallback or cloud `businessData` actions, and return to refreshed lists.
   - Group-order detail confirmation now sends a confirmed amount to the payment service, and export generates a copyable report summary instead of a non-supported action toast.
+  - Formal mode now has `config.isMock: false`; `AuthService.login()` no longer falls back to mock identity when cloud login fails outside mock mode.
+  - Login uses native role buttons and a native submit button for stable GUI rendering; My exposes formal personal-profile and data-center entries, and self profile editing routes to the repository-backed profile form.
+  - Formal product listing filters cloud records containing internal QA/test/automation wording, and formal product creation rejects those terms.
+  - Group-order detail waits for data before showing the form, avoids initial demo-save placeholder flashes, and always derives a customer entry path from `groupOrderId` when the cloud record lacks `sharePath`.
 - Documentation hygiene:
   - `README.md` now reflects the current source-of-truth workflow, confirmed WeChat Cloud data layer, implemented Phase 5 workflow, and remaining GUI gate.
 - Phase 6 UI cleanup is complete for the scoped starter pages:

@@ -1,7 +1,7 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
-import { canUseAdminPortal, canUseProviderPortal } from '~/services/auth/roleScope';
+import { AUTH_ROLES, canUseAdminPortal, canUseProviderPortal, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
 Page({
   behaviors: [useToastBehavior],
@@ -40,9 +40,7 @@ Page({
       },
     ],
 
-    settingList: [
-      { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
-    ],
+    settingList: [],
   },
 
   onLoad() {
@@ -59,8 +57,60 @@ Page({
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
       canShowQaTools: AuthService.canShowQaTools(profile, session),
+      gridList: this.buildGridList(profile),
+      settingList: this.buildSettingList(profile),
     });
     this.loadQaSeed();
+  },
+
+  buildGridList(profile) {
+    const list = [
+      {
+        name: '团单',
+        icon: 'root-list',
+        type: 'all',
+        url: '/pages/groupOrder/index',
+      },
+      {
+        name: '客户订单',
+        icon: 'search',
+        type: 'progress',
+        url: '/pages/customerOrders/index',
+      },
+      {
+        name: '商品库',
+        icon: 'upload',
+        type: 'published',
+        url: '/pages/productManagement/index',
+      },
+    ];
+
+    if (profile && [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN].includes(profile.role)) {
+      list.push({
+        name: '数据中心',
+        icon: 'data-display',
+        type: 'dataCenter',
+        url: '/pages/dataCenter/index',
+      });
+    }
+
+    return list;
+  },
+
+  buildSettingList(profile) {
+    const list = [
+      { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index' },
+      { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
+    ];
+
+    if (isOwnerOrAdmin(profile)) {
+      list.splice(1, 0,
+        { name: '导游/领队资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index' },
+        { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index' },
+      );
+    }
+
+    return list;
   },
 
   loadQaSeed() {
@@ -104,7 +154,9 @@ Page({
   },
 
   onNavigateTo() {
-    wx.navigateTo({ url: `/pages/my/info-edit/index` });
+    const profile = AuthService.getCurrentProfile();
+    const url = profile && profile.id ? `/pages/profile/edit/index?id=${profile.id}` : '/pages/profile/index';
+    wx.navigateTo({ url });
   },
 
   onResetQaSeed() {

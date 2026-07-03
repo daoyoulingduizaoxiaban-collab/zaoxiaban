@@ -200,6 +200,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单记录问题、证据、复
 - [x] `npm run lint` 通过。
 - [x] `git diff --check` 通过。
 - [x] 没有把 mock/local fallback 包装成 production 行为。
+- [x] 正式模式关闭 mock 开关，云登录失败时不再自动包装成 mock 身份。
 
 ### Phase 8 已完成但不代表 MVP gate 全部通过
 - [x] 使用 DevTools CLI 找到微信云环境：`cloud1-3gwlqssy1f1972a9`。
