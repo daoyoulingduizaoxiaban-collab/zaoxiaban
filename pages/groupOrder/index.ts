@@ -134,7 +134,7 @@ Page({
     navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`, {
       fail: () => {
         wx.showToast({
-          title: '跳轉詳情頁失敗',
+          title: '打开详情页失败',
           icon: 'none'
         });
       }

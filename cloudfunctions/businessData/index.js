@@ -132,6 +132,10 @@ const canManageProduct = (product, profile) => {
   if (isOwnerOrAdmin(profile)) return true;
   if (profile.role === 'guide') return sameId(product.ownerOpenId, profile.openId);
   if (profile.role === 'provider') return sameId(product.providerId, profile.providerId || profile.id);
+  if (profile.role === 'customer') {
+    return Number(product.status) === PRODUCT_STATUS.PUBLISHED
+      && product.visibility !== 'private';
+  }
   return false;
 };
 
@@ -233,7 +237,7 @@ const validateProductPayload = (product) => {
 
 const productActions = {
   async listVisible({ keyword = '', status = 0 }, profile) {
-    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
+    assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin', 'provider']);
     const products = (await getAllActive('products')).filter(product => canViewProduct(product, profile));
     const statusValue = Number(status || 0);
     const statusFiltered = statusValue ? products.filter(product => Number(product.status) === statusValue) : products;
