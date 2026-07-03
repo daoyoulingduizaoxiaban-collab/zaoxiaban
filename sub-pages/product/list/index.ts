@@ -23,9 +23,10 @@ Page({
       wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
       return;
     }
+    const products = this.normalizeProducts(res.data);
     this.setData({
-      allProducts: this.normalizeProducts(res.data),
-      filteredList: this.normalizeProducts(res.data)
+      allProducts: products,
+      filteredList: products
     });
   },
 
@@ -34,7 +35,22 @@ Page({
       ...item,
       coverUrl: item.pictureUrls && item.pictureUrls[0] ? item.pictureUrls[0] : '/static/icon_map.png',
       priceSetting: item.priceSetting || item.priceSettings || [],
+      priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
+      minUnitPrice: this.getMinUnitPrice(item.priceSetting || item.priceSettings || []),
     }));
+  },
+
+  getMinUnitPrice(priceSetting = []) {
+    const prices = (priceSetting || []).map(rule => Number(rule.unitPrice || 0)).filter(price => price > 0);
+    return prices.length ? Math.min(...prices) : 0;
+  },
+
+  getPriceDisplay(priceSetting = []) {
+    const prices = (priceSetting || []).map(rule => Number(rule.unitPrice || 0)).filter(price => price > 0);
+    if (!prices.length) return '未设置价格';
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
   },
 
   onInputKeyword(e) {
@@ -56,14 +72,19 @@ Page({
   executeSearch() {
     const { allProducts, searchKeyword, minPrice, maxPrice } = this.data;
 
-    const results = allProducts.filter(item => {
-      const matchKeyword = !searchKeyword ||
-        item.title.includes(searchKeyword) ||
-        item.description.includes(searchKeyword);
+    const query = String(searchKeyword || '').trim().toLowerCase();
+    const min = Number(minPrice || 0);
+    const max = Number(maxPrice || 0);
 
-      const basePrice = item.priceSetting[0] ? item.priceSetting[0].unitPrice : 0;
-      const matchMinPrice = !minPrice || basePrice >= parseFloat(minPrice);
-      const matchMaxPrice = !maxPrice || basePrice <= parseFloat(maxPrice);
+    const results = allProducts.filter(item => {
+      const matchKeyword = !query ||
+        String(item.title || '').toLowerCase().includes(query) ||
+        String(item.description || '').toLowerCase().includes(query) ||
+        String(item.sourceNote || '').toLowerCase().includes(query);
+
+      const basePrice = Number(item.minUnitPrice || 0);
+      const matchMinPrice = !min || basePrice >= min;
+      const matchMaxPrice = !max || basePrice <= max;
 
       return matchKeyword && matchMinPrice && matchMaxPrice;
     });
@@ -104,5 +125,12 @@ Page({
       String(item.id) === String(id) ? { ...item, coverUrl: '/static/icon_map.png' } : item
     ));
     this.setData({ allProducts: nextAll, filteredList: nextFiltered });
+  },
+
+  onDetailImageError() {
+    if (!this.data.selectedProduct) return;
+    this.setData({
+      'selectedProduct.coverUrl': '/static/icon_map.png',
+    });
   },
 });

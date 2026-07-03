@@ -40,6 +40,7 @@ const normalizeGroupOrderProducts = groupOrder => (groupOrder.productList || [])
   .filter(product => Number(product.status) === ProductStatus.PUBLISHED)
   .map(product => ({
     ...product,
+    coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
     quantity: 0,
     priceDisplay: getProductPriceDisplay(product),
     lineTotal: 0,

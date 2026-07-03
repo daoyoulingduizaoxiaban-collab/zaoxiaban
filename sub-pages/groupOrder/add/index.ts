@@ -70,8 +70,16 @@ Page({
         customerNotice: res.data.customerNotice || '',
         status: Number(res.data.status || GroupOrderStatus.OPEN),
       },
-      selectedGoods: res.data.productList || [],
+      selectedGoods: this.normalizeGoods(res.data.productList || []),
     });
+  },
+
+  normalizeGoods(goods = []) {
+    return goods.map(item => ({
+      ...item,
+      coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || '/static/icon_map.png',
+      priceSetting: item.priceSetting || item.priceSettings || [],
+    }));
   },
 
   onInput(e: any) {
@@ -95,7 +103,7 @@ Page({
       url: `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
       events: {
         selectedProducts: (data) => {
-          const selectedProducts = (data.products || []).map(item => new Product(item));
+          const selectedProducts = this.normalizeGoods((data.products || []).map(item => new Product(item)));
           if (selectedProducts.length === 0) return;
           this.setData({
             selectedGoods: [...this.data.selectedGoods, ...selectedProducts]

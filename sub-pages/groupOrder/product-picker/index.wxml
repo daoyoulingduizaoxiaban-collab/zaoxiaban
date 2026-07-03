@@ -19,14 +19,13 @@
           <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
         </view>
 
-        <image class="p-img" src="{{item.pictureUrls[0] || '/static/icon_map.png'}}" mode="aspectFill"></image>
+        <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
 
         <view class="p-info">
           <text class="p-title">{{item.title}}</text>
           <text class="p-desc">{{item.description || '暂无描述'}}</text>
           <view class="p-price-row">
-             <text class="p-price">${{item.priceSetting[0].unitPrice}}</text>
-            <text class="p-unit" wx:if="{{item.priceSetting[0].minQuantity > 1}}">起</text>
+            <text class="p-price">{{item.priceDisplay}}</text>
           </view>
         </view>
         

@@ -49,6 +49,8 @@ Page({
       const isExist = this.data.excludeIds.includes(String(item.id));
       return {
         ...item,
+        coverUrl: item.coverUrl || (item.pictureUrls && item.pictureUrls[0]) || '/static/icon_map.png',
+        priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
         disabled: isExist,
         selected: false
       };
@@ -76,9 +78,18 @@ Page({
 
     const normalizedKeyword = keyword.toLowerCase();
     return products.filter(product =>
-      product.title.toLowerCase().includes(normalizedKeyword) ||
-      product.description.toLowerCase().includes(normalizedKeyword)
+      String(product.title || '').toLowerCase().includes(normalizedKeyword) ||
+      String(product.description || '').toLowerCase().includes(normalizedKeyword) ||
+      String(product.sourceNote || '').toLowerCase().includes(normalizedKeyword)
     );
+  },
+
+  getPriceDisplay(priceSetting = []) {
+    const prices = (priceSetting || []).map(rule => Number(rule.unitPrice || 0)).filter(price => price > 0);
+    if (!prices.length) return '未设置价格';
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
   },
 
   syncProducts() {
@@ -119,6 +130,15 @@ Page({
     }
 
     this.setProductSelected(id, !item.selected);
+  },
+
+  onImageError(e) {
+    const { id } = e.currentTarget.dataset;
+    const patchCover = product => (String(product.id) === String(id) ? { ...product, coverUrl: '/static/icon_map.png' } : product);
+    this.setData({
+      allProducts: this.data.allProducts.map(patchCover),
+      products: this.data.products.map(patchCover)
+    });
   },
 
   calculateCount() {

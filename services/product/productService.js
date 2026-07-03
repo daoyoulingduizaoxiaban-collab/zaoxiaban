@@ -23,7 +23,9 @@ export const getProductPriceDisplay = (priceSetting = []) => {
 
 const normalizeProduct = product => ({
   ...product,
-  priceDisplay: getProductPriceDisplay(product.priceSetting || []),
+  priceSetting: product.priceSetting || product.priceSettings || [],
+  coverUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '/static/icon_map.png',
+  priceDisplay: getProductPriceDisplay(product.priceSetting || product.priceSettings || []),
 });
 
 const hasInternalProductCopy = (product) => {
