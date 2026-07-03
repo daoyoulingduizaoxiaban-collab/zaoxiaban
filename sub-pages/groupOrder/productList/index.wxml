@@ -11,12 +11,10 @@
 
   <scroll-view scroll-y class="product-list">
     <view wx:if="{{isLoading}}" class="empty-state">
-      <image src="/static/logo/zaoxiaban.png" class="empty-img" mode="aspectFit" />
       <text>正在加载本团商品</text>
     </view>
 
     <view wx:elif="{{pageErrorText}}" class="empty-state">
-      <image src="/static/logo/zaoxiaban.png" class="empty-img" mode="aspectFit" />
       <text>{{pageErrorText}}</text>
     </view>
 
@@ -49,7 +47,6 @@
     </block>
 
     <view wx:else class="empty-state">
-      <image src="/static/logo/zaoxiaban.png" class="empty-img" mode="aspectFit" />
       <text>本团当前没有商品</text>
       <text wx:if="{{canManageGroupOrder}}" class="sub-text">点击下方按钮从商品库加入</text>
     </view>
