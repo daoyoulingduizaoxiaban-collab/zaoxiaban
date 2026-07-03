@@ -295,6 +295,17 @@ export const AuthService = {
       return { success: false, error: cloudResult.error || '账号状态刷新失败，请稍后重试' };
     }
 
+    const latestProfile = this.getCurrentProfile();
+    const latestSession = this.getCurrentSession();
+    if (
+      !latestProfile
+      || !latestSession
+      || String(latestProfile.openId || '') !== String(currentProfile.openId || '')
+      || String(latestSession.openId || '') !== String(currentSession.openId || '')
+    ) {
+      return { success: false, error: '登录状态已变更，请重新登录' };
+    }
+
     const profile = mergeProfileTimestamps(normalizeCloudProfile(cloudResult.data, currentProfile.role));
     const session = {
       ...currentSession,
