@@ -196,6 +196,7 @@ Page({
       wx.showToast({ title: res.error || '保存个人信息失败', icon: 'none' });
       return;
     }
+    AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '个人信息已保存', icon: 'success' });
   },
 });

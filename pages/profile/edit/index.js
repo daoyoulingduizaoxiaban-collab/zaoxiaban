@@ -94,6 +94,7 @@ Page({
       wx.showToast({ title: res.error || '保存个人资料失败', icon: 'none' });
       return;
     }
+    AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '个人资料已保存', icon: 'success' });
     setTimeout(() => wx.navigateBack(), 300);
   },

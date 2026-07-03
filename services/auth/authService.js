@@ -345,6 +345,27 @@ export const AuthService = {
     return { success: true, data: { profile, session } };
   },
 
+  updateCurrentProfile(profilePatch = {}) {
+    const currentProfile = this.getCurrentProfile();
+    if (!currentProfile) return { success: false, error: '当前没有登录资料' };
+    const sameUser = (
+      (profilePatch.id && String(profilePatch.id) === String(currentProfile.id))
+      || (profilePatch.openId && String(profilePatch.openId) === String(currentProfile.openId))
+    );
+    if (!sameUser) return { success: false, error: '不能更新其他账号资料' };
+
+    const nextProfile = mergeProfileTimestamps({
+      ...currentProfile,
+      ...profilePatch,
+      role: profilePatch.role || currentProfile.role,
+      roleLabel: profilePatch.roleLabel || getRoleLabel(profilePatch.role || currentProfile.role),
+      reviewStatus: normalizeReviewStatus(profilePatch.reviewStatus || profilePatch.status || currentProfile.reviewStatus || currentProfile.status),
+      status: normalizeReviewStatus(profilePatch.reviewStatus || profilePatch.status || currentProfile.reviewStatus || currentProfile.status),
+    });
+    safeSetStorage(AUTH_PROFILE_KEY, nextProfile);
+    return { success: true, data: nextProfile };
+  },
+
   logout() {
     try {
       wx.removeStorageSync(AUTH_PROFILE_KEY);
