@@ -3,7 +3,7 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
-import { navigateByUrl } from '~/utils/navigation';
+import { consumeTabRouteQuery, navigateByUrl, parseRouteQuery } from '~/utils/navigation';
 
 const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
   .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
@@ -44,6 +44,16 @@ Page({
     const pendingOrderId = options.orderId || options.id || '';
     this.setData({ pendingOrderId: pendingOrderId ? String(pendingOrderId) : '' });
     this.loadQaOrders();
+  },
+
+  consumePendingRouteQuery() {
+    const query = consumeTabRouteQuery('/pages/customerOrders/index');
+    if (!query) return;
+    const options = parseRouteQuery(query);
+    const pendingOrderId = options.orderId || options.id || '';
+    if (pendingOrderId) {
+      this.setData({ pendingOrderId: String(pendingOrderId) });
+    }
   },
 
   async loadQaOrders() {
@@ -449,6 +459,7 @@ Page({
         value: 'customerOrders'
       });
     }
+    this.consumePendingRouteQuery();
     this.loadQaOrders();
   },
 
