@@ -268,7 +268,6 @@ Page({
 
   },
 
-  // 彈窗點擊取消
   handleDialogClose() {
     this.setData({
       showConfirmDialog: false
@@ -328,7 +327,6 @@ Page({
     this.fetchGroupOrderDetail(this.data.groupOrderId);
   },
 
-  // 彈窗點擊確認
   async handleDialogConfirm() {
     const confirmedAmountText = String(this.data.confirmForm.confirmedAmount || '').trim();
     const confirmedAmount = Number(confirmedAmountText);

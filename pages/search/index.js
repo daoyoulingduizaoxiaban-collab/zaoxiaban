@@ -37,8 +37,9 @@ Page({
         this.setData({ historyWords });
       }
     } catch (err) {
-      // Keep built-in business search terms when storage is unavailable.
+      return false;
     }
+    return true;
   },
 
   setHistoryWords(searchValue) {
@@ -75,18 +76,10 @@ Page({
     wx.setStorageSync('dao_you_ling_search_history', this.data.historyWords);
   },
 
-  /**
-   * 取消清空历史记录
-   * @returns {Promise<void>}
-   */
   close() {
     this.setData({ dialogShow: false });
   },
 
-  /**
-   * 点击清空历史记录
-   * @returns {Promise<void>}
-   */
   handleClearHistory() {
     const { dialog } = this.data;
     this.deleteType = 1;
@@ -217,10 +210,6 @@ Page({
     }
   },
 
-  /**
-   * 点击取消回到主页
-   * @returns {Promise<void>}
-   */
   actionHandle() {
     this.setData({
       searchValue: '',

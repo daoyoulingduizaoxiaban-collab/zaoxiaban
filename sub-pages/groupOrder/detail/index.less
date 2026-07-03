@@ -1,6 +1,5 @@
 @import '/variable.less';
 
-/* 頁面容器 */
 .edit-container {
   padding-top: 10rpx;
   padding-bottom: 200rpx;
@@ -39,7 +38,6 @@
   margin-top: 16rpx;
 }
 
-/* 統計卡片 */
 .statistics-card {
   margin: 12rpx 32rpx;
   background-color: #ffffff;
@@ -76,7 +74,6 @@
   background-color: #eee;
 }
 
-/* 區塊標題 */
 .section-title {
   padding: 40rpx 32rpx 20rpx 32rpx;
   font-size: 32rpx;
@@ -95,7 +92,6 @@
   border-radius: 4rpx;
 }
 
-/* 訂單卡片：點擊熱區優化 */
 .order-card {
   background: #ffffff;
   border-radius: 8rpx;
@@ -103,11 +99,10 @@
   margin: 0 32rpx 24rpx 32rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
   position: relative;
-  /* 確保點擊層級 */
+
   z-index: 1;
 }
 
-/* 點擊回饋效果 */
 .card-hover {
   background-color: #f0f0f0 !important;
   transform: scale(0.98);
@@ -129,42 +124,36 @@
   font-weight: 500;
 }
 
-/* 狀態標籤 */
 .order-status {
   font-size: 24rpx;
   padding: 4rpx 16rpx;
   border-radius: 8rpx;
 }
 
-/* 0: 未付款 (橘色系) */
 .status-unpaid {
   color: #fa8c16;
   background-color: #fff7e6;
   border: 1rpx solid #ffd591;
 }
 
-/* 1: 已付款 (藍色系) */
 .status-paid {
   color: #1890ff;
   background-color: #e6f7ff;
   border: 1rpx solid #91d5ff;
 }
 
-/* 2: 已確認 (綠色系) */
 .status-confirm {
   color: #52c41a;
   background-color: #f6ffed;
   border: 1rpx solid #b7eb8f;
 }
 
-/* 3: 已取消 (灰色系) */
 .status-cancel {
   color: #8c8c8c;
   background-color: #f5f5f5;
   border: 1rpx solid #d9d9d9;
 }
 
-/* 內容區塊 */
 .order-body {
   display: flex;
   flex-direction: column;
@@ -192,7 +181,6 @@
   font-weight: bold;
 }
 
-/* 模擬按鈕視覺，但不攔截事件 */
 .order-footer {
   display: flex;
   justify-content: flex-end;
@@ -200,7 +188,7 @@
   padding-top: 20rpx;
   border-top: 1rpx solid #f5f5f5;
   pointer-events: none;
-  /* 重要：讓點擊穿透到 card 上 */
+
 }
 
 .btn-detail {
@@ -211,7 +199,6 @@
   font-size: 24rpx;
 }
 
-/* 彈窗樣式 (Popup) */
 .details-popup {
   width: 640rpx;
   background: #fff;
@@ -273,7 +260,6 @@
   color: #ff4d4f;
 }
 
-/* 底部操作列 */
 .footer-action-bar {
   position: fixed;
   bottom: 0;
@@ -287,7 +273,7 @@
   display: flex;
   gap: 20rpx;
   flex-wrap: wrap;
-  /* 設定按鈕之間的間距 */
+
 }
 
 .footer-action-bar t-button {
@@ -299,19 +285,17 @@
 
 }
 
-/* 商品管理（次要按鈕）的配色優化 */
 .btn-secondary {
   --td-button-default-color: @brand7-normal;
-  /* 藍色文字 */
+
   --td-button-default-border-color: @brand7-normal;
-  /* 藍色邊框 */
+
   --td-button-default-bg-color: #ffffff;
-  /* 白色背景 */
+
 }
 
-/* 匯出報表（主要按鈕）保持原樣 */
 .btn-primary {
-  /* 使用 TDesign 預設 primary 即可 */
+
 }
 
 .empty-msg {
@@ -321,7 +305,6 @@
   padding: 80rpx 0;
 }
 
-/* 詳情彈窗主體 */
 .details-popup {
   width: 640rpx;
   background-color: #ffffff;
@@ -341,14 +324,12 @@
   color: #333;
 }
 
-/* 滾動區域 */
 .details-content {
   max-height: 500rpx;
-  /* 避免商品太多撐破螢幕 */
+
   margin-bottom: 32rpx;
 }
 
-/* 單個商品列 */
 .item-row {
   display: flex;
   justify-content: space-between;
@@ -387,7 +368,6 @@
   color: #333;
 }
 
-/* 底部總計區 */
 .popup-footer {
   border-top: 1rpx solid #f0f0f0;
   padding-top: 24rpx;
@@ -404,11 +384,10 @@
 
 .total-price {
   color: #ff4d4f;
-  /* 呼應你卡片的紅色價格 */
+
   font-size: 36rpx;
 }
 
-/* 關閉按鈕間距 */
 .popup-footer t-button {
   --td-button-border-radius: 12rpx;
 }
@@ -419,7 +398,7 @@
   align-items: center;
   padding: 32rpx 0;
   border-top: 1rpx solid #f3f3f3;
-  /* 增加一條細線與上方輸入框區隔 */
+
   background-color: #fff;
 
   .qr-image {
@@ -434,15 +413,14 @@
   }
 }
 
-/* sub-pages/itinerary/add/index.less */
 .action-section {
   margin-top: 24rpx;
   padding-top: 20rpx;
   border-top: 1rpx dashed #eee;
-  /* 加一條虛線區隔資訊與按鈕 */
+
 
   t-button {
-    /* 確保按鈕內的文字垂直置中 */
+
     --td-button-small-height: 64rpx;
     --td-button-font-size: 26rpx;
   }

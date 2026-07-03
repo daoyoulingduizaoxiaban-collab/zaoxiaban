@@ -21,8 +21,9 @@ const safeSetStorage = (key, value) => {
   try {
     wx.setStorageSync(key, value);
   } catch (err) {
-    // Directory edits should fail gracefully in restricted storage contexts.
+    return false;
   }
+  return true;
 };
 
 const getLocalUsers = () => {

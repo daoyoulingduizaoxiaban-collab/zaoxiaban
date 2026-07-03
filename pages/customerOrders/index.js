@@ -425,7 +425,6 @@ Page({
     wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
   },
 
-  // 同步 TabBar 狀態 (之前提到的關鍵細節)
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({

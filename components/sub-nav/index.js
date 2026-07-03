@@ -7,7 +7,6 @@ Component({
   },
   methods: {
     onBack() {
-      // 統一處理返回邏輯
       const pages = getCurrentPages();
 
       if (pages.length > 1) {

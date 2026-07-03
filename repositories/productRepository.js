@@ -16,7 +16,7 @@ const getStoredProducts = () => {
       return stored.products.map(item => new Product(item));
     }
   } catch (err) {
-    // Fall back to QA seed when local storage is unavailable.
+    return null;
   }
   return null;
 };

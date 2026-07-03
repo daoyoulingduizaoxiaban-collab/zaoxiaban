@@ -7,14 +7,12 @@
   min-height: calc(100vh - 200rpx);
 }
 
-/* 讓 Card 類型的 Cell Group 更好看 */
 .t-cell-group--card {
-  margin: 0 32rpx !important; // 讓卡片左右有間距
+  margin: 0 32rpx !important;
 }
 
-/* 狀態顏色區分 */
 .status-0 {
-  // 關閉
+
   color: #abb0b8 !important;
 }
 
@@ -27,14 +25,13 @@
   color: #8c8c8c !important;
 }
 
-
 .empty-state {
   padding-top: 200rpx;
   background: #f6f6f6;
 }
 
 .empty-wrapper {
-  padding-top: 240rpx; // 根據你的頁頭高度調整
+  padding-top: 240rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -47,9 +44,8 @@
   }
 }
 
-
 .itinerary-container {
-  padding-top: 20rpx; // 與篩選區保持間距
+  padding-top: 20rpx;
 }
 
 .filter-section {
@@ -58,13 +54,13 @@
   background: #fff;
   padding: 16rpx 24rpx;
   gap: 16rpx;
-  flex-wrap: nowrap; 
+  flex-wrap: nowrap;
 
-  /* 修正：針對組件標籤本身以及其內部的渲染容器 */
+
   t-search {
-    flex: 1 !important; 
+    flex: 1 !important;
     width: 0;
-    
+
     :deep(.t-search) {
       padding: 0 !important;
     }
@@ -72,17 +68,17 @@
 
   t-dropdown-menu {
     flex-shrink: 0;
-    width: 200rpx !important; 
+    width: 200rpx !important;
 
     :deep(.t-dropdown-menu__bar) {
-      box-shadow: none !important; 
+      box-shadow: none !important;
       border-bottom: none !important;
       background: transparent !important;
       width: 200rpx  !important;
     }
 
     :deep(.t-dropdown-item__label) {
-      justify-content: flex-end !important; 
+      justify-content: flex-end !important;
       min-width: 100rpx;
     }
   }

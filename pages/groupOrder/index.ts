@@ -25,7 +25,6 @@ Page({
     loadErrorText: '',
   },
 
-  // 初始化
   async onLoad() {
     await this.fetchItineraryList();
   },
@@ -128,13 +127,11 @@ Page({
     });
   },
 
-  // 点击团单跳转至详情页
   viewItinerary(e) {
     const {
       id
     } = e.currentTarget.dataset;
     wx.navigateTo({
-      // 跳轉時攜帶 id，方便詳情頁請求對應數據
       url: `/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`,
       fail: () => {
         wx.showToast({
@@ -145,7 +142,6 @@ Page({
     });
   },
 
-  // 同步 TabBar 狀態 (之前提到的關鍵細節)
   onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
@@ -177,21 +173,18 @@ Page({
     });
   },
 
-  // 監聽搜尋框輸入
   onSearchChange(e) {
     this.setData({
       searchKeyword: e.detail.value
     }, () => this.applyFilters());
   },
 
-  // 監聽狀態切換
   onStatusChange(e) {
     this.setData({
       currentStatus: e.detail.value
     }, () => this.applyFilters());
   },
 
-  // 核心篩選邏輯
   async applyFilters() {
     if (!this.data.canUseBusiness) return;
     const {
@@ -219,7 +212,6 @@ Page({
     }
 
     this.setData({
-      // 確保畫面更新的是篩選後的結果
       itineraryList: this.normalizeGroupOrders(res.data),
       roleScopeText: this.getRoleScopeText(),
       loadErrorText: '',

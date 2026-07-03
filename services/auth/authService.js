@@ -52,8 +52,9 @@ const safeSetStorage = (key, value) => {
   try {
     wx.setStorageSync(key, value);
   } catch (err) {
-    // Storage failure should not crash login UI; caller receives session/profile state.
+    return false;
   }
+  return true;
 };
 
 const ignorePreviewProfileInFormalMode = profile => (
@@ -372,7 +373,8 @@ export const AuthService = {
       wx.removeStorageSync(AUTH_PROFILE_KEY);
       wx.removeStorageSync(AUTH_SESSION_KEY);
     } catch (err) {
-      // Ignore storage cleanup failures.
+      return false;
     }
+    return true;
   },
 };
