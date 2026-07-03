@@ -139,7 +139,7 @@ Page({
       return {
         ...normalizeProductImageFields(item),
         priceDisplay: prices.length === 0
-          ? ''
+          ? '未设置价格'
           : minPrice === maxPrice
             ? `￥${minPrice}`
             : `￥${minPrice} ~ ￥${maxPrice}`,
@@ -187,6 +187,7 @@ Page({
     const product = this.data.rawList.find(item => String(item.id) === String(id));
     if (!product) {
       wx.showToast({ title: '未找到商品详情', icon: 'none' });
+      this.setData({ pendingProductId: '' });
       return;
     }
 

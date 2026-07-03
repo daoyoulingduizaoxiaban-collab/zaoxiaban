@@ -104,20 +104,39 @@ page {
   display: block;
 }
 
-.image-fallback-label {
+.image-fallback {
   position: absolute;
   left: 0;
   right: 0;
+  top: 0;
   bottom: 0;
-  min-height: 34rpx;
-  line-height: 34rpx;
-  padding: 0 6rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: 8rpx;
   box-sizing: border-box;
-  background: rgba(28, 35, 43, 0.72);
-  color: #fff;
-  font-size: 18rpx;
+  background: #eef2f7;
+}
+
+.image-fallback__mark {
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 8rpx;
+  background: #d9e3f2;
+  color: #2b5c9d;
+  font-size: 22rpx;
+  line-height: 42rpx;
   text-align: center;
-  white-space: nowrap;
+}
+
+.image-fallback__text {
+  max-width: 100%;
+  color: #5f6f89;
+  font-size: 18rpx;
+  line-height: 24rpx;
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
 }

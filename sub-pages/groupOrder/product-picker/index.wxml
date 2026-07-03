@@ -24,7 +24,10 @@
           </view>
           <view class="p-img-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
             <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
-            <text wx:if="{{item.isImageFallback}}" class="image-fallback-label">{{item.imageFallbackText || '暂无商品图片'}}</text>
+            <view wx:if="{{item.isImageFallback}}" class="image-fallback">
+              <view class="image-fallback__mark">品</view>
+              <view class="image-fallback__text">{{item.imageFallbackText || '暂无商品图片'}}</view>
+            </view>
           </view>
 
           <view class="p-info">
