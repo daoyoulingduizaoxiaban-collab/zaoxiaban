@@ -3,7 +3,7 @@
 <view class="container">
   <view class="search-section">
     <view class="search-bar">
-      <icon type="search" size="16" color="#999" />
+      <t-icon name="search" size="32rpx" color="#999" />
       <input class="search-input" placeholder="搜索本团商品" bindinput="onSearchInput" value="{{searchQuery}}" />
       <view class="clear-icon" wx:if="{{searchQuery}}" bindtap="clearSearch">×</view>
     </view>

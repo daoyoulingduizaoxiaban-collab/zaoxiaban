@@ -2,7 +2,7 @@
 <view class="container">
   <view class="filter-section">
     <view class="search-input-wrap">
-      <icon type="search" size="16"></icon>
+      <t-icon name="search" size="32rpx" color="#8a94a6" />
       <input
         class="search-input"
         placeholder="搜索商品标题或描述"
