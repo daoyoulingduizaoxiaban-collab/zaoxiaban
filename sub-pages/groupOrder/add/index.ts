@@ -1,7 +1,7 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
-import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
@@ -10,7 +10,7 @@ Page({
     groupOrderId: '',
     selectedGoods: [] as Product[],
     isSubmitting: false,
-    saveModeText: '演示保存：资料仅保留在当前设备',
+    saveModeText: CLOUD_SAVE_MODE_TEXT,
     formData: {
       title: '',
       description: '',

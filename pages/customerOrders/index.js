@@ -8,7 +8,8 @@ Page({
     customerOrdersList: [],
     roleScopeText: '',
     canCreateCustomerOrder: false,
-    saveModeText: '演示保存：资料仅保留在当前设备',
+    saveModeText: '',
+    isLoggedIn: false,
     actionPanelVisible: false,
     actionType: '',
     actionOrderId: '',
@@ -40,13 +41,21 @@ Page({
       customerOrdersList: res.data,
       roleScopeText: this.getRoleScopeText(res.meta),
       canCreateCustomerOrder: this.canCreateCustomerOrder(),
-      saveModeText: getSaveModeText(res.meta),
+      saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
+      isLoggedIn: Boolean(AuthService.getCurrentProfile()),
     });
   },
 
   canCreateCustomerOrder() {
     const profile = AuthService.getCurrentProfile();
     return Boolean(profile && (profile.role === 'customer' || profile.role === 'owner' || profile.role === 'admin'));
+  },
+
+  onLogin() {
+    wx.navigateTo({
+      url: '/pages/login/login',
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
   },
 
   getRoleScopeText(meta = {}) {

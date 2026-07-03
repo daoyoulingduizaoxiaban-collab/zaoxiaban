@@ -21,6 +21,12 @@ Page({
     ],
     gridList: [
       {
+        name: '工作台',
+        icon: 'app',
+        type: 'home',
+        url: '/pages/home/index',
+      },
+      {
         name: '团单',
         icon: 'root-list',
         type: 'all',
@@ -66,6 +72,12 @@ Page({
   buildGridList(profile) {
     const list = [
       {
+        name: '工作台',
+        icon: 'app',
+        type: 'home',
+        url: '/pages/home/index',
+      },
+      {
         name: '团单',
         icon: 'root-list',
         type: 'all',
@@ -83,6 +95,18 @@ Page({
         type: 'published',
         url: '/pages/productManagement/index',
       },
+      {
+        name: '消息',
+        icon: 'chat',
+        type: 'message',
+        url: '/pages/message/index',
+      },
+      {
+        name: '搜索',
+        icon: 'search',
+        type: 'search',
+        url: '/pages/search/index',
+      },
     ];
 
     if (profile && [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN].includes(profile.role)) {
@@ -94,13 +118,24 @@ Page({
       });
     }
 
+    if (profile && [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN].includes(profile.role)) {
+      list.push({
+        name: '开团',
+        icon: 'add',
+        type: 'release',
+        url: '/pages/release/index',
+      });
+    }
+
     return list;
   },
 
   buildSettingList(profile) {
     const list = [
       { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index' },
+      { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index' },
       { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
+      { name: '客户沟通', icon: 'chat', type: 'chat', url: '/pages/chat/index' },
     ];
 
     if (isOwnerOrAdmin(profile)) {
@@ -150,6 +185,7 @@ Page({
   onLogin(e) {
     wx.navigateTo({
       url: '/pages/login/login',
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
   },
 
@@ -211,6 +247,11 @@ Page({
 
   onEleClick(e) {
     const { name, url, type } = e.currentTarget.dataset.data;
+    const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter'];
+    if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
+      this.onLogin();
+      return;
+    }
     if (url) {
       wx.navigateTo({
         url,

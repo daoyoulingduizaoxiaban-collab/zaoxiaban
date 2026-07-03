@@ -36,6 +36,9 @@
     <view class="auth-actions" wx:if="{{isLoggedIn}}">
       <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
     </view>
+    <view class="auth-actions" wx:else>
+      <t-button t-class="login-action" theme="primary" size="small" bindtap="onLogin">登录后继续</t-button>
+    </view>
     <t-divider t-class="divider-class" />
     <t-grid t-class="grid-class">
       <t-grid-item

@@ -2,7 +2,7 @@ import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 
 export const CLOUD_SAVE_MODE = 'wechat-cloud-repository';
-export const LOCAL_SAVE_MODE_TEXT = '演示保存：资料仅保留在当前设备';
+export const LOCAL_SAVE_MODE_TEXT = '当前未连接微信云端保存';
 export const CLOUD_SAVE_MODE_TEXT = '已保存到微信云端';
 
 export const getSaveModeText = meta => (

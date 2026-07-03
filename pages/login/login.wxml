@@ -23,6 +23,9 @@
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
         微信登录并初始化资料
       </button>
+      <button class="login__secondary-button" disabled="{{isSubmitting}}" bindtap="goLoginCode">
+        使用验证码登录
+      </button>
     </view>
   </view>
 </view>

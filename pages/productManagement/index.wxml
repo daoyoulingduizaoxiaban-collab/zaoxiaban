@@ -10,14 +10,15 @@
 
   <view class="mode-banner">
     <text>{{roleScopeText}}</text>
-    <text>{{saveModeText}}</text>
+    <text wx:if="{{saveModeText}}">{{saveModeText}}</text>
   </view>
 
   <scroll-view scroll-y="true" class="product-list">
     <view class="empty-container" wx:if="{{productList.length === 0}}">
       <image class="empty-img" src="/static/avatar1.png" mode="aspectFit"></image>
       <text class="empty-text">当前没有商品</text>
-      <text class="empty-tips">{{canManageProducts ? '可点击右下角新增，正式登录后保存到微信云端' : '当前账号暂无可管理商品'}}</text>
+      <text class="empty-tips">{{isLoggedIn ? (canManageProducts ? '可点击右下角新增，资料将保存到微信云端' : '当前账号暂无可管理商品') : '请登录后查看可管理的商品库'}}</text>
+      <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
     </view>
 
     <block wx:for="{{productList}}" wx:key="id">

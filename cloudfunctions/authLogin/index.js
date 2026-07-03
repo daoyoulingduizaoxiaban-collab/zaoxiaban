@@ -9,6 +9,7 @@ const users = db.collection('users');
 
 const ROLE_GUIDE = 'guide';
 const ROLE_CUSTOMER = 'customer';
+const ROLE_PROVIDER = 'provider';
 const ROLE_OWNER = 'owner';
 const ROLE_ADMIN = 'admin';
 const ACTIVE_STATUS = 'active';
@@ -25,7 +26,7 @@ const getPrivilegedRole = (openId) => {
 };
 
 const normalizeRequestedRole = role => (
-  role === ROLE_CUSTOMER ? ROLE_CUSTOMER : ROLE_GUIDE
+  [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER].includes(role) ? role : ROLE_GUIDE
 );
 
 const ensureUsersCollection = async () => {
@@ -41,11 +42,12 @@ const ensureUsersCollection = async () => {
 
 const buildDefaultProfile = (openId, unionId, requestedRole) => {
   const privilegedRole = getPrivilegedRole(openId);
+  const normalizedRole = privilegedRole || normalizeRequestedRole(requestedRole);
   const now = db.serverDate();
-  return {
+  const profile = {
     openId,
     unionId: unionId || '',
-    role: privilegedRole || normalizeRequestedRole(requestedRole),
+    role: normalizedRole,
     displayName: '微信用户',
     phone: '',
     avatarUrl: '',
@@ -54,6 +56,10 @@ const buildDefaultProfile = (openId, unionId, requestedRole) => {
     updatedAt: now,
     deletedAt: null,
   };
+  if (normalizedRole === ROLE_PROVIDER) {
+    profile.providerId = `provider-${openId}`;
+  }
+  return profile;
 };
 
 const toClientProfile = doc => ({
@@ -64,6 +70,7 @@ const toClientProfile = doc => ({
   displayName: doc.displayName || '微信用户',
   phone: doc.phone || '',
   avatarUrl: doc.avatarUrl || '',
+  providerId: doc.providerId || '',
   status: doc.status || ACTIVE_STATUS,
   createdAt: doc.createdAt || '',
   updatedAt: doc.updatedAt || '',
@@ -89,13 +96,16 @@ exports.main = async (event = {}) => {
     const profile = existing.data[0];
     const privilegedRole = getPrivilegedRole(openId);
     const currentRole = profile.role || normalizeRequestedRole(event.requestedRole);
-    const canSwitchMvpRole = currentRole === ROLE_GUIDE || currentRole === ROLE_CUSTOMER;
-    const nextRole = privilegedRole || (canSwitchMvpRole ? normalizeRequestedRole(event.requestedRole) : currentRole);
+    const canSwitchRuntimeRole = currentRole === ROLE_GUIDE || currentRole === ROLE_CUSTOMER || currentRole === ROLE_PROVIDER;
+    const nextRole = privilegedRole || (canSwitchRuntimeRole ? normalizeRequestedRole(event.requestedRole) : currentRole);
     const updateData = {
       unionId: profile.unionId || unionId,
       role: nextRole,
       updatedAt: db.serverDate(),
     };
+    if (nextRole === ROLE_PROVIDER && !profile.providerId) {
+      updateData.providerId = `provider-${openId}`;
+    }
 
     await users.doc(profile._id).update({ data: updateData });
 

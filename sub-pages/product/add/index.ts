@@ -2,9 +2,9 @@ import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductService } from '~/services/product/productService';
 import {
   CLOUD_SAVE_MODE,
+  CLOUD_SAVE_MODE_TEXT,
   getSaveModeText,
   isCloudBusinessEnabled,
-  LOCAL_SAVE_MODE_TEXT,
 } from '~/repositories/cloudBusinessRepository';
 
 Page({
@@ -13,8 +13,8 @@ Page({
     productList: [], // 最終提交的大清單
     isSubmitting: false,
     isChoosingImage: false,
-    saveModeText: LOCAL_SAVE_MODE_TEXT,
-    imageModeTip: '演示保存会保留临时预览路径，不代表跨设备持久图片。',
+    saveModeText: CLOUD_SAVE_MODE_TEXT,
+    imageModeTip: '正式云端模式会先上传为持久图片，再保存商品。',
 
     // 當前正在編輯的商品
     currentProduct: {
@@ -52,7 +52,7 @@ Page({
       }),
       imageModeTip: cloudEnabled
         ? '正式云端模式会先上传为持久图片，再保存商品。'
-        : '演示保存会保留临时预览路径，不代表跨设备持久图片。',
+        : '当前环境未连接云端图片上传，图片仅用于本次预览。',
     });
   },
 

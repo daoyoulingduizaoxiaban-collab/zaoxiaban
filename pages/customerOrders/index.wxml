@@ -1,7 +1,7 @@
 <nav nav-type="customerOrders" titleText="{{titleText}}" />
 
 <view class="role-scope">{{roleScopeText}}</view>
-<view class="save-mode">{{saveModeText}}</view>
+<view class="save-mode" wx:if="{{saveModeText}}">{{saveModeText}}</view>
 
 <view class="customerOrders-container">
   <t-cell-group theme="card">
@@ -19,6 +19,7 @@
 
   <view wx:if="{{ customerOrdersList.length === 0 }}" class="empty-state">
     <t-empty icon="info-circle" description="暂无客户订单" />
+    <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>
 
   <t-fab wx:if="{{canCreateCustomerOrder}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="客户下单" style="right: 32rpx; bottom: 180rpx;" />

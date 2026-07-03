@@ -37,7 +37,7 @@ Page({
         return;
       }
       const { profile, session } = res.data;
-      const title = session.isMockOpenId ? '已进入演示身份' : `登录成功：${profile.roleLabel}`;
+      const title = `登录成功：${profile.roleLabel}`;
 
       wx.showToast({
         title,
@@ -61,5 +61,12 @@ Page({
       wx.hideLoading();
       this.setData({ isSubmitting: false });
     }
+  },
+
+  goLoginCode() {
+    wx.navigateTo({
+      url: '/pages/loginCode/loginCode',
+      fail: () => wx.showToast({ title: '打开验证码登录失败', icon: 'none' }),
+    });
   },
 });

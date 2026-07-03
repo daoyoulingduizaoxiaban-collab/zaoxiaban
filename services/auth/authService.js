@@ -56,6 +56,14 @@ const safeSetStorage = (key, value) => {
   }
 };
 
+const ignorePreviewProfileInFormalMode = profile => (
+  !config.isMock && profile && profile.isMockOpenId ? null : profile
+);
+
+const ignorePreviewSessionInFormalMode = session => (
+  !config.isMock && session && session.isMockOpenId ? null : session
+);
+
 const wxLogin = () => new Promise((resolve) => {
   if (!wx.login) {
     resolve({ success: false, error: '当前环境不支持 wx.login' });
@@ -112,6 +120,7 @@ const normalizeCloudProfile = (data, requestedRole) => {
     phone: profile.phone || '',
     avatarUrl: profile.avatarUrl || '/static/avatar1.png',
     city: profile.city || defaults.city,
+    providerId: profile.providerId || defaults.providerId || '',
     status: profile.status || 'active',
     authSource: 'wechat-cloud',
     isMockOpenId: false,
@@ -159,11 +168,11 @@ export const AuthService = {
   sessionKey: AUTH_SESSION_KEY,
 
   getCurrentProfile() {
-    return safeGetStorage(AUTH_PROFILE_KEY, null);
+    return ignorePreviewProfileInFormalMode(safeGetStorage(AUTH_PROFILE_KEY, null));
   },
 
   getCurrentSession() {
-    return safeGetStorage(AUTH_SESSION_KEY, null);
+    return ignorePreviewSessionInFormalMode(safeGetStorage(AUTH_SESSION_KEY, null));
   },
 
   isFormalSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {

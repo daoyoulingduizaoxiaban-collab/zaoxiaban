@@ -17,9 +17,10 @@ Page({
     statusOptions: getProductStatusList(),
     currentStatus: 0,
     roleScopeText: '',
-    saveModeText: '演示保存：资料仅保留在当前设备',
+    saveModeText: '',
     isLoading: false,
     canManageProducts: false,
+    isLoggedIn: false,
     productStatusTextMap: {
       1: getProductStatusTextByValue(1),
       2: getProductStatusTextByValue(2)
@@ -51,8 +52,9 @@ Page({
       allProducts: res.data,
       productList: res.data,
       roleScopeText: this.getRoleScopeText(),
-      saveModeText: getSaveModeText(res.meta),
+      saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       canManageProducts: this.canManageProducts(),
+      isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       isLoading: false,
     });
   },
@@ -80,7 +82,6 @@ Page({
   },
 
   onAddProduct() {
-    const profile = AuthService.getCurrentProfile();
     if (!this.canManageProducts()) {
       wx.showToast({ title: '当前角色不能新增商品', icon: 'none' });
       return;
@@ -154,5 +155,12 @@ Page({
     this.setData({
       currentStatus: e.detail.value
     }, () => this.fetchData());
+  },
+
+  onLogin() {
+    wx.navigateTo({
+      url: '/pages/login/login',
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
   },
 });

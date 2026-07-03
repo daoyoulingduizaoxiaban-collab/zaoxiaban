@@ -27,9 +27,9 @@ Page({
     if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
       modeText = '当前账号已通过微信登录，业务资料保存到微信云端。';
     } else if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
-      modeText = '当前为演示身份，资料仅保留在当前设备。';
+      modeText = '当前未连接微信云端保存。';
     } else if (profile) {
-      modeText = '当前账号未通过云端验证，资料仅保留在当前设备。';
+      modeText = '当前账号未通过云端验证。';
     }
 
     const canCreateGroupOrder = Boolean(profile && (profile.role === 'guide' || isOwnerOrAdmin(profile)));

@@ -17,6 +17,7 @@ Page({
     currentStatus: 0,
     roleScopeText: '',
     canCreateGroupOrder: false,
+    isLoggedIn: false,
   },
 
   // 初始化
@@ -45,7 +46,8 @@ Page({
         this.setData({
           itineraryList: list,
           roleScopeText: this.getRoleScopeText(),
-          canCreateGroupOrder: this.canCreateGroupOrder()
+          canCreateGroupOrder: this.canCreateGroupOrder(),
+          isLoggedIn: Boolean(AuthService.getCurrentProfile())
         });
       }
     } catch (err) {
@@ -70,6 +72,13 @@ Page({
   canCreateGroupOrder() {
     const profile = AuthService.getCurrentProfile();
     return Boolean(profile && (profile.role === 'guide' || profile.role === 'owner' || profile.role === 'admin'));
+  },
+
+  onLogin() {
+    wx.navigateTo({
+      url: '/pages/login/login',
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
   },
 
   // 点击团单跳转至详情页

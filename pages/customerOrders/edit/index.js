@@ -1,6 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
-import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 
 Page({
   data: {
@@ -10,7 +10,7 @@ Page({
     productRows: [],
     totalPrice: 0,
     isSubmitting: false,
-    saveModeText: '演示保存：资料仅保留在当前设备',
+    saveModeText: CLOUD_SAVE_MODE_TEXT,
     formData: {
       customerName: '',
       customerPhone: '',
