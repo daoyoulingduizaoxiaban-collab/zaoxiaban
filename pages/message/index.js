@@ -91,7 +91,7 @@ Page({
     const { id, orderId } = e.currentTarget.dataset;
     if (id) this.markRead({ currentTarget: { dataset: { id } } });
     if (orderId) {
-      navigateByUrl('/pages/customerOrders/index');
+      navigateByUrl(`/pages/customerOrders/index?orderId=${encodeURIComponent(String(orderId))}`);
     }
   },
 });
