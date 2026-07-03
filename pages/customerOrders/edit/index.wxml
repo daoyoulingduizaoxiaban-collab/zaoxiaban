@@ -56,7 +56,10 @@
 
   <block wx:if="{{groupOrder && !pageErrorText}}" wx:for="{{productRows}}" wx:key="id">
     <view class="product-card">
-      <image class="product-image" src="{{item.coverUrl}}" mode="aspectFill" />
+      <view class="product-image-wrap">
+        <image class="product-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onProductImageError" />
+        <text wx:if="{{item.isImageFallback}}" class="product-image-fallback">{{item.imageFallbackText || '暂无商品图片'}}</text>
+      </view>
       <view class="product-main">
         <view class="product-title">{{item.title}}</view>
         <view class="product-desc">{{item.description}}</view>

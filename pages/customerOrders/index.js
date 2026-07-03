@@ -300,6 +300,7 @@ Page({
     wx.previewImage({
       current: urls[index] || urls[0],
       urls,
+      fail: () => wx.showToast({ title: '付款凭证预览失败', icon: 'none' }),
     });
   },
 
@@ -315,6 +316,7 @@ Page({
     wx.previewImage({
       current: urls[0],
       urls,
+      fail: () => wx.showToast({ title: '付款凭证预览失败', icon: 'none' }),
     });
   },
 

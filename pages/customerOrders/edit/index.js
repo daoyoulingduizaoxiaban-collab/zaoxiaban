@@ -203,6 +203,20 @@ Page({
     wx.previewImage({
       current: urls[index] || urls[0],
       urls,
+      fail: () => wx.showToast({ title: '付款凭证预览失败', icon: 'none' }),
     });
+  },
+
+  onProductImageError(e) {
+    const productId = e.currentTarget.dataset.id;
+    const productRows = this.data.productRows.map(product => (String(product.id) === String(productId)
+      ? {
+        ...product,
+        coverUrl: '/static/logo/zaoxiaban.png',
+        isImageFallback: true,
+        imageFallbackText: '图片加载失败',
+      }
+      : product));
+    this.setData({ productRows });
   },
 });
