@@ -416,12 +416,9 @@ Page({
       return;
     }
 
-    const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const firstOrder = this.data.customerOrdersList[0];
     const groupOrderId = firstOrder && firstOrder.groupOrderId;
-    const url = id
-      ? `/pages/customerOrders/edit/index?id=${id}`
-      : `/pages/customerOrders/edit/index${groupOrderId ? `?groupOrderId=${groupOrderId}` : ''}`;
+    const url = `/pages/customerOrders/edit/index${groupOrderId ? `?groupOrderId=${groupOrderId}` : ''}`;
 
     wx.navigateTo({
       url: url,

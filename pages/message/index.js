@@ -85,7 +85,7 @@ Page({
     const { id, orderId } = e.currentTarget.dataset;
     if (id) this.markRead({ currentTarget: { dataset: { id } } });
     if (orderId) {
-      wx.navigateTo({ url: `/pages/customerOrders/edit/index?id=${orderId}` });
+      wx.switchTab({ url: '/pages/customerOrders/index' });
     }
   },
 });

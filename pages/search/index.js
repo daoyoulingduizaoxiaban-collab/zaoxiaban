@@ -210,7 +210,7 @@ Page({
       return;
     }
     if (type === 'customerOrder') {
-      wx.navigateTo({ url: `/pages/customerOrders/edit/index?id=${id}` });
+      wx.switchTab({ url: '/pages/customerOrders/index' });
       return;
     }
     if (type === 'product') {
