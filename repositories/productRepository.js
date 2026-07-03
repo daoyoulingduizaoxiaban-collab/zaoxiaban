@@ -3,7 +3,13 @@ import { ProductStatus } from '~/enum/ProductStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole } from '~/services/auth/roleScope';
-import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
+import {
+  callBusinessData,
+  callPublicBusinessData,
+  CLOUD_SAVE_MODE,
+  isCloudBusinessConfigured,
+  isCloudBusinessEnabled
+} from './cloudBusinessRepository';
 
 const PRODUCT_STORAGE_KEY = 'dao_you_ling_local_products';
 
@@ -33,6 +39,25 @@ const getAllProducts = () => getStoredProducts() || QaSeedMock.getProducts();
 
 export const ProductRepository = {
   storageKey: PRODUCT_STORAGE_KEY,
+
+  async listPublic(filters = {}) {
+    if (isCloudBusinessConfigured()) {
+      return callPublicBusinessData({ resource: 'products', action: 'listPublic', data: filters });
+    }
+
+    const products = filterProductsByRole(getAllProducts(), null);
+
+    return {
+      success: true,
+      data: products,
+      meta: {
+        role: '',
+        authSource: '',
+        isMockOpenId: false,
+        saveMode: 'local-product-repository',
+      },
+    };
+  },
 
   async listVisible() {
     if (isCloudBusinessEnabled()) {

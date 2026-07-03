@@ -21,6 +21,13 @@ export const isCloudBusinessEnabled = () => {
   );
 };
 
+export const isCloudBusinessConfigured = () => Boolean(
+  config.useCloudBusinessData
+  && config.cloudEnvId
+  && wx.cloud
+  && wx.cloud.callFunction
+);
+
 export const callBusinessData = ({ resource, action, data = {} }) => new Promise((resolve) => {
   if (!isCloudBusinessEnabled()) {
     resolve({ success: false, error: '资料服务暂时不可用' });
@@ -32,6 +39,20 @@ export const callBusinessData = ({ resource, action, data = {} }) => new Promise
     data: { resource, action, data },
     success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
     fail: () => resolve({ success: false, error: '资料保存失败，请稍后重试' }),
+  });
+});
+
+export const callPublicBusinessData = ({ resource, action, data = {} }) => new Promise((resolve) => {
+  if (!isCloudBusinessConfigured()) {
+    resolve({ success: false, error: '资料服务暂时不可用' });
+    return;
+  }
+
+  wx.cloud.callFunction({
+    name: 'businessData',
+    data: { resource, action, data },
+    success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
+    fail: () => resolve({ success: false, error: '资料读取失败，请稍后重试' }),
   });
 });
 

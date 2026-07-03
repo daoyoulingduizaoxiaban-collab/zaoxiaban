@@ -28,20 +28,12 @@ Page({
 
   async loadProducts() {
     const profile = AuthService.getCurrentProfile();
-    if (!AuthService.canUseBusiness(profile)) {
-      this.setData({
-        isLoading: false,
-        pageErrorText: AuthService.getAccessStateText(profile),
-        accessStateText: AuthService.getAccessStateText(profile),
-        canUseBusiness: false,
-        allProducts: [],
-        filteredList: [],
-      });
-      return;
-    }
+    const canUseBusiness = AuthService.canUseBusiness(profile);
 
     this.setData({ isLoading: true, pageErrorText: '' });
-    const res = await ProductService.listVisible({ status: ProductStatus.PUBLISHED });
+    const res = canUseBusiness
+      ? await ProductService.listVisible({ status: ProductStatus.PUBLISHED })
+      : await ProductService.listPublic({ status: ProductStatus.PUBLISHED });
     if (!res.success) {
       const errorText = res.error || '加载商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
@@ -55,7 +47,7 @@ Page({
       isLoading: false,
       pageErrorText: '',
       accessStateText: AuthService.getAccessStateText(profile),
-      canUseBusiness: true,
+      canUseBusiness,
       emptyText: products.length ? '' : '当前没有可浏览商品',
     });
   },

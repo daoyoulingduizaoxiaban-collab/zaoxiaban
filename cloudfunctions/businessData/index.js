@@ -235,6 +235,15 @@ const validateProductPayload = (product) => {
 };
 
 const productActions = {
+  async listPublic({ keyword = '' }) {
+    const products = (await getAllActive('products')).filter(product => (
+      Number(product.status) === PRODUCT_STATUS.PUBLISHED
+      && product.visibility !== 'private'
+      && !hasInternalProductCopy(product)
+    ));
+    return success(filterKeyword(products, keyword, ['title', 'description', 'sourceNote']));
+  },
+
   async listVisible({ keyword = '', status = 0 }, profile) {
     assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin', 'provider']);
     const products = (await getAllActive('products')).filter(product => canViewProduct(product, profile));

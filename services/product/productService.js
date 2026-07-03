@@ -50,6 +50,16 @@ const hasInternalProductCopy = (product) => {
 };
 
 export const ProductService = {
+  async listPublic(filters = {}) {
+    const result = await ProductRepository.listPublic(filters);
+    if (!result.success) return result;
+    const list = (result.data || []).filter(product => !hasInternalProductCopy(product));
+    return {
+      ...result,
+      data: list.map(normalizeProduct),
+    };
+  },
+
   async listVisible(filters = {}) {
     const result = await ProductRepository.filterVisible(filters);
     if (!result.success) return result;
