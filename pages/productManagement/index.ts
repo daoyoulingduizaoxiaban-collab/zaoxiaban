@@ -23,6 +23,7 @@ Page({
     isLoading: false,
     loadErrorText: '',
     canManageProducts: false,
+    canShowProductCatalog: false,
     isLoggedIn: false,
     canUseBusiness: false,
     accessStateText: '',
@@ -55,12 +56,36 @@ Page({
   async fetchData() {
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) {
+      this.setData({ isLoading: true, loadErrorText: '' });
+      const publicRes = await ProductService.listPublic({
+        keyword: this.data.searchQuery,
+      });
+      if (!publicRes.success) {
+        const errorText = publicRes.error || '加载公开商品失败';
+        wx.showToast({ title: errorText, icon: 'none' });
+        this.resetDetailState({
+          allProducts: [],
+          productList: [],
+          roleScopeText: AuthService.getAccessStateText(profile),
+          saveModeText: '',
+          canManageProducts: false,
+          canShowProductCatalog: true,
+          isLoggedIn: Boolean(profile),
+          canUseBusiness: false,
+          accessStateText: AuthService.getAccessStateText(profile),
+          isLoading: false,
+          loadErrorText: errorText,
+        });
+        return;
+      }
+      const publicProducts = this.normalizeProducts(publicRes.data);
       this.resetDetailState({
-        allProducts: [],
-        productList: [],
-        roleScopeText: AuthService.getAccessStateText(profile),
+        allProducts: publicProducts,
+        productList: publicProducts,
+        roleScopeText: profile ? AuthService.getAccessStateText(profile) : '公开商品可直接浏览，下单与管理需登录后使用。',
         saveModeText: '',
         canManageProducts: false,
+        canShowProductCatalog: true,
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
         accessStateText: AuthService.getAccessStateText(profile),
@@ -85,6 +110,7 @@ Page({
         roleScopeText: errorText,
         saveModeText: '',
         canManageProducts: this.canManageProducts(),
+        canShowProductCatalog: true,
         isLoggedIn: Boolean(profile),
         canUseBusiness: true,
         accessStateText: AuthService.getAccessStateText(profile),
@@ -101,6 +127,7 @@ Page({
       roleScopeText: this.getRoleScopeText(),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       canManageProducts: this.canManageProducts(),
+      canShowProductCatalog: true,
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       canUseBusiness: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),

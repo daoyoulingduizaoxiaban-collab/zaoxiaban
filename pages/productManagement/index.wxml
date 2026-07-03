@@ -1,9 +1,9 @@
 <nav nav-type="productManagement" titleText="{{titleText}}" />
 
 <view class="container">
-  <view class="search-section" wx:if="{{canUseBusiness}}">
+  <view class="search-section" wx:if="{{canShowProductCatalog}}">
     <t-search value="{{searchQuery}}" placeholder="搜索商品名称或描述" bind:change="onSearchInput" t-class="search-bar" />
-    <t-dropdown-menu t-class="dropdown-custom">
+    <t-dropdown-menu wx:if="{{canUseBusiness}}" t-class="dropdown-custom">
       <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
     </t-dropdown-menu>
     <button class="list-entry" bindtap="onOpenProductList">列表</button>
@@ -16,11 +16,11 @@
 
   <view class="access-card" wx:if="{{!canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
-    <view class="access-desc">通过管理员确认身份后，可查看与你角色对应的商品库。</view>
+    <view class="access-desc">可先浏览公开商品；下单、管理商品或查看专属资料需登录并通过身份确认。</view>
     <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>
 
-  <scroll-view scroll-y="true" class="product-list" wx:if="{{canUseBusiness}}">
+  <scroll-view scroll-y="true" class="product-list" wx:if="{{canShowProductCatalog}}">
     <view class="empty-container" wx:if="{{isLoading}}">
       <text class="empty-text">正在加载商品</text>
     </view>
@@ -32,7 +32,7 @@
 
     <view class="empty-container" wx:elif="{{productList.length === 0}}">
       <text class="empty-text">当前没有商品</text>
-      <text class="empty-tips">{{isLoggedIn ? (canManageProducts ? '可点击右下角新增，资料会同步保存' : '当前账号暂无可管理商品') : '请登录后查看可管理的商品库'}}</text>
+      <text class="empty-tips">{{isLoggedIn ? (canManageProducts ? '可点击右下角新增，资料会同步保存' : '当前账号暂无可管理商品') : '当前暂无公开商品'}}</text>
       <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
     </view>
 
