@@ -223,7 +223,7 @@ Page({
       return;
     }
     const p = this.data.currentProduct;
-    const error = ProductService.validateProduct(p);
+    const error = ProductService.validateProduct(p, { requireImage: true });
     if (error) return wx.showToast({ title: error, icon: 'none' });
 
     this.setData({
