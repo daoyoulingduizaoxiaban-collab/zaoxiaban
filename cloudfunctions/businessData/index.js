@@ -462,6 +462,19 @@ const appendPaymentHistory = async (order, nextStatus, note, profile) => {
   return toId({ ...history, _id: result._id });
 };
 
+const validateCustomerOrderPayload = (payload) => {
+  if (!payload.groupOrderId) return '缺少团单 ID';
+  if (!trimText(payload.customerName)) return '请输入客户姓名';
+  const phone = trimText(payload.customerPhone);
+  if (!phone) return '请输入客户手机号';
+  if (!/^1[3-9]\d{9}$/.test(phone)) return '请输入 11 位中国大陆手机号';
+  if (!Array.isArray(payload.items) || payload.items.length === 0) return '请至少选择一个商品';
+  const invalidItem = payload.items.find(item => Number(item.amount || item.quantity || 0) <= 0 || Number(item.totalPrice || 0) <= 0);
+  if (invalidItem) return '商品数量和金额必须大于 0';
+  if (Number(payload.totalPrice || 0) <= 0) return '订单金额必须大于 0';
+  return '';
+};
+
 const customerOrderActions = {
   async listVisible(payload, profile) {
     assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
@@ -504,6 +517,8 @@ const customerOrderActions = {
   async create(payload, profile) {
     assertApprovedProfile(profile, ['customer', 'owner', 'admin']);
     if (profile.role !== 'customer' && !isOwnerOrAdmin(profile)) return failure('当前角色不能提交客户订单');
+    const validationError = validateCustomerOrderPayload(payload);
+    if (validationError) return failure(validationError);
     if (!hasOnlyDurableAssetUrls(payload.paymentProofUrls || [])) {
       return failure('正式云端付款凭证必须先上传为持久图片');
     }
