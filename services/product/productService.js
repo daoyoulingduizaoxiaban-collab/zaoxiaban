@@ -24,14 +24,18 @@ export const getProductPriceDisplay = (priceSetting = []) => {
 
 const normalizeProduct = (product) => {
   const pictureUrls = product.pictureUrls || [];
-  const coverUrl = pictureUrls[0] || PRODUCT_IMAGE_FALLBACK;
+  const coverUrl = product.coverUrl || pictureUrls[0] || PRODUCT_IMAGE_FALLBACK;
+  let normalizedPictureUrls = pictureUrls;
+  if (!normalizedPictureUrls.length && coverUrl !== PRODUCT_IMAGE_FALLBACK) {
+    normalizedPictureUrls = [coverUrl];
+  }
   return {
     ...product,
-    pictureUrls,
+    pictureUrls: normalizedPictureUrls,
     priceSetting: product.priceSetting || product.priceSettings || [],
     coverUrl,
-    isImageFallback: !pictureUrls[0],
-    imageFallbackText: pictureUrls[0] ? '' : '暂无商品图片',
+    isImageFallback: coverUrl === PRODUCT_IMAGE_FALLBACK,
+    imageFallbackText: coverUrl === PRODUCT_IMAGE_FALLBACK ? '暂无商品图片' : '',
     priceDisplay: getProductPriceDisplay(product.priceSetting || product.priceSettings || []),
   };
 };

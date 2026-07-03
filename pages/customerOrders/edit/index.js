@@ -103,7 +103,7 @@ Page({
         unitPrice: Number(product.unitPrice || 0),
         totalPrice: Number(product.lineTotal || 0),
         originalTotalPrice: Number(product.lineTotal || 0),
-        pictureUrl: product.pictureUrls && product.pictureUrls[0] ? product.pictureUrls[0] : '',
+        pictureUrl: product.coverUrl || (product.pictureUrls && product.pictureUrls[0]) || '',
       }));
   },
 
