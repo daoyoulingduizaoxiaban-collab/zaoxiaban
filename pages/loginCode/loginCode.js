@@ -1,6 +1,10 @@
 Page({
   data: {},
 
+  onLoad() {
+    this.goToWechatLogin();
+  },
+
   goToWechatLogin() {
     wx.redirectTo({
       url: '/pages/login/login',

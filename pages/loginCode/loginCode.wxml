@@ -1,10 +1,7 @@
 <t-navbar left-arrow />
 <view class="page login-code">
-  <view class="login-code__title">验证码登录已停用</view>
+  <view class="login-code__title">正在打开微信登录</view>
   <view class="login-code__tips">
-    请使用微信登录进入导游/领队或客户账号。
-  </view>
-  <view class="login-code__button">
-    <t-button theme="primary" size="large" block bindtap="goToWechatLogin">返回微信登录</t-button>
+    请稍候。
   </view>
 </view>
