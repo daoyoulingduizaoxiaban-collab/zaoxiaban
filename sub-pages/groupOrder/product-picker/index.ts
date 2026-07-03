@@ -32,6 +32,7 @@ Page({
     this.setData({
       hasEventChannel,
       pageErrorText: hasEventChannel ? '' : '请从本团商品页进入，才能把商品加入团单。',
+      isLoading: hasEventChannel,
     });
 
     if (options.excludeIds) {
@@ -40,10 +41,15 @@ Page({
         this.setData({ excludeIds: ids });
       } catch (e) {
         wx.showToast({
-          title: '商品參數錯誤',
+          title: '商品参数错误',
           icon: 'none'
         });
       }
+    }
+
+    if (!hasEventChannel) {
+      this.setData({ allProducts: [], products: [], isLoading: false });
+      return;
     }
 
     this.loadProductLibrary();
