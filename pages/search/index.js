@@ -226,6 +226,6 @@ Page({
     this.setData({
       searchValue: '',
     });
-    wx.reLaunch({ url: '/pages/groupOrder/index' });
+    wx.switchTab({ url: '/pages/groupOrder/index' });
   },
 });

@@ -2,7 +2,7 @@ Component({
   properties: {
     title: {
       type: String,
-      value: '頁面標題'
+      value: '页面'
     }
   },
   methods: {
@@ -13,7 +13,7 @@ Component({
       if (pages.length > 1) {
         wx.navigateBack({ delta: 1 });
       } else {
-        wx.reLaunch({ url: '/pages/groupOrder/index' });
+        wx.switchTab({ url: '/pages/groupOrder/index' });
       }
     }
   }

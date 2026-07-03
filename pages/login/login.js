@@ -47,11 +47,4 @@ Page({
       this.setData({ isSubmitting: false });
     }
   },
-
-  goLoginCode() {
-    wx.navigateTo({
-      url: '/pages/loginCode/loginCode',
-      fail: () => wx.showToast({ title: '打开验证码登录失败', icon: 'none' }),
-    });
-  },
 });

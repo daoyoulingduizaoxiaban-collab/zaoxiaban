@@ -91,7 +91,7 @@ Component({
         wx.switchTab({
           url: `/${url}`,
           success: () => that.setData({ visible: false }),
-          fail: () => wx.reLaunch({ url: '/pages/groupOrder/index' }),
+          fail: () => wx.switchTab({ url: '/pages/groupOrder/index' }),
         });
       } else {
         wx.navigateTo({
