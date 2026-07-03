@@ -68,6 +68,13 @@ Page({
       gridList: this.buildGridList(profile),
       settingList: this.buildSettingList(profile),
     });
+    this.refreshTabBar();
+  },
+
+  refreshTabBar() {
+    if (typeof this.getTabBar === 'function' && this.getTabBar() && this.getTabBar().refreshTabBar) {
+      this.getTabBar().refreshTabBar();
+    }
   },
 
   buildGridList(profile) {
@@ -206,12 +213,14 @@ Page({
     AuthService.logout();
     getApp().globalData.userInfo = null;
     this.onShow();
+    this.refreshTabBar();
     wx.showToast({ title: '已退出登录', icon: 'success' });
   },
 
   async onRefreshAccessState() {
     await AuthService.refreshSession();
     this.onShow();
+    this.refreshTabBar();
     wx.showToast({ title: '状态已刷新', icon: 'none' });
   },
 

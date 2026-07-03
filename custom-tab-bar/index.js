@@ -5,52 +5,44 @@ import { AuthService } from '../services/auth/authService';
 
 Component({
   data: {
-    value: '', // 初始值设置为空，避免第一次加载时闪烁
-    unreadNum: 0, // 未读消息数量
+    value: '',
+    unreadNum: 0,
     list: [],
   },
   lifetimes: {
     attached() {
-      this.setData({
-        list: AuthService.canUseBusiness() ? BOTTOM_BAR_LIST : BOTTOM_BAR_LIST.filter(item => item.value === 'my')
-      });
+      this.refreshTabBar();
     },
     ready() {
-      const pages = getCurrentPages();
-      const curPage = pages[pages.length - 1];
-
-      if (curPage) {
-        const match = curPage.route.match(/pages\/([^/]+)/);
-        if (match && match[1]) {
-          this.setData({
-            value: match[1]
-          });
-        }
-      }
-      // const pages = getCurrentPages();
-      // const curPage = pages[pages.length - 1];
-
-      // if (curPage) {
-      //   const nameRe = /pages\/(\w+)\/index/.exec(curPage.route);
-      //   if (nameRe === null) return;
-      //   if (nameRe[1] && nameRe) {
-      //     this.setData({
-      //       value: nameRe[1],
-      //     });
-      //   }
-      // }
-
-      // // 同步全局未读消息数量
-      // this.setUnreadNum(app.globalData.unreadNum);
-      // app.eventBus.on('unread-num-change', (unreadNum) => {
-      //   this.setUnreadNum(unreadNum);
-      // });
+      this.refreshTabBar();
     }
-    // attached() {
-    //   this.initTabBar()
-    // }
+  },
+  pageLifetimes: {
+    show() {
+      this.refreshTabBar();
+    },
   },
   methods: {
+    getVisibleTabs() {
+      return AuthService.canUseBusiness()
+        ? BOTTOM_BAR_LIST
+        : BOTTOM_BAR_LIST.filter(item => item.value === 'my');
+    },
+
+    getCurrentTabValue() {
+      const pages = getCurrentPages();
+      const curPage = pages[pages.length - 1];
+      const match = curPage && curPage.route ? curPage.route.match(/pages\/([^/]+)/) : null;
+      return match && match[1] ? match[1] : 'my';
+    },
+
+    refreshTabBar() {
+      this.setData({
+        list: this.getVisibleTabs(),
+        value: this.getCurrentTabValue(),
+      });
+    },
+
     onChange(e) {
       const targetValue = e.detail;
       const item = this.data.list.find(i => i.value === targetValue);
@@ -62,7 +54,7 @@ Component({
     },
     handleChange(e) {
       try {
-        const nextList = AuthService.canUseBusiness() ? BOTTOM_BAR_LIST : BOTTOM_BAR_LIST.filter(item => item.value === 'my');
+        const nextList = this.getVisibleTabs();
         if (nextList.length !== this.data.list.length) {
           this.setData({ list: nextList });
         }
@@ -93,15 +85,8 @@ Component({
       }
     },
 
-    /** 设置未读消息数量 */
-    // setUnreadNum(unreadNum) {
-    //   this.setData({
-    //     unreadNum
-    //   });
-    // },
-
     initTabBar() {
-      this.setData({ list: BOTTOM_BAR_LIST });
+      this.refreshTabBar();
     },
   },
 });
