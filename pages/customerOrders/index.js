@@ -51,6 +51,27 @@ Page({
     };
   },
 
+  getAvailableOrderActions(order, profile = AuthService.getCurrentProfile()) {
+    const isCustomer = profile && profile.role === 'customer';
+    const isGuideOrAdmin = profile && ['guide', 'owner', 'admin'].includes(profile.role);
+    const status = Number(order && order.status);
+    const actions = [];
+
+    if (isCustomer && status === 0) actions.push({ label: '声明已付款', action: 'declarePaid' });
+    if (isCustomer && status !== 2 && status !== 3) actions.push({ label: '取消订单', action: 'cancelOrder' });
+    if (isGuideOrAdmin && status === 1) actions.push({ label: '确认收款', action: 'confirmPayment' });
+    if (isGuideOrAdmin && status !== 2 && status !== 3) actions.push({ label: '取消订单', action: 'cancelOrder' });
+
+    return actions;
+  },
+
+  decorateOrdersForAction(list = [], profile = AuthService.getCurrentProfile()) {
+    return list.map(order => ({
+      ...order,
+      canHandle: this.getAvailableOrderActions(order, profile).length > 0,
+    }));
+  },
+
   resetActionState(extraState = {}) {
     this.setData({
       actionPanelVisible: false,
@@ -120,7 +141,7 @@ Page({
       return;
     }
 
-    const orders = res.data || [];
+    const orders = this.decorateOrdersForAction(res.data || [], AuthService.getCurrentProfile());
     this.setData({
       allCustomerOrdersList: orders,
       customerOrdersList: this.filterOrdersByStatus(orders, this.data.currentStatus),
@@ -229,15 +250,7 @@ Page({
       return;
     }
 
-    const profile = AuthService.getCurrentProfile();
-    const isCustomer = profile && profile.role === 'customer';
-    const isGuideOrAdmin = profile && ['guide', 'owner', 'admin'].includes(profile.role);
-    const actions = [];
-
-    if (isCustomer && Number(order.status) === 0) actions.push({ label: '声明已付款', action: 'declarePaid' });
-    if (isCustomer && Number(order.status) !== 2 && Number(order.status) !== 3) actions.push({ label: '取消订单', action: 'cancelOrder' });
-    if (isGuideOrAdmin && Number(order.status) === 1) actions.push({ label: '确认收款', action: 'confirmPayment' });
-    if (isGuideOrAdmin && Number(order.status) !== 2 && Number(order.status) !== 3) actions.push({ label: '取消订单', action: 'cancelOrder' });
+    const actions = this.getAvailableOrderActions(order);
 
     if (actions.length === 0) {
       wx.showToast({ title: '当前订单暂无可执行操作', icon: 'none' });
