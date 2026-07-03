@@ -35,7 +35,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - Phase 3 导游团单 local/QA 保存闭环已完成；正式云端保存已通过 targeted automation 验证。
 - Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存已通过 targeted automation 验证。
 - 微信 DevTools 已可通过 CLI 打开项目；automation 可用于 targeted flow，逐 route GUI smoke test 尚未完成。
-- 2026-07-03 Phase 2-5 full-system QA attempt 的有效待修问题以后统一沉淀在 `QA/QA_BUG_REPORT_202607021815.md`；28 routes、5 roles、14 feature groups 均在 scope 内，目前 0 route / 0 role 完成 formal full-screen pass，full-system gate 仍为 `不通過`。
+- 2026-07-03 Phase 2-5 full-system QA attempt 的有效待修问题以后统一沉淀在 `QA/QA_BUG_REPORT_202607021815.md`；29 routes、5 roles、14 feature groups 均在 scope 内，目前 0 route / 0 role 完成 formal full-screen pass，full-system gate 仍为 `不通過`。
 
 ## 勾选规则
 - 只有已经实作且有验证信号的项目才能打勾。
@@ -72,7 +72,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] 聊天或联系流程：商品、团购或供应商页的联系入口必须进入正式聊天/联系流程；若暂不开发，正式入口必须移除。
 - [x] 发布流程：授权角色可以建立可发布内容并送出，列表或相关页面能看到结果；未授权角色不可发布。
 
-- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，28 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但完整逐页点击、返回、表单、角色、权限、copy、console/network、empty/error/loading 状态仍未完整验证。
+- [ ] Phase 7 GUI smoke test：DevTools 项目可打开，29 route 静态存在检查通过；targeted automation 曾可用于登录/业务 flow，但完整逐页点击、返回、表单、角色、权限、copy、console/network、empty/error/loading 状态仍未完整验证。
 - [ ] 真图片与付款凭证 GUI/真机验证：需要实际 media picker、保存、重开后仍显示的证据。
 - [x] 正式/QA 文案与内部测试工具隔离：正式角色不得看到 QA/local/test/Seed/mock/OpenID 未验证/MVP/后续/未完成等内部或开发进度文字。
 - [ ] 付款闭环 GUI 验证：客户声明付款、导游确认收款、付款历史、付款凭证必须分别有 GUI 证据。
@@ -128,7 +128,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] 实作 local/QA 收款状态确认与状态历史。
 - [x] 完成 starter 页面全量删除或重写。
 - [x] 部署并验证 `authLogin` 云函数可换取正式 OpenID。
-- [ ] 执行并记录完整 28-route GUI smoke test。
+- [ ] 执行并记录完整 29-route GUI smoke test。
 - [x] 为 groupOrders/products/customerOrders/payments/paymentStatusHistory 建立 cloud repository 与云函数权限边界。
 - [ ] 通过 Phase 8 真人可用 MVP gate。
 
@@ -256,7 +256,7 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] 正式云端 `customerOrders` / `payments` / `paymentStatusHistory` 保存已存在。
 - [x] 正式客户订单创建已存在。
 - [x] 正式客户下单/收款流程在重新打开/重新载入后仍能保持。
-- [ ] 28-route GUI smoke test 通过。
+- [ ] 29-route GUI smoke test 通过。
 - [x] `npm run lint` 通过。
 - [x] `git diff --check` 通过。
 - [x] 没有把 mock/local fallback 包装成 production 行为。
@@ -269,4 +269,4 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [x] `authLogin` 会初始化/读取 `users` profile；owner/admin 不能由前端自提权，需通过云函数环境变量 `OWNER_OPENIDS` / `ADMIN_OPENIDS` 白名单。
 - [x] 云数据库业务集合与云函数权限边界已建立：`groupOrders`、`products`、`groupOrderProducts`、`customerOrders`、`payments`、`paymentStatusHistory`。
 - [x] 正式云端覆盖登录/users 初始化、商品、团单、客户订单、收款状态与付款状态历史。
-- [ ] 尚未完成 28-route GUI smoke test，因此不能声明整个真人可用 MVP gate 全部通过。
+- [ ] 尚未完成 29-route GUI smoke test，因此不能声明整个真人可用 MVP gate 全部通过。

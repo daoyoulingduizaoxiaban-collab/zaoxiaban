@@ -13,6 +13,7 @@
     "pages/tourGuides/edit/index",
     "pages/customerOrders/index",
     "pages/customerOrders/edit/index",
+    "pages/customer/edit/index",
     "pages/providers/index",
     "pages/providers/edit/index",
     "pages/userReview/index",

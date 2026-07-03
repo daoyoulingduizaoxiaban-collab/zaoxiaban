@@ -180,6 +180,12 @@ Page({
 
     if (profile && profile.role === AUTH_ROLES.CUSTOMER) {
       list.push({
+        name: '客户资料',
+        icon: 'user',
+        type: 'customerProfile',
+        url: '/pages/customer/edit/index',
+      });
+      list.push({
         name: '申请导游/领队',
         icon: 'usergroup',
         type: 'tourGuideApply',

@@ -86,7 +86,7 @@
   - home, message, dataCenter, release, search, login, and setting use MVP business copy or explicit unfinished/local/QA prompts.
 - Phase 7 partial verification:
   - WeChat DevTools project opened via CLI.
-  - Static 28-route file existence check passed.
+  - Static 29-route file existence check passed.
   - WeChat DevTools `auto-replay --replay-all` command completed, but did not provide route-by-route GUI evidence.
   - 2026-07-02 detailed retest pre-flight completed; future QA retest notes are recorded directly in `QA/QA_BUG_REPORT_202607021815.md`.
   - Existing WeChat DevTools process was found, and DevTools CLI `auto --port 13521 --auto-port 9420` completed, but `miniprogram-automator.connect` could not connect to `9420`, `19512`, `3799`, `13521`, or discovered listening ports. No new GUI pass evidence was produced.
@@ -113,7 +113,7 @@ These are not formal cloud-backed features.
 ### Not Verified
 - WeChat DevTools GUI route smoke test.
 - WeChat DevTools full route smoke test.
-- 28-route GUI smoke test.
+- 29-route GUI smoke test.
 - 2026-07-02 detailed real workflow smoke: mostly blocked because DevTools automation websocket was not connectable after CLI `auto`; only product library main page and My/QA Seed role panel have valid manual screenshot evidence.
 - Product image upload through actual media picker in GUI.
 - Product image reopen/durable display after actual `wx.chooseMedia` upload.
