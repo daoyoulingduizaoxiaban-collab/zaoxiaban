@@ -23,6 +23,24 @@
   color: currentColor;
 }
 
+.local-icon__shape {
+  border: 2px solid currentColor;
+  border-radius: 6px;
+}
+
+.local-icon__shape::before {
+  content: "";
+  position: absolute;
+  left: 18%;
+  top: 18%;
+  width: 64%;
+  height: 64%;
+  border: 2px solid currentColor;
+  border-left: 0;
+  border-bottom: 0;
+  border-radius: 3px;
+}
+
 .local-icon--home .local-icon__shape {
   border: 2px solid currentColor;
   border-radius: 4px 4px 6px 6px;
@@ -101,6 +119,24 @@
   border-radius: 99px;
   background: currentColor;
   transform: translate(-50%, -50%);
+}
+
+.local-icon--add .local-icon__shape,
+.local-icon--action .local-icon__shape,
+.local-icon--check .local-icon__shape,
+.local-icon--edit .local-icon__shape,
+.local-icon--search .local-icon__shape,
+.local-icon--user .local-icon__shape,
+.local-icon--usergroup .local-icon__shape,
+.local-icon--user-setting .local-icon__shape,
+.local-icon--bulletpoint .local-icon__shape,
+.local-icon--root-list .local-icon__shape,
+.local-icon--view-list .local-icon__shape,
+.local-icon--app .local-icon__shape,
+.local-icon--upload .local-icon__shape,
+.local-icon--chat .local-icon__shape,
+.local-icon--data-display .local-icon__shape {
+  border: 0;
 }
 
 .local-icon--add .local-icon__shape::after,

@@ -63,6 +63,7 @@ Page({
     if (isApplicationMode) pageTitle = '申请导游/领队';
     if (isGuideApplicant) pageTitle = '导游/领队申请';
     this.setData({
+      pageTitle,
       canSave,
       isApplicationMode,
       submitText: isApplicationMode ? '提交导游/领队申请' : '保存导游/领队',
@@ -75,7 +76,6 @@ Page({
     if (!canSave) return;
     if (targetId) {
       this.setData({
-        pageTitle,
         isEdit: true,
       });
       if (isGuideApplicant) return;

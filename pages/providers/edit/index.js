@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { canUseProviderPortal } from '~/services/auth/roleScope';
+import { AUTH_ROLES, canUseProviderPortal } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
 
@@ -11,6 +11,7 @@ Page({
     disabledReason: '',
     pageErrorText: '',
     targetId: '',
+    isProviderSelfProfile: false,
     isSubmitting: false,
     formData: {
       title: '',
@@ -33,10 +34,19 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const targetId = options.id || (profile && profile.role === 'provider' ? (profile.providerId || profile.id) : '');
+    const providerSelfId = profile && profile.role === AUTH_ROLES.PROVIDER ? (profile.providerId || profile.id) : '';
+    const targetId = options.id || providerSelfId || '';
     const canSave = canUseProviderPortal(profile);
+    const isProviderSelfProfile = Boolean(
+      profile
+      && profile.role === AUTH_ROLES.PROVIDER
+      && targetId
+      && String(targetId) === String(providerSelfId)
+    );
     this.setData({
+      pageTitle: isProviderSelfProfile ? '维护供应商资料' : '新增供应商',
       canSave,
+      isProviderSelfProfile,
       disabledReason: canSave ? '' : '当前账号没有供应商资料维护权限。',
       pageErrorText: canSave ? '' : '当前账号没有供应商资料维护权限。',
       targetId,
@@ -45,7 +55,7 @@ Page({
     if (!canSave) return;
     if (targetId) {
       this.setData({
-        pageTitle: '编辑供应商',
+        pageTitle: isProviderSelfProfile ? '维护供应商资料' : '编辑供应商',
         isEdit: true,
       });
       this.fetchprovidersDetail(targetId);
@@ -55,6 +65,14 @@ Page({
   async fetchprovidersDetail(id) {
     const res = await DirectoryRepository.getProviderById(id);
     if (!res.success) {
+      if (this.data.isProviderSelfProfile) {
+        this.setData({
+          pageErrorText: '',
+          isEdit: false,
+          formData: this.getEmptyFormData(),
+        });
+        return;
+      }
       const errorText = res.error || '加载供应商资料失败';
       this.setData({
         pageErrorText: errorText,
@@ -105,8 +123,10 @@ Page({
       return;
     }
     this.setData({ isSubmitting: true });
+    const profile = AuthService.getCurrentProfile();
+    const targetId = this.data.targetId || (profile && profile.role === AUTH_ROLES.PROVIDER ? (profile.providerId || profile.id) : '');
     const res = await DirectoryRepository.saveProvider({
-      id: this.data.targetId,
+      id: targetId,
       title: this.data.formData.title,
       contact: this.data.formData.contact,
       note: this.data.formData.note,
