@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { AUTH_ROLES, FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateByUrl } from '~/utils/navigation';
 
@@ -27,12 +27,12 @@ Page({
 
   async loadTourGuides() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile || (!isOwnerOrAdmin(profile) && profile.role !== AUTH_ROLES.GUIDE)) {
+    if (!canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES)) {
       this.setData({
         tourGuidesList: [],
         canCreateTourGuide: false,
         canEditOwnTourGuide: false,
-        disabledReason: '当前账号没有导游/领队资料查看权限。',
+        disabledReason: AuthService.getAccessStateText(profile),
       });
       return;
     }
@@ -67,7 +67,7 @@ Page({
 
   onGoToEdit(e) {
     const profile = AuthService.getCurrentProfile();
-    if (!this.data.canCreateTourGuide && !this.data.canEditOwnTourGuide) {
+    if (!canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES) || (!this.data.canCreateTourGuide && !this.data.canEditOwnTourGuide)) {
       wx.showToast({ title: '当前账号不能维护导游/领队资料', icon: 'none' });
       return;
     }
