@@ -59,7 +59,10 @@
     <view class="product-card">
       <view class="product-image-wrap">
         <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="product-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onProductImageError" />
-        <text wx:if="{{item.isImageFallback}}" class="product-image-fallback">{{item.imageFallbackText || '暂无商品图片'}}</text>
+        <view wx:if="{{item.isImageFallback}}" class="product-image-fallback">
+          <view class="product-image-fallback__mark">品</view>
+          <view class="product-image-fallback__text">{{item.imageFallbackText || '暂无商品图片'}}</view>
+        </view>
       </view>
       <view class="product-main">
         <view class="product-title">{{item.title}}</view>

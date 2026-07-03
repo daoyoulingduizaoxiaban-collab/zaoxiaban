@@ -61,6 +61,15 @@ Page({
     this.loadOrderEntry(groupOrderId);
   },
 
+  onShareAppMessage() {
+    const groupOrder = this.data.groupOrder || {};
+    const groupOrderId = this.data.groupOrderId || groupOrder.id || groupOrder._id || '';
+    return {
+      title: `${groupOrder.title || '团单'}｜客户下单`,
+      path: buildCustomerEntryPath(groupOrderId),
+    };
+  },
+
   onLogin() {
     navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent(this.data.loginRedirectTo)}`, {
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
