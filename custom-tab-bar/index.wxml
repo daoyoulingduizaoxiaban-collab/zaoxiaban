@@ -1,7 +1,7 @@
 <t-tab-bar value="{{ value }}" theme="tag" split="{{ false }}" bind:change="handleChange">
   <t-tab-bar-item wx:for="{{ list }}" wx:key="value" value="{{ item.value }}">
     <view class="tabbar-entry">
-      <view class="tabbar-entry__symbol">{{item.symbol}}</view>
+      <t-icon class="tabbar-entry__icon" name="{{item.icon}}" size="40rpx" />
       <view class="tabbar-entry__label">{{item.label}}</view>
     </view>
   </t-tab-bar-item>

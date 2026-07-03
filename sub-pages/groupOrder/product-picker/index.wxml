@@ -9,7 +9,10 @@
   </view>
 
   <scroll-view scroll-y class="product-list">
-    <block wx:for="{{products}}" wx:key="id">
+    <view wx:if="{{isLoading}}" class="empty-state">正在加载商品库</view>
+    <view wx:elif="{{pageErrorText}}" class="empty-state">{{pageErrorText}}</view>
+
+    <block wx:else wx:for="{{products}}" wx:key="id">
       <view class="product-item {{item.disabled ? 'is-disabled' : ''}} {{item.selected ? 'is-selected' : ''}}"
             bindtap="toggleSelect"
             data-id="{{item.id}}">
@@ -35,7 +38,7 @@
     <view class="footer-spacer"></view>
   </scroll-view>
 
-  <view class="footer-bar">
+  <view wx:if="{{!pageErrorText}}" class="footer-bar">
     <view class="selected-info">
       已选择 <text class="count">{{selectedCount}}</text> 项
     </view>

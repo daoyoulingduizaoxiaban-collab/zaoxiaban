@@ -19,17 +19,17 @@ Page({
 
   getDataModeNote(profile, session, cloudEnabled) {
     if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
-      return '正式微信云端保存';
+      return '资料会保存到微信云端';
     }
     if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
-      return '当前未连接微信云端保存';
+      return '资料仅保存到当前设备';
     }
     return '请登录后查看资料保存状态';
   },
 
   getCloudSettingNote(session) {
     if (session && session.cloudOpenIdVerified) return '账号已完成微信登录验证';
-    if (session && (session.qaOverride || session.isMockOpenId)) return '当前未连接微信云端';
+    if (session && (session.qaOverride || session.isMockOpenId)) return '请使用微信登录同步账号资料';
     return '请先登录账号';
   },
 
@@ -45,7 +45,7 @@ Page({
           icon: 'user',
         },
         {
-          title: '资料模式',
+          title: '资料保存',
           note: this.getDataModeNote(profile, session, cloudEnabled),
           icon: 'server',
         },
@@ -65,7 +65,7 @@ Page({
 
     menuData.push([
       {
-        title: '正式云端设置',
+        title: '微信账号',
         note: this.getCloudSettingNote(session),
         icon: 'cloud',
       },

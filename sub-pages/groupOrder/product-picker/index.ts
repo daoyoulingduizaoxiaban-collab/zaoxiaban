@@ -6,7 +6,10 @@ Page({
     allProducts: [], // 原始資料
     products: [],    // 顯示資料 (含 selected/disabled 狀態)
     searchQuery: '',
-    selectedCount: 0
+    selectedCount: 0,
+    pageErrorText: '',
+    isLoading: true,
+    hasEventChannel: false,
   },
 
   getSafeEventChannel() {
@@ -22,6 +25,12 @@ Page({
   },
 
   onLoad(options) {
+    const hasEventChannel = Boolean(this.getSafeEventChannel());
+    this.setData({
+      hasEventChannel,
+      pageErrorText: hasEventChannel ? '' : '请从本团商品页进入，才能把商品加入团单。',
+    });
+
     // 1. 接收參數：要排除的 ID 列表
     if (options.excludeIds) {
       try {
@@ -42,7 +51,9 @@ Page({
   async loadProductLibrary() {
     const res = await ProductService.listVisible();
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载商品库失败', icon: 'none' });
+      const errorText = res.error || '加载商品库失败';
+      wx.showToast({ title: errorText, icon: 'none' });
+      this.setData({ pageErrorText: errorText, isLoading: false, allProducts: [], products: [] });
       return;
     }
     const processedList = res.data.map(item => {
@@ -58,7 +69,8 @@ Page({
 
     this.setData({
       allProducts: processedList,
-      products: processedList
+      products: processedList,
+      isLoading: false,
     });
   },
 
@@ -125,7 +137,7 @@ Page({
     const item = this.data.allProducts.find(product => String(product.id) === String(id));
 
     // 防呆
-    if (!item || item.disabled) {
+    if (!item || item.disabled || this.data.pageErrorText) {
       return;
     }
 
@@ -149,6 +161,11 @@ Page({
   // 確認加入
   confirmAdd() {
     const selectedItems = this.data.allProducts.filter(p => p.selected);
+
+    if (!this.data.hasEventChannel) {
+      wx.showToast({ title: '请从本团商品页进入', icon: 'none' });
+      return;
+    }
 
     if (selectedItems.length === 0) {
       wx.showToast({ title: '请先选择商品', icon: 'none' });

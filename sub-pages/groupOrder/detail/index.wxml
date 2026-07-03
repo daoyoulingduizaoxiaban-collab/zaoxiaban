@@ -8,7 +8,11 @@
     正在加载团单资料
   </view>
 
-  <t-cell-group wx:if="{{isDetailLoaded && groupOrderId}}" theme="card">
+  <view wx:if="{{isDetailLoaded && detailErrorText}}" class="empty-msg">
+    {{detailErrorText}}
+  </view>
+
+  <t-cell-group wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" theme="card">
     <t-input label="团单名称" placeholder="请输入1~20个字符" value="{{ groupOrder.title }}" />
     <t-input label="收单状态" value="{{ groupOrder.statusText }}" />
     <t-input label="描述" value="{{ groupOrder.description }}" />
@@ -32,7 +36,7 @@
     </view>
   </t-cell-group>
 
-  <view wx:if="{{isDetailLoaded && groupOrderId}}" class="statistics-card">
+  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="statistics-card">
     <view class="stat-item">
       <text class="stat-label">应收总金额</text>
       <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceivable)}}</text>
@@ -47,8 +51,8 @@
       <text class="stat-value">{{ utils.formatNumber(groupOrder.totalCustomers)}}人</text>
     </view>
   </view>
-  <view wx:if="{{isDetailLoaded && groupOrderId}}" class="section-title">客户订单</view>
-  <block wx:if="{{isDetailLoaded && groupOrder && groupOrder.memberOrderList}}" wx:for="{{groupOrder.memberOrderList}}" wx:key="id"
+  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="section-title">客户订单</view>
+  <block wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText && groupOrder && groupOrder.memberOrderList}}" wx:for="{{groupOrder.memberOrderList}}" wx:key="id"
     wx:for-item="memberOrder">
     <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" data-memberId="memberOrder.memberId"
       hover-class="card-hover">
@@ -84,11 +88,11 @@
     </view>
   </block>
 
-  <view wx:if="{{isDetailLoaded && groupOrderId && groupOrder.memberOrderList.length === 0}}" class="empty-msg">
+  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText && groupOrder.memberOrderList.length === 0}}" class="empty-msg">
     当前团单暂无客户订单
   </view>
 
-  <view wx:if="{{isDetailLoaded && groupOrderId && canManageGroupOrder}}" class="footer-action-bar">
+  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText && canManageGroupOrder}}" class="footer-action-bar">
     <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onEditGroupOrder"
       disabled="{{!groupOrderId}}">
       编辑团单

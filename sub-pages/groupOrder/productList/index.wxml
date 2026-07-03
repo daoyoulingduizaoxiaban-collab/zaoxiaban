@@ -10,7 +10,17 @@
   </view>
 
   <scroll-view scroll-y class="product-list">
-    <block wx:if="{{displayList.length > 0}}">
+    <view wx:if="{{isLoading}}" class="empty-state">
+      <image src="/static/icon_map.png" class="empty-img" mode="aspectFit" />
+      <text>正在加载本团商品</text>
+    </view>
+
+    <view wx:elif="{{pageErrorText}}" class="empty-state">
+      <image src="/static/icon_map.png" class="empty-img" mode="aspectFit" />
+      <text>{{pageErrorText}}</text>
+    </view>
+
+    <block wx:elif="{{displayList.length > 0}}">
       <view class="product-card" wx:for="{{displayList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
         
         <image class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError" />
@@ -29,7 +39,8 @@
 
         <view class="p-action" catchtap="onDelete" data-index="{{index}}" data-id="{{item.id}}">
           <view class="btn-delete-icon">
-            <text class="icon-trash">🗑️</text> </view>
+            <t-icon name="delete" size="36rpx" color="#ff4d4f" />
+          </view>
           <text class="txt-del">移除</text>
         </view>
 
@@ -45,8 +56,8 @@
     <view class="list-spacer"></view>
   </scroll-view>
 
-  <view class="footer-bar">
-    <button class="btn-add-new" bindtap="goToLibrary">
+  <view wx:if="{{!pageErrorText}}" class="footer-bar">
+    <button class="btn-add-new" bindtap="goToLibrary" disabled="{{isLoading}}">
       <text class="plus">+</text> 从商品库加入
     </button>
   </view>

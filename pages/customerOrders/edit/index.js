@@ -145,7 +145,7 @@ Page({
   choosePaymentProof() {
     if (this.data.isSubmitting) return;
     if (!wx.chooseMedia) {
-      wx.showToast({ title: '当前环境不支持选择图片', icon: 'none' });
+      wx.showToast({ title: '当前设备不支持选择图片', icon: 'none' });
       return;
     }
     const currentUrls = this.data.formData.paymentProofUrls || [];

@@ -66,19 +66,19 @@ const ignorePreviewSessionInFormalMode = session => (
 
 const wxLogin = () => new Promise((resolve) => {
   if (!wx.login) {
-    resolve({ success: false, error: '当前环境不支持 wx.login' });
+    resolve({ success: false, error: '当前设备无法发起微信登录' });
     return;
   }
 
   wx.login({
     success: res => resolve({ success: true, code: res.code || '' }),
-    fail: err => resolve({ success: false, error: err.errMsg || 'wx.login 调用失败' }),
+    fail: err => resolve({ success: false, error: err.errMsg || '微信登录失败，请稍后重试' }),
   });
 });
 
 const callCloudAuth = (loginCode, requestedRole) => new Promise((resolve) => {
   if (!config.cloudEnvId || !wx.cloud || !wx.cloud.callFunction) {
-    resolve({ success: false, error: '未配置云环境或云函数' });
+    resolve({ success: false, error: '账号服务暂时不可用' });
     return;
   }
 
@@ -244,7 +244,7 @@ export const AuthService = {
       } else {
         authStatus = {
           ...authStatus,
-          fallbackReason: cloudResult.error || '云函数未返回 openId',
+          fallbackReason: cloudResult.error || '微信账号验证失败',
         };
       }
     }
@@ -316,7 +316,7 @@ export const AuthService = {
     if (!config.isMock) {
       return {
         success: false,
-        error: '演示身份切换仅允许在开发预览模式使用',
+        error: '当前账号不支持身份切换',
       };
     }
 

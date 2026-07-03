@@ -230,7 +230,7 @@ Page({
   chooseActionPaymentProof() {
     if (this.data.isSubmittingAction) return;
     if (!wx.chooseMedia) {
-      wx.showToast({ title: '当前环境不支持选择图片', icon: 'none' });
+      wx.showToast({ title: '当前设备不支持选择图片', icon: 'none' });
       return;
     }
 

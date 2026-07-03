@@ -23,7 +23,9 @@
   </view>
 
   <scroll-view scroll-y class="product-list">
-    <block wx:for="{{filteredList}}" wx:key="id">
+    <view class="empty-tip" wx:if="{{isLoading}}">正在加载商品</view>
+    <view class="empty-tip" wx:elif="{{pageErrorText}}">{{pageErrorText}}</view>
+    <block wx:else wx:for="{{filteredList}}" wx:key="id">
       <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
         <image class="cover-image" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
         <view class="content-area">
@@ -45,7 +47,7 @@
         </view>
       </view>
     </block>
-    <view class="empty-tip" wx:if="{{filteredList.length === 0}}">找不到符合条件的商品</view>
+    <view class="empty-tip" wx:if="{{!isLoading && !pageErrorText && filteredList.length === 0}}">找不到符合条件的商品</view>
   </scroll-view>
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">

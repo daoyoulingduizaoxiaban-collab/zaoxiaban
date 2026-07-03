@@ -22,6 +22,7 @@ Page({
     customerEntryPath: '',
     isDetailLoaded: false,
     canManageGroupOrder: false,
+    detailErrorText: '',
   },
 
   onLoad(options) {
@@ -34,7 +35,10 @@ Page({
       this.fetchGroupOrderDetail(id);
     } else {
       this.setData({
-        pageTitle: '新建团单',
+        pageTitle: '团单详情',
+        isDetailLoaded: true,
+        detailErrorText: '缺少团单 ID，请返回团单列表重新进入。',
+        saveModeText: '无法读取团单资料',
       });
     }
   },
@@ -61,18 +65,20 @@ Page({
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
           isDetailLoaded: true,
+          detailErrorText: '',
           canManageGroupOrder: this.canManageGroupOrder(),
         });
       } else {
-        this.setData({ isDetailLoaded: true, saveModeText: res.error || '加载团单失败' });
+        const errorText = res.error || '加载团单失败';
+        this.setData({ isDetailLoaded: true, saveModeText: errorText, detailErrorText: errorText });
         wx.showToast({
-          title: res.error || '加载团单失败',
+          title: errorText,
           icon: 'none'
         });
       }
 
     } catch (err) {
-      this.setData({ isDetailLoaded: true, saveModeText: '加载团单失败' });
+      this.setData({ isDetailLoaded: true, saveModeText: '加载团单失败', detailErrorText: '加载团单失败' });
       wx.showToast({
         title: '加载团单失败',
         icon: 'none'

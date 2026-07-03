@@ -11,6 +11,8 @@ Page({
     detailVisible: false,
     selectedProduct: null,
     selectedPriceRules: [],
+    isLoading: true,
+    pageErrorText: '',
   },
 
   onLoad() {
@@ -20,13 +22,17 @@ Page({
   async loadProducts() {
     const res = await ProductService.listVisible();
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载商品失败', icon: 'none' });
+      const errorText = res.error || '加载商品失败';
+      wx.showToast({ title: errorText, icon: 'none' });
+      this.setData({ isLoading: false, pageErrorText: errorText, allProducts: [], filteredList: [] });
       return;
     }
     const products = this.normalizeProducts(res.data);
     this.setData({
       allProducts: products,
-      filteredList: products
+      filteredList: products,
+      isLoading: false,
+      pageErrorText: '',
     });
   },
 

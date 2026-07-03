@@ -71,7 +71,7 @@ Page({
       }),
       imageModeTip: cloudEnabled
         ? '图片会随商品资料一起保存，便于客户查看实物。'
-        : '当前环境无法保存图片，请稍后重试或联系管理员。',
+        : '图片保存服务不可用，请稍后重试或联系管理员。',
     });
   },
 
@@ -175,7 +175,7 @@ Page({
   chooseImage() {
     if (this.data.isChoosingImage || this.data.isSubmitting) return;
     if (!wx.chooseMedia) {
-      wx.showToast({ title: '当前环境不支持选择图片', icon: 'none' });
+      wx.showToast({ title: '当前设备不支持选择图片', icon: 'none' });
       return;
     }
     const remainCount = 3 - this.data.currentProduct.pictureUrls.length;

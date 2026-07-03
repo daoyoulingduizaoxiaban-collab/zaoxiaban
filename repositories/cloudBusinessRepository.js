@@ -2,7 +2,7 @@ import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 
 export const CLOUD_SAVE_MODE = 'wechat-cloud-repository';
-export const LOCAL_SAVE_MODE_TEXT = '当前环境仅保存到本设备';
+export const LOCAL_SAVE_MODE_TEXT = '已保存到当前设备';
 export const CLOUD_SAVE_MODE_TEXT = '已保存到微信云端';
 
 export const getSaveModeText = meta => (
@@ -23,15 +23,15 @@ export const isCloudBusinessEnabled = () => {
 
 export const callBusinessData = ({ resource, action, data = {} }) => new Promise((resolve) => {
   if (!isCloudBusinessEnabled()) {
-    resolve({ success: false, error: '正式云端资料层不可用' });
+    resolve({ success: false, error: '资料服务暂时不可用' });
     return;
   }
 
   wx.cloud.callFunction({
     name: 'businessData',
     data: { resource, action, data },
-    success: res => resolve(res.result || { success: false, error: '云函数未返回结果' }),
-    fail: err => resolve({ success: false, error: err.errMsg || '云端资料操作失败' }),
+    success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
+    fail: err => resolve({ success: false, error: err.errMsg || '资料保存失败，请稍后重试' }),
   });
 });
 
@@ -48,7 +48,7 @@ const uploadOneFile = (path, index, prefix) => new Promise((resolve) => {
   }
 
   if (!isCloudBusinessEnabled() || !wx.cloud.uploadFile) {
-    resolve({ success: false, error: '当前环境不支持正式图片上传' });
+    resolve({ success: false, error: '图片上传服务暂时不可用' });
     return;
   }
 

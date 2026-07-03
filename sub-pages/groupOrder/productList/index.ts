@@ -11,13 +11,17 @@ Page({
     detailVisible: false,
     selectedProduct: null,
     selectedPriceRules: [],
-    skipNextReload: false
+    skipNextReload: false,
+    pageErrorText: '',
+    isLoading: true,
   },
 
   onLoad(options) {
     const groupOrderId = options.id ? String(options.id) : '';
     this.setData({
-      groupOrderId
+      groupOrderId,
+      pageErrorText: groupOrderId ? '' : '缺少团单 ID，请返回团单详情重新进入。',
+      isLoading: Boolean(groupOrderId),
     });
   },
 
@@ -37,20 +41,28 @@ Page({
   async loadGroupProducts() {
     const { groupOrderId } = this.data;
     if (!groupOrderId) {
-      wx.showToast({ title: '缺少团单 ID', icon: 'none' });
+      this.setData({
+        isLoading: false,
+        pageErrorText: '缺少团单 ID，请返回团单详情重新进入。',
+        rawList: [],
+        displayList: [],
+      });
       return;
     }
 
     const res = await GroupOrderService.getById(groupOrderId);
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载本团商品失败', icon: 'none' });
-      this.setData({ rawList: [], displayList: [] });
+      const errorText = res.error || '加载本团商品失败';
+      wx.showToast({ title: errorText, icon: 'none' });
+      this.setData({ rawList: [], displayList: [], isLoading: false, pageErrorText: errorText });
       return;
     }
     const groupProducts = this.normalizeProducts(res.data.productList || []);
 
     this.setData({
       rawList: groupProducts,
+      isLoading: false,
+      pageErrorText: '',
       // 如果目前有搜尋關鍵字，則保留過濾狀態，否則顯示全部
       displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
@@ -175,6 +187,11 @@ Page({
 
   // 5. 跳轉到「商品庫選擇頁」
   goToLibrary() {
+    if (!this.data.groupOrderId) {
+      this.setData({ pageErrorText: '缺少团单 ID，请返回团单详情重新进入。' });
+      return;
+    }
+
     const existingIds = this.data.rawList.map(item => item.id);
 
     this.setData({
