@@ -7,7 +7,8 @@ Page({
   data: {
     titleText: '个人资料',
     profileList: [],
-    canCreateProfile: false,
+    canEditCurrentProfile: false,
+    currentProfileId: '',
     disabledReason: '',
   },
 
@@ -29,7 +30,8 @@ Page({
     if (!canUseFeature(currentProfile, FEATURE_KEYS.PROFILE)) {
       this.setData({
         profileList: [],
-        canCreateProfile: false,
+        canEditCurrentProfile: false,
+        currentProfileId: '',
         disabledReason: AuthService.getAccessStateText(currentProfile),
       });
       return;
@@ -43,9 +45,10 @@ Page({
         id: user.id,
         title: user.name || user.displayName,
         statusText: user.displayRole,
-        description: `${user.city}｜手机号 ${user.phone}`,
+        description: `${user.city || '城市未填写'}｜手机号 ${user.phone || '未填写'}`,
       })),
-      canCreateProfile: canUseFeature(currentProfile, FEATURE_KEYS.PROFILE),
+      canEditCurrentProfile: canUseFeature(currentProfile, FEATURE_KEYS.PROFILE),
+      currentProfileId: currentProfile.id || '',
       disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的个人资料。'),
     });
   },
@@ -66,7 +69,7 @@ Page({
       wx.showToast({ title: '当前账号没有个人资料维护权限', icon: 'none' });
       return;
     }
-    const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
+    const id = (e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id) || this.data.currentProfileId;
     const url = id ? `/pages/profile/edit/index?id=${id}` : '/pages/profile/edit/index';
 
     navigateByUrl(url, {

@@ -14,6 +14,6 @@
     <t-empty icon="info-circle" description="{{disabledReason || '暂无个人资料'}}" />
   </view>
 
-  <t-fab wx:if="{{canCreateProfile}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增个人资料" style="right: 32rpx; bottom: 180rpx;" />
+  <t-fab wx:if="{{canEditCurrentProfile}}" icon="edit" data-id="{{currentProfileId}}" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="编辑个人资料" style="right: 32rpx; bottom: 180rpx;" />
 
 </view>

@@ -5,7 +5,7 @@ import { navigateBackOrTab } from '~/utils/navigation';
 
 Page({
   data: {
-    pageTitle: '新增个人资料',
+    pageTitle: '编辑个人资料',
     isEdit: false,
     canSave: false,
     canEditStatus: false,
