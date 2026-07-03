@@ -60,7 +60,7 @@
           </view>
         </view>
       </view>
-      <view class="action-hint">请至少填写付款方式、付款备注或上传一张付款凭证。</view>
+      <view class="action-hint">请填写付款方式并上传至少一张付款凭证，方便导游核对收款。</view>
     </view>
 
     <view wx:elif="{{actionType === 'confirmPayment'}}" class="action-form">

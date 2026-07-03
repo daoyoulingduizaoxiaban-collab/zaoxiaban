@@ -256,8 +256,11 @@ Page({
     const cancelRemark = String(actionForm.cancelRemark || '').trim();
 
     if (actionType === 'declarePaid') {
-      if (!paymentMethod && !paymentRemark && paymentProofUrls.length === 0) {
-        return { error: '请填写付款方式、付款备注或上传付款凭证' };
+      if (!paymentMethod) {
+        return { error: '请填写付款方式' };
+      }
+      if (paymentProofUrls.length === 0) {
+        return { error: '请上传付款凭证' };
       }
       return {
         data: {

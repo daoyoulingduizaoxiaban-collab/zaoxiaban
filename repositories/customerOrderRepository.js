@@ -365,10 +365,12 @@ export const CustomerOrderRepository = {
       return { success: false, error: '只有客户已付款订单才能确认到账' };
     }
     if (nextStatusValue === MemberOrderStatus.PAID) {
-      const hasPaymentNote = trimText(payload.paymentMethod) || trimText(payload.paymentRemark);
       const hasProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
-      if (!hasPaymentNote && !hasProof) {
-        return { success: false, error: '请填写付款方式、付款备注或上传付款凭证' };
+      if (!trimText(payload.paymentMethod)) {
+        return { success: false, error: '请填写付款方式' };
+      }
+      if (!hasProof) {
+        return { success: false, error: '请上传付款凭证' };
       }
     }
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) <= 0) {

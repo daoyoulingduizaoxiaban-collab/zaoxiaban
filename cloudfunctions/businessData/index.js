@@ -547,9 +547,9 @@ const customerOrderActions = {
       return failure('只有客户已付款订单才能确认到账');
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.PAID) {
-      const hasPaymentNote = trimText(paymentMethod) || trimText(paymentRemark);
       const hasProof = Array.isArray(paymentProofUrls) && paymentProofUrls.length > 0;
-      if (!hasPaymentNote && !hasProof) return failure('请填写付款方式、付款备注或上传付款凭证');
+      if (!trimText(paymentMethod)) return failure('请填写付款方式');
+      if (!hasProof) return failure('请上传付款凭证');
       if (!hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('正式云端付款凭证必须先上传为持久图片');
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {

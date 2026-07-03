@@ -171,8 +171,11 @@ export const CustomerOrderService = {
     const paymentRemark = trimText(payload.paymentRemark);
     let paymentProofUrls = payload.paymentProofUrls || [];
 
-    if (!paymentMethod && !paymentRemark && paymentProofUrls.length === 0) {
-      return { success: false, error: '请填写付款方式、付款备注或上传付款凭证' };
+    if (!paymentMethod) {
+      return { success: false, error: '请填写付款方式' };
+    }
+    if (paymentProofUrls.length === 0) {
+      return { success: false, error: '请上传付款凭证' };
     }
 
     if (isCloudBusinessEnabled() && paymentProofUrls.length) {
