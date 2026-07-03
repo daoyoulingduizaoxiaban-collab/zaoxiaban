@@ -1,6 +1,7 @@
 import { areaList } from './areaData.js';
 import { AuthService } from '~/services/auth/authService';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 Page({
   data: {
@@ -43,6 +44,7 @@ Page({
     },
     isSubmitting: false,
     canEdit: false,
+    accessState: 'logged_out',
     disabledReason: '请先登录后编辑个人信息',
   },
 
@@ -53,10 +55,11 @@ Page({
 
   getPersonalInfo() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile) {
+    if (!canUseFeature(profile, FEATURE_KEYS.INFO_EDIT)) {
       this.setData({
         canEdit: false,
-        disabledReason: '请先登录后编辑个人信息',
+        accessState: AuthService.getAccessState(profile),
+        disabledReason: AuthService.getAccessStateText(profile),
       });
       return;
     }
@@ -64,6 +67,7 @@ Page({
     const address = cityEntry ? [cityEntry[0].slice(0, 2).padEnd(6, '0'), cityEntry[0]] : [];
     this.setData({
       canEdit: true,
+      accessState: AuthService.getAccessState(profile),
       disabledReason: '',
       personInfo: {
         ...this.data.personInfo,
@@ -184,8 +188,8 @@ Page({
 
   async onSaveInfo() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile || !this.data.canEdit) {
-      wx.showToast({ title: '请先登录后编辑个人信息', icon: 'none' });
+    if (!canUseFeature(profile, FEATURE_KEYS.INFO_EDIT) || !this.data.canEdit) {
+      wx.showToast({ title: '当前账号没有编辑个人信息权限', icon: 'none' });
       return;
     }
     const { personInfo, addressText } = this.data;
@@ -223,5 +227,11 @@ Page({
       url: `/pages/login/login?redirectTo=${encodeURIComponent('/pages/my/info-edit/index')}`,
       fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
     });
+  },
+
+  async onRefreshAccessState() {
+    await AuthService.refreshSession();
+    this.getPersonalInfo();
+    wx.showToast({ title: '状态已刷新', icon: 'none' });
   },
 });

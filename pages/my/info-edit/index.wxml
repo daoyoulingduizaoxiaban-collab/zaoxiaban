@@ -1,7 +1,8 @@
 <t-navbar left-arrow title="个人信息" />
 <view wx:if="{{!canEdit}}" class="info-edit">
   <t-empty icon="info-circle" description="{{disabledReason}}" />
-  <t-button theme="primary" size="medium" block bind:tap="onLogin">去登录</t-button>
+  <t-button wx:if="{{accessState === 'logged_out'}}" theme="primary" size="medium" block bind:tap="onLogin">去登录</t-button>
+  <t-button wx:else theme="primary" size="medium" block bind:tap="onRefreshAccessState">重新检查状态</t-button>
 </view>
 
 <view wx:else class="info-edit">

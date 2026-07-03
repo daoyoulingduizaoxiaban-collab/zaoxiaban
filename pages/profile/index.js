@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
@@ -25,11 +25,11 @@ Page({
 
   async loadProfiles() {
     const currentProfile = AuthService.getCurrentProfile();
-    if (!currentProfile) {
+    if (!canUseFeature(currentProfile, FEATURE_KEYS.PROFILE)) {
       this.setData({
         profileList: [],
         canCreateProfile: false,
-        disabledReason: '请先登录后查看个人资料。',
+        disabledReason: AuthService.getAccessStateText(currentProfile),
       });
       return;
     }
@@ -44,7 +44,7 @@ Page({
         statusText: user.displayRole,
         description: `${user.city}｜手机号 ${user.phone}`,
       })),
-      canCreateProfile: Boolean(currentProfile),
+      canCreateProfile: canUseFeature(currentProfile, FEATURE_KEYS.PROFILE),
       disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的个人资料。'),
     });
   },
@@ -61,8 +61,8 @@ Page({
   },
 
   onGoToEdit(e) {
-    if (!AuthService.getCurrentProfile()) {
-      wx.showToast({ title: '请先登录后编辑个人资料', icon: 'none' });
+    if (!canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.PROFILE)) {
+      wx.showToast({ title: '当前账号没有个人资料维护权限', icon: 'none' });
       return;
     }
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;

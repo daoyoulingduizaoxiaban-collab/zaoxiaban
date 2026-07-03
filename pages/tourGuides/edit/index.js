@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
@@ -22,7 +22,7 @@ Page({
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
     const targetId = options.id || (profile && profile.role === 'guide' ? profile.id : '');
-    const canSave = Boolean(profile && (
+    const canSave = Boolean(canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES) && (
       isOwnerOrAdmin(profile)
       || (profile.role === 'guide' && String(targetId) === String(profile.id))
     ));

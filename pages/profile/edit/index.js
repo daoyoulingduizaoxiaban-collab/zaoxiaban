@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
@@ -22,7 +22,10 @@ Page({
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
     const targetId = options.id || (profile && profile.id) || '';
-    const canSave = Boolean(profile && (!targetId || isOwnerOrAdmin(profile) || String(targetId) === String(profile.id)));
+    const canSave = Boolean(
+      canUseFeature(profile, FEATURE_KEYS.PROFILE)
+      && (!targetId || isOwnerOrAdmin(profile) || String(targetId) === String(profile.id))
+    );
     this.setData({
       canSave,
       disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',

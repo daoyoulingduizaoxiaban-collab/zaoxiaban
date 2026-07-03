@@ -1,6 +1,7 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 Page({
   behaviors: [useToastBehavior],
@@ -44,6 +45,7 @@ Page({
       });
       return;
     }
+    const canEditInfo = canUseFeature(profile, FEATURE_KEYS.INFO_EDIT);
 
     const menuData = [
       [
@@ -60,14 +62,16 @@ Page({
       ],
     ];
 
-    menuData.push([
-      {
-        title: '账号资料',
-        note: '查看与修改名称、电话和头像',
-        icon: 'edit',
-        url: '/pages/my/info-edit/index',
-      },
-    ]);
+    if (canEditInfo) {
+      menuData.push([
+        {
+          title: '账号资料',
+          note: '查看与修改名称、电话和头像',
+          icon: 'edit',
+          url: '/pages/my/info-edit/index',
+        },
+      ]);
+    }
 
     menuData.push([
       {
