@@ -1,7 +1,8 @@
 <t-tab-bar value="{{ value }}" theme="tag" split="{{ false }}" bind:change="handleChange">
-  <t-tab-bar-item wx:for="{{ list }}" wx:key="value" value="{{ item.value }}" icon="{{ item.icon }}">{{item.label}}
+  <t-tab-bar-item wx:for="{{ list }}" wx:key="value" value="{{ item.value }}">
+    <view class="tabbar-entry">
+      <view class="tabbar-entry__symbol">{{item.symbol}}</view>
+      <view class="tabbar-entry__label">{{item.label}}</view>
+    </view>
   </t-tab-bar-item>
-  <!-- <t-tab-bar-item icon="home" value="home">首页</t-tab-bar-item>
-  <t-tab-bar-item icon="chat" value="message" badge-props="{{ { count: unreadNum } }}">消息</t-tab-bar-item>
-  <t-tab-bar-item icon="user" value="my">我的</t-tab-bar-item> -->
 </t-tab-bar>
