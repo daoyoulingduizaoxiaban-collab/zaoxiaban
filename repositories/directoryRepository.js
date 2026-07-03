@@ -90,8 +90,7 @@ const visibleUsersForProfile = (users, profile) => {
 
 const callCloud = async (resource, action, data) => {
   if (!isCloudBusinessEnabled()) return null;
-  const res = await callBusinessData({ resource, action, data });
-  return res && res.success ? res : null;
+  return callBusinessData({ resource, action, data });
 };
 
 export const DirectoryRepository = {
