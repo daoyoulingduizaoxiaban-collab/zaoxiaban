@@ -76,6 +76,51 @@ QA/AGENT 分工必须保持分离：QA 只在 BUG 单维护仍不通过的问题
 - [ ] 真图片与付款凭证 GUI/真机验证：需要实际 media picker、保存、重开后仍显示的证据。
 - [x] 正式/QA 文案与内部测试工具隔离：正式角色不得看到 QA/local/test/Seed/mock/OpenID 未验证/MVP/后续/未完成等内部或开发进度文字。
 - [ ] 付款闭环 GUI 验证：客户声明付款、导游确认收款、付款历史、付款凭证必须分别有 GUI 证据。
+- [ ] 付款凭证 MVP 规则改为选填：客户声明付款时，付款凭证图片不是必填项；付款方式、付款金额与必要备注必须足以提交付款声明，图片凭证作为补充证据上传。
+  - 产品规则：客户可以在未上传截图的情况下声明已付款；导游/领队确认收款时依据实际到账、金额、备注与可选凭证判断。系统不得因为没有图片凭证而阻止付款声明，但必须清楚显示「未上传凭证」状态。
+  - 表单规则：付款声明必须校验合法订单状态、付款金额、付款方式和重复提交；凭证图片若有上传，必须走正式 media picker 与持久化存储路径，不能保存临时本地路径到正式云端资料。
+  - 显示规则：订单详情、付款历史与导游确认收款页必须显示付款方式、声明金额、备注、凭证数量或未上传凭证状态。凭证图片仅允许有权限的客户本人、所属导游/领队、owner/admin 查看。
+  - 验收规则：必须 fresh DevTools 或真机验证两条路径：无凭证也能声明付款并由导游确认；有凭证时可选择图片、保存、重开后仍显示。两条路径都必须验证无权角色不能查看凭证。
+- [ ] Customer 多入口与多角色规则：直接注册用户必须进入审核；从团单分享链接进入的用户可以免人工审核完成受限下单；同一个微信 OpenID 可以同时拥有导游/领队等正式角色与客户下单身份，系统必须按当前场景切换有效身份与资料归属。
+  - 入口来源规则：用户直接打开小程序、首页、搜索、普通扫码或非团单分享路径时，首次微信登录只能创建 `pending_review` 正式用户，不得自动成为 customer、guide、provider、admin 或 owner。用户必须由 owner/admin 审核后才获得正式业务角色。
+  - 团单分享规则：用户从合法团单分享链接、团单码或带有效 share token 的客户下单入口进入时，可以建立「受限客户下单身份」并进入该团单的客户下单流程。该身份只允许查看该分享团单、该团单商品、自己的订单、自己的付款状态和付款声明，不允许进入完整业务 tab、商品库管理、导游团单管理、供应商管理、资料中心、用户审核或其他客户资料。
+  - 正式 customer 规则：如果未来用户要成为完整 customer 会员或使用非分享来源的完整客户功能，仍必须走 owner/admin 审核。受限下单身份不等于完整 customer 角色，不得自动获得完整客户中心或全站客户权限。
+  - 多角色模型：同一个正式微信 OpenID 可以同时具备多个能力身份，例如一个人既是 `guide`，也可以作为客户购买其他导游分享的团单。云端用户资料必须支持 `primaryRole` 或 `roles[]`、`reviewStatus`、以及场景化 `effectiveRole`。页面与后端不能只用单一 `role` 粗暴判断所有场景。
+  - 场景化有效身份：进入导游/领队工作台、商品管理、开团、收款确认时，系统使用该 OpenID 的已审核 `guide` 能力；从客户分享链接进入特定团单下单时，系统使用该 OpenID 对该团单的 `restricted_customer` 或等价客户下单能力。两种身份必须能在同一账号下共存，且入口、tab、按钮和后端权限按当前场景计算。
+  - 资料归属规则：导游身份创建的商品、团单与客户身份创建的订单必须分开记录。建议订单保存 `customerOpenid` 或 `customerPrincipalId`，团单保存 `guideOpenid` 或 `guidePrincipalId`，分享受限下单保存 `shareToken`、`groupOrderId`、`customerOpenid`、`restrictedCustomer: true`。不能因为同一 OpenID 同时是导游和客户，就让他看到或修改不属于自己的客户订单或其他导游资料。
+  - 分享安全规则：受限客户下单必须验证分享入口对应的团单仍有效、未过截止时间、可售、未被删除或停用。无效分享路径必须显示正式错误页或返回安全页面，不得放开完整客户权限。
+  - 切换与 UI 规则：若一个已审核 guide 从别人分享链接进入，系统应进入客户下单场景，而不是强行跳回导游工作台；完成或退出该分享流程后，再回到其原本导游身份首屏。若同一账号拥有多个正式角色，My/设置页应清楚显示已审核角色与当前场景，不得让用户误以为受限客户身份等于完整角色。
+  - 后端规则：所有 cloud function 与 repository 必须按 `effectiveRole`、入口来源、share token、订单归属和团单归属校验权限。前端隐藏入口不是权限完成；后端必须拒绝非分享来源的免审客户能力、过期分享、角色不符、订单不归属、团单不归属和停用账号。
+  - 验收规则：必须 fresh DevTools 或真机验证三条路径：直接新用户登录后进入待审核且没有业务入口；未审核用户通过合法团单分享可以完成该团单受限下单但不能进入其他业务；已审核 guide 通过别人团单分享能以客户场景下单，退出后仍保留 guide 工作台权限且看不到不属于自己的客户资料。
+- [ ] Provider 供应商作为 MVP 正式角色补齐：供应商不是可隐藏的后续角色，上线前必须完成正式申请、审核、资料维护、商品管理、导游选品、客户可见与权限隔离。
+  - 产品定位：`provider` 指供应商，是 MVP 上线前必须支持的正式角色。不得再把 provider 当成暂不开放、半成品、只读展示或用未完成文案挡住的角色。
+  - 申请与审核：用户可申请成为供应商，owner/admin 可在审核入口查看申请、通过、拒绝、停用或调整供应商状态。审核必须保存 `reviewStatus`、`role/roles`、`reviewedBy`、`reviewedAt`、`updatedAt` 与可选备注。未审核或被拒绝/停用的供应商不得进入供应商业务功能。
+  - 供应商资料：已审核 provider 必须能维护自己的供应商资料，包括名称、联系方式、介绍、服务范围、商品或服务说明等必要对外资讯。保存后重新进入、重新登录或刷新后必须回填。
+  - 商品管理：已审核 provider 必须能新增、编辑、上下架、删除或停用自己的商品或服务。provider 只能管理自己的商品，不得修改其他供应商、导游或系统商品。商品必须包含客户和导游选品所需的名称、图片、价格、说明、状态与供应商归属。
+  - 导游选品：导游/领队开团或维护本团商品时，必须能选择可用的供应商商品，并在团单商品中保留供应商、价格、状态与商品快照。下架、停用或无权商品不得被新团单选用；既有团单要有清楚的失效或不可售状态。
+  - 客户可见：客户在团单商品、下单页、订单详情中必须能看到必要的供应商资讯，但不得看到供应商后台资料、联系方式以外的敏感资料或其他供应商营运资料。
+  - 权限隔离：provider 不得进入导游团单管理、客户资料中心、用户审核、owner/admin 功能、其他供应商资料、其他供应商商品管理或不属于自己的订单资料。owner/admin 可以管理所有供应商；guide 只能在选品与团单上下文读取可用供应商商品。
+  - 停用规则：provider 被停用后不得新增或修改商品；其商品应停止被新团单选用，既有订单与团单必须保留历史资料并显示正式状态。停用不得删除历史交易资料。
+  - 后端规则：`businessData`、repository 与 service 层必须校验 provider 资料归属、商品归属、审核状态和角色权限。正式云端不得依赖前端隐藏来保护供应商资料。
+  - 验收规则：必须 fresh DevTools 或真机验证 provider 申请、owner/admin 审核通过、provider 维护资料、provider 新增商品、guide 选用 provider 商品开团、customer 下单可见供应商资讯、provider 被停用后不可继续管理商品。没有完整流程证据不得勾选。
+- [ ] Owner 运营验收角色预览模式：使用者本人微信 OpenID 必须被设置为第一位正式 `owner`，并新增只有真实 owner 可见、可用的角色预览能力，让同一个 owner 微信账号安全模拟不同角色与审核状态完成 MVP 上线验收。
+  - 需求定位：这是上线前运营验收工具，不是 QA Seed、mock 身份切换、普通用户功能，也不是把真实用户角色改来改去的后台操作。实现后，使用者可用自己的正式微信登录账号，在不破坏真实 owner 权限的前提下，预览并操作 `visitor`、`pending_review`、`rejected`、`disabled`、`customer`、`guide`、`provider`、`admin`、`owner` 等状态或角色。
+  - OpenID 处理规则：AGENT 必须从本机 DevTools 登录结果、storage、`authLogin` 回传或云端 `users` profile 找到使用者当前正式微信 OpenID。不得把完整 OpenID 写进公开报告、截图、commit message 或普通文档；只允许写入受控配置、云函数环境变量或本地验证备注。找到后必须把该 OpenID 设置为 `OWNER_OPENIDS` 或等价 owner allowlist，让 `authLogin` 每次识别到该 OpenID 都返回 `role: owner` 与 `reviewStatus: approved`，并同步云端 `users` profile。
+  - 身份模型：必须区分真实身份与预览身份。真实身份 `realProfile` 永远代表当前微信 OpenID 的正式云端用户，例如 `role: owner`、`reviewStatus: approved`。预览身份 `effectiveProfile` 只代表当前页面、入口、权限与业务流程的模拟视角，例如 `role: guide`、`reviewStatus: approved`、`simulation: true`、`simulationActorRole: owner`。不得直接把使用者真实 `users.role` 从 owner 改成 guide/customer/provider/admin 来做测试，避免唯一 owner 被降权或锁死。
+  - 可用角色与状态：角色预览至少必须支持 `visitor`、`pending_review`、`rejected`、`disabled`、`customer`、`guide`、`provider`、`admin`、`owner`。`visitor` 是未登录视角预览，不等于真正登出；真正登出流程仍需单独测试。`pending_review`、`rejected`、`disabled` 必须显示正式状态页并隐藏业务入口。`customer`、`guide`、`provider`、`admin`、`owner` 必须按 `ROLE_FEATURE_ACCESS_MATRIX.md` 与现有权限规则计算入口和操作。
+  - 前端 AuthService 规则：`services/auth/authService.js` 必须新增或等价实现 `getRealProfile()`、`getEffectiveProfile()`、`setRoleSimulation(roleOrState)`、`clearRoleSimulation()`、`canUseRoleSimulation()`。页面、首页入口、custom tab bar、我的页服务列表、资料中心、商品、团单、客户订单、审核入口等用于显示和入口判断时应读取 `effectiveProfile`；涉及真实登录、owner 验证、退出登录、云端刷新与安全判断时必须保留并使用 `realProfile`。
+  - UI 入口规则：只允许真实 `owner` 且 `reviewStatus: approved` 看见角色预览入口。建议入口放在「我的」或「设置」的 owner 管理区，正式名称可用「运营验收模式」或「角色预览」。面板必须显示当前真实身份、当前预览身份，并提供切换按钮与「退出预览」。进入预览后页面顶部或 owner 可见区域应显示当前预览状态与退出入口，避免 owner 切成 customer 后找不到回 owner 的路径。普通正式用户、待审核用户、被拒绝用户、停用用户、非 owner 角色不得看见该入口。
+  - 前端状态刷新：每次切换预览角色后，必须写入本地 storage 或等价状态、更新 global auth state、重新计算 tabBar 与首页入口，并跳转到该预览角色可访问的安全首屏。退出预览后必须恢复真实 owner 视角。小程序启动、前台恢复、进入首页、进入我的页、进入权限敏感页面时，必须能重新套用或清除无效的预览状态；如果真实身份不再是 owner，必须自动清除预览状态。
+  - 后端安全规则：前端传来的 `simulationRole`、`simulationReviewStatus` 或等价参数不能被直接信任。`cloudfunctions/businessData/index.js` 或统一云函数入口必须先根据当前 `wxContext.OPENID` 读取真实 `users` profile，确认真实用户是 `owner` 且 `approved`，才允许启用预览身份。非 owner、未审核、被拒绝、停用用户传入 simulation 参数时，后端必须拒绝。普通用户不得通过参数伪造 owner/admin/guide/customer/provider。
+  - 后端统一解析：云函数必须建立统一的 `resolveEffectiveActor(event, wxContext)` 或等价方法，返回 `realUser`、`effectiveUser`、`simulation`、`realActorOpenid`、`effectivePrincipalId`。所有正式业务 action，包括商品、团单、本团商品、客户订单、付款、审核、资料中心、profile/provider/tourGuide 资料保存，都必须通过同一解析方法决定权限与资料归属，不能每个 action 分散判断。
+  - 模拟资料隔离：角色预览如果允许写入资料，所有写入必须标记 `simulation: true`、`isTestData: true`、`simulatedRole`、`realActorOpenid`、`effectivePrincipalId`、`createdByOpenid` 或等价字段。正式普通用户列表默认不得显示 `isTestData: true` 的验收资料；只有 owner 在运营验收模式下才能查看或清理这些资料。不得把 owner 预览生成的资料伪装成普通正式用户生产资料。
+  - 模拟身份归属：同一个真实 owner OpenID 预览不同角色时，必须使用不同 `effectivePrincipalId`，例如 `${realOpenid}::sim::guide` 与 `${realOpenid}::sim::customer`。导游视角建立的商品、团单与客户视角建立的订单必须以 effective principal 做归属隔离，避免同一真实 OpenID 同时被当成导游和客户而绕过订单隔离、团单归属或客户可见范围。
+  - 写入策略：MVP 建议采用「可写入但强制标记模拟资料」策略，而不是只读预览。原因是上线路径必须能用一个 owner 账号跑完：预览 guide 建商品、开团、产生分享入口；预览 customer 下单、声明付款；再预览 guide 确认收款并查看状态。若 AGENT 选择只读预览，必须另外提供可完整验证上述流程的替代方案，否则不得勾选本项。
+  - 权限边界：角色预览只改变验收视角，不改变真实账号的 owner 身份。真实 owner 仍可退出预览、进入审核入口、清理模拟资料。预览 admin 不得修改真实 owner，不得指派 owner，不得绕过 owner-only guard。预览 guide/customer/provider 不得取得 owner/admin 真实权限。后端所有无权请求仍必须能返回正式拒绝结果。
+  - 文件与命名规则：不得把该功能命名为 QA Seed、mock role、debug switch、测试账号切换或任何会暴露给普通正式用户的开发名词。代码内部可用 `simulation`、`rolePreview`、`effectiveProfile` 等名称；正式 UI 建议用「运营验收模式」或「角色预览」。如需记录 OpenID，只能用遮罩形式或受控本地备注。
+  - 可能修改范围：预计需要调整 `services/auth/authService.js`、`services/auth/roleScope.js`、`custom-tab-bar/index.js`、`pages/my/index.js`、`app.js`、`repositories/cloudBusinessRepository.js`、`cloudfunctions/authLogin/index.js`、`cloudfunctions/businessData/index.js`，以及使用当前 profile 判断入口或权限的核心页面。实现时应优先复用既有角色矩阵和权限 guard，不另建第二份角色规则。
+  - 最低验收路径：同一 owner 微信账号必须能完成以下 fresh DevTools 或真机操作：切 `pending_review` 后只看到等待审核状态且没有业务 tab；切 `customer` 后只能看到客户可用入口并能下单；切 `guide` 后能建商品、开团、查看客户订单并确认收款；切 `admin` 后能看到审核入口但不能修改 owner 或自提权；切 `provider` 后按 MVP provider 定位显示可用或无权画面；切回 `owner` 后 owner 管理入口恢复且预览状态清除。
+  - 不得勾选条件：找不到或未设置使用者 owner OpenID、真实 owner 会被预览切换降权、非 owner 可使用角色预览、前端可伪造 simulation 参数绕过后端、模拟资料污染普通正式列表、不同模拟角色共用同一资料归属导致隔离失效、退出预览后不能恢复 owner、缺少 fresh DevTools/真机操作证据，任一项存在都不得勾选。
 - [x] 正式登录、未登录、待审核与角色授权必须收敛成固定规格画面和统一权限闸门：
   - 拆分方式：本需求作为一个登录/授权大待办管理，底下拆成 5 个子待办让 AGENT 开发：未登录固定画面、已登录但待管理员审核固定画面、管理员审核与指派角色、已登录用户状态/角色刷新、前后端权限防线。不要另开新文件管理这些需求；所有业务逻辑、验收门槛与未完成状态统一留在本文。
   - 需求目标：任何真人用户第一次通过微信登录后，系统不得自动把他当成可用导游、客户、管理员、供应商或 owner。登录只代表系统取得该用户的微信身份与 OpenID，不代表该用户已经获准使用业务功能。用户必须先进入「等待审核」状态，由系统管理员在后台/管理入口明确决定该用户是否可使用系统，以及该用户的正式角色是什么。没有登录、已登录但待审核、已被拒绝/停用、已审核通过这几种状态必须有清楚且互斥的界面规则，不能混在同一套业务 tab 里让用户看到一堆不能用的下方选单。
