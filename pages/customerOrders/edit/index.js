@@ -182,4 +182,14 @@ Page({
     const paymentProofUrls = this.data.formData.paymentProofUrls.filter((_, itemIndex) => itemIndex !== index);
     this.setData({ 'formData.paymentProofUrls': paymentProofUrls });
   },
+
+  previewPaymentProof(e) {
+    const index = Number(e.currentTarget.dataset.index || 0);
+    const urls = this.data.formData.paymentProofUrls || [];
+    if (!urls.length) return;
+    wx.previewImage({
+      current: urls[index] || urls[0],
+      urls,
+    });
+  },
 });

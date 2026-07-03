@@ -28,12 +28,12 @@ Page({
       disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',
       targetId,
     });
-    if (options.id) {
+    if (targetId) {
       this.setData({
         pageTitle: '编辑个人资料',
         isEdit: true,
       });
-      this.fetchprofileDetail(options.id);
+      this.fetchprofileDetail(targetId);
     }
   },
 
@@ -75,13 +75,18 @@ Page({
       wx.showToast({ title: '请填写姓名', icon: 'none' });
       return;
     }
+    const phone = String(this.data.formData.phone || '').trim();
+    if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+      wx.showToast({ title: '请输入 11 位中国大陆手机号', icon: 'none' });
+      return;
+    }
     this.setData({ isSubmitting: true });
     const res = await DirectoryRepository.saveUser({
       id: this.data.targetId,
       name: this.data.formData.title,
       displayName: this.data.formData.title,
       city: this.data.formData.city,
-      phone: this.data.formData.phone,
+      phone,
       displayRole: this.data.formData.statusText,
     });
     this.setData({ isSubmitting: false });

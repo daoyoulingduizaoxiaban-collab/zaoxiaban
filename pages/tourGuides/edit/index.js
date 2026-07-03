@@ -21,18 +21,22 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
-    const canSave = isOwnerOrAdmin(profile);
+    const targetId = options.id || (profile && profile.role === 'guide' ? profile.id : '');
+    const canSave = Boolean(profile && (
+      isOwnerOrAdmin(profile)
+      || (profile.role === 'guide' && String(targetId) === String(profile.id))
+    ));
     this.setData({
       canSave,
       disabledReason: canSave ? '' : '当前账号没有导游/领队资料维护权限。',
+      targetId,
     });
-    if (options.id) {
+    if (targetId) {
       this.setData({
         pageTitle: '编辑导游/领队',
         isEdit: true,
-        targetId: options.id,
       });
-      this.fetchtourGuidesDetail(options.id);
+      this.fetchtourGuidesDetail(targetId);
     }
   },
 
@@ -74,13 +78,18 @@ Page({
       wx.showToast({ title: '请填写导游/领队名称', icon: 'none' });
       return;
     }
+    const phone = String(this.data.formData.phone || '').trim();
+    if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+      wx.showToast({ title: '请输入 11 位中国大陆手机号', icon: 'none' });
+      return;
+    }
     this.setData({ isSubmitting: true });
     const res = await DirectoryRepository.saveUser({
       id: this.data.targetId,
       name: this.data.formData.title,
       displayName: this.data.formData.title,
       city: this.data.formData.city,
-      phone: this.data.formData.phone,
+      phone,
       role: 'guide',
       displayRole: this.data.formData.statusText,
     });

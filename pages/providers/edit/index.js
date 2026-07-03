@@ -21,18 +21,19 @@ Page({
 
   onLoad(options) {
     const profile = AuthService.getCurrentProfile();
+    const targetId = options.id || (profile && profile.role === 'provider' ? (profile.providerId || profile.id) : '');
     const canSave = canUseProviderPortal(profile);
     this.setData({
       canSave,
       disabledReason: canSave ? '' : '当前账号没有供应商资料维护权限。',
+      targetId,
     });
-    if (options.id) {
+    if (targetId) {
       this.setData({
         pageTitle: '编辑供应商',
         isEdit: true,
-        targetId: options.id,
       });
-      this.fetchprovidersDetail(options.id);
+      this.fetchprovidersDetail(targetId);
     }
   },
 
@@ -72,6 +73,10 @@ Page({
     }
     if (!String(this.data.formData.title || '').trim()) {
       wx.showToast({ title: '请填写供应商名称', icon: 'none' });
+      return;
+    }
+    if (!String(this.data.formData.contact || '').trim()) {
+      wx.showToast({ title: '请填写供应商联系人', icon: 'none' });
       return;
     }
     this.setData({ isSubmitting: true });

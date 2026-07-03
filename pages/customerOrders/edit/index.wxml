@@ -37,7 +37,7 @@
       </view>
       <view class="proof-list" wx:if="{{formData.paymentProofUrls.length}}">
         <view class="proof-item" wx:for="{{formData.paymentProofUrls}}" wx:key="*this">
-          <image src="{{item}}" mode="aspectFill" />
+          <image src="{{item}}" mode="aspectFill" bindtap="previewPaymentProof" data-index="{{index}}" />
           <text bindtap="removePaymentProof" data-index="{{index}}">移除</text>
         </view>
       </view>
