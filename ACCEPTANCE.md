@@ -82,7 +82,7 @@
   - WeChat DevTools project opened via CLI.
   - Static 27-route file existence check passed.
   - WeChat DevTools `auto-replay --replay-all` command completed, but did not provide route-by-route GUI evidence.
-  - 2026-07-02 detailed retest pre-flight completed and recorded in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+  - 2026-07-02 detailed retest pre-flight completed; future QA retest notes are recorded directly in `QA/QA_BUG_REPORT_202607021815.md`.
   - Existing WeChat DevTools process was found, and DevTools CLI `auto --port 13521 --auto-port 9420` completed, but `miniprogram-automator.connect` could not connect to `9420`, `19512`, `3799`, `13521`, or discovered listening ports. No new GUI pass evidence was produced.
   - 2026-07-02 23:11 CST rerun of CLI `auto --project ... --auto-port 9420 --port 13521 --trust-project` still left all websocket probes unreachable.
   - Product library main page has one valid manual GUI screenshot: `QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`.
@@ -126,7 +126,7 @@ These are not formal cloud-backed features.
 ### Requires User Assistance
 - Owner/admin formal role assignment: provide the OpenID values that should be configured in `OWNER_OPENIDS` / `ADMIN_OPENIDS`, or set them in the cloud function environment.
 - Owner/admin cloud role allowlist: not configured because no owner/admin OpenID list has been provided.
-- GUI smoke: provide a working DevTools automation websocket/ticket/session, or manually run/observe the real workflow smoke checklist with Codex. Current blocker is recorded in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
+- GUI smoke: provide a working DevTools automation websocket/ticket/session, or manually run/observe the real workflow smoke checklist with Codex. Current and future blockers should be recorded directly in `QA/QA_BUG_REPORT_202607021815.md`.
 
 ## Validation Rule
 Only mark an item complete when it has a matching validation signal. Lint or static inspection is enough for code-shape checks, but not for GUI behavior, real OpenID, cloud persistence, or real-user MVP closure.

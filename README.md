@@ -14,11 +14,11 @@ Before coding, read:
 6. `DATA_MODEL_AND_PERMISSIONS.md`
 7. `QA/QA_SEED_REQUIREMENTS.md`
 
-After reading `HANDOFF.md`, use `MVP_COMPLETION_CHECKLIST.md` as the only MVP gate / backlog / product-completion source. Use `QA/QA_BUG_REPORT_202607021815.md` only for atomic BUG / GUI issue evidence and retest status.
+After reading `HANDOFF.md`, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for QA problem reports, retest notes, evidence, and pass/fail status.
 
 Do not copy BUG rows, BUG ID lists, GUI subissue lists, or per-page defect ledgers into `MVP_COMPLETION_CHECKLIST.md`. The MVP checklist tracks gate-level categories; the BUG report tracks independently fixable and retestable rows.
 
-QA/AGENT work must stay separated: QA owns `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA` and QA evidence/bug-ledger work; development agents fix product code in the main worktree or their own development worktree and must not ask the user to do routine QA worktree creation, sync, or cleanup.
+QA/AGENT work must stay separated by responsibility: QA reports only in the BUG report and does not create extra planning/result/handoff documents; development agents fix product code, run validation, and hand the fix back for QA retest.
 
 ## Current State
 - Mixed mode: formal WeChat Cloud login and core business cloud persistence are connected; mock identities still use local/QA fallback.

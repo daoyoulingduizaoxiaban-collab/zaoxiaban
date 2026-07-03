@@ -6,18 +6,16 @@
 - Current branch observed: `codex`
 - Dirty status expected: dirty as of 2026-07-02; do not overwrite existing QA screenshots, bug report edits, or `pages/dataCenter` edits unless they are in scope.
 - Start here: `HANDOFF.md`. This file is the only session entry point.
-- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` as the only MVP gate / work-item source. Use `QA/QA_BUG_REPORT_202607021815.md` only for atomic BUG / GUI issue evidence and retest details. Never copy BUG row lists into the MVP checklist.
-- Current QA plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
-- Next QA result table: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
-- QA worktree rule: QA owns `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA` and any `-QA` branch lifecycle; development agents only fix BUGs in their own worktree, and the user must not be burdened with routine QA worktree creation/sync/cleanup.
-- Precompact rule: before context compaction, QA must reread the current project files and overwrite the single `Precompact QA Handoff` block in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`; do not ask the user to reconstruct context.
-- Latest detailed retest attempt: pre-flight completed, but DevTools automation websocket was not connectable; see `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
-- Done definition: files changed + validation run + checklist/acceptance/handoff updated + not-pass items listed.
+- Workflow rule: after reading this file, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for QA problem reports, retest notes, evidence, and pass/fail status. Never copy BUG row lists into the MVP checklist.
+- QA/AGENT output rule: QA must not create extra plan/result/handoff/progress documents; QA reports only in the BUG report. AGENT must not create extra docs; AGENT fixes product code, runs validation, and hands the fix back for QA retest.
+- Environment rule: do not ask QA or the user to perform environment setup/cleanup as part of normal flow. The normal loop is fix, validate, QA retest in the BUG report.
+- Latest detailed retest attempt: pre-flight completed, but DevTools automation websocket was not connectable; future retest notes should be written directly in `QA/QA_BUG_REPORT_202607021815.md`.
+- Done definition: code fixed + validation run + QA retest reflected in the BUG report. If still not pass, fix and test again.
 
 ## Current Source Of Truth
 - Session entry point: `HANDOFF.md`.
-- Single MVP gate source: `MVP_COMPLETION_CHECKLIST.md`. It is the only place for MVP backlog, unfinished gate categories, phase progress, and product completion judgment. It must not contain copied BUG rows, BUG ID lists, GUI subissue lists, or per-page defect ledgers.
-- BUG report / retest ledger: `QA/QA_BUG_REPORT_202607021815.md`. Use it for atomic issue evidence and retest status only; do not create a separate BUG dispatch queue there or anywhere else. Every open row must be independently fixable, independently retestable, and independently closable.
+- MVP gate reference: `MVP_COMPLETION_CHECKLIST.md`. It tracks MVP gate categories and product completion judgment, but QA/AGENT are not required to update it during normal fix/retest cycles.
+- BUG report / retest ledger: `QA/QA_BUG_REPORT_202607021815.md`. Use it as the only QA reporting surface for atomic issue evidence, retest notes, and pass/fail status. Do not create separate QA plan/result/handoff/progress files.
 - Product rules: `PROJECT_RULES.md`.
 - MVP roadmap, open items, and missing backlog: `MVP_COMPLETION_CHECKLIST.md`.
 - Acceptance status: `ACCEPTANCE.md`.
@@ -62,14 +60,14 @@
 - Do not submit `resume/preview-info.json` or `resume/preview-qr.png`.
 - Do not describe mock/local fallback as formal OpenID, formal cloud persistence, or a real-user MVP loop.
 - Do not extend Phase 5 beyond the current local/QA workflow unless the user explicitly asks for that scope.
-- QA and development worktrees must stay separate. QA agents create, sync, reuse, and delete the `-QA` worktree themselves; BUG-fix/development agents do not manage QA worktrees, the user must not be asked to do routine QA worktree housekeeping, and QA does not fix product code in the QA worktree.
-- QA must retest a named commit or handoff point, record the tested commit in QA results, and avoid judging uncommitted development-agent work. If the tested commit is missing, no result row may be marked `通過`.
-- QA is responsible for classifying dirty files, preserving QA evidence, and cleaning or deleting the `-QA` worktree when the retest is complete. Escalate to the user only for true-device help, credentials, deploy/production-data risk, destructive cleanup of unresolved evidence, or product acceptance decisions.
-- Before any precompact/context-compression handoff, QA must reread `HANDOFF.md`, `MVP_COMPLETION_CHECKLIST.md`, `QA/QA_BUG_REPORT_202607021815.md`, `QA/QA_DETAILED_RETEST_PLAN_20260702.md`, and `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`, then overwrite the existing `Precompact QA Handoff` block in the QA detail results file. There must be only one such block.
+- QA and development responsibilities must stay separate. QA reports issues and retest status only in the BUG report; AGENT/development fixes product code and validates the fix. There is no separate QA environment lifecycle in the normal flow.
+- QA must retest a named commit or clear handoff point, record the tested commit in the BUG report, and avoid judging uncommitted development-agent work. If the tested commit is missing, no row may be marked `通過`.
+- QA preserves evidence paths in the BUG report. Escalate to the user only for true-device help, credentials, deploy/production-data risk, destructive cleanup of unresolved evidence, or product acceptance decisions.
+- Before any context-compression handoff, do not create or update separate QA handoff files. Keep the current state in this `HANDOFF.md` only when explicitly asked; otherwise QA state belongs in the BUG report.
 - BUG report status rule: only `通過` and `不通過` are allowed. If one original BUG has both verified and GUI/device-not-yet-verified parts, split it into multiple rows instead of using an in-between status. If a BUG row is too broad to verify in one pass, QA must split it instead of creating `partial fix` wording.
 - Do not treat `不通過` rows as handoff completion. If the issue can be improved through code, data flow, UI, copy, route entry, or test automation, continue fixing instead of merely documenting it.
 - QA retest evidence must stay traceable: tie each focused GUI/QA evidence set to a specific FLOW/PAGE/BUG row, update that row before claiming it passed, and avoid broad all-in-one pass claims unless explicitly requested.
-- This is not a development limit. Code fixes may batch related bugs when they share a module, data path, UI surface, or risk area; after fixing, map validation back to each affected BUG/FLOW/PAGE row.
+- This is not a development limit. Code fixes may batch related bugs when they share a module, data path, UI surface, or risk area; after fixing, run validation and hand back to QA so QA can map retest results back to each affected BUG row.
 - QA screenshots must target the WeChat DevTools window by window id, not the full desktop. The user has an external monitor and may be using another main screen; never save evidence that captures unrelated desktop/private work.
 
 ## Validation Commands
@@ -135,8 +133,8 @@ git diff --check
 
 ## QA Bug Report 202607021815
 - Report location: `QA/QA_BUG_REPORT_202607021815.md`.
-- The report is not a work-item manager. Development/QA work items must be tracked in `MVP_COMPLETION_CHECKLIST.md`; this report records BUG evidence, retest result, status, suspected area, and next action.
-- BUG rows marked `通過` are closed; BUG/GUI rows marked `不通過` remain open and must stay mirrored in `MVP_COMPLETION_CHECKLIST.md`.
+- The report is not a broad project plan. It is the only QA reporting surface for BUG evidence, retest result, status, suspected area, and next action.
+- BUG rows marked `通過` are closed; BUG/GUI rows marked `不通過` remain open. QA does not need to mirror rows into other files.
 - Added follow-up fixes for retest GUI residuals: home workbench, provider non-blank state, search starter hot words, data center layout/native wxss, chat disabled state, product add button style, and customer order role-scope text.
 - 2026-07-03 follow-up code fixes:
   - BUG-002: product add now separates formal cloud durable image copy from local/QA temporary preview copy, guards unsupported `wx.chooseMedia`, and prevents duplicate submit during image/product save.
@@ -151,15 +149,13 @@ git diff --check
 - `QA_SEED_REQUIREMENTS.md` has been moved under `QA/QA_SEED_REQUIREMENTS.md`; project docs now reference the new path.
 
 ## How To Continue
-Start from this `HANDOFF.md` for project rules and current context, then choose work only from `MVP_COMPLETION_CHECKLIST.md`.
+Start from this `HANDOFF.md` for project rules and current context. For concrete fix targets, use `QA/QA_BUG_REPORT_202607021815.md` rows marked `不通過`.
 
-Do not treat this section, chat history, or the QA report as a task queue. If a missing task is discovered while reading those sources, add or update the corresponding unchecked item in `MVP_COMPLETION_CHECKLIST.md` first.
+Do not create extra planning/result/handoff documents. If a missing defect is discovered, record it as a clear row in the BUG report; AGENT then fixes and validates, QA retests once more and updates that BUG row.
 
-If continuing QA, use the new plan/result split:
-- Plan: `QA/QA_DETAILED_RETEST_PLAN_20260702.md`.
-- Results: `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`.
-- Worktree: use or create `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA`; QA owns its create/sync/delete lifecycle and must not ask the BUG-fix agent or the user to manage routine worktree operations.
-- Before marking any row `通過`, fill the tested commit in `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`; if QA cannot identify a tested commit from git/handoff files, keep the row `不通過` or `待測` and resolve the commit source first.
+If continuing QA:
+- Record the tested commit directly in `QA/QA_BUG_REPORT_202607021815.md`.
+- Before marking any row `通過`, identify the tested commit. If QA cannot identify a tested commit, keep the row `不通過` and resolve the commit source first.
 - First unblock DevTools automation websocket/ticket/session or arrange manual/true-device workflow smoke; the latest run could not connect automation even though the IDE process was already open.
 - Use real workflow smoke as the MVP GUI gate; keep direct 27-route route-open results as diagnostics.
 - When performing QA from a checklist item, validate tab state, layout, form input, toast/modal, eventChannel listener success, return navigation, reload/re-enter behavior, and the retest GUI fixes listed in `QA/QA_BUG_REPORT_202607021815.md`.
@@ -167,7 +163,7 @@ If continuing QA, use the new plan/result split:
 - For BUG-004, compare formal OpenID and QA/mock sessions on home, setting, product library, group-order create/detail, and data center; do not mark it verified from static copy inspection alone.
 - For data center specifically, verify `pages/dataCenter/index.wxss` is applied: navbar says `数据中心`, page title says `团单数据看板`, the TDesign navbar placeholder leaves visible top space, cards are padded rather than flush-left, and the page title is not clipped under the fixed navbar.
 - For GUI-006, use My -> QA Seed -> `切换导游并查看订单` and `切换客户并查看订单`, then compare role text and visible orders on `/pages/customerOrders/index`.
-- Keep documenting any GUI-only blockers in `ACCEPTANCE.md` and `MVP_COMPLETION_CHECKLIST.md`.
+- Document GUI-only blockers in the BUG report only unless the user explicitly asks for broader project-doc cleanup.
 
 ## User Assistance Needed For Phase 8
 - Provide owner/admin OpenID allowlist values for formal role assignment, or approve keeping all new cloud users as guide/customer until admin tooling exists.

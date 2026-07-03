@@ -1,6 +1,6 @@
 # ROLE_FEATURE_ACCESS_MATRIX
 
-This matrix is the AGENT-maintained source for role x feature entry visibility. It supports the MVP gate item "全系统角色功能入口自动隐藏与验收矩阵".
+This matrix is a reference for role x feature entry visibility. It is not a required QA or AGENT deliverable: QA reports only in `QA/QA_BUG_REPORT_202607021815.md`, and AGENT fixes product code instead of maintaining extra documents unless the user explicitly asks.
 
 ## Legend
 

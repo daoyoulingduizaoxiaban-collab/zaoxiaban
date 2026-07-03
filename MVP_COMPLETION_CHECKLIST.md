@@ -1,22 +1,22 @@
 # MVP_COMPLETION_CHECKLIST
 
 ## 文件用途
-本文件是从当前 QA/demo 小程序推进到真人可用 MVP 的总路线图，也是唯一工作项目管理文件。
+本文件是从当前 QA/demo 小程序推进到真人可用 MVP 的总路线图，也是 MVP gate / backlog / 产品完成度参考文件。
 
-所有开发/QA 工作项目、半成品、未做项、待补验项目，都必须在本文件维护。不要把工作项、派工队列、开放事项分散到其他文件、聊天记录或 QA report。
+本文件不得变成 QA 或 AGENT 的日常产出要求。QA 只在 `QA/QA_BUG_REPORT_202607021815.md` 报问题、写证据、写复测状态；AGENT 只负责修正产品代码并运行验证。除非使用者明确要求，QA/AGENT 不新增、不维护额外计划、结果、交接、矩阵或进度文件。
 
 `QA/QA_BUG_REPORT_202607021815.md` 只作为 BUG report / retest ledger：记录可单独验收的问题、证据、复测结果、Status、Suspected Area、Next Action。
 
 强制职责边界：
 
-- `MVP_COMPLETION_CHECKLIST.md` 只管理 MVP gate、阶段、产品完成度、剩余能力类别和验收门槛。
+- `MVP_COMPLETION_CHECKLIST.md` 只管理 MVP gate、阶段、产品完成度、剩余能力类别和验收门槛；它不是 QA/AGENT 的日常回报文件。
 - `QA/QA_BUG_REPORT_202607021815.md` 只管理原子化 BUG / GUI issue / retest row。
 - 禁止把 BUG row、BUG ID 清单、GUI 子项清单、逐页缺陷清单复制到本文；这会制造第二份 BUG 单，后续状态必然分裂。
-- 如果 BUG 单发现某类问题会影响 MVP，只能在本文保留或新增一个 gate 级类别，例如「正式/QA 文案隔离」「全角色入口权限」「真实 workflow smoke」；详细问题仍回到 BUG 单维护。
-- 如果本文出现 `BUG-00X-*`、`GUI-00X-*` 这类原子 BUG 清单，下一位 QA 必须把它移回 BUG 单，并把本文改回 gate 级描述。
+- 如果 BUG 单发现某类问题会影响 MVP，QA 仍只更新 BUG 单；MVP gate 是否调整由负责整理项目状态的人处理，不能要求 QA 或 AGENT 另写文件。
+- 如果本文出现 `BUG-00X-*`、`GUI-00X-*` 这类原子 BUG 清单，后续整理时应移回 BUG 单，并把本文改回 gate 级描述。
 - AGENT 修 BUG 时看 BUG 单的原子 row；判断 MVP 是否可宣告时看本文的 gate 是否全部有证据。两个文件互相引用，但不得互相复制内容。
 
-QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYouLingDuiZaoXiaBan-QA` 与 `codex-QA` 维护 QA docs/evidence/bug ledger；AGENT/开发修 BUG 使用主工作树或自己的开发工作树。AGENT 不负责创建、同步、删除 QA 工作树；QA 自己管理 QA 工作树。AGENT 修产品代码时以 BUG ledger 原子 row 为具体修复对象，以本文 gate 项为完成度背景。
+QA/AGENT 分工必须保持分离：QA 只在 BUG 单记录问题、证据、复测状态；AGENT/开发只修产品代码并运行验证。项目流程不再要求 QA 做环境建立/同步/清理，也不要求 QA/AGENT 产出额外 docs。节奏是：修正 -> 验证 -> QA 复测；仍不通过就继续回到 BUG 单，再修一次。
 
 ## 产品定义
 - 产品：面向中国导游/领队的微信小程序。
@@ -35,7 +35,7 @@ QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYo
 - Phase 3 导游团单 local/QA 保存闭环已完成；正式云端保存已通过 targeted automation 验证。
 - Phase 5 客户下单与收款闭环已有 local/QA repository 实作；正式云端保存已通过 targeted automation 验证。
 - 微信 DevTools 已可通过 CLI 打开项目；automation 可用于 targeted flow，逐 route GUI smoke test 尚未完成。
-- 2026-07-03 Phase 2-5 full-system QA pass 已记录到 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`；27 routes、5 roles、14 feature groups 均在 scope 内，目前 0 route / 0 role 取得完整 formal full-screen pass evidence，full-system gate 仍为 `不通過`。
+- 2026-07-03 Phase 2-5 full-system QA attempt 的有效问题与证据以后统一沉淀在 `QA/QA_BUG_REPORT_202607021815.md`；27 routes、5 roles、14 feature groups 均在 scope 内，目前 0 route / 0 role 取得完整 formal full-screen pass evidence，full-system gate 仍为 `不通過`。
 
 ## 勾选规则
 - 只有已经实作且有验证信号的项目才能打勾。
@@ -58,7 +58,7 @@ QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYo
 - [ ] 付款闭环 GUI 验证：客户声明付款、导游确认收款、付款历史、付款凭证必须分别有 GUI 证据。
 - [ ] 全系统角色功能入口自动隐藏与验收矩阵：
   - 需求目标：系统必须根据当前用户角色、登录状态、正式 OpenID、QA override 与白名单状态，自动隐藏该用户不能使用的功能入口。正式用户不得先看到不可用入口，再靠 toast、禁用按钮、错误页、未完成文案、`MVP`、`后续`、QA/local/test/Seed/mock 文案挡住。
-  - AGENT 必交付物：先产出并维护一份「角色 x 功能入口」矩阵，再按矩阵修代码。矩阵必须落在 repo 内可追踪文件或本 checklist 的明确区块，且本项必须写出矩阵位置；不得只留在聊天记录、临时报告或 agent 口头说明里。矩阵每一列必须至少写清楚：页面/route、入口位置、按钮/CTA/列表项/分享或扫码入口、对应业务动作、允许角色、禁止角色、正式模式可见状态、QA override 可见状态、直达 route 行为、service/repository/cloud function 权限防线、QA 需要的证据。
+  - AGENT 修正规则：AGENT 不需要另产出矩阵或文件；直接依现有角色/功能参考与 BUG 单修正代码。若发现角色入口规则缺失，AGENT 在修正说明中指出，不另开新文件，除非使用者明确要求。
   - 必盘点角色：未登录/游客、`guide`、`customer`、`owner`、`admin`、`provider`、QA override 下的各角色、正式 OpenID 下的各角色、owner/admin/provider 白名单命中与未命中状态。不能只测 guide/customer 后宣称全角色完成。
   - 必盘点范围：`app.json` 内全部 27 个 route、全部 tabBar/custom-tab-bar 入口、首页快捷入口、My 服务列表与 QA 工具、登录/设置入口、商品库新增/编辑/上下架/删除、团单新增/编辑/本团商品/客户入口/复制分享/导出、客户订单下单/声明付款/确认收款/取消/付款历史/凭证、资料中心、消息、聊天、发布、搜索、导游资料、客户资料、供应商资料、profile/tourGuide/provider 编辑页，以及所有列表项按钮、详情页按钮、空状态 CTA、分享路径、扫码/复制入口、返回后的 fallback 导航。
   - 可见规则：当前角色不能使用、不能保存、不能查看、未正式开放、仅 QA/开发用途、或需要白名单但当前用户未获授权的功能，正式用户界面必须隐藏入口。若业务上允许某角色只读，矩阵必须明确标成「可见但只读」，且页面不得显示任何写入、保存、确认、取消、导出、分享、编辑或管理按钮。
@@ -70,7 +70,7 @@ QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYo
 - [ ] GUI layout/style 稳定性：资料中心、图示字体、固定 navbar、按钮/表单/弹窗/底部 tab 需完成全画面检查并无 console/style 阻塞。
 
 ## 不通過当前分类
-- 仍有可开发修补的项目：优先继续补程式缺口，并在本文件写明已补到哪里。
+- 仍有可开发修补的项目：优先继续补程式缺口；AGENT 不需在本文写进度，修完跑验证后交回 QA 复测。
 - 只缺 GUI/真机证据的项目：不得打勾，必须保留在本节，直到有 DevTools/真机截图或操作记录。
 - 目前仍不通過、需继续取得 GUI/真机证据、外部状态或修正的原子 BUG：以 `QA/QA_BUG_REPORT_202607021815.md` 的 `Status = 不通過` rows 为准；MVP 文件不复制 BUG row 清单。
 - 2026-07-03 Phase 2-5 QA 已执行到当前环境可提供的证据范围；阻塞/Unable-to-test 不作为第三状态，仍视为 `不通過`，直到有命名修复 commit 与 fresh GUI/true-device evidence。
@@ -168,7 +168,7 @@ QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYo
 - [x] 微信 DevTools 项目可通过 CLI 打开。
 - [x] `app.json` 内 27 个 route 的 `.js/.ts`、`.wxml`、`.json` 文件静态存在检查通过。
 - [x] 微信 DevTools `auto-replay --replay-all` 命令可完成。
-- [x] 2026-07-02 细测 pre-flight 与 DevTools automation blocker 已写入 `QA/QA_DETAILED_RETEST_RESULTS_20260702.md`。
+- [x] 2026-07-02 细测 pre-flight 与 DevTools automation blocker 已有历史记录；后续 QA 结果统一写入 BUG 单。
 - [x] 商品库主页面已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/manual-gui-smoke/01_product_management.png`。
 - [x] 「我的」页 QA Seed 身份切换面板已有一张有效 DevTools 窗口截图：`QA/screenshots/2026-07-02-detailed-retest/role-scope/01_my_qa_seed_role_panel.png`。
 - [ ] Phase 0.5-0.7 eventChannel listener 成功路径已在微信 DevTools 验证。
@@ -176,7 +176,7 @@ QA/AGENT 分工必须保持分离：QA 使用 `/Users/admin/Desktop/程式/DaoYo
 - [ ] 底部 tab 状态已验证。
 - [ ] toast/modal/floating button/tab 布局已验证。
 - [ ] 表单输入、返回导航、重新进入已验证。
-- [x] 结果已写入 `ACCEPTANCE.md` 与 `HANDOFF.md`。
+- [x] 历史结果曾写入 `ACCEPTANCE.md` 与 `HANDOFF.md`；后续 QA/AGENT 不再被要求更新额外文件。
 
 ## Phase 8 - 真人可用 MVP Gate
 声明真人可用 MVP 前，以下项目必须全部成立：

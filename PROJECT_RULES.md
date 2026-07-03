@@ -9,7 +9,9 @@
 6. `DATA_MODEL_AND_PERMISSIONS.md`
 7. `QA/QA_SEED_REQUIREMENTS.md`
 
-`HANDOFF.md` is the only session entry point. After reading it, use `MVP_COMPLETION_CHECKLIST.md` as the only MVP gate / backlog / product-completion source. Use `QA/QA_BUG_REPORT_202607021815.md` only for atomic BUG / GUI issue evidence and retest status.
+`HANDOFF.md` is the only session entry point. After reading it, use `MVP_COMPLETION_CHECKLIST.md` only as the MVP gate / backlog / product-completion reference. Use `QA/QA_BUG_REPORT_202607021815.md` as the single place for QA problem reports, retest notes, evidence, and pass/fail status.
+
+QA and AGENT must not create extra planning, handoff, result, matrix, or progress documents unless the user explicitly asks. QA reports only in the BUG report. AGENT fixes product code, validates the fix, then hands the changed code back for QA retest.
 
 Do not rely on chat memory.
 
