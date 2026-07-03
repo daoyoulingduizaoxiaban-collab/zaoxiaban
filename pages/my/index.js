@@ -86,41 +86,51 @@ Page({
         icon: 'app',
         type: 'home',
         url: '/pages/home/index',
+        feature: FEATURE_KEYS.HOME,
       },
       {
         name: '团单',
         icon: 'root-list',
         type: 'all',
         url: '/pages/groupOrder/index',
+        feature: FEATURE_KEYS.GROUP_ORDERS,
       },
       {
         name: '客户订单',
         icon: 'search',
         type: 'progress',
         url: '/pages/customerOrders/index',
+        feature: FEATURE_KEYS.CUSTOMER_ORDERS,
       },
       {
         name: '商品库',
         icon: 'upload',
         type: 'published',
         url: '/pages/productManagement/index',
+        feature: FEATURE_KEYS.PRODUCTS,
       },
       {
         name: '消息',
         icon: 'chat',
         type: 'message',
         url: '/pages/message/index',
+        feature: FEATURE_KEYS.MESSAGE,
       },
       {
         name: '搜索',
         icon: 'search',
         type: 'search',
         url: '/pages/search/index',
+        feature: FEATURE_KEYS.SEARCH,
       },
     ];
 
+    const filteredList = list
+      .filter(entry => canUseFeature(profile, entry.feature))
+      .map(({ feature, ...entry }) => entry);
+
     if (canUseFeature(profile, FEATURE_KEYS.DATA_CENTER)) {
-      list.push({
+      filteredList.push({
         name: '数据中心',
         icon: 'data-display',
         type: 'dataCenter',
@@ -129,7 +139,7 @@ Page({
     }
 
     if (canUseFeature(profile, FEATURE_KEYS.RELEASE)) {
-      list.push({
+      filteredList.push({
         name: '开团',
         icon: 'add',
         type: 'release',
@@ -137,7 +147,7 @@ Page({
       });
     }
 
-    return list;
+    return filteredList;
   },
 
   buildSettingList(profile) {

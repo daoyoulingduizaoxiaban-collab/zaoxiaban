@@ -13,6 +13,9 @@ Page({
     accessStateText: '请先登录后继续使用',
     canUseBusiness: false,
     canCreateGroupOrder: false,
+    canViewGroupOrders: false,
+    canViewProducts: false,
+    canViewCustomerOrders: false,
     canViewDataCenter: false,
     isSummaryLoading: false,
     summaryCards: [
@@ -49,6 +52,9 @@ Page({
     }
 
     const canCreateGroupOrder = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
+    const canViewGroupOrders = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDERS);
+    const canViewProducts = canUseFeature(profile, FEATURE_KEYS.PRODUCTS);
+    const canViewCustomerOrders = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
     const canViewDataCenter = canUseFeature(profile, FEATURE_KEYS.DATA_CENTER);
 
     this.setData({
@@ -57,6 +63,9 @@ Page({
       accessStateText: AuthService.getAccessStateText(profile),
       canUseBusiness,
       canCreateGroupOrder,
+      canViewGroupOrders,
+      canViewProducts,
+      canViewCustomerOrders,
       canViewDataCenter,
     });
     if (canUseBusiness) {

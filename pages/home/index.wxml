@@ -27,17 +27,17 @@
     </view>
 
     <view class="quick-grid" wx:if="{{canUseBusiness}}">
-      <view class="quick-item primary" bindtap="goGroupOrders">
+      <view class="quick-item primary" wx:if="{{canViewGroupOrders}}" bindtap="goGroupOrders">
         <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
         <view class="quick-title">团单</view>
         <view class="quick-desc">管理本团商品与客户入口</view>
       </view>
-      <view class="quick-item" bindtap="goProducts">
+      <view class="quick-item" wx:if="{{canViewProducts}}" bindtap="goProducts">
         <t-icon name="shop" size="48rpx" color="#0052d9" />
         <view class="quick-title">商品库</view>
         <view class="quick-desc">维护可售商品与价格规则</view>
       </view>
-      <view class="quick-item" bindtap="goCustomerOrders">
+      <view class="quick-item" wx:if="{{canViewCustomerOrders}}" bindtap="goCustomerOrders">
         <t-icon name="usergroup" size="48rpx" color="#0052d9" />
         <view class="quick-title">客户订单</view>
         <view class="quick-desc">处理付款声明和确认收款</view>
