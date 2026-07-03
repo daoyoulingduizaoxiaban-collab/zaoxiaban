@@ -10,6 +10,7 @@ Page({
     canReview: false,
     selectedRoleById: {},
     isLoading: false,
+    loadErrorText: '',
   },
 
   onLoad() {
@@ -24,20 +25,34 @@ Page({
     const profile = AuthService.getCurrentProfile();
     const canReview = isOwnerOrAdmin(profile);
     this.setData({ canReview });
-    if (!canReview) return;
+    if (!canReview) {
+      this.setData({
+        users: [],
+        selectedRoleById: {},
+        isLoading: false,
+        loadErrorText: '',
+      });
+      return;
+    }
 
-    this.setData({ isLoading: true });
+    this.setData({ isLoading: true, loadErrorText: '' });
     const res = await DirectoryRepository.listPendingUsers();
     this.setData({ isLoading: false });
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载审核列表失败', icon: 'none' });
+      const errorText = res.error || '加载审核列表失败';
+      this.setData({
+        users: [],
+        selectedRoleById: {},
+        loadErrorText: errorText,
+      });
+      wx.showToast({ title: errorText, icon: 'none' });
       return;
     }
     const selectedRoleById = {};
     (res.data || []).forEach((user) => {
       selectedRoleById[user.id || user._id] = user.requestedRole || user.role || AUTH_ROLES.CUSTOMER;
     });
-    this.setData({ users: res.data || [], selectedRoleById });
+    this.setData({ users: res.data || [], selectedRoleById, loadErrorText: '' });
   },
 
   onRoleChange(e) {
@@ -47,6 +62,10 @@ Page({
   },
 
   async reviewUser(e) {
+    if (!this.data.canReview || !isOwnerOrAdmin(AuthService.getCurrentProfile())) {
+      wx.showToast({ title: '当前账号没有用户审核权限', icon: 'none' });
+      return;
+    }
     const { id, status } = e.currentTarget.dataset;
     if (!id || !status) return;
     const role = this.data.selectedRoleById[id] || AUTH_ROLES.CUSTOMER;
