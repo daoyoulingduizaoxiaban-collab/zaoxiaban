@@ -1,7 +1,7 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import {
   CLOUD_SAVE_MODE,
   CLOUD_SAVE_MODE_TEXT,
@@ -46,7 +46,7 @@ Page({
     if (!canCreate) {
       this.setData({
         accessDenied: true,
-        accessStateText: AuthService.getAccessStateText(profile),
+        accessStateText: getRoleScopeText(profile, FEATURE_KEYS.PRODUCT_MANAGE),
       });
       return;
     }
