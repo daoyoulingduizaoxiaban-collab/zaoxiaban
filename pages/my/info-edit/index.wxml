@@ -1,5 +1,10 @@
 <t-navbar left-arrow title="个人信息" />
-<view class="info-edit">
+<view wx:if="{{!canEdit}}" class="info-edit">
+  <t-empty icon="info-circle" description="{{disabledReason}}" />
+  <t-button theme="primary" size="medium" block bind:tap="onLogin">去登录</t-button>
+</view>
+
+<view wx:else class="info-edit">
   <t-cell class="info-edit__cell" title="用户名">
     <t-input bind:change="onNameChange" borderless placeholder="请输入用户名" slot="note" value="{{personInfo.name}}" />
   </t-cell>
@@ -43,7 +48,7 @@
   </t-cell>
 </view>
 
-<view class="info-edit__save">
+<view wx:if="{{canEdit}}" class="info-edit__save">
   <t-button bind:tap="onSaveInfo" block size="medium" theme="primary" loading="{{isSubmitting}}" disabled="{{isSubmitting}}">保存</t-button>
 </view>
 

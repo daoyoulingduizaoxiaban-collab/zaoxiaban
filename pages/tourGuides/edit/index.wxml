@@ -1,8 +1,10 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
-  <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
-  <t-cell-group theme="card">
+  <view wx:if="{{!canSave}}" class="empty-state">
+    <t-empty icon="info-circle" description="{{disabledReason}}" />
+  </view>
+  <t-cell-group wx:else theme="card">
     <t-input label="导游/领队名称" placeholder="请输入导游/领队名称" value="{{ formData.title }}" data-field="title" bind:change="onInputChange" />
     <t-input label="城市" placeholder="请输入城市" value="{{ formData.city }}" data-field="city" bind:change="onInputChange" />
     <t-input label="手机号" placeholder="请输入手机号" value="{{ formData.phone }}" data-field="phone" bind:change="onInputChange" />

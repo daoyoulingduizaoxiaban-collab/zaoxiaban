@@ -51,6 +51,11 @@ Page({
   },
 
   onGoToEdit(e) {
+    const profile = AuthService.getCurrentProfile();
+    if (!canUseProviderPortal(profile)) {
+      wx.showToast({ title: '当前账号没有供应商资料管理权限', icon: 'none' });
+      return;
+    }
     const id = e.currentTarget && e.currentTarget.dataset && e.currentTarget.dataset.id;
     const url = id ? `/pages/providers/edit/index?id=${id}` : '/pages/providers/edit/index';
 

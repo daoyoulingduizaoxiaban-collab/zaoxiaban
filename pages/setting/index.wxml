@@ -4,7 +4,7 @@
     <view class="setting-login__title">登录后查看账号与资料保存状态</view>
     <t-button theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>
-  <t-cell-group wx:for="{{menuData}}" wx:for-item="item" wx:key="index" t-class="cell-group-class" theme="card">
+  <t-cell-group wx:if="{{isLoggedIn}}" wx:for="{{menuData}}" wx:for-item="item" wx:key="index" t-class="cell-group-class" theme="card">
     <t-cell
       wx:for="{{item}}"
       wx:for-item="carditem"

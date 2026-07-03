@@ -106,8 +106,8 @@ export const canUseFeature = (profile, featureKey) => {
 };
 
 export const getRoleScopeText = (profile, featureKey) => {
-  if (!isApprovedProfile(profile)) return '当前账号暂无权限，请联系管理员';
   if (!profile) return '请先登录后继续使用';
+  if (!isApprovedProfile(profile)) return '当前账号暂无权限，请联系管理员';
 
   const { role } = profile;
   const textMap = {

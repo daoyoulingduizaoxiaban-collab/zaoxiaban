@@ -1,8 +1,10 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
-  <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
-  <t-cell-group theme="card">
+  <view wx:if="{{!canSave}}" class="empty-state">
+    <t-empty icon="info-circle" description="{{disabledReason}}" />
+  </view>
+  <t-cell-group wx:else theme="card">
     <t-input label="供应商名称" placeholder="请输入供应商名称" value="{{ formData.title }}" data-field="title" bind:change="onInputChange" />
     <t-input label="联系人" placeholder="请输入联系人" value="{{ formData.contact }}" data-field="contact" bind:change="onInputChange" />
     <t-input label="资料说明" placeholder="请输入供货或合作说明" value="{{ formData.note }}" data-field="note" bind:change="onInputChange" />

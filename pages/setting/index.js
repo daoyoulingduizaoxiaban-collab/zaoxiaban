@@ -37,11 +37,19 @@ Page({
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const cloudEnabled = isCloudBusinessEnabled();
+    if (!profile) {
+      this.setData({
+        isLoggedIn: false,
+        menuData: [],
+      });
+      return;
+    }
+
     const menuData = [
       [
         {
           title: '当前角色',
-          note: profile ? `${profile.displayName}｜${profile.roleLabel}` : '未登录',
+          note: `${profile.displayName}｜${profile.roleLabel}`,
           icon: 'user',
         },
         {
@@ -52,16 +60,14 @@ Page({
       ],
     ];
 
-    if (profile) {
-      menuData.push([
-        {
-          title: '账号资料',
-          note: '查看与修改名称、电话和头像',
-          icon: 'edit',
-          url: '/pages/my/info-edit/index',
-        },
-      ]);
-    }
+    menuData.push([
+      {
+        title: '账号资料',
+        note: '查看与修改名称、电话和头像',
+        icon: 'edit',
+        url: '/pages/my/info-edit/index',
+      },
+    ]);
 
     menuData.push([
       {
@@ -77,7 +83,7 @@ Page({
     ]);
 
     this.setData({
-      isLoggedIn: Boolean(profile),
+      isLoggedIn: true,
       menuData,
     });
   },

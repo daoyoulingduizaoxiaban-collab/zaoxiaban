@@ -42,6 +42,8 @@ Page({
       height: 160,
     },
     isSubmitting: false,
+    canEdit: false,
+    disabledReason: '请先登录后编辑个人信息',
   },
 
   onLoad() {
@@ -51,10 +53,18 @@ Page({
 
   getPersonalInfo() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile) return;
+    if (!profile) {
+      this.setData({
+        canEdit: false,
+        disabledReason: '请先登录后编辑个人信息',
+      });
+      return;
+    }
     const cityEntry = Object.entries(areaList.cities).find(([, label]) => label === profile.city);
     const address = cityEntry ? [cityEntry[0].slice(0, 2).padEnd(6, '0'), cityEntry[0]] : [];
     this.setData({
+      canEdit: true,
+      disabledReason: '',
       personInfo: {
         ...this.data.personInfo,
         name: profile.displayName || '',
@@ -172,8 +182,8 @@ Page({
 
   async onSaveInfo() {
     const profile = AuthService.getCurrentProfile();
-    if (!profile) {
-      wx.showToast({ title: '请先登录', icon: 'none' });
+    if (!profile || !this.data.canEdit) {
+      wx.showToast({ title: '请先登录后编辑个人信息', icon: 'none' });
       return;
     }
     const { personInfo, addressText } = this.data;
@@ -198,5 +208,12 @@ Page({
     }
     AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '个人信息已保存', icon: 'success' });
+  },
+
+  onLogin() {
+    wx.navigateTo({
+      url: '/pages/login/login',
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
   },
 });
