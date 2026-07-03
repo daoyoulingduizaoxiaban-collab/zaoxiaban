@@ -25,10 +25,10 @@
       </view>
     </t-cell-group>
     <view class="auth-warning" wx:if="{{canShowDeviceOnlyNotice}}">
-      当前为演示身份，资料仅保留在当前设备。
+      当前资料仅保留在本设备。
     </view>
     <view class="auth-warning auth-warning--preview" wx:if="{{canShowRolePreviewNotice}}">
-      当前为演示身份切换，仅用于预览角色可见范围。
+      当前为角色预览状态，仅显示对应身份可用入口。
     </view>
     <view class="access-card" wx:if="{{isLoggedIn && !canUseBusiness}}">
       <view class="access-title">{{accessStateText}}</view>
