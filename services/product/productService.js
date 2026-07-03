@@ -3,9 +3,9 @@ import { ProductRepository } from '~/repositories/productRepository';
 import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { filterFormalProducts, hasInternalProductCopy } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
-const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
 
 export const calculatePriceRule = rule => ({
   minQuantity: normalizeNumber(rule.minQuantity),
@@ -31,20 +31,11 @@ const normalizeProduct = (product) => {
   };
 };
 
-const hasInternalProductCopy = (product) => {
-  const fields = [
-    product.title,
-    product.description,
-    product.sourceNote,
-  ];
-  return fields.some(value => INTERNAL_PRODUCT_COPY_RE.test(String(value || '')));
-};
-
 export const ProductService = {
   async listPublic(filters = {}) {
     const result = await ProductRepository.listPublic(filters);
     if (!result.success) return result;
-    const list = (result.data || []).filter(product => !hasInternalProductCopy(product));
+    const list = filterFormalProducts(result.data || []);
     return {
       ...result,
       data: list.map(normalizeProduct),
@@ -57,8 +48,8 @@ export const ProductService = {
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const list = AuthService.isFormalSession(profile, session)
-      ? result.data.filter(product => !hasInternalProductCopy(product))
-      : result.data;
+      ? filterFormalProducts(result.data || [])
+      : (result.data || []);
     return {
       ...result,
       data: list.map(normalizeProduct),
@@ -68,6 +59,11 @@ export const ProductService = {
   async getById(id) {
     const result = await ProductRepository.getById(id);
     if (!result.success) return result;
+    const profile = AuthService.getCurrentProfile();
+    const session = AuthService.getCurrentSession();
+    if (AuthService.isFormalSession(profile, session) && hasInternalProductCopy(result.data)) {
+      return { success: false, error: '未找到商品资料' };
+    }
     return {
       ...result,
       data: normalizeProduct(result.data),

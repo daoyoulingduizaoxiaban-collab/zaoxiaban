@@ -1,6 +1,8 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
+import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { filterFormalProducts } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
 
@@ -17,10 +19,17 @@ const normalizeProduct = product => ({
   priceDisplay: product.priceDisplay || getProductPriceDisplay(product),
 });
 
-const normalizeGroupOrder = groupOrder => ({
-  ...groupOrder,
-  productList: (groupOrder.productList || []).map(normalizeProduct),
-});
+const normalizeGroupOrder = (groupOrder) => {
+  const profile = AuthService.getCurrentProfile();
+  const session = AuthService.getCurrentSession();
+  const productList = AuthService.isFormalSession(profile, session)
+    ? filterFormalProducts(groupOrder.productList || [])
+    : (groupOrder.productList || []);
+  return {
+    ...groupOrder,
+    productList: productList.map(normalizeProduct),
+  };
+};
 
 export const GroupOrderService = {
   storageKey: GroupOrderRepository.storageKey,
