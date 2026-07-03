@@ -4,6 +4,9 @@ import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
 
+const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
+  .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
+
 Page({
   data: {
     titleText: '客户订单',
@@ -123,7 +126,12 @@ Page({
       .map(product => `${product.title || `商品 #${product.productId}`} x ${product.amount || product.quantity}：￥${product.totalPrice}`)
       .join('\n');
     const historyLines = (item.paymentHistory || [])
-      .map(history => `${history.createdAt || ''} ${history.note || ''}`)
+      .map(history => [
+        history.createdAt || '',
+        history.actorRole ? `操作者：${history.actorRole}` : '',
+        history.toStatus !== undefined ? `状态：${MEMBER_ORDER_STATUS_TEXT[history.toStatus] || history.toStatus}` : '',
+        history.note || '',
+      ].filter(Boolean).join('｜'))
       .join('\n');
     const paymentInfo = [
       item.paymentMethod ? `付款方式：${item.paymentMethod}` : '',
@@ -269,6 +277,21 @@ Page({
     if (!urls.length) return;
     wx.previewImage({
       current: urls[index] || urls[0],
+      urls,
+    });
+  },
+
+  previewOrderPaymentProof(e) {
+    const { id } = e.currentTarget.dataset;
+    const order = [...this.data.customerOrdersList, ...this.data.allCustomerOrdersList]
+      .find(item => String(item.id) === String(id));
+    const urls = order && Array.isArray(order.paymentProofUrls) ? order.paymentProofUrls : [];
+    if (!urls.length) {
+      wx.showToast({ title: '当前订单没有付款凭证', icon: 'none' });
+      return;
+    }
+    wx.previewImage({
+      current: urls[0],
       urls,
     });
   },
