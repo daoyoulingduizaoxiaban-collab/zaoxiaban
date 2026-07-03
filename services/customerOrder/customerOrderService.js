@@ -2,7 +2,9 @@ import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
 import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
+import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { filterFormalProducts } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
 const trimText = value => String(value || '').trim();
@@ -37,18 +39,25 @@ const normalizeOrderListItem = order => ({
   historyCount: (order.paymentHistory || []).length,
 });
 
-const normalizeGroupOrderProducts = groupOrder => (groupOrder.productList || [])
-  .filter(product => Number(product.status) === ProductStatus.PUBLISHED)
-  .map(product => {
-    const normalizedImage = normalizeProductImageFields(product);
-    return {
-      ...normalizedImage,
-      quantity: 0,
-      priceDisplay: getProductPriceDisplay(product),
-      lineTotal: 0,
-      selectedRuleText: '',
-    };
-  });
+const normalizeGroupOrderProducts = (groupOrder) => {
+  const profile = AuthService.getCurrentProfile();
+  const session = AuthService.getCurrentSession();
+  const products = AuthService.isFormalSession(profile, session)
+    ? filterFormalProducts(groupOrder.productList || [])
+    : (groupOrder.productList || []);
+  return products
+    .filter(product => Number(product.status) === ProductStatus.PUBLISHED)
+    .map(product => {
+      const normalizedImage = normalizeProductImageFields(product);
+      return {
+        ...normalizedImage,
+        quantity: 0,
+        priceDisplay: getProductPriceDisplay(product),
+        lineTotal: 0,
+        selectedRuleText: '',
+      };
+    });
+};
 
 export const CustomerOrderService = {
   storageKey: CustomerOrderRepository.storageKey,
