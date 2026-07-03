@@ -13,7 +13,7 @@ QA and AGENT must not create extra planning, result, matrix, or progress documen
 Do not rely on chat memory.
 
 ## Product Definition
-- WeChat mini program for China-based guides/tour leaders.
+- WeChat mini program for China-based 团主 users.
 - Core terms: `开团`, `团单`, `本团商品`, `商品库`, `客户订单`, `收款状态`.
 - MVP business logic is defined in `BUSINESS_LOGIC_PRINCIPLES.md`.
 - Provider is a formal MVP role, not a future placeholder.

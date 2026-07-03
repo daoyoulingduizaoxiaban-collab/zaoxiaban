@@ -16,7 +16,7 @@ Pros:
 - Fastest path for a WeChat-only MVP.
 - Direct OpenID integration.
 - Lower early infrastructure cost.
-- Good fit for guide-owned group orders, product library, and customer orders.
+- Good fit for 团主-owned group orders, product library, and customer orders.
 
 Cons:
 - Strong WeChat ecosystem coupling.
@@ -25,7 +25,7 @@ Cons:
 
 Best use:
 - MVP stays primarily inside WeChat mini program.
-- Team wants fastest route to real guide workflow.
+- Team wants fastest route to real 团主 workflow.
 
 ## Option B - Explicit Backend API
 Pros:

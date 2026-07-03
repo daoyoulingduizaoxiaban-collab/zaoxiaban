@@ -35,32 +35,32 @@
   - Customer order creation goes through `CustomerOrderService` / `CustomerOrderRepository`.
   - Order items calculate numeric totals from product price rules and quantities.
   - Customer order list uses role-scoped visibility from the repository/service boundary.
-  - Customer payment declaration, guide payment confirmation, and order cancellation go through the same service/repository path.
+  - Customer payment declaration, 团主 payment confirmation, and order cancellation go through the same service/repository path.
   - Payment status history is appended on each local/QA status change.
 - Phase 8 cloud customer order/payment verification:
   - Customer role created a cloud customer order through `/pages/customerOrders/edit/index?groupOrderId=...`.
   - Customer declared paid, changing status from `0` to `1`.
-  - Guide confirmed payment, changing status from `1` to `2`.
+  - 团主 role confirmed payment, changing status from `1` to `2`.
   - Payment history count reached 3 after create, declare paid, and confirm payment.
   - After redeploying the customer order scope fix, customer `listByGroupOrder` returned only the customer's own order with `saveMode: wechat-cloud-repository`.
-- Phase 3 local/QA guide group-order workflow exists:
+- Phase 3 local/QA 团主 group-order workflow exists:
   - Group order list/detail/create/edit use `GroupOrderService` / `GroupOrderRepository`.
   - Group order create/edit saves to local storage key `dao_you_ling_local_group_orders`.
   - Add/remove group-order products saves through the same repository/service boundary.
   - Group order detail no longer directly depends on `GroupOrderMock`.
 - Phase 8 cloud group-order verification:
-  - Guide role created cloud product and cloud group order through existing page/service/repository path.
+  - 团主 role created cloud product and cloud group order through existing page/service/repository path.
   - Cloud group order retained one product snapshot after reload/re-enter.
 - QA bug report fixes:
   - Customer share path is generated for group orders and exposed from group-order detail.
   - Group order form/detail/customer entry include real-world fields: activity time, cutoff, pickup/delivery, payment note, contact, and customer notice.
   - Formal product image save path uploads local media to WeChat Cloud Storage before product create.
   - Product add image picking now guards unsupported `wx.chooseMedia`, cancel/fail paths, duplicate submit, and clearly separates formal cloud durable image upload copy from local/QA temporary preview copy.
-  - Login role picker exposes guide/customer only; owner/admin remains cloud-function allowlist controlled.
+  - Login role picker exposes 团主（internal `guide`）/customer only; owner/admin remains cloud-function allowlist controlled.
   - Customer order phone validation enforces 11-digit mainland China mobile format.
-  - Customer payment method/remark/proof images and guide confirmed amount/remark are saved into order/payment history.
+  - Customer payment method/remark/proof images and 团主 confirmed amount/remark are saved into order/payment history.
   - Customer order processing now uses a page-level action panel instead of a single text modal, separating payment method, payment remark, confirmed amount, confirmation remark, and cancel reason.
-  - Customer paid declaration now supports proof image selection in the action panel, and service/repository/cloud-function paths reject empty paid declarations or non-positive guide confirmation amounts.
+  - Customer paid declaration now supports proof image selection in the action panel, and service/repository/cloud-function paths reject empty paid declarations or non-positive 团主 confirmation amounts.
   - Formal cloud product images and payment proof images are guarded against direct temporary local paths; they must be uploaded to durable `cloud://` or `https://` URLs before cloud persistence.
   - Customer order local/cloud payment records preserve the submitted payment method instead of always writing a generic manual method.
   - Group-order product list opens a read-only product detail modal instead of unfinished toast.
@@ -72,9 +72,9 @@
   - Chat page now shows a disabled-state card instead of an active input box when chat is not enabled.
   - Product add primary actions use the same blue operation style as the rest of the MVP.
   - Customer order list role scope now includes the current role label and uses repository metadata when available.
-  - My / QA Seed panel now includes dedicated guide/customer order-isolation check buttons that switch QA role and open the customer-order tab, reducing stale-tab/manual-navigation ambiguity during GUI retest.
+  - My / QA Seed panel now includes dedicated 团主/customer order-isolation check buttons that switch QA role and open the customer-order tab, reducing stale-tab/manual-navigation ambiguity during GUI retest.
   - Home and setting save-mode copy now separates formal OpenID cloud save, QA override, and mock/local testing states by reading the current auth session.
-  - Profile, tour guide, and provider list/edit pages now use `DirectoryRepository` instead of page-level seed reads; edit forms bind input values, validate required names, save through local fallback or cloud `businessData` actions, and return to refreshed lists.
+  - Profile, 团主, and provider list/edit pages now use `DirectoryRepository` instead of page-level seed reads; edit forms bind input values, validate required names, save through local fallback or cloud `businessData` actions, and return to refreshed lists.
   - Group-order detail confirmation now sends a confirmed amount to the payment service, and export generates a copyable report summary instead of a non-supported action toast.
   - Formal mode now has `config.isMock: false`; `AuthService.login()` no longer falls back to mock identity when cloud login fails outside mock mode.
   - Login uses native role buttons and a native submit button for stable GUI rendering; My exposes formal personal-profile and data-center entries, and self profile editing routes to the repository-backed profile form.
@@ -102,7 +102,7 @@
 - Auth profile initialization.
 - Role-scoped group order and customer order visibility.
 - Product library create/update/delete operations.
-- Guide group-order create/edit and group-order product add/remove operations.
+- 团主 group-order create/edit and group-order product add/remove operations.
 - Customer order create/payment/cancel operations.
 - Payment status history records.
 - QA seed reset and demo data display.
@@ -123,8 +123,8 @@ These are not formal cloud-backed features.
 - Product library click flow in GUI.
 - Phase 5 customer order click flow in GUI, including the new payment action panel and proof-image upload interaction.
 - Formal OpenID vs QA/mock save-mode copy comparison across home, setting, product library, group-order create/detail, and data center.
-- Phase 3 guide group-order click flow in GUI.
-- QA-only role switching UI in `pages/my` is visible in DevTools, and dedicated order-isolation check buttons now exist, but actual guide/customer click-through and order isolation are not verified because no fresh stable DevTools/device GUI run has been completed.
+- Phase 3 团主 group-order click flow in GUI.
+- QA-only role switching UI in `pages/my` is visible in DevTools, and dedicated order-isolation check buttons now exist, but actual 团主/customer click-through and order isolation are not verified because no fresh stable DevTools/device GUI run has been completed.
 
 ### Not Implemented
 - Production deployment.
