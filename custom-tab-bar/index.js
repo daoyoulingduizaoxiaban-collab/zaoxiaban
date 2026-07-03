@@ -67,8 +67,17 @@ Component({
         const item = this.data.list.find(i => i.value === value);
 
         if (item) {
+          const previousValue = this.data.value;
+          this.setData({ value });
           wx.switchTab({
-            url: item.path
+            url: item.path,
+            fail: () => {
+              this.setData({ value: previousValue });
+              wx.showToast({
+                title: '页面切换失败',
+                icon: 'none'
+              });
+            }
           });
         }
       } catch (error) {

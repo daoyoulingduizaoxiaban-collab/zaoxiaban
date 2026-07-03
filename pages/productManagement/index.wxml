@@ -6,6 +6,7 @@
     <t-dropdown-menu t-class="dropdown-custom">
       <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
     </t-dropdown-menu>
+    <button class="list-entry" bindtap="onOpenProductList">列表</button>
   </view>
 
   <view class="mode-banner">

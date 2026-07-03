@@ -107,6 +107,13 @@ Page({
     });
   },
 
+  onOpenProductList() {
+    wx.navigateTo({
+      url: '/sub-pages/product/list/index',
+      fail: () => wx.showToast({ title: '打开商品列表失败', icon: 'none' }),
+    });
+  },
+
   // 3. 下架/上架切換
   async onToggleStatus(e: any) {
     const id = String(e.currentTarget.dataset.id);
