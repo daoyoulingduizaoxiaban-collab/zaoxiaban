@@ -1,8 +1,17 @@
 import { areaList } from './areaData.js';
 import { AuthService } from '~/services/auth/authService';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
+
+const getPhotoSource = photo => (photo ? (photo.url || photo.path || '') : '');
+const needsCloudUpload = path => Boolean(
+  path
+  && !/^cloud:\/\//.test(String(path))
+  && !/^https:\/\//.test(String(path))
+  && !/^\/static\//.test(String(path))
+);
 
 Page({
   data: {
@@ -204,6 +213,16 @@ Page({
       return;
     }
     this.setData({ isSubmitting: true });
+    let avatarUrl = getPhotoSource(personInfo.photos && personInfo.photos[0]);
+    if (isCloudBusinessEnabled() && needsCloudUpload(avatarUrl)) {
+      const uploadResult = await uploadCloudFiles([avatarUrl], 'avatars');
+      if (!uploadResult.success) {
+        this.setData({ isSubmitting: false });
+        wx.showToast({ title: uploadResult.error || '头像上传失败，请稍后重试', icon: 'none' });
+        return;
+      }
+      avatarUrl = uploadResult.data[0] || '';
+    }
     const res = await DirectoryRepository.saveUser({
       id: profile.id,
       name,
@@ -212,7 +231,7 @@ Page({
       birth: personInfo.birth || '',
       city: addressText,
       introduction: String(personInfo.introduction || '').trim(),
-      avatarUrl: personInfo.photos && personInfo.photos[0] ? (personInfo.photos[0].url || personInfo.photos[0].path || '') : '',
+      avatarUrl,
     });
     this.setData({ isSubmitting: false });
     if (!res.success) {

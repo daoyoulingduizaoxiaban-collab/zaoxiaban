@@ -202,6 +202,9 @@ const isDurableAssetUrl = url => (
 );
 
 const hasOnlyDurableAssetUrls = urls => (urls || []).every(isDurableAssetUrl);
+const isDurableProfileAvatarUrl = url => (
+  isDurableAssetUrl(url) || /^\/static\//.test(String(url))
+);
 
 const normalizeProductPayload = (payload, profile, existing = {}) => ({
   ...existing,
@@ -816,12 +819,23 @@ const userActions = {
     const normalized = normalizeDirectoryUser(payload, target || {});
     const validationError = validateDirectoryUserPayload(normalized);
     if (validationError) return failure(validationError);
+    if (!isDurableProfileAvatarUrl(normalized.avatarUrl)) return failure('请重新上传头像后保存');
     if (profile.role === 'admin' && normalized.role === 'owner') {
       return failure('管理员不能指派 owner');
     }
     if (!isOwnerOrAdmin(profile)) {
       normalized.role = target.role || profile.role;
-      normalized.status = target.status || profile.status || 'active';
+      normalized.roleLabel = target.roleLabel || normalized.roleLabel || '';
+      normalized.displayRole = target.displayRole || target.roleLabel || normalized.role;
+      normalized.status = target.status || profile.status || REVIEW_STATUS.APPROVED;
+      normalized.reviewStatus = target.reviewStatus || target.status || profile.reviewStatus || profile.status || REVIEW_STATUS.APPROVED;
+      normalized.requestedRole = target.requestedRole || profile.requestedRole || normalized.role;
+      normalized.reviewedBy = target.reviewedBy || '';
+      normalized.reviewedAt = target.reviewedAt || '';
+      normalized.reviewRemark = target.reviewRemark || '';
+      normalized.openId = target.openId || profile.openId;
+      normalized.unionId = target.unionId || profile.unionId || '';
+      normalized.providerId = target.providerId || profile.providerId || '';
     }
 
     if (target) {
