@@ -11,11 +11,13 @@ Page({
     isLoggedIn: false,
   },
 
-  onLoad() {
+  async onLoad() {
+    await AuthService.refreshSession();
     this.refreshSettingState();
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     this.refreshSettingState();
   },
 

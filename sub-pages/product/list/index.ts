@@ -22,10 +22,11 @@ Page({
     pendingProductId: '',
   },
 
-  onLoad(options = {}) {
+  async onLoad(options = {}) {
+    await AuthService.refreshSession();
     const pendingProductId = options.productId || options.id || '';
     this.setData({ pendingProductId: pendingProductId ? String(pendingProductId) : '' });
-    this.loadProducts();
+    await this.loadProducts();
   },
 
   resetDetailState(extraState = {}) {

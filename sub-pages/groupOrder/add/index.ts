@@ -34,7 +34,8 @@ Page({
     }
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const canCreate = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
     if (!canCreate) {
@@ -51,11 +52,12 @@ Page({
         isEdit: true,
         groupOrderId
       });
-      this.loadGroupOrder(groupOrderId);
+      await this.loadGroupOrder(groupOrderId);
     }
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     this.consumePickerFallbackResult();
   },
 

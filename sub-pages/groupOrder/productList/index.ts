@@ -24,7 +24,8 @@ Page({
     pendingProductId: '',
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    await AuthService.refreshSession();
     const groupOrderId = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
     const pendingProductId = options.productId ? String(options.productId) : '';
     this.setData({
@@ -35,7 +36,8 @@ Page({
     });
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     if (this.consumePickerFallbackResult()) {
       return;
     }
@@ -46,7 +48,7 @@ Page({
       return;
     }
 
-    this.loadGroupProducts();
+    await this.loadGroupProducts();
   },
 
   resetDetailState(extraState = {}) {

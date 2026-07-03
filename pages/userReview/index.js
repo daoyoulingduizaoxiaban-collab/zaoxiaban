@@ -18,12 +18,14 @@ Page({
     loadErrorText: '',
   },
 
-  onLoad() {
-    this.refresh();
+  async onLoad() {
+    await AuthService.refreshSession();
+    await this.refresh();
   },
 
-  onShow() {
-    this.refresh();
+  async onShow() {
+    await AuthService.refreshSession();
+    await this.refresh();
   },
 
   async refresh() {

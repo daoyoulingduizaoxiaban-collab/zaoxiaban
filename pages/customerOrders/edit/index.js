@@ -31,7 +31,8 @@ Page({
     },
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const groupOrderId = options.groupOrderId || options.id || '';
     const loginRedirectTo = groupOrderId ? buildCustomerEntryPath(groupOrderId) : '/pages/customerOrders/index';
@@ -58,7 +59,7 @@ Page({
       'formData.customerPhone': profile && profile.phone ? profile.phone : '',
     });
     if (!groupOrderId) return;
-    this.loadOrderEntry(groupOrderId);
+    await this.loadOrderEntry(groupOrderId);
   },
 
   onShareAppMessage() {

@@ -20,13 +20,15 @@ Page({
     },
   },
 
-  onLoad() {
-    this.loadCustomerProfile();
+  async onLoad() {
+    await AuthService.refreshSession();
+    await this.loadCustomerProfile();
   },
 
-  onShow() {
+  async onShow() {
     if (!this.data.isSubmitting && !this.data.isDirty) {
-      this.loadCustomerProfile();
+      await AuthService.refreshSession();
+      await this.loadCustomerProfile();
     }
   },
 

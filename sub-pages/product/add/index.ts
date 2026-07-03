@@ -40,7 +40,8 @@ Page({
     }
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const canCreate = canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE);
     if (!canCreate) {
@@ -53,12 +54,13 @@ Page({
     const productId = options && options.id ? String(options.id) : '';
     if (productId) {
       this.setData({ pageTitle: '编辑商品', isEdit: true });
-      this.loadProduct(productId);
+      await this.loadProduct(productId);
     }
     this.refreshSaveModeText();
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     this.refreshSaveModeText();
   },
 

@@ -34,14 +34,15 @@ Page({
     detailErrorText: '',
   },
 
-  onLoad(options) {
+  async onLoad(options) {
+    await AuthService.refreshSession();
     const id = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
     if (id) {
       this.setData({
         groupOrderId: id,
         customerEntryPath: buildCustomerEntryPath(id),
       });
-      this.fetchGroupOrderDetail(id);
+      await this.fetchGroupOrderDetail(id);
     } else {
       this.setData({
         pageTitle: '团单详情',
