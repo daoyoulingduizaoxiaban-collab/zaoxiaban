@@ -1,6 +1,7 @@
 import { navigateByUrl } from '~/utils/navigation';
 
 const app = getApp();
+const DEFAULT_DISABLED_REASON = '请先通过客户订单处理沟通和收款事项。';
 
 Page({
   data: {
@@ -12,16 +13,19 @@ Page({
     input: '',
     anchor: '',
     keyboardHeight: 0,
-    disabledReason: '请先通过客户订单处理沟通和收款事项。',
+    disabledReason: DEFAULT_DISABLED_REASON,
   },
 
-  onLoad(options) {
+  onLoad() {
     try {
       const eventChannel = this.getOpenerEventChannel && this.getOpenerEventChannel();
       if (eventChannel && typeof eventChannel.on === 'function') {
         eventChannel.on('update', this.update);
+        return;
       }
+      this.setData({ disabledReason: DEFAULT_DISABLED_REASON });
     } catch (err) {
+      this.setData({ disabledReason: DEFAULT_DISABLED_REASON });
       wx.showToast({ title: '未找到沟通对象', icon: 'none' });
     }
   },
@@ -42,8 +46,16 @@ Page({
 
   onShareAppMessage() {},
 
-  update({ userId, avatar, name, messages }) {
-    this.setData({ userId, avatar, name, messages: [...messages] });
+  update(payload = {}) {
+    const { userId, avatar = '', name = '客户沟通', messages = [] } = payload;
+    const hasContact = Boolean(userId);
+    this.setData({
+      userId: hasContact ? userId : null,
+      avatar,
+      name,
+      messages: Array.isArray(messages) ? [...messages] : [],
+      disabledReason: hasContact ? '' : DEFAULT_DISABLED_REASON,
+    });
     wx.nextTick(this.scrollToBottom);
   },
 
@@ -75,7 +87,8 @@ Page({
       wx.showToast({ title: '请先查看客户订单', icon: 'none' });
       return;
     }
-    const { userId, messages, input: content } = this.data;
+    const { userId, messages, input } = this.data;
+    const content = String(input || '').trim();
     if (!content) return;
     const socket = this.getSocket();
     if (!socket) {
@@ -83,8 +96,7 @@ Page({
       return;
     }
     const message = { messageId: null, from: 0, content, time: Date.now(), read: true };
-    messages.push(message);
-    this.setData({ input: '', messages });
+    this.setData({ input: '', messages: [...messages, message] });
     socket.send(JSON.stringify({ type: 'message', data: { userId, content } }));
     wx.nextTick(this.scrollToBottom);
   },

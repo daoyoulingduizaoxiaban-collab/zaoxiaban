@@ -8,7 +8,7 @@
     <t-cell
       wx:for="{{item}}"
       wx:for-item="carditem"
-      wx:key="cardkey"
+      wx:key="title"
       title="{{carditem.title}}"
       note="{{carditem.note}}"
       hover
