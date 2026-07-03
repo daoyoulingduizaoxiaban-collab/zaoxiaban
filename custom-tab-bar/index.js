@@ -2,6 +2,13 @@ import {
   BOTTOM_BAR_LIST
 } from '../config'
 import { AuthService } from '../services/auth/authService';
+import { FEATURE_KEYS, canUseFeature } from '../services/auth/roleScope';
+
+const TAB_FEATURE_MAP = {
+  groupOrder: FEATURE_KEYS.GROUP_ORDERS,
+  customerOrders: FEATURE_KEYS.CUSTOMER_ORDERS,
+  productManagement: FEATURE_KEYS.PRODUCTS,
+};
 
 Component({
   data: {
@@ -24,9 +31,12 @@ Component({
   },
   methods: {
     getVisibleTabs() {
-      return AuthService.canUseBusiness()
-        ? BOTTOM_BAR_LIST
-        : BOTTOM_BAR_LIST.filter(item => item.value === 'my');
+      const profile = AuthService.getCurrentProfile();
+      return BOTTOM_BAR_LIST.filter((item) => {
+        if (item.value === 'my') return true;
+        const featureKey = TAB_FEATURE_MAP[item.value];
+        return featureKey ? canUseFeature(profile, featureKey) : AuthService.canUseBusiness(profile);
+      });
     },
 
     getCurrentTabValue() {
