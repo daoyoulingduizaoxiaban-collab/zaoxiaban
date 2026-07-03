@@ -60,14 +60,11 @@ Page({
     settingList: [],
   },
 
-  onLoad() {
-    this.loadQaSeed();
-  },
-
   async onShow() {
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const canUseBusiness = AuthService.canUseBusiness(profile);
+    const canShowQaTools = AuthService.canShowQaTools(profile, session);
 
     this.setData({
       isLoad: Boolean(profile),
@@ -77,11 +74,15 @@ Page({
       canUseBusiness,
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
-      canShowQaTools: AuthService.canShowQaTools(profile, session),
+      canShowQaTools,
       gridList: this.buildGridList(profile),
       settingList: this.buildSettingList(profile),
     });
-    this.loadQaSeed();
+    if (canShowQaTools) {
+      this.loadQaSeed();
+    } else {
+      this.clearQaSeed();
+    }
   },
 
   buildGridList(profile) {
@@ -189,8 +190,15 @@ Page({
     });
   },
 
+  clearQaSeed() {
+    this.setData({
+      qaSeedInfo: {},
+      service: [],
+    });
+  },
+
   toPersonalInfo(profile) {
-    let authSourceText = '微信 OpenID 已验证';
+    let authSourceText = '微信账号已验证';
     if (profile.qaOverride) {
       authSourceText = '演示身份';
     } else if (profile.isMockOpenId) {
@@ -234,12 +242,20 @@ Page({
   },
 
   onResetQaSeed() {
+    if (!this.data.canShowQaTools) {
+      wx.showToast({ title: '当前账号不显示演示工具', icon: 'none' });
+      return;
+    }
     QaSeedMock.resetSeed();
     this.loadQaSeed();
     wx.showToast({ title: '演示资料已重置', icon: 'success' });
   },
 
   applyQaRole(role) {
+    if (!this.data.canShowQaTools) {
+      wx.showToast({ title: '当前账号不显示演示工具', icon: 'none' });
+      return null;
+    }
     const result = AuthService.applyQaOverride({ qaRoleOverride: role });
     if (!result.success) {
       wx.showToast({ title: result.error || '演示身份切换失败', icon: 'none' });

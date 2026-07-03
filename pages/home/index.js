@@ -32,7 +32,7 @@ Page({
     if (!canUseBusiness) {
       modeText = AuthService.getAccessStateText(profile);
     } else if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
-      modeText = '当前账号已通过微信登录，业务资料保存到微信云端。';
+      modeText = '当前账号已通过微信登录，业务资料会同步保存。';
     } else if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
       modeText = '当前资料仅保存到本设备。';
     } else if (profile) {

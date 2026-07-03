@@ -2,6 +2,11 @@ import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { AuthService } from '~/services/auth/authService';
 import { AUTH_ROLES, REVIEW_ROLE_OPTIONS, REVIEW_STATUS, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
+const roleLabelByValue = REVIEW_ROLE_OPTIONS.reduce((map, item) => ({
+  ...map,
+  [item.value]: item.label,
+}), {});
+
 Page({
   data: {
     titleText: '用户审核',
@@ -49,10 +54,16 @@ Page({
       return;
     }
     const selectedRoleById = {};
-    (res.data || []).forEach((user) => {
-      selectedRoleById[user.id || user._id] = user.requestedRole || user.role || AUTH_ROLES.CUSTOMER;
+    const users = (res.data || []).map((user) => {
+      const requestedRole = user.requestedRole || user.role || AUTH_ROLES.CUSTOMER;
+      selectedRoleById[user.id || user._id] = requestedRole;
+      return {
+        ...user,
+        requestedRoleLabel: roleLabelByValue[requestedRole] || '客户',
+        accountNote: user.openId ? '微信账号已登录' : '微信账号需确认',
+      };
     });
-    this.setData({ users: res.data || [], selectedRoleById, loadErrorText: '' });
+    this.setData({ users, selectedRoleById, loadErrorText: '' });
   },
 
   onRoleChange(e) {

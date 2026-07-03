@@ -11,7 +11,7 @@
     <t-empty wx:elif="{{loadErrorText}}" icon="info-circle" description="{{loadErrorText}}" />
     <t-cell-group theme="card" wx:elif="{{users.length}}">
       <view class="review-card" wx:for="{{users}}" wx:key="id">
-        <t-cell title="{{item.displayName || item.name || '微信用户'}}" description="申请身份：{{item.requestedRole || item.role || 'customer'}}" note="{{item.openId ? '微信账号已登录' : '账号资料待补充'}}" />
+        <t-cell title="{{item.displayName || item.name || '微信用户'}}" description="申请身份：{{item.requestedRoleLabel}}" note="{{item.accountNote}}" />
         <view class="role-row">
           <button
             wx:for="{{roleOptions}}"

@@ -116,7 +116,7 @@ exports.main = async (event = {}) => {
   if (!openId) {
     return {
       success: false,
-      error: '未取得微信 OpenID',
+      error: '登录状态获取失败，请重新登录',
     };
   }
 

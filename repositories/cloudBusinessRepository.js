@@ -3,7 +3,7 @@ import { AuthService } from '~/services/auth/authService';
 
 export const CLOUD_SAVE_MODE = 'wechat-cloud-repository';
 export const LOCAL_SAVE_MODE_TEXT = '已保存到当前设备';
-export const CLOUD_SAVE_MODE_TEXT = '已保存到微信云端';
+export const CLOUD_SAVE_MODE_TEXT = '已同步保存';
 
 export const getSaveModeText = meta => (
   meta && meta.saveMode === CLOUD_SAVE_MODE ? CLOUD_SAVE_MODE_TEXT : LOCAL_SAVE_MODE_TEXT

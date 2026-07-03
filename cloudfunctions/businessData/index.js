@@ -69,6 +69,15 @@ const success = (data, extra = {}) => ({
   },
 });
 const failure = error => ({ success: false, error });
+const PUBLIC_THROW_MESSAGES = new Set([
+  '请先完成微信登录',
+  '当前账号尚未通过管理员审核',
+  '当前账号没有此操作权限',
+]);
+const toPublicError = (err) => {
+  const message = err && err.message ? err.message : '';
+  return PUBLIC_THROW_MESSAGES.has(message) ? message : '资料服务暂时不可用，请稍后再试';
+};
 
 const ensureCollections = async () => {
   await Promise.all(COLLECTIONS.map(async (name) => {
@@ -235,7 +244,7 @@ const productActions = {
     assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     if (!['guide', 'owner', 'admin', 'provider'].includes(profile.role)) return failure('当前角色不能新增商品');
     if (!hasOnlyDurableAssetUrls(payload.pictureUrls || [])) {
-      return failure('正式云端商品图片必须先上传为持久图片');
+      return failure('请重新上传商品图片后保存');
     }
     const createdAt = nowIso();
     const product = normalizeProductPayload({
@@ -265,7 +274,7 @@ const productActions = {
     const product = await getById('products', payload.id);
     if (!canManageProduct(product, profile)) return failure('当前角色不能修改此商品');
     if (!hasOnlyDurableAssetUrls(payload.pictureUrls || [])) {
-      return failure('正式云端商品图片必须先上传为持久图片');
+      return failure('请重新上传商品图片后保存');
     }
     const updatedAt = nowIso();
     const updateData = normalizeProductPayload({
@@ -542,7 +551,7 @@ const customerOrderActions = {
     const validationError = validateCustomerOrderPayload(payload);
     if (validationError) return failure(validationError);
     if (!hasOnlyDurableAssetUrls(payload.paymentProofUrls || [])) {
-      return failure('正式云端付款凭证必须先上传为持久图片');
+      return failure('请重新上传付款凭证后提交');
     }
     const groupOrder = await getById('groupOrders', payload.groupOrderId);
     if (!groupOrder) return failure('未找到团单');
@@ -622,7 +631,7 @@ const customerOrderActions = {
       const hasProof = Array.isArray(paymentProofUrls) && paymentProofUrls.length > 0;
       if (!trimText(paymentMethod)) return failure('请填写付款方式');
       if (!hasProof) return failure('请上传付款凭证');
-      if (!hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('正式云端付款凭证必须先上传为持久图片');
+      if (!hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('请重新上传付款凭证后提交');
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {
       return failure('请填写有效实收金额');
@@ -860,9 +869,9 @@ exports.main = async (event = {}) => {
     const { resource, action, data = {} } = event;
     const resourceHandler = handlers[resource];
     const actionHandler = resourceHandler && resourceHandler[action];
-    if (!actionHandler) return failure('未知云端资料操作');
+    if (!actionHandler) return failure('资料操作不存在');
     return actionHandler(data, profile);
   } catch (err) {
-    return failure(err && (err.message || err.errMsg) ? (err.message || err.errMsg) : '云端资料操作失败');
+    return failure(toPublicError(err));
   }
 };

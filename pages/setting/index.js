@@ -19,7 +19,7 @@ Page({
 
   getDataModeNote(profile, session, cloudEnabled) {
     if (profile && cloudEnabled && session && session.cloudOpenIdVerified) {
-      return '资料会保存到微信云端';
+      return '资料会同步保存';
     }
     if (profile && (profile.isMockOpenId || (session && session.qaOverride))) {
       return '资料仅保存到当前设备';

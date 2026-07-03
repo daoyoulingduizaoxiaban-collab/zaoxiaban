@@ -290,7 +290,7 @@ export const AuthService = {
 
     const cloudResult = await callCloudAuth(loginResult.code, currentProfile.requestedRole || currentProfile.role);
     if (!cloudResult.success || !cloudResult.data || !cloudResult.data.openId) {
-      return { success: false, error: cloudResult.error || '云端账号状态刷新失败' };
+      return { success: false, error: cloudResult.error || '账号状态刷新失败，请稍后重试' };
     }
 
     const profile = mergeProfileTimestamps(normalizeCloudProfile(cloudResult.data, currentProfile.role));
