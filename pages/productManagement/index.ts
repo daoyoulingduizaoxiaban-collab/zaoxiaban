@@ -125,12 +125,6 @@ Page({
     return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.PRODUCT_MANAGE);
   },
 
-  onLogin() {
-    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/productManagement/index')}`, {
-      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
-    });
-  },
-
   onAddProduct() {
     if (!this.canManageProducts()) {
       wx.showToast({ title: '当前角色不能新增商品', icon: 'none' });
