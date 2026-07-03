@@ -3,7 +3,7 @@ import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 const PRODUCT_IMAGE_FALLBACK = '/static/logo/zaoxiaban.png';
@@ -18,6 +18,7 @@ Page({
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     accessDenied: false,
     accessStateText: '',
+    pageErrorText: '',
     formData: {
       title: '',
       description: '',
@@ -38,7 +39,7 @@ Page({
     if (!canCreate) {
       this.setData({
         accessDenied: true,
-        accessStateText: AuthService.getAccessStateText(profile),
+        accessStateText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
       });
       return;
     }
@@ -56,11 +57,17 @@ Page({
   async loadGroupOrder(groupOrderId) {
     const res = await GroupOrderService.getById(groupOrderId);
     if (!res.success) {
-      wx.showToast({ title: res.error || '加载团单失败', icon: 'none' });
+      const errorText = res.error || '加载团单失败';
+      this.setData({
+        pageErrorText: errorText,
+        selectedGoods: [],
+      });
+      wx.showToast({ title: errorText, icon: 'none' });
       return;
     }
 
     this.setData({
+      pageErrorText: '',
       formData: {
         title: res.data.title || '',
         description: res.data.description || '',
@@ -118,6 +125,10 @@ Page({
   },
 
   onSelectGoods() {
+    if (this.data.pageErrorText) {
+      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
+      return;
+    }
     const existingIds = this.data.selectedGoods.map(item => item.id);
     navigateByUrl(
       `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
@@ -142,6 +153,10 @@ Page({
     const { formData, selectedGoods, groupOrderId, isEdit } = this.data;
 
     if (this.data.isSubmitting) return;
+    if (this.data.pageErrorText) {
+      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
+      return;
+    }
     this.setData({ isSubmitting: true });
     wx.showLoading({ title: isEdit ? '保存中...' : '团单建立中...' });
 
