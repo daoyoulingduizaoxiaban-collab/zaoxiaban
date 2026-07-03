@@ -5,7 +5,7 @@ import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 
@@ -64,17 +64,18 @@ Page({
     try {
       const res = await CustomerOrderService.getGroupOrderDetail(id)
       if (res.success) {
+        const groupOrder = {
+          ...res.data,
+          sharePath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
+        };
         this.setData({
-          groupOrder: {
-            ...res.data,
-            sharePath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
-          },
+          groupOrder,
           customerEntryPath: res.data.sharePath || `/pages/customerOrders/edit/index?groupOrderId=${id}`,
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
           isDetailLoaded: true,
           detailErrorText: '',
-          canManageGroupOrder: this.canManageGroupOrder(),
+          canManageGroupOrder: this.canManageGroupOrder(groupOrder),
         });
       } else {
         const errorText = res.error || '加载团单失败';
@@ -461,8 +462,19 @@ Page({
     }
   },
 
-  canManageGroupOrder() {
-    return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDER_CREATE);
+  canManageGroupOrder(groupOrder) {
+    const profile = AuthService.getCurrentProfile();
+    if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE)) return false;
+    if (isOwnerOrAdmin(profile)) return true;
+    if (!profile || profile.role !== 'guide' || !groupOrder) return false;
+
+    const sameId = (a, b) => String(a) === String(b);
+    const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
+    const authorizedGuideOpenIds = groupOrder.authorizedGuideOpenIds || [];
+    return sameId(groupOrder.guideUserId, profile.id)
+      || sameId(groupOrder.guideOpenId, profile.openId)
+      || authorizedGuideIds.some(id => sameId(id, profile.id))
+      || authorizedGuideOpenIds.some(openId => sameId(openId, profile.openId));
   },
 
   stopPanelTap() {},
