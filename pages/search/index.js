@@ -26,7 +26,8 @@ Page({
   deleteType: 0,
   deleteIndex: '',
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const canUseSearch = canUseFeature(profile, FEATURE_KEYS.SEARCH);
     if (canUseSearch) this.loadLocalSearchWords();

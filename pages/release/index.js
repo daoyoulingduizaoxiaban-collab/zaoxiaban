@@ -8,7 +8,8 @@ Page({
     accessText: '请先登录后继续使用',
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     this.setData({
       canCreateGroupOrder: canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),

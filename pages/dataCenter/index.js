@@ -21,7 +21,8 @@ Page({
     isLoading: false,
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     this.loadSummary();
   },
 

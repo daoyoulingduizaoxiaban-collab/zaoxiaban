@@ -34,7 +34,8 @@ Page({
     this.loadMessages();
   },
 
-  onShow() {
+  async onShow() {
+    await AuthService.refreshSession();
     this.loadMessages();
   },
 
