@@ -61,7 +61,7 @@
         </view>
         <view class="action-proof__list" wx:if="{{actionForm.paymentProofUrls.length}}">
           <view class="action-proof__item" wx:for="{{actionForm.paymentProofUrls}}" wx:key="*this">
-            <image src="{{item}}" mode="aspectFill" />
+            <image src="{{item}}" mode="aspectFill" bindtap="previewActionPaymentProof" data-index="{{index}}" />
             <text bindtap="removeActionPaymentProof" data-index="{{index}}">移除</text>
           </view>
         </view>

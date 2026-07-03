@@ -263,6 +263,21 @@ Page({
     this.setData({ 'actionForm.paymentProofUrls': paymentProofUrls });
   },
 
+  previewActionPaymentProof(e) {
+    const index = Number(e.currentTarget.dataset.index || 0);
+    const urls = this.data.actionForm.paymentProofUrls || [];
+    if (!urls.length) return;
+    wx.previewImage({
+      current: urls[index] || urls[0],
+      urls,
+    });
+  },
+
+  getActionOrder() {
+    const { actionOrderId, customerOrdersList, allCustomerOrdersList } = this.data;
+    return [...customerOrdersList, ...allCustomerOrdersList].find(item => String(item.id) === String(actionOrderId));
+  },
+
   buildActionPayload() {
     const { actionType, actionForm } = this.data;
     const paymentMethod = String(actionForm.paymentMethod || '').trim();
@@ -291,8 +306,13 @@ Page({
 
     if (actionType === 'confirmPayment') {
       const confirmedAmount = Number(confirmedAmountText);
+      const order = this.getActionOrder();
+      const totalPrice = Number(order && order.totalPrice ? order.totalPrice : 0);
       if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
         return { error: '请填写有效实收金额' };
+      }
+      if (totalPrice > 0 && confirmedAmount > totalPrice) {
+        return { error: '实收金额不能超过订单金额' };
       }
       return {
         data: {

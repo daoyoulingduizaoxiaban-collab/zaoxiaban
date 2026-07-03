@@ -560,6 +560,9 @@ const customerOrderActions = {
       return failure('已确认订单不能再变更状态');
     }
     if (Number(target.status) === MEMBER_ORDER_STATUS.CANCELLED) return failure('已取消订单不能再变更状态');
+    if (nextStatusValue === MEMBER_ORDER_STATUS.PAID && Number(target.status) === MEMBER_ORDER_STATUS.PAID) {
+      return failure('订单已声明付款，请等待确认');
+    }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(target.status) !== MEMBER_ORDER_STATUS.PAID) {
       return failure('只有客户已付款订单才能确认到账');
     }
@@ -571,6 +574,9 @@ const customerOrderActions = {
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {
       return failure('请填写有效实收金额');
+    }
+    if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) > Number(target.totalPrice || 0)) {
+      return failure('实收金额不能超过订单金额');
     }
 
     const updatedAt = nowIso();

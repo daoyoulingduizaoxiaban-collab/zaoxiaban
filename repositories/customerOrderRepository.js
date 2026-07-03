@@ -361,6 +361,9 @@ export const CustomerOrderRepository = {
     if (Number(target.status) === MemberOrderStatus.CANCELLED) {
       return { success: false, error: '已取消订单不能再变更状态' };
     }
+    if (nextStatusValue === MemberOrderStatus.PAID && Number(target.status) === MemberOrderStatus.PAID) {
+      return { success: false, error: '订单已声明付款，请等待确认' };
+    }
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(target.status) !== MemberOrderStatus.PAID) {
       return { success: false, error: '只有客户已付款订单才能确认到账' };
     }
@@ -375,6 +378,9 @@ export const CustomerOrderRepository = {
     }
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) <= 0) {
       return { success: false, error: '请填写有效实收金额' };
+    }
+    if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) > Number(target.totalPrice || 0)) {
+      return { success: false, error: '实收金额不能超过订单金额' };
     }
 
     const historyItem = appendHistory(target, nextStatusValue, note, profile);
