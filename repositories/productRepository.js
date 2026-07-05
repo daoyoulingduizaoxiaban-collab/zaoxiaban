@@ -1,6 +1,7 @@
 import { Product } from '~/models/Product';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
+import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole, hasRole } from '~/services/auth/roleScope';
 import {
@@ -14,6 +15,8 @@ import {
 const PRODUCT_STORAGE_KEY = 'dao_you_ling_local_products';
 
 const nowIso = () => new Date().toISOString();
+
+const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
 
 const getStoredProducts = () => {
   try {
@@ -35,7 +38,16 @@ const saveStoredProducts = (products) => {
   });
 };
 
-const getAllProducts = () => getStoredProducts() || QaSeedMock.getProducts();
+const getAllProducts = () => {
+  const storedProducts = getStoredProducts();
+  if (storedProducts) return storedProducts;
+  return config.allowSeedDataFallback ? QaSeedMock.getProducts() : null;
+};
+
+const ensureSeedDataAvailable = () => {
+  if (config.allowSeedDataFallback) return true;
+  return false;
+};
 
 export const ProductRepository = {
   storageKey: PRODUCT_STORAGE_KEY,
@@ -43,6 +55,10 @@ export const ProductRepository = {
   async listPublic(filters = {}) {
     if (isCloudBusinessConfigured()) {
       return callPublicBusinessData({ resource: 'products', action: 'listPublic', data: filters });
+    }
+
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
     }
 
     const products = filterProductsByRole(getAllProducts(), null);
@@ -62,6 +78,10 @@ export const ProductRepository = {
   async listVisible() {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({ resource: 'products', action: 'listVisible' });
+    }
+
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -86,6 +106,10 @@ export const ProductRepository = {
         action: 'listVisible',
         data: { keyword, status },
       });
+    }
+
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
     }
 
     const result = await this.listVisible();
@@ -119,6 +143,10 @@ export const ProductRepository = {
         action: 'create',
         data: productData,
       });
+    }
+
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -157,6 +185,10 @@ export const ProductRepository = {
       });
     }
 
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
+    }
+
     const profile = AuthService.getCurrentProfile();
     const allProducts = getAllProducts();
     const target = allProducts.find(product => String(product.id) === String(id));
@@ -188,6 +220,10 @@ export const ProductRepository = {
         action: 'update',
         data: productData,
       });
+    }
+
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -226,6 +262,10 @@ export const ProductRepository = {
         action: 'softDelete',
         data: { id },
       });
+    }
+
+    if (!ensureSeedDataAvailable()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();

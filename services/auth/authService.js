@@ -424,7 +424,7 @@ export const AuthService = {
   },
 
   async refreshSession() {
-    const currentProfile = this.getCurrentProfile();
+    const currentProfile = this.getRealProfile();
     const currentSession = this.getCurrentSession();
     if (!currentProfile || currentProfile.isMockOpenId || !currentSession || !currentSession.cloudOpenIdVerified) {
       return { success: false, error: '当前没有可刷新的正式登录状态' };
@@ -440,7 +440,7 @@ export const AuthService = {
       return { success: false, error: cloudResult.error || '账号状态刷新失败，请稍后重试' };
     }
 
-    const latestProfile = this.getCurrentProfile();
+    const latestProfile = this.getRealProfile();
     const latestSession = this.getCurrentSession();
     if (
       !latestProfile

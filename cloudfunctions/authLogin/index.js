@@ -32,7 +32,13 @@ const getPrivilegedRole = (openId) => {
   return '';
 };
 
+const APP_ENV = String((process.env.APP_ENV || process.env.ENV_NAME || 'PROD').toUpperCase());
+const ALLOW_ROLE_PREVIEW = process.env.ALLOW_ROLE_PREVIEW === 'true';
+const APP_IS_DEV = APP_ENV === 'DEV';
+
 const getBootstrapRole = async () => {
+  if (!APP_IS_DEV) return '';
+
   const existingPrivileged = await users.where({
     role: _.in([ROLE_OWNER, ROLE_ADMIN]),
     reviewStatus: REVIEW_STATUS.APPROVED,
@@ -64,12 +70,7 @@ const buildRoleLabel = (role) => {
 const PREVIEW_STATUSES = new Set([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED]);
 const PREVIEWABLE_ROLES = Object.freeze([ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER, ROLE_ADMIN, ROLE_OWNER]);
 const ALL_PREVIEW_ROLES = new Set([...PREVIEW_STATUSES, ...PREVIEWABLE_ROLES, 'visitor']);
-const FUNCTION_APP_ENV = String((process.env.APP_ENV || process.env.ENV_NAME || '').toUpperCase());
-const isRolePreviewAllowed = (eventContext = {}) => {
-  const env = String(eventContext.appEnv || FUNCTION_APP_ENV || 'PROD').toUpperCase();
-  if (env !== 'DEV') return false;
-  return process.env.ALLOW_ROLE_PREVIEW !== 'false';
-};
+const isRolePreviewAllowed = () => APP_IS_DEV && ALLOW_ROLE_PREVIEW;
 
 const normalizePreviewRole = (value) => {
   const role = String(value || '').trim();
@@ -262,7 +263,7 @@ exports.main = async (event = {}) => {
     const isRolePreviewRequest = context.isRolePreview && previewRole;
     const hasRolePreviewRequest = Boolean(context.isRolePreview);
     if (isRolePreviewRequest) {
-      if (!isRolePreviewAllowed(context)) {
+      if (!isRolePreviewAllowed()) {
         return {
           success: false,
           error: '当前环境不允许角色预览',

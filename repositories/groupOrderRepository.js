@@ -1,6 +1,7 @@
 import { GroupOrder } from '~/models/GroupOrder';
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { QaSeedMock } from '~/mock/qaSeed';
+import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { filterGroupOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
@@ -10,6 +11,9 @@ const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
 
 const nowIso = () => new Date().toISOString();
 const sameId = (a, b) => String(a) === String(b);
+
+const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
+const isSeedDataAllowed = () => Boolean(config.allowSeedDataFallback);
 
 const safeGetStorage = (key, fallback = null) => {
   try {
@@ -110,6 +114,10 @@ export const GroupOrderRepository = {
       return callBusinessData({ resource: 'groupOrders', action: 'listVisible' });
     }
 
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
+    }
+
     const profile = AuthService.getCurrentProfile();
     const scoped = filterGroupOrdersByRole(getAllGroupOrders(), profile, getAllCustomerOrders());
 
@@ -132,6 +140,10 @@ export const GroupOrderRepository = {
         action: 'listVisible',
         data: { keyword, status },
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const result = await this.listVisible();
@@ -165,6 +177,10 @@ export const GroupOrderRepository = {
       });
     }
 
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrder = getAllGroupOrders().find(item => sameId(item.id, id));
     if (!groupOrder) return { success: false, error: '未找到团单' };
@@ -186,6 +202,10 @@ export const GroupOrderRepository = {
         action: 'create',
         data: groupOrderData,
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -233,6 +253,10 @@ export const GroupOrderRepository = {
       });
     }
 
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrders = getAllGroupOrders();
     const target = groupOrders.find(item => sameId(item.id, id));
@@ -263,6 +287,10 @@ export const GroupOrderRepository = {
       });
     }
 
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrders = getAllGroupOrders();
     const target = groupOrders.find(item => sameId(item.id, groupOrderId));
@@ -283,6 +311,10 @@ export const GroupOrderRepository = {
         action: 'removeProduct',
         data: { groupOrderId, productId },
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();

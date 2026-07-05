@@ -1,4 +1,5 @@
 import { QaSeedMock } from '~/mock/qaSeed';
+import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { filterCustomerOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
@@ -8,8 +9,10 @@ import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './clo
 const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
 
 const nowIso = () => new Date().toISOString();
+const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
 const sameId = (a, b) => String(a) === String(b);
 const trimText = value => String(value || '').trim();
+const isSeedDataAllowed = () => Boolean(config.allowSeedDataFallback);
 
 const safeGetStorage = (key, fallback = null) => {
   try {
@@ -186,6 +189,10 @@ export const CustomerOrderRepository = {
       return callBusinessData({ resource: 'customerOrders', action: 'listVisible' });
     }
 
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
+    }
+
     const profile = AuthService.getCurrentProfile();
     const groupOrders = GroupOrderRepository.listAll();
     const customerOrders = getAllOrders();
@@ -209,6 +216,10 @@ export const CustomerOrderRepository = {
         action: 'listByGroupOrder',
         data: { groupOrderId },
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -237,7 +248,12 @@ export const CustomerOrderRepository = {
       });
     }
 
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
+    }
+
     const result = await this.listVisible();
+    if (!result.success) return result;
     const order = result.data.find(item => sameId(item.id, id));
     if (!order) return { success: false, error: '未找到订单资料' };
     return { ...result, data: order };
@@ -250,6 +266,10 @@ export const CustomerOrderRepository = {
         action: 'getGroupOrderEntry',
         data: { groupOrderId },
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -272,6 +292,10 @@ export const CustomerOrderRepository = {
         action: 'create',
         data: orderData,
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();
@@ -356,6 +380,10 @@ export const CustomerOrderRepository = {
         action: 'updatePaymentStatus',
         data: { id, nextStatus, note, ...payload },
       });
+    }
+
+    if (!isSeedDataAllowed()) {
+      return unavailableError();
     }
 
     const profile = AuthService.getCurrentProfile();

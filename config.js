@@ -1,4 +1,15 @@
-const APP_ENV = 'DEV';
+const getEnvValue = (keys) => {
+  if (typeof process !== 'object' || typeof process.env !== 'object') {
+    return '';
+  }
+
+  const value = keys
+    .map(key => process.env[key])
+    .find(item => item);
+  return value || '';
+};
+
+const APP_ENV = String(getEnvValue(['APP_ENV', 'ENV_NAME']) || 'PROD').toUpperCase();
 
 const ENVIRONMENTS = Object.freeze({
   DEV: 'DEV',
