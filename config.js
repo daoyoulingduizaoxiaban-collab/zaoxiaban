@@ -9,7 +9,7 @@ const getEnvValue = (keys) => {
   return value || '';
 };
 
-const APP_ENV = String(getEnvValue(['APP_ENV', 'ENV_NAME']) || 'PROD').toUpperCase();
+const APP_ENV = String(getEnvValue(['APP_ENV', 'ENV_NAME']) || 'DEV').toUpperCase();
 
 const ENVIRONMENTS = Object.freeze({
   DEV: 'DEV',
