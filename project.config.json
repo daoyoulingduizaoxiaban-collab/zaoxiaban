@@ -57,7 +57,7 @@
   "compileType": "miniprogram",
   "libVersion": "3.6.6",
   "appid": "wx01c4003db51de37c",
-  "projectname": "miniprogram-starter",
+  "projectname": "团主早下班",
   "condition": {
     "miniprogram": {
       "list": [

@@ -16,6 +16,7 @@
     "pages/customer/edit/index",
     "pages/providers/index",
     "pages/providers/edit/index",
+    "pages/operationLogs/index",
     "pages/userReview/index",
     "pages/profile/index",
     "pages/profile/edit/index",

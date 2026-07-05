@@ -12,6 +12,7 @@ import {
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
+const AUTH_ROLE_PREVIEW_KEY = 'dao_you_ling_role_preview';
 const SESSION_STORAGE_KEYS = Object.freeze([
   'dao_you_ling_product_picker_result',
   'dao_you_ling_read_messages',
@@ -38,7 +39,7 @@ const DEFAULT_ROLE_PROFILES = Object.freeze({
   },
   [AUTH_ROLES.GUIDE]: {
     id: 2,
-    displayName: '张领队',
+    displayName: '张团主',
     phone: '13800000002',
     city: '杭州',
   },
@@ -103,6 +104,55 @@ const ignorePreviewProfileInFormalMode = profile => (
 const ignorePreviewSessionInFormalMode = session => (
   !config.isMock && session && session.isMockOpenId ? null : session
 );
+
+const canBaseUseRolePreview = profile => Boolean(
+  profile
+  && !profile.isMockOpenId
+  && normalizeReviewStatus(profile.reviewStatus || profile.status) === REVIEW_STATUS.APPROVED
+  && normalizeRoles(profile).includes(AUTH_ROLES.OWNER)
+);
+
+const buildPreviewProfile = (profile, previewRole) => {
+  if (!canBaseUseRolePreview(profile)) return profile;
+  const role = previewRole || '';
+  if (!role) return profile;
+  if (role === 'visitor') {
+    return {
+      ...profile,
+      role: '',
+      roles: [],
+      roleLabel: '游客',
+      reviewStatus: '',
+      status: '',
+      isRolePreview: true,
+      isVisitorPreview: true,
+      realRoleLabel: profile.roleLabel,
+    };
+  }
+  if ([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED].includes(role)) {
+    return {
+      ...profile,
+      role: AUTH_ROLES.CUSTOMER,
+      roles: [AUTH_ROLES.CUSTOMER],
+      roleLabel: getRoleLabel(AUTH_ROLES.CUSTOMER),
+      reviewStatus: role,
+      status: role,
+      isRolePreview: true,
+      realRoleLabel: profile.roleLabel,
+    };
+  }
+  if (!Object.values(AUTH_ROLES).includes(role)) return profile;
+  return {
+    ...profile,
+    role,
+    roles: [role],
+    roleLabel: getRoleLabel(role),
+    reviewStatus: REVIEW_STATUS.APPROVED,
+    status: REVIEW_STATUS.APPROVED,
+    isRolePreview: true,
+    realRoleLabel: profile.roleLabel,
+  };
+};
 
 const wxLogin = () => new Promise((resolve) => {
   if (!wx.login) {
@@ -222,6 +272,12 @@ export const AuthService = {
   sessionKey: AUTH_SESSION_KEY,
 
   getCurrentProfile() {
+    const profile = ignorePreviewProfileInFormalMode(safeGetStorage(AUTH_PROFILE_KEY, null));
+    const previewRole = safeGetStorage(AUTH_ROLE_PREVIEW_KEY, '');
+    return buildPreviewProfile(profile, previewRole);
+  },
+
+  getRealProfile() {
     return ignorePreviewProfileInFormalMode(safeGetStorage(AUTH_PROFILE_KEY, null));
   },
 
@@ -241,6 +297,7 @@ export const AuthService = {
 
   getAccessState(profile = this.getCurrentProfile()) {
     if (!profile) return 'logged_out';
+    if (profile.isVisitorPreview) return 'logged_out';
     if (profile.isMockOpenId || profile.qaOverride) return 'approved';
     const status = normalizeReviewStatus(profile.reviewStatus || profile.status);
     if (status === REVIEW_STATUS.APPROVED && isRoleExpired(profile)) return 'expired';
@@ -273,6 +330,36 @@ export const AuthService = {
 
   canShowQaTools(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
     return Boolean(config.isMock && profile && (profile.isMockOpenId || (session && session.qaOverride)));
+  },
+
+  canUseRolePreview(profile = this.getRealProfile()) {
+    return canBaseUseRolePreview(profile);
+  },
+
+  getRolePreview() {
+    return safeGetStorage(AUTH_ROLE_PREVIEW_KEY, '');
+  },
+
+  applyRolePreview(role) {
+    const profile = this.getRealProfile();
+    if (!this.canUseRolePreview(profile)) {
+      return { success: false, error: '当前账号不能使用角色预览' };
+    }
+    const allowed = [
+      'visitor',
+      REVIEW_STATUS.PENDING,
+      REVIEW_STATUS.REJECTED,
+      REVIEW_STATUS.DISABLED,
+      ...Object.values(AUTH_ROLES),
+    ];
+    if (!allowed.includes(role)) return { success: false, error: '未知预览身份' };
+    safeSetStorage(AUTH_ROLE_PREVIEW_KEY, role);
+    return { success: true, data: this.getCurrentProfile() };
+  },
+
+  clearRolePreview() {
+    safeRemoveStorage(AUTH_ROLE_PREVIEW_KEY);
+    return { success: true };
   },
 
   async login({ role = AUTH_ROLES.GUIDE } = {}) {

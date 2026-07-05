@@ -3,7 +3,7 @@ import { ProductRepository } from '~/repositories/productRepository';
 import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
-import { filterFormalProducts, hasInternalProductCopy } from '~/utils/productContent';
+import { filterFormalProducts, hasInternalProductCopy, normalizeFormalProductCopy } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
 
@@ -23,11 +23,12 @@ export const getProductPriceDisplay = (priceSetting = []) => {
 };
 
 const normalizeProduct = (product) => {
-  const normalizedImage = normalizeProductImageFields(product);
+  const displayProduct = normalizeFormalProductCopy(product);
+  const normalizedImage = normalizeProductImageFields(displayProduct);
   return {
     ...normalizedImage,
-    priceSetting: product.priceSetting || product.priceSettings || [],
-    priceDisplay: getProductPriceDisplay(product.priceSetting || product.priceSettings || []),
+    priceSetting: displayProduct.priceSetting || displayProduct.priceSettings || [],
+    priceDisplay: getProductPriceDisplay(displayProduct.priceSetting || displayProduct.priceSettings || []),
   };
 };
 

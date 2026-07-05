@@ -2,7 +2,12 @@
 
 <view class="home-container">
   <view class="home-content">
-    <view class="access-card" wx:if="{{!canUseBusiness}}">
+    <view class="access-card" wx:if="{{!authReady || isAccessLoading}}">
+      <view class="access-title">正在确认账号状态</view>
+      <view class="access-desc">请稍候，系统正在读取你的微信登录与业务权限。</view>
+    </view>
+
+    <view class="access-card" wx:elif="{{!canUseBusiness}}">
       <view class="access-title">{{accessStateText}}</view>
       <view class="access-desc">通过管理员确认后，会开放与你身份对应的团单、商品库、客户订单和数据入口。</view>
       <view class="access-actions">
@@ -20,7 +25,7 @@
     </view>
 
     <view class="home-summary" wx:if="{{canUseBusiness}}">
-      <view class="home-summary__card" wx:for="{{summaryCards}}" wx:key="label">
+      <view class="home-summary__card" wx:for="{{summaryCards}}" wx:key="label" bindtap="goSummaryCard" data-target="{{item.target}}">
         <view class="home-summary__label">{{item.label}}</view>
         <view class="home-summary__value">{{isSummaryLoading ? '...' : item.value}}</view>
       </view>
@@ -51,6 +56,10 @@
 
     <view class="status-note">
       {{modeText}}
+    </view>
+
+    <view class="home-actions">
+      <t-button theme="default" variant="outline" size="small" bind:tap="goMy">返回我的</t-button>
     </view>
   </view>
 </view>

@@ -4,7 +4,12 @@
 <view class="save-mode" wx:if="{{saveModeText}}">{{saveModeText}}</view>
 
 <view class="customerOrders-container">
-  <view class="access-card" wx:if="{{!canUseBusiness}}">
+  <view class="access-card" wx:if="{{!authReady || isLoading}}">
+    <view class="access-title">正在确认账号状态</view>
+    <view class="access-desc">请稍候，系统正在读取你的身份与客户订单权限。</view>
+  </view>
+
+  <view class="access-card" wx:elif="{{!canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
     <view class="access-desc">通过管理员确认身份后，可查看与你相关的客户订单。</view>
     <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
@@ -104,5 +109,46 @@
       <t-button size="large" variant="outline" bind:tap="closeActionPanel" disabled="{{isSubmittingAction}}">取消</t-button>
       <t-button size="large" theme="primary" loading="{{isSubmittingAction}}" bind:tap="submitActionPanel">{{actionSubmitText}}</t-button>
     </view>
+  </view>
+</view>
+
+<view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetailPanel">
+  <view class="detail-panel" catchtap="stopDetailTap">
+    <view class="detail-panel__header">
+      <text class="detail-panel__title">{{selectedOrderDetail.title || '客户订单'}}</text>
+      <text class="detail-panel__close" bindtap="closeDetailPanel">关闭</text>
+    </view>
+    <scroll-view scroll-y class="detail-panel__body">
+      <view class="detail-section">
+        <view class="detail-row"><text>状态</text><text>{{selectedOrderDetail.statusText}}</text></view>
+        <view class="detail-row"><text>客户</text><text>{{selectedOrderDetail.customerName}}</text></view>
+        <view class="detail-row"><text>金额</text><text>￥{{selectedOrderDetail.totalPrice}}</text></view>
+      </view>
+      <view class="detail-section">
+        <view class="detail-section__title">付款资料</view>
+        <view class="detail-row"><text>付款方式</text><text>{{selectedOrderDetail.paymentMethod || '未填写'}}</text></view>
+        <view class="detail-row"><text>申报金额</text><text>{{selectedOrderDetail.declaredAmount ? '￥' + selectedOrderDetail.declaredAmount : '未填写'}}</text></view>
+        <view class="detail-row"><text>实收金额</text><text>{{selectedOrderDetail.confirmedAmount ? '￥' + selectedOrderDetail.confirmedAmount : '未确认'}}</text></view>
+        <view class="detail-row"><text>付款凭证</text><text>{{selectedOrderDetail.proofText}}</text></view>
+        <view class="detail-note">{{selectedOrderDetail.paymentRemark || selectedOrderDetail.confirmRemark || '暂无付款备注'}}</view>
+      </view>
+      <view class="detail-section">
+        <view class="detail-section__title">商品明细</view>
+        <view class="detail-line" wx:for="{{selectedOrderDetail.displayItems}}" wx:key="title">
+          <text>{{item.title}} x {{item.quantity}}</text>
+          <text>￥{{item.totalPrice}}</text>
+        </view>
+        <view wx:if="{{selectedOrderDetail.displayItems.length === 0}}" class="detail-note">暂无商品</view>
+      </view>
+      <view class="detail-section">
+        <view class="detail-section__title">状态记录</view>
+        <view class="history-line" wx:for="{{selectedOrderDetail.displayHistory}}" wx:key="createdAt">
+          <view>{{item.createdAt || '最近'}}｜{{item.statusText || '状态更新'}}</view>
+          <view>{{item.actorText}} {{item.amount ? '｜￥' + item.amount : ''}} {{item.paymentMethod ? '｜' + item.paymentMethod : ''}}</view>
+          <view>{{item.proofText}} {{item.note ? '｜' + item.note : ''}}</view>
+        </view>
+        <view wx:if="{{selectedOrderDetail.displayHistory.length === 0}}" class="detail-note">暂无记录</view>
+      </view>
+    </scroll-view>
   </view>
 </view>

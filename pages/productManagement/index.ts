@@ -215,6 +215,7 @@ Page({
       wx.showToast({ title: '当前角色不能编辑商品', icon: 'none' });
       return;
     }
+    this.resetDetailState();
     navigateByUrl(`/sub-pages/product/add/index?id=${id}`, {
       fail: () => wx.showToast({ title: '打开商品表单失败', icon: 'none' }),
       events: {

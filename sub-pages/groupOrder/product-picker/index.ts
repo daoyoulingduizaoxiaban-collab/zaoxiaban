@@ -84,7 +84,7 @@ Page({
   },
 
   onSearch(e) {
-    const keyword = e.detail.value;
+    const keyword = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
     this.setData({
       searchQuery: keyword,
       products: this.filterProducts(this.data.allProducts, keyword)

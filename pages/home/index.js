@@ -11,6 +11,8 @@ Page({
     modeText: '请先登录；通过审核后即可使用业务功能。',
     accessState: 'logged_out',
     accessStateText: '请先登录后继续使用',
+    authReady: false,
+    isAccessLoading: true,
     canUseBusiness: false,
     canCreateGroupOrder: false,
     canViewGroupOrders: false,
@@ -19,9 +21,9 @@ Page({
     canViewDataCenter: false,
     isSummaryLoading: false,
     summaryCards: [
-      { label: '进行中团单', value: 0 },
-      { label: '待确认收款', value: 0 },
-      { label: '客户订单', value: 0 },
+      { label: '进行中团单', value: 0, target: 'groupOrders' },
+      { label: '待确认收款', value: 0, target: 'pendingPayments' },
+      { label: '客户订单', value: 0, target: 'customerOrders' },
     ],
   },
 
@@ -62,6 +64,8 @@ Page({
       modeText,
       accessState,
       accessStateText: AuthService.getAccessStateText(profile),
+      authReady: true,
+      isAccessLoading: false,
       canUseBusiness,
       canCreateGroupOrder,
       canViewGroupOrders,
@@ -84,9 +88,9 @@ Page({
       this.setData({
         isSummaryLoading: false,
         summaryCards: [
-          { label: '进行中团单', value: 0 },
-          { label: '待确认收款', value: 0 },
-          { label: '客户订单', value: 0 },
+          { label: '进行中团单', value: 0, target: 'groupOrders' },
+          { label: '待确认收款', value: 0, target: 'pendingPayments' },
+          { label: '客户订单', value: 0, target: 'customerOrders' },
         ],
       });
       return;
@@ -96,9 +100,9 @@ Page({
     this.setData({
       isSummaryLoading: false,
       summaryCards: [
-        { label: '进行中团单', value: groupOrders.filter(item => Number(item.status) === 1).length },
-        { label: '待确认收款', value: customerOrders.filter(item => Number(item.status) === 1).length },
-        { label: '客户订单', value: customerOrders.length },
+        { label: '进行中团单', value: groupOrders.filter(item => Number(item.status) === 1).length, target: 'groupOrders' },
+        { label: '待确认收款', value: customerOrders.filter(item => Number(item.status) === 1).length, target: 'pendingPayments' },
+        { label: '客户订单', value: customerOrders.length, target: 'customerOrders' },
       ],
     });
   },
@@ -139,6 +143,21 @@ Page({
     navigateByUrl('/pages/customerOrders/index');
   },
 
+  goSummaryCard(e) {
+    const { target } = e.currentTarget.dataset;
+    if (target === 'groupOrders') {
+      this.goGroupOrders();
+      return;
+    }
+    if (target === 'pendingPayments') {
+      navigateByUrl('/pages/customerOrders/index?status=1');
+      return;
+    }
+    if (target === 'customerOrders') {
+      this.goCustomerOrders();
+    }
+  },
+
   goRelease() {
     if (!this.data.canCreateGroupOrder) {
       wx.showToast({ title: '当前账号不能新建团单', icon: 'none' });
@@ -156,6 +175,12 @@ Page({
     }
     navigateByUrl('/pages/dataCenter/index', {
       fail: () => wx.showToast({ title: '打开数据看板失败', icon: 'none' }),
+    });
+  },
+
+  goMy() {
+    navigateByUrl('/pages/my/index', {
+      fail: () => wx.showToast({ title: '返回我的页失败', icon: 'none' }),
     });
   },
 });

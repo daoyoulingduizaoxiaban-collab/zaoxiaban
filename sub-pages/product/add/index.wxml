@@ -10,6 +10,11 @@
   <view class="access-desc">请返回商品库后重新选择商品。</view>
 </view>
 
+<view class="access-card" wx:elif="{{isPageLoading}}">
+  <view class="access-title">正在加载商品资料</view>
+  <view class="access-desc">请稍候，系统正在读取要编辑的商品。</view>
+</view>
+
 <view class="page-container" wx:else>
   <view class="content-scroll">
     <view class="mode-banner">{{saveModeText}}</view>

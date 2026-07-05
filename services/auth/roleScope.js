@@ -54,6 +54,7 @@ export const FEATURE_KEYS = Object.freeze({
   USER_REVIEW: 'userReview',
   TOUR_GUIDES: 'tourGuides',
   PROVIDERS: 'providers',
+  OPERATION_LOGS: 'operationLogs',
 });
 
 const FEATURE_ALLOWED_ROLES = Object.freeze({
@@ -75,6 +76,7 @@ const FEATURE_ALLOWED_ROLES = Object.freeze({
   [FEATURE_KEYS.USER_REVIEW]: [AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.TOUR_GUIDES]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.PROVIDERS]: [AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN, AUTH_ROLES.PROVIDER],
+  [FEATURE_KEYS.OPERATION_LOGS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
 });
 
 export const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APPROVED : (status || ''));

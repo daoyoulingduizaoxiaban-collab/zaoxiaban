@@ -15,10 +15,15 @@
   </t-dropdown-menu>
 </view>
 
-<view class="role-scope">{{roleScopeText}}</view>
+<view class="role-scope" wx:if="{{authReady}}">{{roleScopeText}}</view>
 
 <view class="itinerary-container">
-  <view class="access-card" wx:if="{{!canUseBusiness}}">
+  <view class="access-card" wx:if="{{!authReady || isLoading}}">
+    <view class="access-title">正在确认账号状态</view>
+    <view class="access-desc">请稍候，系统正在读取你的身份与团单权限。</view>
+  </view>
+
+  <view class="access-card" wx:elif="{{!canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
     <view class="access-desc">通过管理员确认身份后，可查看与你相关的团单。</view>
     <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
@@ -38,6 +43,9 @@
         bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
         <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
       </t-cell>
+      <view class="row-actions">
+        <button size="mini" plain bindtap="viewItinerary" data-id="{{item.id}}">查看详情</button>
+      </view>
     </block>
   </t-cell-group>
 

@@ -1,0 +1,25 @@
+<t-navbar title="操作记录" left-arrow fixed="{{true}}" placeholder="{{true}}" />
+
+<view class="operation-logs">
+  <view class="filter-bar">
+    <t-dropdown-menu>
+      <t-dropdown-item options="{{filters}}" value="{{currentType}}" bind:change="onTypeChange" />
+    </t-dropdown-menu>
+  </view>
+
+  <view wx:if="{{isLoading}}" class="empty-state">正在读取操作记录</view>
+  <view wx:elif="{{disabledReason}}" class="empty-state">{{disabledReason}}</view>
+  <view wx:elif="{{logs.length === 0}}" class="empty-state">暂无操作记录</view>
+
+  <view wx:else class="log-list">
+    <view class="log-card" wx:for="{{logs}}" wx:key="id">
+      <view class="log-card__head">
+        <text class="log-card__type">{{item.typeText}}</text>
+        <text class="log-card__time">{{item.occurredAt || '最近'}}</text>
+      </view>
+      <view class="log-card__title">{{item.actionText}}｜{{item.resourceText}}</view>
+      <view class="log-card__summary">{{item.summary}}</view>
+      <view class="log-card__meta">{{item.actorName}}｜{{item.actorRole}}｜{{item.result}}</view>
+    </view>
+  </view>
+</view>

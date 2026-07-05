@@ -3,7 +3,7 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { ProductService } from '~/services/product/productService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
-import { navigateByUrl } from '~/utils/navigation';
+import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
@@ -201,6 +201,11 @@ Page({
     this.runSearch(value);
   },
 
+  handleSearchChange(e) {
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
+    this.setData({ searchValue: value || '' });
+  },
+
   openResult(e) {
     const { type, id } = e.currentTarget.dataset;
     if (!id) {
@@ -224,6 +229,6 @@ Page({
     this.setData({
       searchValue: '',
     });
-    navigateByUrl('/pages/groupOrder/index');
+    navigateBackOrTab('/pages/my/index');
   },
 });

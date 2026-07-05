@@ -28,7 +28,7 @@
       当前账号资料已载入。
     </view>
     <view class="auth-warning auth-warning--preview" wx:if="{{canShowRolePreviewNotice}}">
-      当前仅显示此身份可用入口。
+      真实身份：{{realRoleText}}｜当前预览：{{previewRoleText}}
     </view>
     <view class="access-card" wx:if="{{isLoggedIn && !canUseBusiness}}">
       <view class="access-title">{{accessStateText}}</view>
@@ -50,6 +50,7 @@
         wx:key="type"
         class="grid-item {{gridItem.type === 'all' ? 'split-line' : ''}}"
         data-data="{{gridItem}}"
+        data-url="{{gridItem.url}}"
         bindclick="onEleClick"
         bindtap="onEleClick"
       >
@@ -59,7 +60,7 @@
     </t-grid>
   </view>
 
-  <t-cell-group wx:if="{{canUseBusiness}}" theme="card">
+  <t-cell-group wx:if="{{isLoggedIn && settingList.length}}" theme="card">
     <t-cell
       wx:for="{{settingList}}"
       wx:for-item="item"
@@ -69,6 +70,7 @@
       hover
       arrow="{{false}}"
       data-data="{{item}}"
+      data-url="{{item.url}}"
       bindclick="onEleClick"
       bindtap="onEleClick"
     >

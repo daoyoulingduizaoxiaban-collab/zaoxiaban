@@ -7,6 +7,7 @@ Page({
   data: {
     pageTitle: '新增供应商',
     isEdit: false,
+    isApplyMode: false,
     canSave: false,
     disabledReason: '',
     pageErrorText: '',
@@ -45,9 +46,10 @@ Page({
 
   initPage(options = {}) {
     const profile = AuthService.getCurrentProfile();
+    const isApplyMode = String(options.apply || '') === '1';
     const providerSelfId = profile && hasRole(profile, AUTH_ROLES.PROVIDER) ? (profile.providerId || profile.id) : '';
     const targetId = options.id || providerSelfId || '';
-    const canSave = canUseProviderPortal(profile);
+    const canSave = isApplyMode ? AuthService.canUseBusiness(profile) : canUseProviderPortal(profile);
     const isProviderSelfProfile = Boolean(
       profile
       && hasRole(profile, AUTH_ROLES.PROVIDER)
@@ -56,14 +58,24 @@ Page({
     );
     this.setData({
       pageTitle: isProviderSelfProfile ? '维护供应商资料' : '新增供应商',
+      isApplyMode,
       canSave,
       isProviderSelfProfile,
-      disabledReason: canSave ? '' : '当前账号没有供应商资料维护权限。',
-      pageErrorText: canSave ? '' : '当前账号没有供应商资料维护权限。',
+      disabledReason: canSave ? '' : '当前账号没有供应商申请或资料维护权限。',
+      pageErrorText: canSave ? '' : '当前账号没有供应商申请或资料维护权限。',
       targetId,
       formData: canSave ? this.data.formData : this.getEmptyFormData(),
     });
     if (!canSave) return;
+    if (isApplyMode) {
+      this.setData({
+        pageTitle: '申请供应商',
+        isEdit: false,
+        targetId: '',
+        'formData.statusText': '待审核',
+      });
+      return;
+    }
     if (targetId) {
       this.setData({
         pageTitle: isProviderSelfProfile ? '维护供应商资料' : '编辑供应商',
@@ -135,6 +147,32 @@ Page({
     }
     this.setData({ isSubmitting: true });
     const profile = AuthService.getCurrentProfile();
+    if (this.data.isApplyMode) {
+      const result = AuthService.updateCurrentProfile({
+        id: profile.id,
+        openId: profile.openId,
+        requestedRole: AUTH_ROLES.PROVIDER,
+        providerApplyProfile: {
+          title: this.data.formData.title,
+          contact: this.data.formData.contact,
+          note: this.data.formData.note,
+          appliedAt: new Date().toISOString(),
+        },
+      });
+      this.setData({ isSubmitting: false, isDirty: false });
+      if (!result.success) {
+        wx.showToast({ title: result.error || '提交供应商申请失败', icon: 'none' });
+        return;
+      }
+      wx.showModal({
+        title: '申请已提交',
+        content: '供应商申请资料已提交，请等待管理员审核通过后再维护供应商商品。',
+        showCancel: false,
+        confirmText: '知道了',
+        success: () => navigateBackOrTab('/pages/my/index'),
+      });
+      return;
+    }
     const targetId = this.data.targetId || (profile && hasRole(profile, AUTH_ROLES.PROVIDER) ? (profile.providerId || profile.id) : '');
     const res = await DirectoryRepository.saveProvider({
       id: targetId,

@@ -27,11 +27,14 @@ Page({
     saveModeText: '',
     isLoggedIn: false,
     canUseBusiness: false,
+    authReady: false,
     accessStateText: '',
-    isLoading: false,
+    isLoading: true,
     loadErrorText: '',
     pendingOrderId: '',
     actionPanelVisible: false,
+    detailVisible: false,
+    selectedOrderDetail: null,
     actionType: '',
     actionOrderId: '',
     actionPanelTitle: '',
@@ -90,6 +93,8 @@ Page({
       actionSubmitText: '提交',
       isSubmittingAction: false,
       actionForm: this.getEmptyActionForm(),
+      detailVisible: false,
+      selectedOrderDetail: null,
       ...extraState,
     });
   },
@@ -97,7 +102,11 @@ Page({
   async onLoad(options = {}) {
     await AuthService.refreshSession();
     const pendingOrderId = options.orderId || options.id || '';
-    this.setData({ pendingOrderId: pendingOrderId ? String(pendingOrderId) : '' });
+    const currentStatus = options.status !== undefined ? Number(options.status) : this.data.currentStatus;
+    this.setData({
+      pendingOrderId: pendingOrderId ? String(pendingOrderId) : '',
+      currentStatus: Number.isNaN(currentStatus) ? this.data.currentStatus : currentStatus,
+    });
     await this.loadQaOrders();
   },
 
@@ -106,8 +115,12 @@ Page({
     if (!query) return;
     const options = parseRouteQuery(query);
     const pendingOrderId = options.orderId || options.id || '';
+    const currentStatus = options.status !== undefined ? Number(options.status) : this.data.currentStatus;
     if (pendingOrderId) {
       this.setData({ pendingOrderId: String(pendingOrderId) });
+    }
+    if (!Number.isNaN(currentStatus)) {
+      this.setData({ currentStatus });
     }
   },
 
@@ -123,6 +136,7 @@ Page({
         saveModeText: '',
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
+        authReady: true,
         accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
@@ -144,6 +158,7 @@ Page({
         saveModeText: '',
         isLoggedIn: Boolean(profile),
         canUseBusiness: true,
+        authReady: true,
         accessStateText: AuthService.getAccessStateText(profile),
         isLoading: false,
         loadErrorText: errorText,
@@ -160,6 +175,7 @@ Page({
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       canUseBusiness: true,
+      authReady: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
       isLoading: false,
       loadErrorText: '',
@@ -225,36 +241,35 @@ Page({
       return;
     }
 
-    const productLines = (item.items || item.productList || [])
-      .map(product => `${product.title || '商品资料'} x ${product.amount || product.quantity}：￥${product.totalPrice}`)
-      .join('\n');
-    const historyLines = (item.paymentHistory || [])
-      .map(history => [
-        history.createdAt || '',
-        (history.actorName || history.actorRole) ? `操作者：${[history.actorName, ROLE_TEXT[history.actorRole] || history.actorRole].filter(Boolean).join(' / ')}` : '',
-        history.toStatus !== undefined ? `状态：${MEMBER_ORDER_STATUS_TEXT[history.toStatus] || history.toStatus}` : '',
-        Number(history.amount || 0) > 0 ? `金额：￥${history.amount}` : '',
-        history.paymentMethod ? `方式：${history.paymentMethod}` : '',
-        Number(history.proofCount || 0) > 0 ? `凭证：${history.proofCount} 张` : '',
-        history.note || '',
-      ].filter(Boolean).join('｜'))
-      .join('\n');
-    const paymentInfo = [
-      item.paymentMethod ? `付款方式：${item.paymentMethod}` : '',
-      item.paymentRemark ? `付款备注：${item.paymentRemark}` : '',
-      item.paymentProofUrls && item.paymentProofUrls.length ? `付款凭证：${item.paymentProofUrls.length} 张` : '',
-      item.declaredAmount ? `申报金额：￥${item.declaredAmount}` : '',
-      item.confirmedAmount ? `实收金额：￥${item.confirmedAmount}` : '',
-      item.confirmRemark ? `确认备注：${item.confirmRemark}` : '',
-    ].filter(Boolean).join('\n');
-
-    wx.showModal({
-      title: item.title || '客户订单',
-      content: `状态：${item.statusText}\n客户：${item.customerName}\n金额：￥${item.totalPrice}\n${paymentInfo || '暂无付款备注'}\n商品：\n${productLines || '暂无商品'}\n状态记录：\n${historyLines || '暂无记录'}\n${this.data.saveModeText}`,
-      showCancel: false,
-      confirmText: '知道了'
+    const detail = {
+      ...item,
+      displayItems: (item.items || item.productList || []).map(product => ({
+        title: product.title || '商品资料',
+        quantity: product.amount || product.quantity || 0,
+        totalPrice: product.totalPrice || 0,
+      })),
+      displayHistory: (item.paymentHistory || []).map(history => ({
+        createdAt: history.createdAt || '',
+        actorText: [history.actorName, ROLE_TEXT[history.actorRole] || history.actorRole].filter(Boolean).join(' / '),
+        statusText: history.toStatus !== undefined ? (MEMBER_ORDER_STATUS_TEXT[history.toStatus] || history.toStatus) : '',
+        amount: Number(history.amount || 0) > 0 ? history.amount : '',
+        paymentMethod: history.paymentMethod || '',
+        proofText: Number(history.proofCount || 0) > 0 ? `${history.proofCount} 张` : '未上传凭证',
+        note: history.note || '',
+      })),
+      proofText: item.paymentProofUrls && item.paymentProofUrls.length ? `${item.paymentProofUrls.length} 张` : '未上传凭证',
+    };
+    this.setData({
+      detailVisible: true,
+      selectedOrderDetail: detail,
     });
   },
+
+  closeDetailPanel() {
+    this.setData({ detailVisible: false, selectedOrderDetail: null });
+  },
+
+  stopDetailTap() {},
 
   onOrderAction(e) {
     const { id } = e.currentTarget.dataset;
@@ -423,16 +438,13 @@ Page({
       if (!paymentMethod) {
         return { error: '请填写付款方式' };
       }
-      if (paymentProofUrls.length === 0) {
-        return { error: '请上传付款凭证' };
-      }
       return {
         data: {
           paymentMethod,
           paymentRemark,
           paymentProofUrls,
           declaredAmount,
-          note: `客户声明已付款：￥${declaredAmount}｜${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : ''].filter(Boolean).join('｜')}`,
+          note: `客户声明已付款：￥${declaredAmount}｜${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : '未上传凭证'].filter(Boolean).join('｜')}`,
         },
       };
     }
@@ -511,9 +523,7 @@ Page({
   async onShow() {
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        value: 'customerOrders'
-      });
+      this.getTabBar().refreshTabBar();
     }
     this.consumePendingRouteQuery();
     await this.loadQaOrders();

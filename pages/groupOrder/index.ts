@@ -21,8 +21,9 @@ Page({
     canCreateGroupOrder: false,
     isLoggedIn: false,
     canUseBusiness: false,
+    authReady: false,
     accessStateText: '',
-    isLoading: false,
+    isLoading: true,
     loadErrorText: '',
   },
 
@@ -48,6 +49,7 @@ Page({
         canCreateGroupOrder: false,
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
+        authReady: true,
         accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
@@ -72,6 +74,7 @@ Page({
           canCreateGroupOrder: this.canCreateGroupOrder(),
           isLoggedIn: Boolean(AuthService.getCurrentProfile()),
           canUseBusiness: true,
+          authReady: true,
           accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
           isLoading: false,
           loadErrorText: '',
@@ -84,6 +87,7 @@ Page({
           canCreateGroupOrder: this.canCreateGroupOrder(),
           isLoggedIn: Boolean(AuthService.getCurrentProfile()),
           canUseBusiness: true,
+          authReady: true,
           accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
           isLoading: false,
           loadErrorText: errorText,
@@ -100,6 +104,7 @@ Page({
         canCreateGroupOrder: this.canCreateGroupOrder(),
         isLoggedIn: Boolean(AuthService.getCurrentProfile()),
         canUseBusiness: true,
+        authReady: true,
         accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
         isLoading: false,
         loadErrorText: '加载团单失败',
@@ -146,9 +151,7 @@ Page({
   async onShow() {
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        value: 'groupOrder'
-      });
+      this.getTabBar().refreshTabBar();
     }
     await this.fetchItineraryList();
   },

@@ -21,7 +21,7 @@ const buildProducts = () => [
       new PriceSetting({ minQuantity: 30, unitPrice: 68, totalPrice: 2040, description: '大团批量价' }),
     ],
     description: '适合华东线路收单展示的伴手礼，包含长描述用于检查多行省略、卡片高度和详情展示。',
-    sourceNote: '杭州伴手礼供应商，导游可用于团单收单。',
+    sourceNote: '杭州伴手礼供应商，团主可用于团单收单。',
   }),
   new Product({
     id: 102,
@@ -48,7 +48,7 @@ const buildProducts = () => [
       new PriceSetting({ minQuantity: 1, unitPrice: 35, totalPrice: 35, description: '单份价' }),
     ],
     description: '下架且无图片商品，用于空图片兜底、下架状态和搜索过滤。',
-    sourceNote: '导游自建应急商品，下架状态。',
+    sourceNote: '团主自建应急商品，下架状态。',
   }),
   new Product({
     id: 104,
@@ -75,7 +75,7 @@ const buildMemberOrders = () => [
     totalPrice: 352,
     originalTotalPrice: 352,
     memberRemark: '客户备注：晚餐后统一取货。',
-    hostRemark: '领队备注：未付款，出发前提醒。',
+    hostRemark: '团主备注：未付款，出发前提醒。',
     productList: [
       new MemberProduct({ productId: 101, amount: 4, totalPrice: 352, originalTotalPrice: 352 }),
     ],
@@ -88,7 +88,7 @@ const buildMemberOrders = () => [
     totalPrice: 590,
     originalTotalPrice: 640,
     memberRemark: '客户已上传付款截图。',
-    hostRemark: '待领队确认到账。',
+    hostRemark: '待团主确认到账。',
     productList: [
       new MemberProduct({ productId: 102, amount: 5, totalPrice: 590, originalTotalPrice: 640, isAdjusted: true }),
     ],
@@ -171,7 +171,7 @@ const buildSeed = () => ({
   mode: 'qa',
   users: [
     { id: 1, openId: 'mock-openid-owner', role: 'owner', name: '林秝帆', displayName: '林秝帆', displayRole: '产品拥有者', city: '上海', phone: '13800000001', avatarUrl: '/static/avatar1.png', status: 'active' },
-    { id: 2, openId: 'mock-openid-guide', role: 'guide', name: '张领队', displayName: '张领队', displayRole: '领队/导游', city: '杭州', phone: '13800000002', avatarUrl: '/static/avatar1.png', status: 'active' },
+    { id: 2, openId: 'mock-openid-guide', role: 'guide', name: '张团主', displayName: '张团主', displayRole: '团主', city: '杭州', phone: '13800000002', avatarUrl: '/static/avatar1.png', status: 'active' },
     { id: 3, openId: 'mock-openid-customer', role: 'customer', name: '王客户', displayName: '王客户', displayRole: '客户', city: '南京', phone: '13800000003', avatarUrl: '/static/avatar1.png', status: 'active' },
   ],
   products: buildProducts(),

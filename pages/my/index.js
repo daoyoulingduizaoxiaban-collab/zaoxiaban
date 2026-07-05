@@ -27,6 +27,8 @@ Page({
     canShowPreviewNotice: false,
     canShowDeviceOnlyNotice: false,
     canShowRolePreviewNotice: false,
+    realRoleText: '',
+    previewRoleText: '',
     gridList: [
       {
         name: '工作台',
@@ -72,7 +74,9 @@ Page({
       canUseBusiness,
       canShowPreviewNotice: AuthService.canShowQaTools(profile, session),
       canShowDeviceOnlyNotice: AuthService.canShowQaTools(profile, session) && session && session.isMockOpenId && !session.qaOverride,
-      canShowRolePreviewNotice: AuthService.canShowQaTools(profile, session) && session && session.qaOverride,
+      canShowRolePreviewNotice: Boolean(profile && profile.isRolePreview),
+      realRoleText: profile && profile.realRoleLabel ? profile.realRoleLabel : '',
+      previewRoleText: profile && profile.isRolePreview ? profile.roleLabel : '',
       personalInfo: profile ? this.toPersonalInfo(profile) : {},
       authSession: session || {},
       gridList: this.buildGridList(profile),
@@ -165,7 +169,16 @@ Page({
       { name: '设置', icon: 'setting', type: 'setting', url: '/pages/setting/index' },
     ];
 
-    if (!AuthService.canUseBusiness(profile)) return list;
+    if (!AuthService.canUseBusiness(profile)) {
+      if (AuthService.canUseRolePreview()) {
+        list.push({
+          name: '角色预览',
+          icon: 'user-setting',
+          type: 'rolePreview',
+        });
+      }
+      return list;
+    }
 
     const roleEntries = [
       { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index', feature: FEATURE_KEYS.PROFILE },
@@ -173,6 +186,7 @@ Page({
       { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index', feature: FEATURE_KEYS.USER_REVIEW },
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
       { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index', feature: FEATURE_KEYS.PROVIDERS },
+      { name: '操作记录', icon: 'time', type: 'operationLogs', url: '/pages/operationLogs/index', feature: FEATURE_KEYS.OPERATION_LOGS },
     ];
 
     roleEntries.forEach((entry) => {
@@ -181,6 +195,23 @@ Page({
         list.push(item);
       }
     });
+
+    if (AuthService.canUseRolePreview()) {
+      list.push({
+        name: '角色预览',
+        icon: 'user-setting',
+        type: 'rolePreview',
+      });
+    }
+
+    if (!hasRole(profile, AUTH_ROLES.PROVIDER)) {
+      list.push({
+        name: '申请供应商',
+        icon: 'shop',
+        type: 'providerApply',
+        url: '/pages/providers/edit/index?apply=1',
+      });
+    }
 
     if (profile && hasRole(profile, AUTH_ROLES.CUSTOMER)) {
       list.push({
@@ -279,8 +310,10 @@ Page({
   },
 
   onEleClick(e) {
-    const { name, url, type } = e.currentTarget.dataset.data;
-    const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter', 'userReview'];
+    const data = e.currentTarget.dataset.data || {};
+    const { name, type } = data;
+    const url = data.url || e.currentTarget.dataset.url || '';
+    const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
     if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
       this.onLogin();
       return;
@@ -289,6 +322,10 @@ Page({
       navigateByUrl(url, {
         fail: () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' }),
       });
+      return;
+    }
+    if (type === 'rolePreview') {
+      this.openRolePreview();
       return;
     }
     if (type === 'admin') {
@@ -325,5 +362,48 @@ Page({
       return;
     }
     this.onShowToast('#t-toast', name);
+  },
+
+  openRolePreview() {
+    const realProfile = AuthService.getRealProfile();
+    const currentProfile = AuthService.getCurrentProfile();
+    wx.showModal({
+      title: '角色预览',
+      content: `真实身份：${realProfile.roleLabel || ''}\n当前预览：${currentProfile.roleLabel || '未启用'}\n此功能只改变当前画面视角，不修改真实账号角色。`,
+      confirmText: '切换',
+      cancelText: '退出预览',
+      success: (modalRes) => {
+        if (modalRes.confirm) {
+          this.showRolePreviewActions();
+          return;
+        }
+        AuthService.clearRolePreview();
+        this.onShow();
+      },
+    });
+  },
+
+  showRolePreviewActions() {
+    const roles = [
+      { label: '游客', value: 'visitor' },
+      { label: '待审核', value: 'pending_review' },
+      { label: '已拒绝', value: 'rejected' },
+      { label: '已停用', value: 'disabled' },
+      { label: '客户', value: AUTH_ROLES.CUSTOMER },
+      { label: '团主', value: AUTH_ROLES.GUIDE },
+      { label: '供应商', value: AUTH_ROLES.PROVIDER },
+      { label: '运营管理员', value: AUTH_ROLES.ADMIN },
+      { label: '产品拥有者', value: AUTH_ROLES.OWNER },
+    ];
+    wx.showActionSheet({
+      itemList: roles.map(item => item.label),
+      success: (res) => {
+        const selected = roles[res.tapIndex];
+        if (!selected) return;
+        const result = AuthService.applyRolePreview(selected.value);
+        wx.showToast({ title: result.success ? `已切换为${selected.label}` : result.error, icon: 'none' });
+        this.onShow();
+      },
+    });
   },
 });

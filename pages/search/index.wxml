@@ -11,9 +11,10 @@
       action="取消"
       shape="round"
       placeholder="搜索团单、商品或客户订单"
+      bind:change="handleSearchChange"
       bind:submit="handleSubmit"
       bind:action-click="actionHandle"
-      focus
+      focus="{{true}}"
     ></t-search>
   </view>
   <view wx:if="{{canUseSearch}}" class="search-wrap">

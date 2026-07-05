@@ -14,6 +14,7 @@ Page({
   data: {
     pageTitle: '新增商品',
     isEdit: false,
+    isPageLoading: false,
     isSubmitting: false,
     isChoosingImage: false,
     accessDenied: false,
@@ -53,7 +54,7 @@ Page({
     }
     const productId = options && options.id ? String(options.id) : '';
     if (productId) {
-      this.setData({ pageTitle: '编辑商品', isEdit: true });
+      this.setData({ pageTitle: '编辑商品', isEdit: true, isPageLoading: true });
       await this.loadProduct(productId);
     }
     this.refreshSaveModeText();
@@ -83,6 +84,7 @@ Page({
       this.setData({
         pageErrorText: errorText,
         saveModeText: errorText,
+        isPageLoading: false,
       });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
@@ -98,6 +100,7 @@ Page({
         priceSetting: res.data.priceSetting || res.data.priceSettings || [],
       },
       saveModeText: getSaveModeText(res.meta),
+      isPageLoading: false,
     });
   },
 

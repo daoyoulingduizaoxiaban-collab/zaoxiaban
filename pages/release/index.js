@@ -6,6 +6,7 @@ Page({
   data: {
     canCreateGroupOrder: false,
     accessText: '请先登录后继续使用',
+    isNavigating: false,
   },
 
   syncAccessState() {
@@ -33,8 +34,10 @@ Page({
       wx.showToast({ title: this.data.accessText, icon: 'none' });
       return;
     }
+    this.setData({ isNavigating: true });
     navigateByUrl('/sub-pages/groupOrder/add/index', {
       fail: () => {
+        this.setData({ isNavigating: false });
         wx.showToast({ title: '打开开团表单失败', icon: 'none' });
       },
     });

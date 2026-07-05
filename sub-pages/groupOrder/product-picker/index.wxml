@@ -4,7 +4,7 @@
   <view class="search-box">
     <view class="search-inner">
       <text class="search-label">搜</text>
-      <input class="search-input" placeholder="搜索商品名称" bindinput="onSearch" />
+      <input class="search-input" value="{{searchQuery}}" placeholder="搜索商品名称" confirm-type="search" bindinput="onSearch" />
     </view>
   </view>
 
