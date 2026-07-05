@@ -9,6 +9,27 @@ export const getSaveModeText = meta => (
   meta && meta.saveMode === CLOUD_SAVE_MODE ? CLOUD_SAVE_MODE_TEXT : LOCAL_SAVE_MODE_TEXT
 );
 
+const getCloudCallerContext = () => {
+  const profile = AuthService.getCurrentProfile();
+  const realProfile = AuthService.getRealProfile();
+  if (!profile) return {};
+
+  const isRolePreview = Boolean(
+    profile.isRolePreview
+    && realProfile
+    && String(profile.openId) === String(realProfile.openId)
+  );
+
+  return {
+    isRolePreview,
+    simulationRole: isRolePreview ? profile.role : '',
+    isMockOpenId: Boolean(profile.isMockOpenId),
+    qaOverride: Boolean(profile.qaOverride),
+    realRole: realProfile && realProfile.role ? realProfile.role : profile.role,
+    appEnv: config.appEnv,
+  };
+};
+
 export const isCloudBusinessEnabled = () => {
   const profile = AuthService.getCurrentProfile();
   return Boolean(
@@ -36,7 +57,7 @@ export const callBusinessData = ({ resource, action, data = {} }) => new Promise
 
   wx.cloud.callFunction({
     name: 'businessData',
-    data: { resource, action, data },
+    data: { resource, action, data, context: getCloudCallerContext() },
     success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
     fail: () => resolve({ success: false, error: '资料保存失败，请稍后重试' }),
   });
@@ -50,7 +71,7 @@ export const callPublicBusinessData = ({ resource, action, data = {} }) => new P
 
   wx.cloud.callFunction({
     name: 'businessData',
-    data: { resource, action, data },
+    data: { resource, action, data, context: getCloudCallerContext() },
     success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
     fail: () => resolve({ success: false, error: '资料读取失败，请稍后重试' }),
   });

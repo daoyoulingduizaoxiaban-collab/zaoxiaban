@@ -98,11 +98,11 @@ const clearSessionStorage = () => {
 };
 
 const ignorePreviewProfileInFormalMode = profile => (
-  !config.isMock && profile && profile.isMockOpenId ? null : profile
+  !config.allowMockIdentity && profile && profile.isMockOpenId ? null : profile
 );
 
 const ignorePreviewSessionInFormalMode = session => (
-  !config.isMock && session && session.isMockOpenId ? null : session
+  !config.allowMockIdentity && session && session.isMockOpenId ? null : session
 );
 
 const canBaseUseRolePreview = profile => Boolean(
@@ -273,6 +273,7 @@ export const AuthService = {
 
   getCurrentProfile() {
     const profile = ignorePreviewProfileInFormalMode(safeGetStorage(AUTH_PROFILE_KEY, null));
+    if (!config.allowRolePreview) return profile;
     const previewRole = safeGetStorage(AUTH_ROLE_PREVIEW_KEY, '');
     return buildPreviewProfile(profile, previewRole);
   },
@@ -329,11 +330,15 @@ export const AuthService = {
   },
 
   canShowQaTools(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
-    return Boolean(config.isMock && profile && (profile.isMockOpenId || (session && session.qaOverride)));
+    return Boolean(
+      config.allowQaTools
+      && profile
+      && (profile.isMockOpenId || (session && session.qaOverride))
+    );
   },
 
   canUseRolePreview(profile = this.getRealProfile()) {
-    return canBaseUseRolePreview(profile);
+    return config.allowRolePreview && canBaseUseRolePreview(profile);
   },
 
   getRolePreview() {
@@ -364,7 +369,7 @@ export const AuthService = {
 
   async login({ role = AUTH_ROLES.GUIDE } = {}) {
     const loginResult = await wxLogin();
-    let profileSource = config.isMock ? normalizeMockProfile(role) : null;
+    let profileSource = config.allowMockIdentity ? normalizeMockProfile(role) : null;
     let authStatus = {
       wxLoginCalled: loginResult.success,
       wxLoginCodeAvailable: Boolean(loginResult.code),
@@ -468,7 +473,7 @@ export const AuthService = {
   },
 
   applyQaOverride({ qaRoleOverride = AUTH_ROLES.GUIDE, qaOpenIdOverride = '' } = {}) {
-    if (!config.isMock) {
+    if (!config.allowQaTools) {
       return {
         success: false,
         error: '当前账号不支持身份切换',

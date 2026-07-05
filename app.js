@@ -3,7 +3,7 @@ import Mock from './mock/index';
 import createBus from './utils/eventBus';
 import { AuthService } from './services/auth/authService';
 
-if (config.isMock) {
+if (config.allowMockIdentity) {
   Mock();
 }
 

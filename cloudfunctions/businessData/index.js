@@ -22,8 +22,6 @@ const PRODUCT_STATUS = {
   PUBLISHED: 2,
 };
 
-const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
-
 const GROUP_ORDER_STATUS = {
   OPEN: 1,
   STOPPED: 2,
@@ -42,6 +40,13 @@ const REVIEW_STATUS = {
   REJECTED: 'rejected',
   DISABLED: 'disabled',
 };
+
+const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
+const PREVIEW_STATUSES = new Set([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED]);
+const PREVIEWABLE_ROLES = Object.freeze(['guide', 'customer', 'provider', 'admin', 'owner']);
+const ALL_PREVIEW_ROLES = new Set([...PREVIEWABLE_ROLES, ...PREVIEW_STATUSES, 'visitor']);
+const FUNCTION_APP_ENV = String((process.env.APP_ENV || process.env.ENV_NAME || '').toUpperCase());
+const ALLOW_ROLE_PREVIEW = FUNCTION_APP_ENV === 'DEV' && process.env.ALLOW_ROLE_PREVIEW !== 'false';
 
 const STATUS_TEXT = {
   [MEMBER_ORDER_STATUS.UNPAID]: '未付款',
@@ -137,6 +142,78 @@ const getCurrentProfile = async () => {
     roleExpiresAt: profile.roleExpiresAt || profile.rolesExpireAt || '',
     rolesExpireAt: profile.rolesExpireAt || profile.roleExpiresAt || '',
   };
+};
+
+const normalizePreviewRole = (value) => {
+  const role = String(value || '').trim();
+  if (role === 'visitor') return role;
+  if (ALL_PREVIEW_ROLES.has(role)) return role;
+  return '';
+};
+
+const isPreviewAllowedForProfile = profile => Boolean(
+  profile
+  && normalizeRoles(profile.roles, profile.role).includes('owner')
+  && normalizeReviewStatus(profile.reviewStatus || profile.status) === REVIEW_STATUS.APPROVED
+);
+
+const applyPreviewProfile = (profile, previewRole) => {
+  if (!profile || !previewRole) return profile;
+  if (previewRole === 'visitor') {
+    return {
+      ...profile,
+      role: '',
+      roles: [],
+      roleLabel: '游客',
+      status: '',
+      reviewStatus: '',
+      isRolePreview: true,
+      isVisitorPreview: true,
+      realRoleLabel: roleLabelText(profile.roles || []),
+    };
+  }
+  if (PREVIEW_STATUSES.has(previewRole)) {
+    return {
+      ...profile,
+      role: 'customer',
+      roles: ['customer'],
+      roleLabel: roleLabel('customer'),
+      status: previewRole,
+      reviewStatus: previewRole,
+      isRolePreview: true,
+      realRoleLabel: roleLabelText(profile.roles || []),
+    };
+  }
+  if (!PREVIEWABLE_ROLES.includes(previewRole)) return profile;
+  return {
+    ...profile,
+    role: previewRole,
+    roles: [previewRole],
+    roleLabel: roleLabel(previewRole),
+    status: REVIEW_STATUS.APPROVED,
+    reviewStatus: REVIEW_STATUS.APPROVED,
+    isRolePreview: true,
+    realRoleLabel: roleLabelText(profile.roles || []),
+  };
+};
+
+const getCallerProfile = async (eventContext = {}) => {
+  const baseProfile = await getCurrentProfile();
+  if (!baseProfile) return null;
+  if (
+    (eventContext.simulationRole || eventContext.previewRole)
+    && !eventContext.isRolePreview
+  ) {
+    throw new Error('当前账号不支持角色预览');
+  }
+  if (!eventContext || !eventContext.isRolePreview) return baseProfile;
+
+  const previewRole = normalizePreviewRole(eventContext.simulationRole || eventContext.previewRole);
+  if (!previewRole) throw new Error('预览身份参数无效');
+  if (!ALLOW_ROLE_PREVIEW) throw new Error('当前环境不允许角色预览');
+  if (!isPreviewAllowedForProfile(baseProfile)) throw new Error('当前账号不支持角色预览');
+
+  return applyPreviewProfile(baseProfile, previewRole);
 };
 
 const isOwnerOrAdmin = profile => (
@@ -1042,7 +1119,8 @@ const handlers = {
 exports.main = async (event = {}) => {
   try {
     await ensureCollections();
-    const profile = await getCurrentProfile();
+    const context = event.context || {};
+    const profile = await getCallerProfile(context);
     const { resource, action, data = {} } = event;
     const resourceHandler = handlers[resource];
     const actionHandler = resourceHandler && resourceHandler[action];

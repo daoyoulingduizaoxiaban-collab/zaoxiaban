@@ -1,8 +1,42 @@
+const APP_ENV = 'DEV';
+
+const ENVIRONMENTS = Object.freeze({
+  DEV: 'DEV',
+  PROD: 'PROD',
+});
+
+const CLOUD_ENV_IDS = Object.freeze({
+  [ENVIRONMENTS.DEV]: 'cloud1-3gwlqssy1f1972a9',
+  [ENVIRONMENTS.PROD]: '',
+});
+
+const BASE_URL = '';
+
+const devMode = Object.freeze({
+  allowRolePreview: true,
+  allowQaTools: false,
+  allowMockIdentity: false,
+  allowSeedDataFallback: true,
+});
+
+const isDev = APP_ENV === ENVIRONMENTS.DEV;
+
 export default {
-  isMock: false,
-  baseUrl: '',
-  cloudEnvId: 'cloud1-3gwlqssy1f1972a9',
+  appEnv: APP_ENV,
+  isDev,
+  isProd: APP_ENV === ENVIRONMENTS.PROD,
+
+  baseUrl: BASE_URL,
+  cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',
+
   useCloudBusinessData: true,
+
+  allowRolePreview: isDev && devMode.allowRolePreview,
+  allowQaTools: isDev && devMode.allowQaTools,
+  allowMockIdentity: isDev && devMode.allowMockIdentity,
+  allowSeedDataFallback: isDev && devMode.allowSeedDataFallback,
+
+  requestDelayMs: (isDev && devMode.allowMockIdentity) ? 500 : 0,
 };
 
 // config/menu.js

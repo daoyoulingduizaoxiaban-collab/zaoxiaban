@@ -61,6 +61,68 @@ const buildRoleLabel = (role) => {
   return labels[role] || role;
 };
 
+const PREVIEW_STATUSES = new Set([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED]);
+const PREVIEWABLE_ROLES = Object.freeze([ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER, ROLE_ADMIN, ROLE_OWNER]);
+const ALL_PREVIEW_ROLES = new Set([...PREVIEW_STATUSES, ...PREVIEWABLE_ROLES, 'visitor']);
+const FUNCTION_APP_ENV = String((process.env.APP_ENV || process.env.ENV_NAME || '').toUpperCase());
+const isRolePreviewAllowed = (eventContext = {}) => {
+  const env = String(eventContext.appEnv || FUNCTION_APP_ENV || 'PROD').toUpperCase();
+  if (env !== 'DEV') return false;
+  return process.env.ALLOW_ROLE_PREVIEW !== 'false';
+};
+
+const normalizePreviewRole = (value) => {
+  const role = String(value || '').trim();
+  if (role === 'visitor') return role;
+  if (ALL_PREVIEW_ROLES.has(role)) return role;
+  return '';
+};
+
+const isPreviewAllowedForProfile = profile => Boolean(
+  profile
+  && normalizeRoles(profile.roles, profile.role).includes(ROLE_OWNER)
+  && normalizeReviewStatus(profile.reviewStatus || profile.status) === REVIEW_STATUS.APPROVED
+);
+
+const applyRolePreview = (profile, previewRole) => {
+  if (!profile || !previewRole) return profile;
+  if (previewRole === 'visitor') {
+    return {
+      ...profile,
+      role: '',
+      roles: [],
+      roleLabel: '游客',
+      status: '',
+      reviewStatus: '',
+      realRoleLabel: profile.roleLabel,
+      isRolePreview: true,
+    };
+  }
+  if (PREVIEW_STATUSES.has(previewRole)) {
+    return {
+      ...profile,
+      role: ROLE_CUSTOMER,
+      roles: [ROLE_CUSTOMER],
+      roleLabel: buildRoleLabel(ROLE_CUSTOMER),
+      status: previewRole,
+      reviewStatus: previewRole,
+      isRolePreview: true,
+      realRoleLabel: profile.roleLabel,
+    };
+  }
+  if (!PREVIEWABLE_ROLES.includes(previewRole)) return profile;
+  return {
+    ...profile,
+    role: previewRole,
+    roles: [previewRole],
+    roleLabel: buildRoleLabel(previewRole),
+    status: REVIEW_STATUS.APPROVED,
+    reviewStatus: REVIEW_STATUS.APPROVED,
+    isRolePreview: true,
+    realRoleLabel: profile.roleLabel,
+  };
+};
+
 const getSystemReviewer = bootstrapRole => (bootstrapRole ? 'system-bootstrap-owner' : 'system-allowlist');
 const getSystemReviewRemark = bootstrapRole => (bootstrapRole ? '首位管理者初始化' : '管理员白名单账号');
 
@@ -133,6 +195,17 @@ exports.main = async (event = {}) => {
   const wxContext = cloud.getWXContext();
   const openId = wxContext.OPENID;
   const unionId = wxContext.UNIONID || '';
+  const context = event.context || {};
+  if (
+    (context.simulationRole || context.previewRole)
+    && !context.isRolePreview
+  ) {
+    return {
+      success: false,
+      error: '当前参数不支持角色预览',
+    };
+  }
+  const previewRole = context.isRolePreview ? normalizePreviewRole(context.simulationRole || context.previewRole) : '';
 
   if (!openId) {
     return {
@@ -182,31 +255,68 @@ exports.main = async (event = {}) => {
     }
 
     await users.doc(profile._id).update({ data: updateData });
+    const normalizedProfile = toClientProfile({
+      ...profile,
+      ...updateData,
+    });
+    const isRolePreviewRequest = context.isRolePreview && previewRole;
+    const hasRolePreviewRequest = Boolean(context.isRolePreview);
+    if (isRolePreviewRequest) {
+      if (!isRolePreviewAllowed(context)) {
+        return {
+          success: false,
+          error: '当前环境不允许角色预览',
+        };
+      }
+      if (!isPreviewAllowedForProfile(normalizedProfile)) {
+        return {
+          success: false,
+          error: '当前账号不支持角色预览',
+        };
+      }
+      return {
+        success: true,
+        openId,
+        unionId: updateData.unionId,
+        role: applyRolePreview(normalizedProfile, previewRole).role,
+        profile: applyRolePreview(normalizedProfile, previewRole),
+      };
+    }
+    if (hasRolePreviewRequest) {
+      return {
+        success: false,
+        error: '当前环境不支持该角色预览参数',
+      };
+    }
 
     return {
       success: true,
       openId,
       unionId: updateData.unionId,
       role: nextRole,
-      profile: toClientProfile({
-        ...profile,
-        ...updateData,
-      }),
+      profile: normalizedProfile,
     };
   }
 
   const bootstrapRole = await getBootstrapRole();
   const profile = buildDefaultProfile(openId, unionId, event.requestedRole, bootstrapRole);
   const created = await users.add({ data: profile });
+  const createdProfile = toClientProfile({
+    _id: created._id,
+    ...profile,
+  });
+  if (context.isRolePreview) {
+    return {
+      success: false,
+      error: '当前账号不支持角色预览',
+    };
+  }
 
   return {
     success: true,
     openId,
     unionId,
     role: profile.role,
-    profile: toClientProfile({
-      _id: created._id,
-      ...profile,
-    }),
+    profile: createdProfile,
   };
 };

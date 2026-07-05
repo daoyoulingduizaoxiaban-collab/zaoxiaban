@@ -1,7 +1,7 @@
 import config from '~/config';
 
 const { baseUrl } = config;
-const delay = config.isMock ? 500 : 0;
+const delay = config.requestDelayMs;
 function request(url, method = 'GET', data = {}) {
   const header = {
     'content-type': 'application/json',
