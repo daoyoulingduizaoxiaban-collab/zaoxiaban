@@ -149,6 +149,11 @@ Page({
   },
 
   async onShow() {
+    this.setData({
+      authReady: false,
+      isLoading: true,
+      loadErrorText: '',
+    });
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().refreshTabBar();

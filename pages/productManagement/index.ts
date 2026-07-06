@@ -22,6 +22,7 @@ Page({
     saveModeText: '',
     isLoading: false,
     loadErrorText: '',
+    authReady: false,
     canManageProducts: false,
     canShowProductCatalog: false,
     isLoggedIn: false,
@@ -42,6 +43,7 @@ Page({
     this.setData({
       isLoading: true,
       loadErrorText: '',
+      authReady: false,
       canManageProducts: canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE),
       canShowProductCatalog: true,
       isLoggedIn: Boolean(profile),
@@ -96,6 +98,7 @@ Page({
           isLoggedIn: Boolean(profile),
           canUseBusiness: false,
           accessStateText: AuthService.getAccessStateText(profile),
+          authReady: true,
           isLoading: false,
           loadErrorText: errorText,
         });
@@ -112,6 +115,7 @@ Page({
         isLoggedIn: Boolean(profile),
         canUseBusiness: false,
         accessStateText: AuthService.getAccessStateText(profile),
+        authReady: true,
         isLoading: false,
         loadErrorText: '',
       });
@@ -137,6 +141,7 @@ Page({
         isLoggedIn: Boolean(profile),
         canUseBusiness: true,
         accessStateText: AuthService.getAccessStateText(profile),
+        authReady: true,
         isLoading: false,
         loadErrorText: errorText,
       });
@@ -154,6 +159,7 @@ Page({
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       canUseBusiness: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
+      authReady: true,
       isLoading: false,
       loadErrorText: '',
     });
@@ -182,6 +188,12 @@ Page({
 
   canManageProducts() {
     return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.PRODUCT_MANAGE);
+  },
+
+  onLogin() {
+    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/productManagement/index')}`, {
+      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+    });
   },
 
   onAddProduct() {

@@ -10,6 +10,13 @@ const TAB_FEATURE_MAP = {
   productManagement: FEATURE_KEYS.PRODUCTS,
 };
 
+const TAB_ROUTE_VALUE_MAP = {
+  'pages/groupOrder/index': 'groupOrder',
+  'pages/customerOrders/index': 'customerOrders',
+  'pages/productManagement/index': 'productManagement',
+  'pages/my/index': 'my',
+};
+
 Component({
   data: {
     value: '',
@@ -42,8 +49,8 @@ Component({
     getCurrentTabValue() {
       const pages = getCurrentPages();
       const curPage = pages[pages.length - 1];
-      const match = curPage && curPage.route ? curPage.route.match(/pages\/([^/]+)/) : null;
-      return match && match[1] ? match[1] : 'my';
+      const route = curPage && curPage.route ? String(curPage.route) : '';
+      return TAB_ROUTE_VALUE_MAP[route] || 'my';
     },
 
     refreshTabBar() {

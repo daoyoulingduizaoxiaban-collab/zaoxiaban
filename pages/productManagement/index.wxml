@@ -14,7 +14,7 @@
     <text wx:if="{{saveModeText}}">{{saveModeText}}</text>
   </view>
 
-  <view class="access-card" wx:if="{{!isLoading && !canUseBusiness}}">
+  <view class="access-card" wx:if="{{authReady && !isLoading && !canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
     <view class="access-desc">可先浏览公开商品；下单、管理商品或查看专属资料需登录并通过身份确认。</view>
     <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
@@ -58,7 +58,10 @@
             </view>
           </view>
           <view class="action-bar" wx:if="{{canManageProducts}}">
-            <button size="mini" plain catchtap="onOpenDetail" data-id="{{item.id}}">详情</button>
+            <button class="detail-entry-btn" size="mini" plain catchtap="onOpenDetail" data-id="{{item.id}}">
+              <t-icon name="search" size="28rpx" color="#0052d9" />
+              <text>查看详情</text>
+            </button>
             <button size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
             <button size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
             <button size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">

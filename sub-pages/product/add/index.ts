@@ -12,9 +12,9 @@ import { navigateBackOrTab } from '~/utils/navigation';
 
 Page({
   data: {
-    pageTitle: '新增商品',
+    pageTitle: '商品表单',
     isEdit: false,
-    isPageLoading: false,
+    isPageLoading: true,
     isSubmitting: false,
     isChoosingImage: false,
     accessDenied: false,
@@ -48,6 +48,7 @@ Page({
     if (!canCreate) {
       this.setData({
         accessDenied: true,
+        isPageLoading: false,
         accessStateText: getRoleScopeText(profile, FEATURE_KEYS.PRODUCT_MANAGE),
       });
       return;
@@ -56,6 +57,8 @@ Page({
     if (productId) {
       this.setData({ pageTitle: '编辑商品', isEdit: true, isPageLoading: true });
       await this.loadProduct(productId);
+    } else {
+      this.setData({ pageTitle: '新增商品', isEdit: false, isPageLoading: false });
     }
     this.refreshSaveModeText();
   },
