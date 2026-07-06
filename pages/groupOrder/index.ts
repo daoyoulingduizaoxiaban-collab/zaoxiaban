@@ -172,7 +172,7 @@ Page({
       return;
     }
 
-    const url = '/sub-pages/groupOrder/add/index';
+    const url = `/sub-pages/groupOrder/add/index?from=${encodeURIComponent('/pages/groupOrder/index')}`;
 
     this.setData({ isNavigatingCreate: true });
     navigateByUrl(url, {

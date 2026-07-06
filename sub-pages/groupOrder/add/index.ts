@@ -4,7 +4,7 @@ import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
-import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
+import { navigateBackOrTab, navigateByUrl, normalizeRouteUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
@@ -21,6 +21,7 @@ Page({
     accessStateText: '',
     pageErrorText: '',
     isPageLoading: true,
+    sourceUrl: '/pages/groupOrder/index',
     formData: {
       title: '',
       description: '',
@@ -36,7 +37,8 @@ Page({
   },
 
   async onLoad(options) {
-    this.setData({ isPageLoading: true });
+    const sourceUrl = normalizeRouteUrl(options.from || '/pages/groupOrder/index', '/pages/groupOrder/index');
+    this.setData({ isPageLoading: true, sourceUrl });
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const canCreate = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
@@ -82,8 +84,12 @@ Page({
   },
 
   async onShow() {
-    await AuthService.refreshSession();
     this.consumePickerFallbackResult();
+  },
+
+  onBack() {
+    if (this.data.isSubmitting) return;
+    navigateBackOrTab(this.data.sourceUrl || '/pages/groupOrder/index');
   },
 
   consumePickerFallbackResult() {
@@ -179,7 +185,7 @@ Page({
     }
     const existingIds = this.data.selectedGoods.map(item => item.id);
     navigateByUrl(
-      `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
+      `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}&from=${encodeURIComponent('/sub-pages/groupOrder/add/index')}`,
       {
         events: {
           selectedProducts: (data) => {

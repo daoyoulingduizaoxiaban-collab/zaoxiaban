@@ -13,6 +13,10 @@ Component({
     fallbackUrl: {
       type: String,
       value: '/pages/groupOrder/index'
+    },
+    customBack: {
+      type: Boolean,
+      value: false
     }
   },
   lifetimes: {
@@ -26,6 +30,10 @@ Component({
   },
   methods: {
     onBack() {
+      if (this.properties.customBack) {
+        this.triggerEvent('back');
+        return;
+      }
       navigateBackOrTab(this.properties.fallbackUrl || '/pages/groupOrder/index');
     }
   }

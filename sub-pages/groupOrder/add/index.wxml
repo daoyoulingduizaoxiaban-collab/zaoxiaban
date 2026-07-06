@@ -1,4 +1,4 @@
-<sub-nav title="{{pageTitle}}" />
+<sub-nav title="{{pageTitle}}" fallback-url="{{sourceUrl}}" custom-back="{{true}}" bind:back="onBack" />
 
 <view class="access-card" wx:if="{{isPageLoading}}">
   <view class="access-title">正在打开开团表单</view>

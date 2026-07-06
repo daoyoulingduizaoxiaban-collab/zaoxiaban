@@ -37,7 +37,7 @@ Page({
       return;
     }
     this.setData({ isNavigating: true });
-    navigateByUrl('/sub-pages/groupOrder/add/index', {
+    navigateByUrl(`/sub-pages/groupOrder/add/index?from=${encodeURIComponent('/pages/release/index')}`, {
       fail: () => {
         this.setData({ isNavigating: false });
         wx.showToast({ title: '打开开团表单失败', icon: 'none' });
