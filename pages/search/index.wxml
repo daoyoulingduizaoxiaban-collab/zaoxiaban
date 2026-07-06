@@ -1,6 +1,9 @@
 <t-navbar title="搜索" left-arrow fixed="{{true}}" placeholder="{{true}}" />
 <view class="page search-page">
-  <view wx:if="{{!canUseSearch}}" class="result-wrap">
+  <view wx:if="{{isAccessLoading}}" class="result-wrap">
+    <t-empty icon="info-circle" description="正在确认搜索权限" />
+  </view>
+  <view wx:elif="{{!canUseSearch}}" class="result-wrap">
     <t-empty icon="info-circle" description="{{accessStateText}}" />
   </view>
   <view wx:else class="search-input">
@@ -14,7 +17,7 @@
       bind:change="handleSearchChange"
       bind:submit="handleSubmit"
       bind:action-click="actionHandle"
-      focus="{{true}}"
+      focus="{{searchFocus}}"
     ></t-search>
   </view>
   <view wx:if="{{canUseSearch}}" class="search-wrap">

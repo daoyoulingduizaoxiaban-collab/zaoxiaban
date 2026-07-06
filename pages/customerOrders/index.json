@@ -4,6 +4,10 @@
     "t-cell": "tdesign-miniprogram/cell/cell",
     "t-icon": "/components/t-icon/index",
     "nav": "/components/nav/index",
-    "t-fab": "/components/t-fab/index"
+    "t-fab": "/components/t-fab/index",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-empty": "/components/t-empty/index",
+    "t-dropdown-menu": "tdesign-miniprogram/dropdown-menu/dropdown-menu",
+    "t-dropdown-item": "tdesign-miniprogram/dropdown-item/dropdown-item"
   }
 }

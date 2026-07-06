@@ -92,7 +92,9 @@ Page({
     const { id, orderId } = e.currentTarget.dataset;
     if (id) this.markRead({ currentTarget: { dataset: { id } } });
     if (orderId) {
-      navigateByUrl(`/pages/customerOrders/index?orderId=${encodeURIComponent(String(orderId))}`);
+      navigateByUrl(`/pages/customerOrders/index?orderId=${encodeURIComponent(String(orderId))}&fromMessage=1`, {
+        fail: () => wx.showToast({ title: '打开订单详情失败', icon: 'none' }),
+      });
     }
   },
 });

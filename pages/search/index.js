@@ -14,6 +14,9 @@ Page({
     resultGroups: [],
     hasSearched: false,
     canUseSearch: false,
+    isAccessLoading: true,
+    searchFocus: false,
+    sourceUrl: '/pages/my/index',
     accessStateText: '',
     dialog: {
       title: '确认删除当前历史记录',
@@ -26,7 +29,13 @@ Page({
   deleteType: 0,
   deleteIndex: '',
 
+  onLoad(options = {}) {
+    const sourceUrl = options.from ? decodeURIComponent(String(options.from)) : '/pages/my/index';
+    this.setData({ sourceUrl, isAccessLoading: true, searchFocus: true });
+  },
+
   async onShow() {
+    this.setData({ isAccessLoading: true, searchFocus: true });
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const canUseSearch = canUseFeature(profile, FEATURE_KEYS.SEARCH);
@@ -37,6 +46,8 @@ Page({
       historyWords: canUseSearch ? this.data.historyWords : [],
       resultGroups: canUseSearch ? this.data.resultGroups : [],
       hasSearched: canUseSearch ? this.data.hasSearched : false,
+      isAccessLoading: false,
+      searchFocus: canUseSearch,
     });
   },
 
@@ -194,7 +205,7 @@ Page({
   },
 
   handleSubmit(e) {
-    const { value } = e.detail;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : this.data.searchValue;
     if (value.length === 0) return;
 
     this.setHistoryWords(value);
@@ -229,6 +240,6 @@ Page({
     this.setData({
       searchValue: '',
     });
-    navigateBackOrTab('/pages/my/index');
+    navigateBackOrTab(this.data.sourceUrl || '/pages/my/index');
   },
 });

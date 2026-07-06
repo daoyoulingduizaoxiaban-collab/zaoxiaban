@@ -4,7 +4,7 @@
   <view class="search-box">
     <view class="search-inner">
       <text class="search-label">搜</text>
-      <input class="search-input" value="{{searchQuery}}" placeholder="搜索商品名称" confirm-type="search" bindinput="onSearch" />
+      <input class="search-input" value="{{searchQuery}}" placeholder="搜索商品名称" confirm-type="search" focus="{{searchFocus}}" bindinput="onSearch" bindconfirm="onSearch" />
     </view>
   </view>
 
@@ -24,7 +24,7 @@
               bindtap="toggleSelect"
               data-id="{{item.id}}">
 
-          <view class="checkbox">
+          <view class="checkbox" catchtap="toggleSelect" data-id="{{item.id}}">
             <text wx:if="{{item.selected}}" class="txt-selected">已选</text>
             <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
           </view>
@@ -55,7 +55,7 @@
     <view class="selected-info">
       已选择 <text class="count">{{selectedCount}}</text> 项
     </view>
-    <button class="btn-confirm {{selectedCount > 0 ? '' : 'disabled'}}" bindtap="confirmAdd">
+    <button class="btn-confirm {{selectedCount > 0 ? '' : 'disabled'}}" disabled="{{selectedCount === 0}}" bindtap="confirmAdd">
       确认加入
     </button>
   </view>

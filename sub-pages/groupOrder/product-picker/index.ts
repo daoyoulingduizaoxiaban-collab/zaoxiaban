@@ -15,6 +15,7 @@ Page({
     pageErrorText: '',
     isLoading: true,
     hasEventChannel: false,
+    searchFocus: false,
   },
 
   getSafeEventChannel() {
@@ -35,6 +36,7 @@ Page({
       hasEventChannel,
       pageErrorText: hasEventChannel ? '' : '请从本团商品页进入，才能把商品加入团单。',
       isLoading: hasEventChannel,
+      searchFocus: hasEventChannel,
     });
 
     if (options.excludeIds) {
@@ -80,11 +82,13 @@ Page({
       allProducts: processedList,
       products: processedList,
       isLoading: false,
+      selectedCount: processedList.filter(item => item.selected).length,
+      searchFocus: true,
     });
   },
 
   onSearch(e) {
-    const keyword = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
+    const keyword = String(e.detail && e.detail.value !== undefined ? e.detail.value : e.detail || '');
     this.setData({
       searchQuery: keyword,
       products: this.filterProducts(this.data.allProducts, keyword)
@@ -188,15 +192,14 @@ Page({
   },
 
   confirmAdd() {
+    if (this.data.selectedCount <= 0) {
+      wx.showToast({ title: '请先选择商品', icon: 'none' });
+      return;
+    }
     const selectedItems = this.data.allProducts.filter(p => p.selected);
 
     if (!this.data.hasEventChannel) {
       wx.showToast({ title: '请从本团商品页进入', icon: 'none' });
-      return;
-    }
-
-    if (selectedItems.length === 0) {
-      wx.showToast({ title: '请先选择商品', icon: 'none' });
       return;
     }
 

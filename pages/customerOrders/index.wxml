@@ -120,9 +120,20 @@
     </view>
     <scroll-view scroll-y class="detail-panel__body">
       <view class="detail-section">
-        <view class="detail-row"><text>状态</text><text>{{selectedOrderDetail.statusText}}</text></view>
-        <view class="detail-row"><text>客户</text><text>{{selectedOrderDetail.customerName}}</text></view>
-        <view class="detail-row"><text>金额</text><text>￥{{selectedOrderDetail.totalPrice}}</text></view>
+        <view class="detail-summary-grid">
+          <view class="detail-summary-card">
+            <text class="detail-summary-label">状态</text>
+            <text class="detail-summary-value">{{selectedOrderDetail.statusText}}</text>
+          </view>
+          <view class="detail-summary-card">
+            <text class="detail-summary-label">客户</text>
+            <text class="detail-summary-value">{{selectedOrderDetail.customerName}}</text>
+          </view>
+          <view class="detail-summary-card">
+            <text class="detail-summary-label">金额</text>
+            <text class="detail-summary-value">￥{{selectedOrderDetail.totalPrice}}</text>
+          </view>
+        </view>
       </view>
       <view class="detail-section">
         <view class="detail-section__title">付款资料</view>
@@ -135,8 +146,8 @@
       <view class="detail-section">
         <view class="detail-section__title">商品明细</view>
         <view class="detail-line" wx:for="{{selectedOrderDetail.displayItems}}" wx:key="title">
-          <text>{{item.title}} x {{item.quantity}}</text>
-          <text>￥{{item.totalPrice}}</text>
+          <view class="detail-line__main">{{item.title}}</view>
+          <view class="detail-line__meta">数量 {{item.quantity}}｜￥{{item.totalPrice}}</view>
         </view>
         <view wx:if="{{selectedOrderDetail.displayItems.length === 0}}" class="detail-note">暂无商品</view>
       </view>

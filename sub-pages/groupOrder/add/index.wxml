@@ -1,6 +1,11 @@
 <sub-nav title="{{pageTitle}}" />
 
-<view class="access-card" wx:if="{{accessDenied}}">
+<view class="access-card" wx:if="{{isPageLoading}}">
+  <view class="access-title">正在打开开团表单</view>
+  <view class="access-desc">请稍候，系统正在初始化表单资料。</view>
+</view>
+
+<view class="access-card" wx:elif="{{accessDenied}}">
   <view class="access-title">{{accessStateText || '当前账号不能新建团单'}}</view>
   <view class="access-desc">请使用已通过审核的团主或管理员账号。</view>
 </view>

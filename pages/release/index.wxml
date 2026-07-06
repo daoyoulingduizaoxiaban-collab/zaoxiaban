@@ -5,6 +5,9 @@
     <view class="box" wx:if="{{isNavigating}}">
       <t-cell title="正在打开开团表单" description="请稍候，系统正在进入团单编辑页。" />
     </view>
+    <view class="box" wx:elif="{{!authReady}}">
+      <t-cell title="正在确认开团权限" description="请稍候，系统正在读取你的账号状态。" />
+    </view>
     <view class="box" wx:elif="{{canCreateGroupOrder}}">
       <button class="entry-button" bindtap="goCreateGroupOrder">
         <view class="entry-title">新建团单</view>

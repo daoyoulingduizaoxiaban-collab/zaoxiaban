@@ -66,7 +66,7 @@ Page({
       return;
     }
 
-    const orders = customerOrderRes.data || [];
+    const orders = this.mergeCustomerOrders(customerOrderRes.data || [], groupOrderRes.data || []);
     const activeOrders = orders.filter(order => Number(order.status) !== 3);
     const confirmedOrders = orders.filter(order => Number(order.status) === 2);
     this.setData({
@@ -84,5 +84,27 @@ Page({
       disabledReason: '',
       isLoading: false,
     });
+  },
+
+  mergeCustomerOrders(customerOrders = [], groupOrders = []) {
+    const map = new Map();
+    customerOrders.forEach((order) => {
+      const key = String(order.id || `${order.groupOrderId}-${order.customerName}-${order.totalPrice}`);
+      map.set(key, order);
+    });
+    groupOrders.forEach((groupOrder) => {
+      (groupOrder.memberOrderList || []).forEach((order, index) => {
+        const key = String(order.id || `${groupOrder.id}-${index}-${order.customerName || ''}`);
+        if (!map.has(key)) {
+          map.set(key, {
+            ...order,
+            id: key,
+            groupOrderId: groupOrder.id,
+            groupOrderTitle: groupOrder.title,
+          });
+        }
+      });
+    });
+    return Array.from(map.values());
   },
 });

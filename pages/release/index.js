@@ -7,6 +7,7 @@ Page({
     canCreateGroupOrder: false,
     accessText: '请先登录后继续使用',
     isNavigating: false,
+    authReady: false,
   },
 
   syncAccessState() {
@@ -18,9 +19,10 @@ Page({
   },
 
   async onShow() {
-    this.syncAccessState();
+    this.setData({ authReady: false, isNavigating: false });
     await AuthService.refreshSession();
     this.syncAccessState();
+    this.setData({ authReady: true });
   },
 
   goCreateGroupOrder() {

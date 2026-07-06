@@ -1,5 +1,5 @@
 {
-  "navigationBarTitleText": "新增行程",
+  "navigationBarTitleText": "开团",
   "usingComponents": {
     "sub-nav": "/components/sub-nav/index",
     "t-navbar": "tdesign-miniprogram/navbar/navbar",

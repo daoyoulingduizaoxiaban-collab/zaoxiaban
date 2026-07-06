@@ -52,6 +52,16 @@
         <view class="quick-title">数据看板</view>
         <view class="quick-desc">查看团单与订单汇总</view>
       </view>
+      <view class="quick-item" wx:if="{{canApplyProvider}}" bindtap="goProviderApply">
+        <t-icon name="shop" size="48rpx" color="#0052d9" />
+        <view class="quick-title">申请供应商</view>
+        <view class="quick-desc">提交供货资料等待审核</view>
+      </view>
+      <view class="quick-item" wx:if="{{canViewOperationLogs}}" bindtap="goOperationLogs">
+        <t-icon name="time" size="48rpx" color="#0052d9" />
+        <view class="quick-title">操作记录</view>
+        <view class="quick-desc">回看开团、商品与收款操作</view>
+      </view>
     </view>
 
     <view class="status-note">

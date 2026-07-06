@@ -25,6 +25,7 @@ Page({
     accessStateText: '',
     isLoading: true,
     loadErrorText: '',
+    isNavigatingCreate: false,
   },
 
   async onLoad() {
@@ -153,6 +154,7 @@ Page({
       authReady: false,
       isLoading: true,
       loadErrorText: '',
+      isNavigatingCreate: false,
     });
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
@@ -172,8 +174,10 @@ Page({
 
     const url = '/sub-pages/groupOrder/add/index';
 
+    this.setData({ isNavigatingCreate: true });
     navigateByUrl(url, {
       fail: () => {
+        this.setData({ isNavigatingCreate: false });
         wx.showToast({
           title: '打开新建团单失败',
           icon: 'none'

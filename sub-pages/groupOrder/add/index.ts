@@ -20,6 +20,7 @@ Page({
     accessDenied: false,
     accessStateText: '',
     pageErrorText: '',
+    isPageLoading: true,
     formData: {
       title: '',
       description: '',
@@ -35,6 +36,7 @@ Page({
   },
 
   async onLoad(options) {
+    this.setData({ isPageLoading: true });
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const canCreate = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
@@ -42,6 +44,7 @@ Page({
       this.setData({
         accessDenied: true,
         accessStateText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
+        isPageLoading: false,
       });
       return;
     }
@@ -53,7 +56,29 @@ Page({
         groupOrderId
       });
       await this.loadGroupOrder(groupOrderId);
+      this.setData({ isPageLoading: false });
+      return;
     }
+    this.setData({
+      pageTitle: '开团',
+      isEdit: false,
+      groupOrderId: '',
+      selectedGoods: [],
+      pageErrorText: '',
+      formData: {
+        title: '',
+        description: '',
+        startAt: '',
+        endAt: '',
+        pickupNote: '',
+        paymentNote: '',
+        contactName: '',
+        contactPhone: '',
+        customerNotice: '',
+        status: GroupOrderStatus.OPEN,
+      },
+      isPageLoading: false,
+    });
   },
 
   async onShow() {

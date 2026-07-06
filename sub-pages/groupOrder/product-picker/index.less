@@ -38,6 +38,9 @@ page {
 }
 .search-input {
   flex: 1;
+  min-width: 0;
+  height: 72rpx;
+  line-height: 72rpx;
   margin-left: 16rpx;
   font-size: 28rpx;
   color: #333;
@@ -71,8 +74,8 @@ page {
 }
 
 .checkbox {
-  width: 44rpx;
-  height: 44rpx;
+  width: 56rpx;
+  height: 56rpx;
   border-radius: 50%;
   border: 2rpx solid #ddd;
   margin-right: 24rpx;
@@ -264,6 +267,12 @@ page {
   font-size: 30rpx;
   height: 80rpx;
   line-height: 80rpx;
+}
+
+.btn-confirm[disabled],
+.btn-confirm.disabled {
+  background: #c9d1df;
+  color: #ffffff;
 }
 .btn-confirm.disabled {
   background: #ccc;

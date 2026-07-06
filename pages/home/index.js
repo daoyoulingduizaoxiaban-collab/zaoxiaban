@@ -19,6 +19,8 @@ Page({
     canViewProducts: false,
     canViewCustomerOrders: false,
     canViewDataCenter: false,
+    canApplyProvider: false,
+    canViewOperationLogs: false,
     isSummaryLoading: false,
     summaryCards: [
       { label: '进行中团单', value: 0, target: 'groupOrders' },
@@ -36,6 +38,7 @@ Page({
   },
 
   async refreshModeText() {
+    this.setData({ authReady: false, isAccessLoading: true });
     await AuthService.refreshSession();
     const session = AuthService.getCurrentSession();
     const profile = AuthService.getCurrentProfile();
@@ -59,6 +62,9 @@ Page({
     const canViewProducts = canUseFeature(profile, FEATURE_KEYS.PRODUCTS);
     const canViewCustomerOrders = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
     const canViewDataCenter = canUseFeature(profile, FEATURE_KEYS.DATA_CENTER);
+    const roles = profile && Array.isArray(profile.roles) ? profile.roles : [];
+    const canApplyProvider = canUseBusiness && !roles.includes('provider');
+    const canViewOperationLogs = canUseFeature(profile, FEATURE_KEYS.OPERATION_LOGS);
 
     this.setData({
       modeText,
@@ -72,6 +78,8 @@ Page({
       canViewProducts,
       canViewCustomerOrders,
       canViewDataCenter,
+      canApplyProvider,
+      canViewOperationLogs,
     });
     if (canUseBusiness) {
       this.loadSummary();
@@ -96,7 +104,7 @@ Page({
       return;
     }
     const groupOrders = groupOrderRes.data || [];
-    const customerOrders = customerOrderRes.data || [];
+    const customerOrders = this.mergeCustomerOrders(customerOrderRes.data || [], groupOrders);
     this.setData({
       isSummaryLoading: false,
       summaryCards: [
@@ -105,6 +113,28 @@ Page({
         { label: '客户订单', value: customerOrders.length, target: 'customerOrders' },
       ],
     });
+  },
+
+  mergeCustomerOrders(customerOrders = [], groupOrders = []) {
+    const map = new Map();
+    customerOrders.forEach((order) => {
+      const key = String(order.id || `${order.groupOrderId}-${order.customerName}-${order.totalPrice}`);
+      map.set(key, order);
+    });
+    groupOrders.forEach((groupOrder) => {
+      (groupOrder.memberOrderList || []).forEach((order, index) => {
+        const key = String(order.id || `${groupOrder.id}-${index}-${order.customerName || ''}`);
+        if (!map.has(key)) {
+          map.set(key, {
+            ...order,
+            id: key,
+            groupOrderId: groupOrder.id,
+            groupOrderTitle: groupOrder.title,
+          });
+        }
+      });
+    });
+    return Array.from(map.values());
   },
 
   goLogin() {
@@ -175,6 +205,22 @@ Page({
     }
     navigateByUrl('/pages/dataCenter/index', {
       fail: () => wx.showToast({ title: '打开数据看板失败', icon: 'none' }),
+    });
+  },
+
+  goProviderApply() {
+    navigateByUrl('/pages/providers/edit/index?apply=1', {
+      fail: () => wx.showToast({ title: '打开供应商申请失败', icon: 'none' }),
+    });
+  },
+
+  goOperationLogs() {
+    if (!this.data.canViewOperationLogs) {
+      wx.showToast({ title: '当前账号不能查看操作记录', icon: 'none' });
+      return;
+    }
+    navigateByUrl('/pages/operationLogs/index', {
+      fail: () => wx.showToast({ title: '打开操作记录失败', icon: 'none' }),
     });
   },
 

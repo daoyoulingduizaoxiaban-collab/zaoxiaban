@@ -134,7 +134,7 @@ Page({
         name: '搜索',
         icon: 'search',
         type: 'search',
-        url: '/pages/search/index',
+        url: `/pages/search/index?from=${encodeURIComponent('/pages/my/index')}`,
         feature: FEATURE_KEYS.SEARCH,
       },
     ];
@@ -310,9 +310,16 @@ Page({
   },
 
   onEleClick(e) {
-    const data = e.currentTarget.dataset.data || {};
+    const dataset = (e.currentTarget && e.currentTarget.dataset) || {};
+    const detail = e.detail || {};
+    const data = dataset.data || detail.data || detail.item || {};
     const { name, type } = data;
-    const url = data.url || e.currentTarget.dataset.url || '';
+    const url = data.url || dataset.url || detail.url || '';
+    const navKey = `${type || name || ''}:${url}`;
+    const now = Date.now();
+    if (this.lastNavKey === navKey && now - (this.lastNavAt || 0) < 800) return;
+    this.lastNavKey = navKey;
+    this.lastNavAt = now;
     const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
     if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
       this.onLogin();
