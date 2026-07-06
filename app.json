@@ -90,6 +90,7 @@
   "window": {
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "团主早下班",
     "navigationStyle": "custom"
   },
   "tabBar": {

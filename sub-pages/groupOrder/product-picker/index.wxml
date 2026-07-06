@@ -24,10 +24,10 @@
               bindtap="toggleSelect"
               data-id="{{item.id}}">
 
-          <view class="checkbox" catchtap="toggleSelect" data-id="{{item.id}}">
+          <button class="checkbox" catchtap="toggleSelect" data-id="{{item.id}}">
             <text wx:if="{{item.selected}}" class="txt-selected">已选</text>
             <text wx:elif="{{item.disabled}}" class="txt-added">已加</text>
-          </view>
+          </button>
           <view class="p-img-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
             <image wx:if="{{item.coverUrl && !item.isImageFallback}}" class="p-img" src="{{item.coverUrl}}" mode="aspectFill" data-id="{{item.id}}" binderror="onImageError"></image>
             <view wx:if="{{item.isImageFallback}}" class="image-fallback">

@@ -116,7 +116,7 @@
   <view class="detail-panel" catchtap="stopDetailTap">
     <view class="detail-panel__header">
       <text class="detail-panel__title">{{selectedOrderDetail.title || '客户订单'}}</text>
-      <text class="detail-panel__close" bindtap="closeDetailPanel">关闭</text>
+      <button class="detail-panel__close" catchtap="closeDetailPanel">关闭</button>
     </view>
     <scroll-view scroll-y class="detail-panel__body">
       <view class="detail-section">

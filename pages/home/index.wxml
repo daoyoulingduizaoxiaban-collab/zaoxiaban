@@ -25,43 +25,43 @@
     </view>
 
     <view class="home-summary" wx:if="{{canUseBusiness}}">
-      <view class="home-summary__card" wx:for="{{summaryCards}}" wx:key="label" bindtap="goSummaryCard" data-target="{{item.target}}">
+      <button class="home-summary__card" wx:for="{{summaryCards}}" wx:key="label" bindtap="goSummaryCard" data-target="{{item.target}}">
         <view class="home-summary__label">{{item.label}}</view>
         <view class="home-summary__value">{{isSummaryLoading ? '...' : item.value}}</view>
-      </view>
+      </button>
     </view>
 
     <view class="quick-grid" wx:if="{{canUseBusiness}}">
-      <view class="quick-item primary" wx:if="{{canViewGroupOrders}}" bindtap="goGroupOrders">
+      <button class="quick-item primary" wx:if="{{canViewGroupOrders}}" bindtap="goGroupOrders">
         <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
         <view class="quick-title">团单</view>
         <view class="quick-desc">管理本团商品与客户入口</view>
-      </view>
-      <view class="quick-item" wx:if="{{canViewProducts}}" bindtap="goProducts">
+      </button>
+      <button class="quick-item" wx:if="{{canViewProducts}}" bindtap="goProducts">
         <t-icon name="shop" size="48rpx" color="#0052d9" />
         <view class="quick-title">商品库</view>
         <view class="quick-desc">维护可售商品与价格规则</view>
-      </view>
-      <view class="quick-item" wx:if="{{canViewCustomerOrders}}" bindtap="goCustomerOrders">
+      </button>
+      <button class="quick-item" wx:if="{{canViewCustomerOrders}}" bindtap="goCustomerOrders">
         <t-icon name="usergroup" size="48rpx" color="#0052d9" />
         <view class="quick-title">客户订单</view>
         <view class="quick-desc">处理付款声明和确认收款</view>
-      </view>
-      <view class="quick-item" wx:if="{{canViewDataCenter}}" bindtap="goDataCenter">
+      </button>
+      <button class="quick-item" wx:if="{{canViewDataCenter}}" bindtap="goDataCenter">
         <t-icon name="bulletpoint" size="48rpx" color="#0052d9" />
         <view class="quick-title">数据看板</view>
         <view class="quick-desc">查看团单与订单汇总</view>
-      </view>
-      <view class="quick-item" wx:if="{{canApplyProvider}}" bindtap="goProviderApply">
+      </button>
+      <button class="quick-item" wx:if="{{canApplyProvider}}" bindtap="goProviderApply">
         <t-icon name="shop" size="48rpx" color="#0052d9" />
         <view class="quick-title">申请供应商</view>
         <view class="quick-desc">提交供货资料等待审核</view>
-      </view>
-      <view class="quick-item" wx:if="{{canViewOperationLogs}}" bindtap="goOperationLogs">
+      </button>
+      <button class="quick-item" wx:if="{{canViewOperationLogs}}" bindtap="goOperationLogs">
         <t-icon name="time" size="48rpx" color="#0052d9" />
         <view class="quick-title">操作记录</view>
         <view class="quick-desc">回看开团、商品与收款操作</view>
-      </view>
+      </button>
     </view>
 
     <view class="status-note">

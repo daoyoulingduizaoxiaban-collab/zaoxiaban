@@ -74,15 +74,21 @@ page {
 }
 
 .checkbox {
+  margin: 0 24rpx 0 0;
+  padding: 0;
+  background: #ffffff;
   width: 56rpx;
   height: 56rpx;
   border-radius: 50%;
   border: 2rpx solid #ddd;
-  margin-right: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.checkbox::after {
+  border: 0;
 }
 .is-selected .checkbox {
   background: #0052d9;

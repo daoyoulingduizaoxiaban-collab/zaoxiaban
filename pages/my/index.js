@@ -10,6 +10,13 @@ import {
 } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
+const TAB_URLS = new Set([
+  '/pages/groupOrder/index',
+  '/pages/customerOrders/index',
+  '/pages/productManagement/index',
+  '/pages/my/index',
+]);
+
 Page({
   behaviors: [useToastBehavior],
 
@@ -282,7 +289,7 @@ Page({
   onNavigateTo() {
     const profile = AuthService.getCurrentProfile();
     const url = profile && profile.id ? `/pages/profile/edit/index?id=${profile.id}` : '/pages/profile/index';
-    navigateByUrl(url);
+    this.openUrl(url);
   },
 
   onLogout() {
@@ -326,9 +333,7 @@ Page({
       return;
     }
     if (url) {
-      navigateByUrl(url, {
-        fail: () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' }),
-      });
+      this.openUrl(url);
       return;
     }
     if (type === 'rolePreview') {
@@ -365,10 +370,24 @@ Page({
         });
         return;
       }
-      navigateByUrl('/pages/providers/index');
+      this.openUrl('/pages/providers/index');
       return;
     }
     this.onShowToast('#t-toast', name);
+  },
+
+  openUrl(url) {
+    if (!url) {
+      wx.showToast({ title: '暂时无法打开该页面', icon: 'none' });
+      return;
+    }
+    const path = String(url).split('?')[0];
+    const fail = () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' });
+    if (TAB_URLS.has(path)) {
+      wx.switchTab({ url: path, fail });
+      return;
+    }
+    wx.navigateTo({ url, fail });
   },
 
   openRolePreview() {

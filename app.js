@@ -43,6 +43,12 @@ App({
       }
     });
   },
+  onShareAppMessage() {
+    return {
+      title: '团主早下班',
+      path: '/pages/my/index',
+    };
+  },
   globalData: {
     userInfo: null,
     unreadNum: 0,

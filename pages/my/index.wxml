@@ -51,6 +51,7 @@
         class="grid-item {{gridItem.type === 'all' ? 'split-line' : ''}}"
         data-data="{{gridItem}}"
         data-url="{{gridItem.url}}"
+        bind:click="onEleClick"
         bindtap="onEleClick"
       >
         <t-icon name="{{gridItem.icon}}" size="48rpx" color="#0052d9" />
@@ -70,6 +71,7 @@
       arrow="{{false}}"
       data-data="{{item}}"
       data-url="{{item.url}}"
+      bind:click="onEleClick"
       bindtap="onEleClick"
     >
       <t-icon slot="left-icon" name="{{item.icon}}" size="44rpx" color="#0052d9" />

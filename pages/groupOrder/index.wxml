@@ -15,6 +15,10 @@
   </t-dropdown-menu>
 </view>
 
+<view class="create-entry" wx:if="{{canCreateGroupOrder}}">
+  <button class="create-entry__button" bindtap="addItinerary">新建团单</button>
+</view>
+
 <view class="role-scope" wx:if="{{authReady}}">{{roleScopeText}}</view>
 
 <view class="itinerary-container">

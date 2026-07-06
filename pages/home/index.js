@@ -5,6 +5,13 @@ import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { navigateByUrl } from '~/utils/navigation';
 
+const TAB_URLS = new Set([
+  '/pages/groupOrder/index',
+  '/pages/customerOrders/index',
+  '/pages/productManagement/index',
+  '/pages/my/index',
+]);
+
 Page({
   data: {
     titleText: '工作台',
@@ -154,7 +161,7 @@ Page({
       this.goLogin();
       return;
     }
-    navigateByUrl('/pages/groupOrder/index');
+    this.openUrl('/pages/groupOrder/index');
   },
 
   goProducts() {
@@ -162,7 +169,7 @@ Page({
       this.goLogin();
       return;
     }
-    navigateByUrl('/pages/productManagement/index');
+    this.openUrl('/pages/productManagement/index');
   },
 
   goCustomerOrders() {
@@ -170,7 +177,7 @@ Page({
       this.goLogin();
       return;
     }
-    navigateByUrl('/pages/customerOrders/index');
+    this.openUrl('/pages/customerOrders/index');
   },
 
   goSummaryCard(e) {
@@ -203,15 +210,11 @@ Page({
       wx.showToast({ title: '当前账号不能查看数据看板', icon: 'none' });
       return;
     }
-    navigateByUrl('/pages/dataCenter/index', {
-      fail: () => wx.showToast({ title: '打开数据看板失败', icon: 'none' }),
-    });
+    this.openUrl('/pages/dataCenter/index');
   },
 
   goProviderApply() {
-    navigateByUrl('/pages/providers/edit/index?apply=1', {
-      fail: () => wx.showToast({ title: '打开供应商申请失败', icon: 'none' }),
-    });
+    this.openUrl('/pages/providers/edit/index?apply=1');
   },
 
   goOperationLogs() {
@@ -219,14 +222,20 @@ Page({
       wx.showToast({ title: '当前账号不能查看操作记录', icon: 'none' });
       return;
     }
-    navigateByUrl('/pages/operationLogs/index', {
-      fail: () => wx.showToast({ title: '打开操作记录失败', icon: 'none' }),
-    });
+    this.openUrl('/pages/operationLogs/index');
   },
 
   goMy() {
-    navigateByUrl('/pages/my/index', {
-      fail: () => wx.showToast({ title: '返回我的页失败', icon: 'none' }),
-    });
+    this.openUrl('/pages/my/index');
+  },
+
+  openUrl(url) {
+    const path = String(url || '').split('?')[0];
+    const fail = () => wx.showToast({ title: '打开页面失败', icon: 'none' });
+    if (TAB_URLS.has(path)) {
+      wx.switchTab({ url: path, fail });
+      return;
+    }
+    wx.navigateTo({ url, fail });
   },
 });

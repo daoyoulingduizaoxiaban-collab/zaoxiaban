@@ -9,13 +9,35 @@
   padding: 0 30rpx;
 }
 
-.search-page .t-class__input-container {
-  border-radius: 999rpx !important;
+.native-search {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 
-.search-page .t-search__input {
-  font-size: 28rpx !important;
-  color: #333 !important;
+.native-search__input {
+  flex: 1;
+  min-width: 0;
+  height: 76rpx;
+  padding: 0 28rpx;
+  border-radius: 999rpx;
+  background: #f3f4f6;
+  color: #333333;
+  font-size: 28rpx;
+  box-sizing: border-box;
+}
+
+.native-search__cancel {
+  margin: 0;
+  padding: 0 4rpx;
+  background: transparent;
+  color: #0052d9;
+  font-size: 28rpx;
+  line-height: 76rpx;
+}
+
+.native-search__cancel::after {
+  border: 0;
 }
 
 .search-page .search-wrap {

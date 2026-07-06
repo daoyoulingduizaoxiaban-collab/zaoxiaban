@@ -25,3 +25,48 @@ page {
 .content.unread > view {
   width: 510rpx;
 }
+.message-detail-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex;
+  align-items: flex-end;
+}
+
+.message-detail-panel {
+  width: 100%;
+  padding: 32rpx;
+  background: #ffffff;
+  border-radius: 24rpx 24rpx 0 0;
+  box-sizing: border-box;
+}
+
+.message-detail-title {
+  color: #101828;
+  font-size: 34rpx;
+  font-weight: 600;
+  line-height: 46rpx;
+}
+
+.message-detail-desc,
+.message-detail-state {
+  margin-top: 16rpx;
+  color: #5f6f89;
+  font-size: 26rpx;
+  line-height: 40rpx;
+}
+
+.message-detail-close {
+  margin-top: 28rpx;
+  height: 80rpx;
+  line-height: 80rpx;
+  border-radius: 8rpx;
+  background: #0052d9;
+  color: #ffffff;
+  font-size: 28rpx;
+}
+
+.message-detail-close::after {
+  border: 0;
+}

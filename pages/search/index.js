@@ -212,6 +212,11 @@ Page({
     this.runSearch(value);
   },
 
+  handleNativeConfirm(e) {
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : this.data.searchValue;
+    this.handleSubmit({ detail: { value } });
+  },
+
   handleSearchChange(e) {
     const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
     this.setData({ searchValue: value || '' });

@@ -69,9 +69,11 @@ Page({
       return;
     }
     const processedList = res.data.map(item => {
-      const isExist = this.data.excludeIds.includes(String(item.id));
+      const productId = item.id || item._id;
+      const isExist = this.data.excludeIds.includes(String(productId));
       return {
         ...normalizeProductImageFields(item),
+        id: productId,
         priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
         disabled: isExist,
         selected: false

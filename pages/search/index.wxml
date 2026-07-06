@@ -7,18 +7,18 @@
     <t-empty icon="info-circle" description="{{accessStateText}}" />
   </view>
   <view wx:else class="search-input">
-    <t-search
-      t-class-input-container="t-class__input-container"
-      t-class-input="t-search__input"
-      value="{{searchValue}}"
-      action="取消"
-      shape="round"
-      placeholder="搜索团单、商品或客户订单"
-      bind:change="handleSearchChange"
-      bind:submit="handleSubmit"
-      bind:action-click="actionHandle"
-      focus="{{searchFocus}}"
-    ></t-search>
+    <view class="native-search">
+      <input
+        class="native-search__input"
+        value="{{searchValue}}"
+        placeholder="搜索团单、商品或客户订单"
+        confirm-type="search"
+        focus="{{searchFocus}}"
+        bindinput="handleSearchChange"
+        bindconfirm="handleNativeConfirm"
+      />
+      <button class="native-search__cancel" bindtap="actionHandle">取消</button>
+    </view>
   </view>
   <view wx:if="{{canUseSearch}}" class="search-wrap">
     <view class="result-wrap" wx:if="{{hasSearched}}">
