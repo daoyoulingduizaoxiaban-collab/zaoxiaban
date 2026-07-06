@@ -17,6 +17,16 @@ const TAB_URLS = new Set([
   '/pages/my/index',
 ]);
 
+const SETTING_ICON_TEXT = {
+  setting: '⚙',
+  user: '人',
+  edit: '笔',
+  usergroup: '团',
+  time: '记',
+  shop: '店',
+  'user-setting': '权',
+};
+
 Page({
   behaviors: [useToastBehavior],
 
@@ -235,7 +245,10 @@ Page({
       });
     }
 
-    return list;
+    return list.map(item => ({
+      ...item,
+      iconText: SETTING_ICON_TEXT[item.icon] || '•',
+    }));
   },
 
   toPersonalInfo(profile) {

@@ -16,6 +16,7 @@ Component({
   },
   data: {
     visible: false,
+    canGoBack: false,
     sidebar: [
       {
         title: '团单',
@@ -33,12 +34,23 @@ Component({
   lifetimes: {
     ready() {
       const statusHeight = wx.getWindowInfo().statusBarHeight;
+      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
       this.setData({
-        statusHeight
+        statusHeight,
+        canGoBack: this.properties.navType === 'my' && pages.length > 1,
       });
     },
   },
   methods: {
+    navigateBack() {
+      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+      if (pages.length > 1) {
+        wx.navigateBack();
+        return;
+      }
+      navigateByUrl('/pages/my/index');
+    },
+
     openDrawer() {
       this.setData({
         visible: true,

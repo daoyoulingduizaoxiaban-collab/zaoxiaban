@@ -426,6 +426,12 @@ export const AuthService = {
   async refreshSession() {
     const currentProfile = this.getRealProfile();
     const currentSession = this.getCurrentSession();
+    if (!currentProfile && config.allowMockIdentity) {
+      return this.login({ role: AUTH_ROLES.GUIDE });
+    }
+    if (currentProfile && currentProfile.isMockOpenId) {
+      return { success: true, data: { profile: currentProfile, session: currentSession } };
+    }
     if (!currentProfile || currentProfile.isMockOpenId || !currentSession || !currentSession.cloudOpenIdVerified) {
       return { success: false, error: '当前没有可刷新的正式登录状态' };
     }

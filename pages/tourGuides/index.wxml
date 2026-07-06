@@ -1,22 +1,30 @@
 <nav nav-type="my" titleText="{{titleText}}" />
 
 <view class="tourGuides-container">
-  <t-cell-group theme="card">
-    <block wx:for="{{ tourGuidesList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow
-        bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-        <t-icon slot="left-icon" name="user" size="48rpx" color="#0052d9" />
-      </t-cell>
-    </block>
-  </t-cell-group>
-
-  <view wx:if="{{ tourGuidesList.length === 0 }}" class="empty-state">
-    <t-empty icon="info-circle" description="{{disabledReason || '暂无团主资料'}}" />
+  <view class="native-list" wx:if="{{tourGuidesList.length}}">
+    <view
+      wx:for="{{tourGuidesList}}"
+      wx:key="id"
+      class="native-row"
+      data-id="{{item.id}}"
+      bindtap="goToDetail"
+    >
+      <view class="native-avatar">团</view>
+      <view class="native-main">
+        <view class="native-title">{{item.title}}</view>
+        <view class="native-desc">{{item.description}}</view>
+      </view>
+      <view class="native-note">{{item.statusText}}</view>
+    </view>
   </view>
 
-  <t-fab wx:if="{{canCreateTourGuide}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="新增团主" style="right: 32rpx; bottom: 180rpx;" />
+  <view wx:if="{{ tourGuidesList.length === 0 }}" class="empty-state">
+    <text>{{disabledReason || '暂无团主资料'}}</text>
+  </view>
+
+  <button wx:if="{{canCreateTourGuide}}" class="floating-action" bindtap="onGoToEdit">新增团主</button>
   <view wx:elif="{{canEditOwnTourGuide}}" class="own-edit">
-    <t-button theme="primary" size="large" block bind:tap="onGoToEdit">编辑我的团主资料</t-button>
+    <button class="primary-action" bindtap="onGoToEdit">编辑我的团主资料</button>
   </view>
 
 </view>

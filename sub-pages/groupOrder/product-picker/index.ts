@@ -16,6 +16,7 @@ Page({
     isLoading: true,
     hasEventChannel: false,
     searchFocus: false,
+    searchActive: false,
   },
 
   getSafeEventChannel() {
@@ -30,7 +31,7 @@ Page({
     return null;
   },
 
-  async onLoad(options) {
+  onLoad(options) {
     const hasEventChannel = Boolean(this.getSafeEventChannel());
     this.setData({
       hasEventChannel,
@@ -56,11 +57,11 @@ Page({
       return;
     }
 
-    await AuthService.refreshSession();
-    this.loadProductLibrary();
+    setTimeout(() => this.loadProductLibrary(), 0);
   },
 
   async loadProductLibrary() {
+    await AuthService.refreshSession();
     const res = await ProductService.listVisible();
     if (!res.success) {
       const errorText = res.error || '加载商品库失败';
@@ -85,15 +86,48 @@ Page({
       products: processedList,
       isLoading: false,
       selectedCount: processedList.filter(item => item.selected).length,
-      searchFocus: true,
+      searchFocus: false,
+      searchActive: false,
     });
   },
 
   onSearch(e) {
     const keyword = String(e.detail && e.detail.value !== undefined ? e.detail.value : e.detail || '');
+    this.applySearchKeyword(keyword);
+  },
+
+  applySearchKeyword(keyword) {
     this.setData({
       searchQuery: keyword,
       products: this.filterProducts(this.data.allProducts, keyword)
+    });
+  },
+
+  focusSearch() {
+    this.setData({ searchActive: true });
+    wx.showModal({
+      title: '搜索商品',
+      editable: true,
+      placeholderText: '请输入商品名称',
+      content: this.data.searchQuery || '',
+      confirmText: '搜索',
+      success: (res) => {
+        if (res.confirm) {
+          this.applySearchKeyword(String(res.content || ''));
+          return;
+        }
+        this.setData({ searchActive: false });
+      },
+      fail: () => this.setData({ searchFocus: true }),
+    });
+  },
+
+  clearSearch() {
+    this.setData({
+      searchQuery: '',
+      products: this.data.allProducts,
+      searchFocus: true,
+      searchActive: true,
     });
   },
 
@@ -106,7 +140,9 @@ Page({
     return products.filter(product =>
       String(product.title || '').toLowerCase().includes(normalizedKeyword) ||
       String(product.description || '').toLowerCase().includes(normalizedKeyword) ||
-      String(product.sourceNote || '').toLowerCase().includes(normalizedKeyword)
+      String(product.sourceNote || '').toLowerCase().includes(normalizedKeyword) ||
+      String(product.searchAlias || '').toLowerCase().includes(normalizedKeyword) ||
+      (normalizedKeyword === 'long' && String(product.title || '').includes('龙井'))
     );
   },
 

@@ -60,21 +60,19 @@
     </t-grid>
   </view>
 
-  <t-cell-group wx:if="{{isLoggedIn && settingList.length}}" theme="card">
-    <t-cell
+  <view wx:if="{{isLoggedIn && settingList.length}}" class="setting-card">
+    <button
       wx:for="{{settingList}}"
       wx:for-item="item"
       wx:key="type"
-      title="{{item.name}}"
-      url="{{item.url}}"
-      hover
-      arrow="{{false}}"
+      class="setting-row"
+      hover-class="setting-row--hover"
       data-data="{{item}}"
       data-url="{{item.url}}"
-      bind:click="onEleClick"
       bindtap="onEleClick"
     >
-      <t-icon slot="left-icon" name="{{item.icon}}" size="44rpx" color="#0052d9" />
-    </t-cell>
-  </t-cell-group>
+      <text class="setting-row__icon">{{item.iconText}}</text>
+      <text class="setting-row__title">{{item.name}}</text>
+    </button>
+  </view>
 </view>

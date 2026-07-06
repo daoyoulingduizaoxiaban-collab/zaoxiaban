@@ -1,33 +1,83 @@
 page {
-  background-color: #fff;
+  background: #f5f7fa;
 }
 
 .info-edit {
-  --td-input-vertical-padding: 0;
+  padding: 24rpx 32rpx 180rpx;
 }
 
-.info-edit__cell {
-  .t-cell__title {
-    flex: none;
-    width: 162rpx;
-  }
+.info-edit--empty {
+  text-align: center;
 }
 
-.info-edit__gender {
-  --td-radio-vertical-padding: 0;
-  width: 100%;
+.empty-title {
+  margin: 120rpx 0 32rpx;
+  color: #697386;
+  font-size: 28rpx;
+}
+
+.field-card {
+  overflow: hidden;
+  border-radius: 16rpx;
+  background: #fff;
+}
+
+.field-row {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  min-height: 104rpx;
+  padding: 0 28rpx;
+  border-bottom: 1rpx solid #edf0f5;
 }
 
-.info-edit__introduction {
-  width: 100%;
-  padding: 0 !important;
-  height: 200rpx;
+.field-row:last-child {
+  border-bottom: none;
 }
 
-.info-edit__photos {
+.field-row--block {
+  display: block;
+  padding-top: 28rpx;
+  padding-bottom: 28rpx;
+}
+
+.field-label {
+  flex: none;
+  width: 150rpx;
+  color: #1f2d3d;
+  font-size: 28rpx;
+  font-weight: 600;
+}
+
+.field-input {
+  flex: 1;
+  color: #1f2d3d;
+  font-size: 28rpx;
+  text-align: right;
+}
+
+.gender-group {
+  display: flex;
+  gap: 28rpx;
+  margin-top: 24rpx;
+}
+
+.gender-option {
+  display: flex;
+  align-items: center;
+  color: #1f2d3d;
+  font-size: 26rpx;
+}
+
+.field-textarea {
   width: 100%;
+  min-height: 180rpx;
+  margin-top: 24rpx;
+  padding: 20rpx;
+  box-sizing: border-box;
+  border-radius: 12rpx;
+  background: #f7f9fc;
+  color: #1f2d3d;
+  font-size: 28rpx;
 }
 
 .info-edit__save {
@@ -35,4 +85,17 @@ page {
   left: 32rpx;
   right: 32rpx;
   bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+}
+
+.primary-action {
+  height: 88rpx;
+  border-radius: 44rpx;
+  background: #0052d9;
+  color: #fff;
+  font-size: 30rpx;
+  line-height: 88rpx;
+}
+
+.primary-action::after {
+  border: none;
 }

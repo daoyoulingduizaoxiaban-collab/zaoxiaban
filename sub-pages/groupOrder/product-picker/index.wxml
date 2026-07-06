@@ -2,9 +2,19 @@
 
 <view class="container">
   <view class="search-box">
-    <view class="search-inner">
+    <view class="search-inner {{searchActive ? 'is-active' : ''}}" catchtap="focusSearch">
       <text class="search-label">搜</text>
-      <input class="search-input" value="{{searchQuery}}" placeholder="搜索商品名称" confirm-type="search" focus="{{searchFocus}}" bindinput="onSearch" bindconfirm="onSearch" />
+      <input
+        class="search-input"
+        type="text"
+        value="{{searchQuery}}"
+        placeholder="搜索商品名称"
+        confirm-type="search"
+        focus="{{searchFocus}}"
+        disabled="{{true}}"
+        bindtap="focusSearch"
+      />
+      <button wx:if="{{searchQuery}}" class="search-clear" catchtap="clearSearch">清空</button>
     </view>
   </view>
 

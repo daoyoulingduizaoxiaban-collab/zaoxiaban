@@ -12,14 +12,12 @@ Page({
     disabledReason: '',
   },
 
-  async onLoad() {
-    await AuthService.refreshSession();
-    await this.loadTourGuides();
+  onLoad() {
+    this.loadTourGuides();
   },
 
-  async onShow() {
-    await AuthService.refreshSession();
-    await this.loadTourGuides();
+  onShow() {
+    this.loadTourGuides();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().setData({
         value: 'my'
@@ -28,6 +26,9 @@ Page({
   },
 
   async loadTourGuides() {
+    if (this.isLoadingTourGuides) return;
+    this.isLoadingTourGuides = true;
+    await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES)) {
       this.setData({
@@ -36,6 +37,7 @@ Page({
         canEditOwnTourGuide: false,
         disabledReason: AuthService.getAccessStateText(profile),
       });
+      this.isLoadingTourGuides = false;
       return;
     }
 
@@ -54,6 +56,7 @@ Page({
       canEditOwnTourGuide: hasRole(profile, AUTH_ROLES.GUIDE),
       disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的团主资料。'),
     });
+    this.isLoadingTourGuides = false;
   },
 
   goToDetail(e) {

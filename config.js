@@ -25,8 +25,8 @@ const BASE_URL = '';
 
 const devMode = Object.freeze({
   allowRolePreview: true,
-  allowQaTools: false,
-  allowMockIdentity: false,
+  allowQaTools: true,
+  allowMockIdentity: true,
   allowSeedDataFallback: true,
 });
 
