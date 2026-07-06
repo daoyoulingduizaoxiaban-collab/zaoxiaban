@@ -57,14 +57,14 @@
               <text class="description">{{item.sourceNote || '暂无供应来源备注'}}</text>
             </view>
           </view>
-          <view class="action-bar" wx:if="{{canManageProducts}}">
+          <view class="action-bar">
             <button class="detail-entry-btn" size="mini" plain catchtap="onOpenDetail" data-id="{{item.id}}">
               <t-icon name="search" size="28rpx" color="#0052d9" />
               <text>查看详情</text>
             </button>
-            <button size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
-            <button size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
-            <button size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">
+            <button wx:if="{{canManageProducts}}" size="mini" plain catchtap="onEditProduct" data-id="{{item.id}}">编辑</button>
+            <button wx:if="{{canManageProducts}}" size="mini" type="warn" plain catchtap="onDelete" data-id="{{item.id}}">删除</button>
+            <button wx:if="{{canManageProducts}}" size="mini" plain catchtap="onToggleStatus" data-id="{{item.id}}">
               {{item.status === 2 ? '下架' : '上架'}}
             </button>
           </view>

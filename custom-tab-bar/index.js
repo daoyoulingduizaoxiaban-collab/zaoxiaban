@@ -17,6 +17,13 @@ const TAB_ROUTE_VALUE_MAP = {
   'pages/my/index': 'my',
 };
 
+const getTabValueByRoute = (route = '') => {
+  const normalizedRoute = String(route || '');
+  if (TAB_ROUTE_VALUE_MAP[normalizedRoute]) return TAB_ROUTE_VALUE_MAP[normalizedRoute];
+  if (normalizedRoute.indexOf('pages/my/') === 0) return 'my';
+  return 'my';
+};
+
 Component({
   data: {
     value: '',
@@ -49,8 +56,7 @@ Component({
     getCurrentTabValue() {
       const pages = getCurrentPages();
       const curPage = pages[pages.length - 1];
-      const route = curPage && curPage.route ? String(curPage.route) : '';
-      return TAB_ROUTE_VALUE_MAP[route] || 'my';
+      return getTabValueByRoute(curPage && curPage.route);
     },
 
     refreshTabBar() {
