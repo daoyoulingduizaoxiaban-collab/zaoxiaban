@@ -3,7 +3,32 @@
   "miniprogramRoot": "",
   "cloudfunctionRoot": "cloudfunctions/",
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      {
+        "value": "QA",
+        "type": "folder"
+      },
+      {
+        "value": "DOC",
+        "type": "folder"
+      },
+      {
+        "value": "resume",
+        "type": "folder"
+      },
+      {
+        "value": "cloudfunctions",
+        "type": "folder"
+      },
+      {
+        "value": "less_errors.log",
+        "type": "file"
+      },
+      {
+        "value": "static/.DS_Store",
+        "type": "file"
+      }
+    ],
     "include": []
   },
   "setting": {
