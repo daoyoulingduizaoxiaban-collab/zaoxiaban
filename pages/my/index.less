@@ -31,14 +31,6 @@
       margin-bottom: 0 !important;
     }
 
-    .grid-class {
-      margin-top: 40rpx;
-    }
-
-    .grid-item .t-grid-item__content {
-      padding: 0px !important;
-    }
-
     .split-line {
       border-right: 1px solid #e7e7e7;
     }
@@ -95,6 +87,42 @@
       font-weight: 600;
     }
   }
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-top: 36rpx;
+  padding: 0 12rpx 8rpx;
+}
+
+.service-grid__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 104rpx;
+  margin: 0;
+  padding: 8rpx 0;
+  border-radius: 0;
+  background: #ffffff;
+  color: #1f2d3d;
+  line-height: 1.2;
+}
+
+.service-grid__item::after {
+  border: none;
+}
+
+.service-grid__item--hover {
+  background: #f4f7fb;
+}
+
+.service-grid__text {
+  margin-top: 10rpx;
+  color: #1f2d3d;
+  font-size: 24rpx;
+  line-height: 34rpx;
 }
 
 .auth-warning {

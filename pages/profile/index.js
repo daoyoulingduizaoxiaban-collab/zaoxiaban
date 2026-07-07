@@ -40,7 +40,14 @@ Page({
     }
 
     const res = await DirectoryRepository.listUsers();
-    const visibleUsers = res.success ? res.data : [];
+    const visibleUsers = res.success ? res.data : [{
+      id: currentProfile.id,
+      name: currentProfile.displayName,
+      displayName: currentProfile.displayName,
+      displayRole: currentProfile.roleLabel,
+      city: currentProfile.city,
+      phone: currentProfile.phone,
+    }];
 
     this.setData({
       profileList: visibleUsers.map(user => ({
@@ -51,7 +58,7 @@ Page({
       })),
       canEditCurrentProfile: canUseFeature(currentProfile, FEATURE_KEYS.PROFILE),
       currentProfileId: currentProfile.id || '',
-      disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的个人资料。'),
+      disabledReason: visibleUsers.length ? '' : '当前账号没有可查看的个人资料。',
     });
   },
 

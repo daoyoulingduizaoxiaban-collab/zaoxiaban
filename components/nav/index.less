@@ -36,17 +36,24 @@
 }
 
 .navbar-back {
+  background: transparent;
+  border: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 60rpx;
   height: 60rpx;
+  padding: 0;
   margin: 0 16rpx 0 0;
   border-radius: 30rpx;
   color: #1f2d3d;
   font-size: 52rpx;
   font-weight: 500;
   line-height: 54rpx;
+}
+
+.navbar-back::after {
+  border: 0;
 }
 
 .logo {

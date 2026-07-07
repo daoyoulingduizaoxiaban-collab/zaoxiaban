@@ -333,8 +333,9 @@ Page({
     const dataset = (e.currentTarget && e.currentTarget.dataset) || {};
     const detail = e.detail || {};
     const data = dataset.data || detail.data || detail.item || {};
-    const { name, type } = data;
-    const url = data.url || dataset.url || detail.url || '';
+    const name = dataset.name || detail.name || data.name || '';
+    const type = dataset.type || detail.type || data.type || '';
+    const url = dataset.url || detail.url || data.url || '';
     const navKey = `${type || name || ''}:${url}`;
     const now = Date.now();
     if (this.lastNavKey === navKey && now - (this.lastNavAt || 0) < 800) return;
@@ -394,13 +395,8 @@ Page({
       wx.showToast({ title: '暂时无法打开该页面', icon: 'none' });
       return;
     }
-    const path = String(url).split('?')[0];
     const fail = () => wx.showToast({ title: '暂时无法打开该页面', icon: 'none' });
-    if (TAB_URLS.has(path)) {
-      wx.switchTab({ url: path, fail });
-      return;
-    }
-    wx.navigateTo({ url, fail });
+    navigateByUrl(url, { fail });
   },
 
   openRolePreview() {

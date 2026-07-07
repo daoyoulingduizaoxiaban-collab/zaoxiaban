@@ -1,6 +1,6 @@
 <t-navbar title="{{ titleText }}" fixed="{{ true }}" placeholder="{{ true }}">
   <view slot="left" class="navbar-left-content">
-    <view wx:if="{{canGoBack}}" class="navbar-back" aria-label="返回" catchtap="navigateBack">‹</view>
+    <button wx:if="{{canGoBack}}" class="navbar-back" aria-label="返回" bindtap="navigateBack">‹</button>
     <image wx:else class="logo" src="/static/logo/zaoxiaban.png" mode="aspectFit" />
     <t-icon wx:if="{{ navType === 'search' }}" name="view-list" size="48rpx" bind:tap="openDrawer" />
   </view>

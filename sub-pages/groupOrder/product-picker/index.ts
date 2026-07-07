@@ -15,6 +15,7 @@ Page({
     pageErrorText: '',
     isLoading: true,
     hasEventChannel: false,
+    sourceUrl: '/sub-pages/groupOrder/add/index',
     searchFocus: false,
     searchActive: false,
   },
@@ -33,11 +34,13 @@ Page({
 
   onLoad(options) {
     const hasEventChannel = Boolean(this.getSafeEventChannel());
+    const sourceUrl = options.from ? decodeURIComponent(String(options.from)) : '/sub-pages/groupOrder/add/index';
     this.setData({
       hasEventChannel,
-      pageErrorText: hasEventChannel ? '' : '请从本团商品页进入，才能把商品加入团单。',
-      isLoading: hasEventChannel,
-      searchFocus: hasEventChannel,
+      sourceUrl,
+      pageErrorText: '',
+      isLoading: true,
+      searchFocus: false,
     });
 
     if (options.excludeIds) {
@@ -50,11 +53,6 @@ Page({
           icon: 'none'
         });
       }
-    }
-
-    if (!hasEventChannel) {
-      this.setData({ allProducts: [], products: [], isLoading: false });
-      return;
     }
 
     setTimeout(() => this.loadProductLibrary(), 0);
@@ -91,9 +89,16 @@ Page({
     });
   },
 
-  onSearch(e) {
+  onSearchInput(e) {
     const keyword = String(e.detail && e.detail.value !== undefined ? e.detail.value : e.detail || '');
     this.applySearchKeyword(keyword);
+  },
+
+  focusSearch() {
+    this.setData({
+      searchFocus: true,
+      searchActive: true,
+    });
   },
 
   applySearchKeyword(keyword) {
@@ -103,23 +108,12 @@ Page({
     });
   },
 
-  focusSearch() {
-    this.setData({ searchActive: true });
-    wx.showModal({
-      title: '搜索商品',
-      editable: true,
-      placeholderText: '请输入商品名称',
-      content: this.data.searchQuery || '',
-      confirmText: '搜索',
-      success: (res) => {
-        if (res.confirm) {
-          this.applySearchKeyword(String(res.content || ''));
-          return;
-        }
-        this.setData({ searchActive: false });
-      },
-      fail: () => this.setData({ searchFocus: true }),
-    });
+  onSearchFocus() {
+    this.setData({ searchFocus: true, searchActive: true });
+  },
+
+  onSearchBlur() {
+    this.setData({ searchFocus: false, searchActive: Boolean(this.data.searchQuery) });
   },
 
   clearSearch() {
@@ -132,18 +126,23 @@ Page({
   },
 
   filterProducts(products, keyword) {
-    if (!keyword) {
+    const normalizedKeyword = String(keyword || '').trim().toLowerCase();
+    if (!normalizedKeyword) {
       return products;
     }
 
-    const normalizedKeyword = keyword.toLowerCase();
-    return products.filter(product =>
-      String(product.title || '').toLowerCase().includes(normalizedKeyword) ||
-      String(product.description || '').toLowerCase().includes(normalizedKeyword) ||
-      String(product.sourceNote || '').toLowerCase().includes(normalizedKeyword) ||
-      String(product.searchAlias || '').toLowerCase().includes(normalizedKeyword) ||
-      (normalizedKeyword === 'long' && String(product.title || '').includes('龙井'))
-    );
+    return products.filter(product => {
+      const title = String(product.title || '');
+      const searchableText = [
+        title,
+        product.description,
+        product.sourceNote,
+        product.searchAlias,
+        title.includes('龙井') ? 'long longjing lng 龙井' : '',
+      ].join(' ').toLowerCase();
+
+      return searchableText.includes(normalizedKeyword);
+    });
   },
 
   getPriceDisplay(priceSetting = []) {
@@ -236,11 +235,6 @@ Page({
     }
     const selectedItems = this.data.allProducts.filter(p => p.selected);
 
-    if (!this.data.hasEventChannel) {
-      wx.showToast({ title: '请从本团商品页进入', icon: 'none' });
-      return;
-    }
-
     wx.showLoading({ title: '加入中...' });
 
     setTimeout(() => {
@@ -248,10 +242,15 @@ Page({
 
       const eventChannel = this.getSafeEventChannel();
       if (!eventChannel) {
-        wx.showToast({
-          title: '请从本团商品页进入',
-          icon: 'none'
-        });
+        const fallbackSaved = this.saveFallbackResult(selectedItems.map(item => ({
+          ...item,
+          selected: false,
+          disabled: false
+        })));
+        wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
+        if (fallbackSaved) {
+          navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
+        }
         return;
       }
 
@@ -271,12 +270,12 @@ Page({
         })));
         wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
         if (fallbackSaved) {
-          navigateBackOrTab('/pages/groupOrder/index');
+          navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
         }
         return;
       }
 
-      navigateBackOrTab('/pages/groupOrder/index');
+      navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
     }, 500);
   }
 });

@@ -19,17 +19,54 @@
   <view class="mode-tip">{{saveModeText}}</view>
   <t-cell-group theme="card" title="基本信息">
     <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" bindchange="onInput" data-field="title" />
-    <t-textarea label="团单描述" placeholder="最多200个字" value="{{formData.description}}" bindchange="onInput" maxlength="200"
-      data-field="description" />
+    <view class="native-textarea-field">
+      <view class="native-textarea-label">团单描述</view>
+      <textarea
+        class="native-textarea"
+        value="{{formData.description}}"
+        placeholder="最多200个字"
+        maxlength="200"
+        data-field="description"
+        bindinput="onInput"
+      />
+    </view>
     <t-input label="*出团时间" placeholder="例：2026-07-10 09:00" value="{{formData.startAt}}" bindchange="onInput" data-field="startAt" />
     <t-input label="*收单截止" placeholder="例：2026-07-09 20:00" value="{{formData.endAt}}" bindchange="onInput" data-field="endAt" />
-    <t-textarea label="*取货/集合" placeholder="说明集合点、取货方式或交付安排" value="{{formData.pickupNote}}" bindchange="onInput" data-field="pickupNote" />
-    <t-textarea label="*付款说明" placeholder="说明付款方式、收款账号、付款后如何备注" value="{{formData.paymentNote}}" bindchange="onInput" data-field="paymentNote" />
+    <view class="native-textarea-field">
+      <view class="native-textarea-label">*取货/集合</view>
+      <textarea
+        class="native-textarea"
+        value="{{formData.pickupNote}}"
+        placeholder="说明集合点、取货方式或交付安排"
+        data-field="pickupNote"
+        bindinput="onInput"
+      />
+    </view>
+    <view class="native-textarea-field">
+      <view class="native-textarea-label">*付款说明</view>
+      <textarea
+        class="native-textarea"
+        value="{{formData.paymentNote}}"
+        placeholder="说明付款方式、收款账号、付款后如何备注"
+        data-field="paymentNote"
+        bindinput="onInput"
+      />
+    </view>
     <t-input label="*联系人" placeholder="团主姓名" value="{{formData.contactName}}" bindchange="onInput" data-field="contactName" />
     <t-input label="*联系电话" placeholder="团主手机号" value="{{formData.contactPhone}}" bindchange="onInput" data-field="contactPhone" />
-    <t-textarea label="客户提示" placeholder="下单前给客户看的补充说明" value="{{formData.customerNotice}}" bindchange="onInput" data-field="customerNotice" />
+    <view class="native-textarea-field">
+      <view class="native-textarea-label">客户提示</view>
+      <textarea
+        class="native-textarea"
+        value="{{formData.customerNotice}}"
+        placeholder="下单前给客户看的补充说明"
+        data-field="customerNotice"
+        bindinput="onInput"
+      />
+    </view>
   </t-cell-group>
-  <t-cell-group theme="card" title="*商品设置">
+  <view class="goods-section">
+    <view class="goods-section-title">*商品设置</view>
     <view class="goods-list" wx:if="{{selectedGoods.length > 0}}">
       <view class="goods-item" wx:for="{{selectedGoods}}" wx:key="id">
         <view class="goods-thumb-wrap {{item.isImageFallback ? 'is-fallback' : ''}}">
@@ -48,13 +85,11 @@
       </view>
     </view>
 
-    <button class="add-goods-btn-wrap" bindtap="onSelectGoods">
-      <text class="add-symbol">+</text>
-      <text class="add-text">添加团单商品</text>
-    </button>
-  </t-cell-group>
+    <view class="add-goods-btn-wrap">请使用底部按钮添加团单商品</view>
+  </view>
 
   <view class="footer">
+    <t-button class="footer-action" theme="primary" variant="outline" size="large" block bindtap="onSelectGoods">+ 添加团单商品</t-button>
     <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="onSave">{{isEdit ? '保存团单' : '新建团单'}}</t-button>
   </view>
 </view>

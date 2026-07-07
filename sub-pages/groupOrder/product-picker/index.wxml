@@ -1,18 +1,19 @@
 <sub-nav title="从商品库选择" placeholder />
 
 <view class="container">
-  <view class="search-box">
-    <view class="search-inner {{searchActive ? 'is-active' : ''}}" catchtap="focusSearch">
+  <view class="search-box" catchtap="focusSearch">
+    <view class="search-inner {{searchActive ? 'is-active' : ''}}">
       <text class="search-label">搜</text>
       <input
         class="search-input"
         type="text"
         value="{{searchQuery}}"
+        focus="{{searchFocus}}"
         placeholder="搜索商品名称"
         confirm-type="search"
-        focus="{{searchFocus}}"
-        disabled="{{true}}"
-        bindtap="focusSearch"
+        bindinput="onSearchInput"
+        bindfocus="onSearchFocus"
+        bindblur="onSearchBlur"
       />
       <button wx:if="{{searchQuery}}" class="search-clear" catchtap="clearSearch">清空</button>
     </view>

@@ -43,21 +43,27 @@
       <button class="login-action-native" catchtap="onLogin" bindtouchend="onLoginTouchEnd">登录后继续</button>
     </view>
     <t-divider wx:if="{{canUseBusiness}}" t-class="divider-class" />
-    <t-grid t-class="grid-class" wx:if="{{canUseBusiness}}">
-      <t-grid-item
+    <view class="service-grid" wx:if="{{canUseBusiness}}">
+      <button
         wx:for="{{gridList}}"
         wx:for-item="gridItem"
         wx:key="type"
-        class="grid-item {{gridItem.type === 'all' ? 'split-line' : ''}}"
+        class="service-grid__item {{gridItem.type === 'all' ? 'split-line' : ''}}"
+        hover-class="service-grid__item--hover"
         data-data="{{gridItem}}"
+        data-name="{{gridItem.name}}"
+        data-type="{{gridItem.type}}"
         data-url="{{gridItem.url}}"
-        bind:click="onEleClick"
-        bindtap="onEleClick"
+        catchtap="onEleClick"
       >
-        <t-icon name="{{gridItem.icon}}" size="48rpx" color="#0052d9" />
-        <view slot="text">{{gridItem.name}}</view>
-      </t-grid-item>
-    </t-grid>
+        <t-icon
+          name="{{gridItem.icon}}"
+          size="48rpx"
+          color="#0052d9"
+        />
+        <text class="service-grid__text">{{gridItem.name}}</text>
+      </button>
+    </view>
   </view>
 
   <view wx:if="{{isLoggedIn && settingList.length}}" class="setting-card">
@@ -68,6 +74,8 @@
       class="setting-row"
       hover-class="setting-row--hover"
       data-data="{{item}}"
+      data-name="{{item.name}}"
+      data-type="{{item.type}}"
       data-url="{{item.url}}"
       bindtap="onEleClick"
     >
