@@ -29,8 +29,21 @@ Page({
   },
 
   async onLoad() {
-    await AuthService.refreshSession();
-    await this.fetchItineraryList();
+    (this as any)._skipNextShowRefresh = true;
+    await this.refreshAndFetchItineraryList();
+  },
+
+  async refreshAndFetchItineraryList() {
+    if ((this as any)._refreshInFlight) return (this as any)._refreshInFlight;
+    (this as any)._refreshInFlight = (async () => {
+      await AuthService.refreshSession();
+      await this.fetchItineraryList();
+    })();
+    try {
+      return await (this as any)._refreshInFlight;
+    } finally {
+      (this as any)._refreshInFlight = null;
+    }
   },
 
   normalizeGroupOrders(list) {
@@ -41,6 +54,8 @@ Page({
   },
 
   async fetchItineraryList() {
+    if ((this as any)._fetchInFlight) return (this as any)._fetchInFlight;
+    (this as any)._fetchInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS);
@@ -117,6 +132,12 @@ Page({
     } finally {
       wx.hideLoading();
     }
+    })();
+    try {
+      return await (this as any)._fetchInFlight;
+    } finally {
+      (this as any)._fetchInFlight = null;
+    }
   },
 
   getRoleScopeText() {
@@ -150,6 +171,14 @@ Page({
   },
 
   async onShow() {
+    if ((this as any)._skipNextShowRefresh) {
+      (this as any)._skipNextShowRefresh = false;
+      this.setData({ isNavigatingCreate: false });
+      if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+        this.getTabBar().refreshTabBar();
+      }
+      return;
+    }
     this.setData({
       authReady: false,
       isLoading: true,

@@ -92,6 +92,17 @@ Page({
     navigateBackOrTab(this.data.sourceUrl || '/pages/groupOrder/index');
   },
 
+  appendSelectedProducts(products = []) {
+    const selectedProducts = this.normalizeGoods((products || []).map(item => new Product(item)));
+    if (!selectedProducts.length) return;
+    const existingIds = new Set(this.data.selectedGoods.map(item => String(item.id)));
+    const nextProducts = selectedProducts.filter(item => !existingIds.has(String(item.id)));
+    if (!nextProducts.length) return;
+    this.setData({
+      selectedGoods: [...this.data.selectedGoods, ...nextProducts],
+    });
+  },
+
   consumePickerFallbackResult() {
     let result = null;
     try {
@@ -101,14 +112,7 @@ Page({
       result = null;
     }
     if (!result || !Array.isArray(result.products) || Date.now() - Number(result.createdAt || 0) > 5 * 60 * 1000) return;
-    const selectedProducts = this.normalizeGoods((result.products || []).map(item => new Product(item)));
-    if (!selectedProducts.length) return;
-    const existingIds = new Set(this.data.selectedGoods.map(item => String(item.id)));
-    const nextProducts = selectedProducts.filter(item => !existingIds.has(String(item.id)));
-    if (!nextProducts.length) return;
-    this.setData({
-      selectedGoods: [...this.data.selectedGoods, ...nextProducts],
-    });
+    this.appendSelectedProducts(result.products);
   },
 
   async loadGroupOrder(groupOrderId) {
@@ -179,22 +183,23 @@ Page({
   },
 
   onSelectGoods() {
+    if ((this as any)._isOpeningProductPicker) return;
     if (this.data.pageErrorText) {
       wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
       return;
     }
     const existingIds = this.data.selectedGoods.map(item => item.id);
+    (this as any)._isOpeningProductPicker = true;
     navigateByUrl(
       `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}&from=${encodeURIComponent('/sub-pages/groupOrder/add/index')}`,
       {
         events: {
           selectedProducts: (data) => {
-            const selectedProducts = this.normalizeGoods((data.products || []).map(item => new Product(item)));
-            if (selectedProducts.length === 0) return;
-            this.setData({
-              selectedGoods: [...this.data.selectedGoods, ...selectedProducts]
-            });
+            this.appendSelectedProducts(data.products || []);
           }
+        },
+        complete: () => {
+          (this as any)._isOpeningProductPicker = false;
         },
         fail: () => {
           wx.showToast({ title: '打开商品库失败', icon: 'none' });

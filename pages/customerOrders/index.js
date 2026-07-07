@@ -100,6 +100,7 @@ Page({
   },
 
   async onLoad(options = {}) {
+    this._skipNextShowRefresh = true;
     await AuthService.refreshSession();
     const pendingOrderId = options.orderId || options.id || '';
     const currentStatus = options.status !== undefined ? Number(options.status) : this.data.currentStatus;
@@ -125,6 +126,8 @@ Page({
   },
 
   async loadQaOrders() {
+    if (this._loadOrdersInFlight) return this._loadOrdersInFlight;
+    this._loadOrdersInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
@@ -181,6 +184,12 @@ Page({
       loadErrorText: '',
     });
     this.openPendingOrderDetail();
+    })();
+    try {
+      return await this._loadOrdersInFlight;
+    } finally {
+      this._loadOrdersInFlight = null;
+    }
   },
 
   filterOrdersByStatus(list = [], status = -1) {
@@ -521,6 +530,13 @@ Page({
   },
 
   async onShow() {
+    if (this._skipNextShowRefresh) {
+      this._skipNextShowRefresh = false;
+      if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+        this.getTabBar().refreshTabBar();
+      }
+      return;
+    }
     this.setData({
       authReady: false,
       isLoading: true,

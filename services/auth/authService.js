@@ -13,6 +13,7 @@ import {
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
 const AUTH_ROLE_PREVIEW_KEY = 'dao_you_ling_role_preview';
+const REFRESH_SESSION_TTL_MS = 45 * 1000;
 const SESSION_STORAGE_KEYS = Object.freeze([
   'dao_you_ling_product_picker_result',
   'dao_you_ling_read_messages',
@@ -23,6 +24,9 @@ const SESSION_STORAGE_PREFIXES = Object.freeze([
 ]);
 
 const nowIso = () => new Date().toISOString();
+let refreshSessionInFlight = null;
+let lastRefreshSessionAt = 0;
+let lastRefreshSessionResult = null;
 
 const DEFAULT_ROLE_PROFILES = Object.freeze({
   [AUTH_ROLES.OWNER]: {
@@ -84,6 +88,12 @@ const safeRemoveStorage = (key) => {
   return true;
 };
 
+const resetRefreshSessionCache = () => {
+  refreshSessionInFlight = null;
+  lastRefreshSessionAt = 0;
+  lastRefreshSessionResult = null;
+};
+
 const clearSessionStorage = () => {
   SESSION_STORAGE_KEYS.forEach(key => safeRemoveStorage(key));
   try {
@@ -104,6 +114,28 @@ const ignorePreviewProfileInFormalMode = profile => (
 const ignorePreviewSessionInFormalMode = session => (
   !config.allowMockIdentity && session && session.isMockOpenId ? null : session
 );
+
+const buildStoredRefreshResult = () => {
+  const profile = ignorePreviewProfileInFormalMode(safeGetStorage(AUTH_PROFILE_KEY, null));
+  const session = ignorePreviewSessionInFormalMode(safeGetStorage(AUTH_SESSION_KEY, null));
+  if (!profile && !session) return null;
+  return { success: true, data: { profile, session } };
+};
+
+const canReuseRefreshResult = (profile, session) => {
+  if (!lastRefreshSessionResult || !lastRefreshSessionResult.success) return false;
+  if (Date.now() - lastRefreshSessionAt > REFRESH_SESSION_TTL_MS) return false;
+  const cachedProfile = lastRefreshSessionResult.data && lastRefreshSessionResult.data.profile;
+  const cachedSession = lastRefreshSessionResult.data && lastRefreshSessionResult.data.session;
+  return Boolean(
+    profile
+    && session
+    && cachedProfile
+    && cachedSession
+    && String(cachedProfile.openId || '') === String(profile.openId || '')
+    && String(cachedSession.openId || '') === String(session.openId || '')
+  );
+};
 
 const canBaseUseRolePreview = profile => Boolean(
   profile
@@ -368,6 +400,7 @@ export const AuthService = {
   },
 
   async login({ role = AUTH_ROLES.GUIDE } = {}) {
+    if (!refreshSessionInFlight) resetRefreshSessionCache();
     const loginResult = await wxLogin();
     let profileSource = config.allowMockIdentity ? normalizeMockProfile(role) : null;
     let authStatus = {
@@ -424,58 +457,77 @@ export const AuthService = {
   },
 
   async refreshSession() {
+    if (refreshSessionInFlight) return refreshSessionInFlight;
+
     const currentProfile = this.getRealProfile();
     const currentSession = this.getCurrentSession();
-    if (!currentProfile && config.allowMockIdentity) {
-      return this.login({ role: AUTH_ROLES.GUIDE });
-    }
-    if (currentProfile && currentProfile.isMockOpenId) {
-      return { success: true, data: { profile: currentProfile, session: currentSession } };
-    }
-    if (!currentProfile || currentProfile.isMockOpenId || !currentSession || !currentSession.cloudOpenIdVerified) {
-      return { success: false, error: '当前没有可刷新的正式登录状态' };
+    if (canReuseRefreshResult(currentProfile, currentSession)) {
+      return buildStoredRefreshResult() || lastRefreshSessionResult;
     }
 
-    const loginResult = await wxLogin();
-    if (!loginResult.success || !loginResult.code) {
-      return { success: false, error: loginResult.error || '微信登录状态刷新失败' };
-    }
+    refreshSessionInFlight = (async () => {
+      if (!currentProfile && config.allowMockIdentity) {
+        return this.login({ role: AUTH_ROLES.GUIDE });
+      }
+      if (currentProfile && currentProfile.isMockOpenId) {
+        return { success: true, data: { profile: currentProfile, session: currentSession } };
+      }
+      if (!currentProfile || currentProfile.isMockOpenId || !currentSession || !currentSession.cloudOpenIdVerified) {
+        return { success: false, error: '当前没有可刷新的正式登录状态' };
+      }
 
-    const cloudResult = await callCloudAuth(loginResult.code, currentProfile.requestedRole || currentProfile.role);
-    if (!cloudResult.success || !cloudResult.data || !cloudResult.data.openId) {
-      return { success: false, error: cloudResult.error || '账号状态刷新失败，请稍后重试' };
-    }
+      const loginResult = await wxLogin();
+      if (!loginResult.success || !loginResult.code) {
+        return { success: false, error: loginResult.error || '微信登录状态刷新失败' };
+      }
 
-    const latestProfile = this.getRealProfile();
-    const latestSession = this.getCurrentSession();
-    if (
-      !latestProfile
-      || !latestSession
-      || String(latestProfile.openId || '') !== String(currentProfile.openId || '')
-      || String(latestSession.openId || '') !== String(currentSession.openId || '')
-    ) {
-      return { success: false, error: '登录状态已变更，请重新登录' };
-    }
+      const cloudResult = await callCloudAuth(loginResult.code, currentProfile.requestedRole || currentProfile.role);
+      if (!cloudResult.success || !cloudResult.data || !cloudResult.data.openId) {
+        return { success: false, error: cloudResult.error || '账号状态刷新失败，请稍后重试' };
+      }
 
-    const profile = mergeProfileTimestamps(normalizeCloudProfile(cloudResult.data, currentProfile.role));
-    const session = {
-      ...currentSession,
-      openId: profile.openId,
-      role: profile.role,
-      roles: profile.roles || [profile.role],
-      authSource: profile.authSource,
-      isMockOpenId: false,
-      cloudOpenIdVerified: true,
-      wxLoginCalled: true,
-      wxLoginCodeAvailable: true,
-      fallbackReason: '',
-      reviewStatus: profile.reviewStatus || profile.status || '',
-      roleExpiresAt: profile.roleExpiresAt || '',
-      updatedAt: nowIso(),
-    };
-    safeSetStorage(AUTH_PROFILE_KEY, profile);
-    safeSetStorage(AUTH_SESSION_KEY, session);
-    return { success: true, data: { profile, session } };
+      const latestProfile = this.getRealProfile();
+      const latestSession = this.getCurrentSession();
+      if (
+        !latestProfile
+        || !latestSession
+        || String(latestProfile.openId || '') !== String(currentProfile.openId || '')
+        || String(latestSession.openId || '') !== String(currentSession.openId || '')
+      ) {
+        return { success: false, error: '登录状态已变更，请重新登录' };
+      }
+
+      const profile = mergeProfileTimestamps(normalizeCloudProfile(cloudResult.data, currentProfile.role));
+      const session = {
+        ...currentSession,
+        openId: profile.openId,
+        role: profile.role,
+        roles: profile.roles || [profile.role],
+        authSource: profile.authSource,
+        isMockOpenId: false,
+        cloudOpenIdVerified: true,
+        wxLoginCalled: true,
+        wxLoginCodeAvailable: true,
+        fallbackReason: '',
+        reviewStatus: profile.reviewStatus || profile.status || '',
+        roleExpiresAt: profile.roleExpiresAt || '',
+        updatedAt: nowIso(),
+      };
+      safeSetStorage(AUTH_PROFILE_KEY, profile);
+      safeSetStorage(AUTH_SESSION_KEY, session);
+      return { success: true, data: { profile, session } };
+    })();
+
+    try {
+      const result = await refreshSessionInFlight;
+      if (result && result.success) {
+        lastRefreshSessionAt = Date.now();
+        lastRefreshSessionResult = buildStoredRefreshResult() || result;
+      }
+      return result;
+    } finally {
+      refreshSessionInFlight = null;
+    }
   },
 
   applyQaOverride({ qaRoleOverride = AUTH_ROLES.GUIDE, qaOpenIdOverride = '' } = {}) {
@@ -508,6 +560,7 @@ export const AuthService = {
 
     safeSetStorage(AUTH_PROFILE_KEY, profile);
     safeSetStorage(AUTH_SESSION_KEY, session);
+    resetRefreshSessionCache();
 
     return { success: true, data: { profile, session } };
   },
@@ -537,6 +590,7 @@ export const AuthService = {
   },
 
   logout() {
+    resetRefreshSessionCache();
     const removedProfile = safeRemoveStorage(AUTH_PROFILE_KEY);
     const removedSession = safeRemoveStorage(AUTH_SESSION_KEY);
     clearSessionStorage();

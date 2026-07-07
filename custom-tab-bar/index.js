@@ -24,6 +24,19 @@ const getTabValueByRoute = (route = '') => {
   return 'my';
 };
 
+const areTabListsEqual = (left = [], right = []) => (
+  left.length === right.length
+  && left.every((item, index) => {
+    const next = right[index] || {};
+    return item.value === next.value
+      && item.path === next.path
+      && item.label === next.label
+      && item.text === next.text
+      && item.icon === next.icon
+      && item.selectedIcon === next.selectedIcon;
+  })
+);
+
 Component({
   data: {
     value: '',
@@ -63,10 +76,9 @@ Component({
       const list = this.getVisibleTabs();
       const currentValue = this.getCurrentTabValue();
       const isCurrentVisible = list.some(item => item.value === currentValue);
-      this.setData({
-        list,
-        value: isCurrentVisible ? currentValue : 'my',
-      });
+      const value = isCurrentVisible ? currentValue : 'my';
+      if (areTabListsEqual(this.data.list, list) && this.data.value === value) return;
+      this.setData({ list, value });
     },
 
     onChange(e) {
@@ -81,7 +93,7 @@ Component({
     handleChange(e) {
       try {
         const nextList = this.getVisibleTabs();
-        if (nextList.length !== this.data.list.length) {
+        if (!areTabListsEqual(this.data.list, nextList)) {
           this.setData({ list: nextList });
         }
         const {

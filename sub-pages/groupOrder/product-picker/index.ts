@@ -55,10 +55,14 @@ Page({
       }
     }
 
-    setTimeout(() => this.loadProductLibrary(), 0);
+    this.loadProductLibrary();
   },
 
   async loadProductLibrary() {
+    if ((this as any)._loadProductsInFlight) return (this as any)._loadProductsInFlight;
+    if ((this as any)._hasLoadedProductLibrary) return;
+    (this as any)._hasLoadedProductLibrary = true;
+    (this as any)._loadProductsInFlight = (async () => {
     await AuthService.refreshSession();
     const res = await ProductService.listVisible();
     if (!res.success) {
@@ -87,6 +91,12 @@ Page({
       searchFocus: false,
       searchActive: false,
     });
+    })();
+    try {
+      return await (this as any)._loadProductsInFlight;
+    } finally {
+      (this as any)._loadProductsInFlight = null;
+    }
   },
 
   onSearchInput(e) {
@@ -95,6 +105,7 @@ Page({
   },
 
   focusSearch() {
+    if (this.data.searchFocus && this.data.searchActive) return;
     this.setData({
       searchFocus: true,
       searchActive: true,
@@ -109,11 +120,14 @@ Page({
   },
 
   onSearchFocus() {
-    this.setData({ searchFocus: true, searchActive: true });
+    if (this.data.searchActive) return;
+    this.setData({ searchActive: true });
   },
 
   onSearchBlur() {
-    this.setData({ searchFocus: false, searchActive: Boolean(this.data.searchQuery) });
+    const searchActive = Boolean(this.data.searchQuery);
+    if (!this.data.searchFocus && this.data.searchActive === searchActive) return;
+    this.setData({ searchFocus: false, searchActive });
   },
 
   clearSearch() {
@@ -172,11 +186,11 @@ Page({
       };
     });
 
+    const products = this.filterProducts(allProducts, this.data.searchQuery);
     this.setData({
-      allProducts
-    }, () => {
-      this.syncProducts();
-      this.calculateCount();
+      allProducts,
+      products,
+      selectedCount: allProducts.filter(product => product.selected).length,
     });
   },
 
@@ -211,15 +225,27 @@ Page({
   },
 
   saveFallbackResult(products) {
+    if ((this as any)._fallbackResultSaved) return true;
     try {
       wx.setStorageSync(PICKER_RESULT_KEY, {
         products,
         createdAt: Date.now(),
       });
+      (this as any)._fallbackResultSaved = true;
       return true;
     } catch (err) {
       return false;
     }
+  },
+
+  returnToSource() {
+    if ((this as any)._isReturning) return;
+    (this as any)._isReturning = true;
+    navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
+  },
+
+  onBack() {
+    this.returnToSource();
   },
 
   goProductLibrary() {
@@ -229,6 +255,7 @@ Page({
   },
 
   confirmAdd() {
+    if ((this as any)._isReturning) return;
     if (this.data.selectedCount <= 0) {
       wx.showToast({ title: '请先选择商品', icon: 'none' });
       return;
@@ -237,45 +264,28 @@ Page({
 
     wx.showLoading({ title: '加入中...' });
 
-    setTimeout(() => {
-      wx.hideLoading();
+    wx.hideLoading();
 
-      const eventChannel = this.getSafeEventChannel();
-      if (!eventChannel) {
-        const fallbackSaved = this.saveFallbackResult(selectedItems.map(item => ({
-          ...item,
-          selected: false,
-          disabled: false
-        })));
-        wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
-        if (fallbackSaved) {
-          navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
-        }
-        return;
-      }
+    const products = selectedItems.map(item => ({
+      ...item,
+      selected: false,
+      disabled: false
+    }));
+    const eventChannel = this.getSafeEventChannel();
+    if (!eventChannel) {
+      const fallbackSaved = this.saveFallbackResult(products);
+      wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
+      if (fallbackSaved) this.returnToSource();
+      return;
+    }
 
-      try {
-        eventChannel.emit('selectedProducts', {
-          products: selectedItems.map(item => ({
-            ...item,
-            selected: false,
-            disabled: false
-          }))
-        });
-      } catch (err) {
-        const fallbackSaved = this.saveFallbackResult(selectedItems.map(item => ({
-          ...item,
-          selected: false,
-          disabled: false
-        })));
-        wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
-        if (fallbackSaved) {
-          navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
-        }
-        return;
-      }
-
-      navigateBackOrTab(this.data.sourceUrl || '/sub-pages/groupOrder/add/index');
-    }, 500);
+    try {
+      eventChannel.emit('selectedProducts', { products });
+      this.returnToSource();
+    } catch (err) {
+      const fallbackSaved = this.saveFallbackResult(products);
+      wx.showToast({ title: fallbackSaved ? '已返回选择结果' : '返回商品选择结果失败', icon: 'none' });
+      if (fallbackSaved) this.returnToSource();
+    }
   }
 });

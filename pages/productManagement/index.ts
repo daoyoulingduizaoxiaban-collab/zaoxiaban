@@ -56,16 +56,32 @@ Page({
   },
 
   async refreshAndFetchData() {
-    this.syncAccessShell();
-    await AuthService.refreshSession();
-    await this.fetchData();
+    if ((this as any)._refreshInFlight) return (this as any)._refreshInFlight;
+    (this as any)._refreshInFlight = (async () => {
+      this.syncAccessShell();
+      await AuthService.refreshSession();
+      await this.fetchData();
+    })();
+    try {
+      return await (this as any)._refreshInFlight;
+    } finally {
+      (this as any)._refreshInFlight = null;
+    }
   },
 
   async onLoad() {
+    (this as any)._skipNextShowRefresh = true;
     await this.refreshAndFetchData();
   },
 
   async onShow() {
+    if ((this as any)._skipNextShowRefresh) {
+      (this as any)._skipNextShowRefresh = false;
+      if (typeof this.getTabBar === 'function' && this.getTabBar()) {
+        this.getTabBar().refreshTabBar();
+      }
+      return;
+    }
     await this.refreshAndFetchData();
   },
 
@@ -79,6 +95,8 @@ Page({
   },
 
   async fetchData() {
+    if ((this as any)._fetchInFlight) return (this as any)._fetchInFlight;
+    (this as any)._fetchInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) {
       this.setData({ isLoading: true, loadErrorText: '' });
@@ -163,6 +181,12 @@ Page({
       isLoading: false,
       loadErrorText: '',
     });
+    })();
+    try {
+      return await (this as any)._fetchInFlight;
+    } finally {
+      (this as any)._fetchInFlight = null;
+    }
   },
 
   normalizeProducts(products: Product[] = []) {

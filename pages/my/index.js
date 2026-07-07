@@ -77,6 +77,8 @@ Page({
   },
 
   async onShow() {
+    if (this._refreshProfileInFlight) return this._refreshProfileInFlight;
+    this._refreshProfileInFlight = (async () => {
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
@@ -100,6 +102,12 @@ Page({
       settingList: this.buildSettingList(profile),
     });
     this.refreshTabBar();
+    })();
+    try {
+      return await this._refreshProfileInFlight;
+    } finally {
+      this._refreshProfileInFlight = null;
+    }
   },
 
   refreshTabBar() {
