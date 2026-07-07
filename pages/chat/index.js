@@ -1,7 +1,7 @@
 import { navigateByUrl } from '~/utils/navigation';
 
 const app = getApp();
-const DEFAULT_DISABLED_REASON = '请先通过客户订单处理沟通和收款事项。';
+const DEFAULT_DISABLED_REASON = '此页为订单公告页，不提供实时聊天。';
 
 Page({
   data: {
@@ -54,7 +54,7 @@ Page({
       avatar,
       name,
       messages: Array.isArray(messages) ? [...messages] : [],
-      disabledReason: hasContact ? '' : DEFAULT_DISABLED_REASON,
+      disabledReason: DEFAULT_DISABLED_REASON,
     });
     wx.nextTick(this.scrollToBottom);
   },
@@ -84,7 +84,7 @@ Page({
 
   sendMessage() {
     if (this.data.disabledReason) {
-      wx.showToast({ title: '请先查看客户订单', icon: 'none' });
+      wx.showToast({ title: '订单公告页不支持发送消息', icon: 'none' });
       return;
     }
     const { userId, messages, input } = this.data;
@@ -92,7 +92,7 @@ Page({
     if (!content) return;
     const socket = this.getSocket();
     if (!socket) {
-      wx.showToast({ title: '请先查看客户订单', icon: 'none' });
+      wx.showToast({ title: '订单公告页暂未接通实时通道', icon: 'none' });
       return;
     }
     const message = { messageId: null, from: 0, content, time: Date.now(), read: true };

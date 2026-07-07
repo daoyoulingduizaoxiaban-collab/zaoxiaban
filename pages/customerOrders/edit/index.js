@@ -4,12 +4,17 @@ import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusin
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
-const buildCustomerEntryPath = groupOrderId => `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(groupOrderId || ''))}`;
+const buildCustomerEntryPath = (groupOrderId, shareToken = '') => {
+  const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(groupOrderId || ''))}`;
+  const normalizedToken = String(shareToken || '').trim();
+  return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
+};
 
 Page({
   data: {
     pageTitle: '客户下单',
     groupOrderId: '',
+    shareToken: '',
     groupOrder: null,
     productRows: [],
     totalPrice: 0,
@@ -35,11 +40,20 @@ Page({
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const groupOrderId = options.groupOrderId || options.id || '';
-    const loginRedirectTo = groupOrderId ? buildCustomerEntryPath(groupOrderId) : '/pages/customerOrders/index';
+    let shareToken = String((options && options.shareToken) || '').trim();
+    if (shareToken) {
+      try {
+        shareToken = decodeURIComponent(shareToken);
+      } catch (err) {
+        shareToken = String(shareToken || '').trim();
+      }
+    }
+    const loginRedirectTo = groupOrderId ? buildCustomerEntryPath(groupOrderId, shareToken) : '/pages/customerOrders/index';
     const canCreate = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDER_CREATE);
     if (!canCreate) {
       this.setData({
         groupOrderId,
+        shareToken,
         accessDenied: true,
         accessStateText: AuthService.getAccessStateText(profile),
         isLoggedIn: Boolean(profile),
@@ -50,6 +64,7 @@ Page({
 
     this.setData({
       groupOrderId,
+      shareToken,
       accessDenied: false,
       accessStateText: '',
       isLoggedIn: Boolean(profile),
@@ -67,7 +82,7 @@ Page({
     const groupOrderId = this.data.groupOrderId || groupOrder.id || groupOrder._id || '';
     return {
       title: `${groupOrder.title || '团单'}｜客户下单`,
-      path: buildCustomerEntryPath(groupOrderId),
+      path: groupOrder.sharePath || buildCustomerEntryPath(groupOrderId, this.data.shareToken),
     };
   },
 
@@ -79,7 +94,7 @@ Page({
 
   async loadOrderEntry(groupOrderId) {
     this.setData({ isLoading: true, pageErrorText: '' });
-    const res = await CustomerOrderService.getOrderEntry(groupOrderId);
+    const res = await CustomerOrderService.getOrderEntry(groupOrderId, this.data.shareToken);
     if (!res.success) {
       const errorText = res.error || '加载团单失败';
       wx.showToast({ title: errorText, icon: 'none' });
@@ -144,6 +159,7 @@ Page({
 
     const payload = {
       groupOrderId: this.data.groupOrderId,
+      shareToken: this.data.shareToken,
       customerName: this.data.formData.customerName,
       customerPhone: this.data.formData.customerPhone,
       memberRemark: this.data.formData.memberRemark,
@@ -155,7 +171,7 @@ Page({
     };
 
     this.setData({ isSubmitting: true });
-    const res = await CustomerOrderService.create(payload);
+    const res = await CustomerOrderService.create(payload, this.data.shareToken);
     this.setData({ isSubmitting: false });
 
     if (!res.success) {

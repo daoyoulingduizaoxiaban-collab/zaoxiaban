@@ -62,6 +62,18 @@ const sameId = (a, b) => String(a) === String(b);
 const trimText = value => String(value || '').trim();
 const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APPROVED : (status || REVIEW_STATUS.PENDING));
 const ALL_ROLES = ['owner', 'admin', 'guide', 'customer', 'provider'];
+const normalizeShareToken = value => String(value || '').trim();
+const buildShareToken = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+const buildShareExpiresAt = (endAt) => {
+  const endTime = parseExpiryTime(endAt);
+  const safeTime = endTime || Date.now();
+  return new Date(safeTime).toISOString();
+};
+const buildCustomerEntryPath = (groupOrderId, shareToken = '') => {
+  const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(groupOrderId || ''))}`;
+  const normalizedToken = normalizeShareToken(shareToken);
+  return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
+};
 const normalizeRoles = (roles, fallbackRole = '') => {
   const rawRoles = Array.isArray(roles) ? [...roles, fallbackRole] : [fallbackRole];
   return [...new Set(rawRoles.filter(role => ALL_ROLES.includes(role)))];
@@ -322,6 +334,19 @@ const canViewGroupOrder = async (groupOrder, profile) => {
   }
   return false;
 };
+const getShareAccessError = (groupOrder, profile, shareToken = '') => {
+  if (!groupOrder || groupOrder.deletedAt) return '未找到团单';
+  if (isOwnerOrAdmin(profile)) return '';
+  if (canManageGroupOrder(groupOrder, profile)) return '';
+  if (!hasRole(profile, 'customer')) return '';
+  const normalizedToken = normalizeShareToken(shareToken);
+  if (!normalizedToken) return '请从分享链接进入团单';
+  if (normalizeShareToken(groupOrder.shareToken) !== normalizedToken) return '分享链接无效';
+  const shareExpireTime = parseExpiryTime(groupOrder.shareExpiresAt || groupOrder.endAt);
+  if (!shareExpireTime || shareExpireTime <= Date.now()) return '分享入口已过期';
+  if (parseExpiryTime(groupOrder.endAt) <= Date.now()) return '当前团单已停止收单';
+  return '';
+};
 
 const getAllActive = async (collectionName) => {
   const result = await getCollection(collectionName).limit(100).get();
@@ -475,6 +500,8 @@ const normalizeGroupOrderPayload = (payload, profile, existing = {}) => ({
   status: Number(payload.status || existing.status || GROUP_ORDER_STATUS.OPEN),
   qrCodeUrl: payload.qrCodeUrl || existing.qrCodeUrl || '',
   sharePath: payload.sharePath || existing.sharePath || '',
+  shareToken: payload.shareToken || existing.shareToken || '',
+  shareExpiresAt: payload.shareExpiresAt || existing.shareExpiresAt || '',
   startAt: payload.startAt || existing.startAt || '',
   endAt: payload.endAt || existing.endAt || '',
   pickupNote: payload.pickupNote || existing.pickupNote || '',
@@ -545,15 +572,19 @@ const groupOrderActions = {
     assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     if (!hasAnyRole(profile, ['guide', 'owner', 'admin'])) return failure('当前角色不能新建团单');
     const createdAt = nowIso();
+    const shareToken = normalizeShareToken(payload.shareToken || buildShareToken());
+    const shareExpiresAt = payload.shareExpiresAt || buildShareExpiresAt(payload.endAt || createdAt);
     const groupOrder = normalizeGroupOrderPayload({
       ...payload,
+      shareToken,
+      shareExpiresAt,
       createdAt,
       updatedAt: createdAt,
     }, profile);
     const validationError = validateGroupOrderPayload(groupOrder);
     if (validationError) return failure(validationError);
     const result = await getCollection('groupOrders').add({ data: groupOrder });
-    const sharePath = `/pages/customerOrders/edit/index?groupOrderId=${result._id}`;
+    const sharePath = buildCustomerEntryPath(result._id, shareToken);
     await getCollection('groupOrders').doc(result._id).update({ data: { sharePath } });
     const created = toId({ ...groupOrder, _id: result._id, sharePath });
     await syncGroupOrderProducts(created, created.productList, profile);
@@ -564,8 +595,14 @@ const groupOrderActions = {
     assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     const target = await getById('groupOrders', id);
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能编辑此团单');
+    const shareToken = normalizeShareToken(data.shareToken || target.shareToken || buildShareToken());
+    const shareExpiresAt = normalizeShareToken(data.shareExpiresAt) || target.shareExpiresAt || buildShareExpiresAt(data.endAt || target.endAt);
+    const sharePath = buildCustomerEntryPath(target._id || target.id, shareToken);
     const updated = normalizeGroupOrderPayload({
       ...data,
+      shareToken,
+      shareExpiresAt,
+      sharePath,
       updatedAt: nowIso(),
     }, profile, target);
     const validationError = validateGroupOrderPayload(updated);
@@ -717,10 +754,14 @@ const customerOrderActions = {
     return success(order);
   },
 
-  async getGroupOrderEntry({ groupOrderId }, profile) {
+  async getGroupOrderEntry({ groupOrderId, shareToken = '' }, profile) {
     assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
     const groupOrder = await getById('groupOrders', groupOrderId);
     if (!await canViewGroupOrder(groupOrder, profile)) return failure('当前角色不能进入此团单');
+    if (hasRole(profile, 'customer')) {
+      const shareAccessError = getShareAccessError(groupOrder, profile, shareToken);
+      if (shareAccessError) return failure(shareAccessError);
+    }
     return success(groupOrder);
   },
 
@@ -734,6 +775,8 @@ const customerOrderActions = {
     }
     const groupOrder = await getById('groupOrders', payload.groupOrderId);
     if (!groupOrder) return failure('未找到团单');
+    const shareAccessError = getShareAccessError(groupOrder, profile, payload.shareToken);
+    if (shareAccessError) return failure(shareAccessError);
     if (Number(groupOrder.status) !== GROUP_ORDER_STATUS.OPEN) return failure('当前团单已停止收单');
 
     const createdAt = nowIso();

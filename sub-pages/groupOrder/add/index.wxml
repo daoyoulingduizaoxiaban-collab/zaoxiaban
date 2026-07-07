@@ -30,8 +30,28 @@
         bindinput="onInput"
       />
     </view>
-    <t-input label="*出团时间" placeholder="例：2026-07-10 09:00" value="{{formData.startAt}}" bindchange="onInput" data-field="startAt" />
-    <t-input label="*收单截止" placeholder="例：2026-07-09 20:00" value="{{formData.endAt}}" bindchange="onInput" data-field="endAt" />
+    <view class="native-textarea-field">
+      <view class="native-textarea-label">*出团时间</view>
+      <picker
+        mode="datetime"
+        class="native-textarea"
+        data-field="startAt"
+        bindchange="onDateTimeChange"
+      >
+        <view class="picker-display">{{formData.startAt || '请选择出团时间（如 2026-07-10 09:00）'}}</view>
+      </picker>
+    </view>
+    <view class="native-textarea-field">
+      <view class="native-textarea-label">*收单截止</view>
+      <picker
+        mode="datetime"
+        class="native-textarea"
+        data-field="endAt"
+        bindchange="onDateTimeChange"
+      >
+        <view class="picker-display">{{formData.endAt || '请选择收单截止时间（如 2026-07-09 20:00）'}}</view>
+      </picker>
+    </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*取货/集合</view>
       <textarea

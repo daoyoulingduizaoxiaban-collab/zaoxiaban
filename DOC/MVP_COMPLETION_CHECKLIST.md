@@ -246,3 +246,99 @@
   - 未登录、待审核、拒绝、停用、过期、角色不符、资料不归属、分享无效、订单不归属、团单不归属都必须被挡住。
   - 前端必须隐藏或导向安全状态，后端/cloud function 必须拒绝无权请求。
   - 不能只用前端 toast 或 disabled button 作为权限完成证据。
+
+## Gate J - 真人可用性與流程整體體驗（由 AI 代理直接落地）
+- [ ] J1. 清除正式界面測試感字串（對應「正式感不足」）：
+  - 代理修改：先在 `config.js` + 所有 UI 文案中掃描 `云端团单`、`测试`、`DEBUG`、`自动化`、`待串接`、`商品测试/測試`，把這些字樣移除。
+  - 清單頁：`pages/home/index`、`pages/groupOrder/index`、`pages/my/index`、`pages/release/index`、`pages/productManagement/index`、`pages/customerOrders/*`、`pages/message/index`。
+  - 實作要求：正式模式下只顯示產品可交付資訊；有 QA/mock seed 資訊只在 QA 開關明確標籤頁才可見。
+  - 驗收：正式登入後首頁、消息、列表、分享頁不得出現上述測試字樣；QA 開啟提示需包含明顯環境標籤且不可進入主流程。
+
+- [ ] J2. 拆開 DEV 測試能力與正式入口（對應「DEV 設定仍開著 mock/seed fallback」）：
+  - 代理修改：在 `config.js` 設定層把 `allowMockIdentity`、`allowSeedDataFallback`、`allowQaTools` 與 `useCloudBusinessData` 的狀態與 `appEnv` 可視化；在 UI 入口加 `isProd` 硬關。
+  - 代理修改檔案：`config.js`、`app.js`、`services/auth/authService.js`、`repositories/cloudBusinessRepository.js`、`DOC/MVP_COMPLETION_CHECKLIST.md`（更新前後行為）。
+  - 實作要求：DEV 可手動切測試模式；PROD 強制不提供 mock/seed/mock identity fallback 選項；切換環境後刷新首頁/我的頁/核心列表。
+  - 驗收：`getBootstrapProfile`/`isRolePreview` 不可在 PROD 生效；在 PROD 相關功能路徑看不到 mock 開關。
+
+- [ ] J3. 重新分組我的頁入口（對應「我的頁入口太雜」）：
+  - 代理修改：重構 `pages/my/index.js`、`pages/my/index.wxml`，將項目改為三區 `常用工作`、`資料與權限`、`管理`。
+  - 實作要求：每區塊只保留同層級任務，不同角色的項目要被同頁隱藏；角色入口與權限入口不得混在同一層級按鈕。
+  - 驗收：一般团主/供应商/owner/admin/受限 customer 進入「我的」後，首頁首屏一次可理解唯一主流程目標。
+
+- [ ] J4. 收斂開團入口（對應「入口重複」）：
+  - 代理修改：保留 `/pages/groupOrder/index` 或 `/pages/release/index` 作為唯一主要創建入口之一，其他頁面只留「跳轉到主入口」按鈕。
+  - 代理修改檔案：`app.json`（tabBar/路由）、`pages/my/index.js`、`pages/groupOrder/index.ts`、`pages/release/index.js`、`utils/navigation.js`。
+  - 實作要求：去掉三處平行入口造成的多層中介；所有開團操作都可直接打開同一主流程。
+  - 驗收：從 `/pages/my/index`、`tabBar`、`工作台` 任一路徑進入開團，最後落到同一個創建流程。
+
+- [ ] J5. 開團表單對真人友善化（對應「開團表單不夠真人友善」）：
+  - 代理修改：`sub-pages/groupOrder/add/index.wxml` 及 `sub-pages/groupOrder/add/index.ts`。
+  - 實作要求：
+    - 將出團時間、收單截止改為微信日期時間 picker，禁止自由文本。
+    - 付款說明/取貨集合提供可編輯模板（預填文案 + 清晰說明）。
+    - 新增欄位必填/格式校驗（時間順序、金額、數量邊界）。
+  - 驗收：空資料必有校驗失敗提示；picker 可正常儲存後再次編輯回填。
+
+- [ ] J6. 文字文案改為產品語言（對應「系統狀態文案太工程化」）：
+  - 代理修改：`pages/*` 全站文案掃描並替換 `资料已同步`、`当前资料仅保存到本设备`、`资料会同步保存` 類字串。
+  - 實作要求：正式模式只保留 `已保存/保存失败/权限不足/网络问题` 這類產品友善字句；技術實作細節放 QA/設定頁。
+  - 驗收：關鍵保存節點（新增/編輯/提交）文案一致且無 storage/mock 表述。
+
+- [ ] J7. 明確商品列表定位（對應「商品庫有兩套列表體驗」）：
+  - 代理修改：`pages/productManagement/index.ts/.wxml`、`sub-pages/product/list/index.ts/.wxml`。
+  - 實作要求：一個入口標為「管理商品」，另一入口標為「瀏覽商品」（如保留）；兩者功能差異寫在頁面標題與空狀態文案中。
+  - 驗收：同一角色不會看不懂「列表」到底是管理還是查看；角色切換後只留可用列表。
+
+- [ ] J8. 商品刪除風險清晰提示（對應「商品刪除風險提示不足」）：
+  - 代理修改：`pages/productManagement/index.ts/.wxml`、`services/product/productService.js`。
+  - 實作要求：刪除確認視窗加入「下架/軟刪除，不影響歷史團單與訂單」提示；若商品已被團單使用，補充「不影響歷史追溯」。
+  - 驗收：完成刪除前至少顯示風險提示與二階確認；誤刪風險事件可回報支持。
+
+- [ ] J9. 商品上下架控件可視化（對應「商品狀態切換不直覺」）：
+  - 代理修改：`pages/productManagement/index.ts/.wxml`、`components`（若有共用開關元件）。
+  - 實作要求：把「已上架，点击下架」改為可辨識狀態的 toggle/segmented control；顯示當前狀態與切換後影響文案。
+  - 驗收：誤操作率下降；關鍵操作需顯示確認並在 API 失敗時回滾。
+
+- [ ] J10. 供應商申請流程正式化（對應「供應商申請流程不夠正式」）：
+  - 代理修改：`pages/providers/index.js`、`pages/providers/index.wxml`、`pages/providers/edit/*`、`pages/userReview/index.*`、`services/auth/authService.js`。
+  - 實作要求：從「直接更新 profile」改為「提交供應商申請單」：含申請人、時間、審核狀態、審核人、審核時間、備註字段。
+  - 驗收：供應商提交後可在 owner/admin 審核列表看到申請；申請結果可回寫並可追溯。
+
+- [ ] J11. 審核與停用流程防誤操作（對應「使用者審核頁過於簡化」）：
+  - 代理修改：`pages/userReview/index.ts/.wxml`、`services/auth/authService.js`、相關審核 API。
+  - 實作要求：
+    - `拒絕`、`停用` 加二次確認對話框；
+    - 操作必填原因備註欄位；
+    - `reviewExpiresAt` 用日期選擇器；
+    - 錄入 `reviewedAt`、`reviewedBy`、`reviewResult`、`reviewNote`。
+  - 驗收：所有高風險操作必有理由且可稽核回看。
+
+- [ ] J12. 客戶分享下單路徑加 token 驗證（對應「客戶下單入口缺少分享安全感」）：
+  - 代理修改：`pages/customerOrders/edit.js`、`pages/customerOrders/edit.wxml`、`repositories/groupOrderRepository.js`、`services/customerOrder/customerOrderService`、`cloudfunctions/businessData/index.js`。
+  - 實作要求：下單入口不只靠 `groupOrderId`；必須檢查 share token、團單狀態、截止時間、可售性。
+  - 驗收：非法/過期/無效分享進入時，導向安全頁並顯示明確拒絕原因；不能直接進入完整客戶流程。
+
+- [ ] J13. 報表名稱與行為一致（對應「導出報表不是真正報表」）：
+  - 代理修改：`sub-pages/groupOrder/detail/index.ts`、`sub-pages/groupOrder/detail/index.wxml`、`pages/customerOrders/edit/index.js` 相關 API。
+  - 實作要求：將 `导出报表` 文案與功能對齊：若只做文字摘要複製，改文案為 `复制报表摘要`；若做下載需提供文件輸出。
+  - 驗收：用語與實際行為一一對應，無誤導字眼。
+
+- [ ] J14. 將訊息頁定位為訂單提醒（對應「消息頁像訂單狀態列表」）：
+  - 代理修改：`pages/message/index.ts/.wxml`。
+  - 實作要求：頁名、說明、卡片文案改為「订单提醒」導向；入口文案從聊天/對話語境改為訂單狀態提醒。
+  - 驗收：點擊訊息進入後不會看到聊天術語，流程清楚為「查看訂單狀態」。
+
+- [ ] J15. 聊天頁降級到最小交付（對應「聊天頁目前應隱藏或降級」）：
+  - 代理修改：`pages/chat/index.ts/.wxml`，以及我的頁/首頁對話入口引用。
+  - 實作要求：若無完整即時聊天，移除正式「客户沟通」入口；改成空態引導、公告型頁或導回訂單相關頁面。
+  - 驗收：一般使用者不會以為可進行即時對話，且不會掉入未完成功能。
+
+- [ ] J16. 團單分享/QR 行為實際化（對應「QR/分享體驗不完整」）：
+  - 代理修改：`sub-pages/groupOrder/detail/index.ts`、`sub-pages/groupOrder/detail/index.wxml`、`pages/customerOrders/edit/index.js`、`app.js` 分享路徑設定與 `onShareAppMessage` 入口。
+  - 實作要求：顯示一致文案，至少明確「複製鏈接分享」；若未實作 QR 輸出，移除 `暂无团单二维码` 文案，改為可實現的替代行為。
+  - 驗收：文案、按鈕、實際功能一致；若有 QR 生成則同步測試；若無則不得承諾。
+
+- [ ] J17. 全量身份場景 GUI smoke（對應「角色/身份模型還需要真人場景驗證」）：
+  - 代理修改：在驗收文件與測試腳本中補足場景清單（角色：團主、未審核、受限 customer、provider、admin、owner、雙角色切換）。
+  - 實作要求：每個角色至少驗證 `我的`、`首页`、`groupOrder 列表`、`客戶訂單`、`商品庫`、`消息提醒`、`分享入口`、`退出返回`。
+  - 驗收：每場景留存畫面/流程證據；未授權入口被隱藏且後端仍拒絕越權請求。

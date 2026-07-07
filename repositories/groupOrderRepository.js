@@ -11,7 +11,26 @@ const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
 
 const nowIso = () => new Date().toISOString();
 const sameId = (a, b) => String(a) === String(b);
+const parseDateTime = (value) => {
+  if (!value) return 0;
+  const text = String(value).trim();
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text.replace(' ', 'T');
+  const time = new Date(normalized).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+const buildShareToken = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+const buildShareExpiresAt = endAt => {
+  const endTime = parseDateTime(endAt);
+  const safeTime = endTime || Date.now();
+  return new Date(safeTime).toISOString();
+};
 
+const normalizeShareToken = value => String(value || '').trim();
+const buildCustomerEntryPath = (groupOrderId, shareToken = '') => {
+  const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(groupOrderId || ''))}`;
+  const normalizedToken = normalizeShareToken(shareToken);
+  return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
+};
 const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
 const isSeedDataAllowed = () => Boolean(config.allowSeedDataFallback);
 
@@ -76,6 +95,18 @@ const canManageGroupOrder = (groupOrder, profile) => {
   const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
   return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
+const getShareAccessError = (groupOrder, profile, shareToken = '') => {
+  if (!groupOrder) return '未找到团单';
+  if (isOwnerOrAdmin(profile) || canManageGroupOrder(groupOrder, profile)) return '';
+  const normalizedToken = normalizeShareToken(shareToken);
+  if (!normalizedToken) return '请从分享链接进入团单';
+  if (normalizeShareToken(groupOrder.shareToken) !== normalizedToken) return '分享链接无效';
+  const shareExpireTime = parseDateTime(groupOrder.shareExpiresAt || groupOrder.endAt);
+  if (!shareExpireTime || shareExpireTime <= Date.now()) return '分享入口已过期';
+  const groupOrderEndTime = parseDateTime(groupOrder.endAt);
+  if (groupOrderEndTime <= Date.now()) return '当前团单已停止收单';
+  return '';
+};
 
 const canCreateGroupOrder = profile => (
   profile && (hasRole(profile, 'guide') || isOwnerOrAdmin(profile))
@@ -91,8 +122,6 @@ const canViewGroupOrder = (groupOrder, profile) => {
     && sameId(order.customerUserId, profile.id)
   ));
 };
-
-const buildCustomerEntryPath = groupOrderId => `/pages/customerOrders/edit/index?groupOrderId=${groupOrderId}`;
 
 const persistGroupOrders = (groupOrders) => {
   const state = getStoredState();
@@ -168,7 +197,7 @@ export const GroupOrderRepository = {
     };
   },
 
-  async getById(id) {
+  async getById(id, options = {}) {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({
         resource: 'groupOrders',
@@ -186,6 +215,11 @@ export const GroupOrderRepository = {
     if (!groupOrder) return { success: false, error: '未找到团单' };
     if (!canViewGroupOrder(groupOrder, profile)) {
       return { success: false, error: '当前角色不能查看此团单' };
+    }
+
+    const shareAccessError = getShareAccessError(groupOrder, profile, options.shareToken);
+    if (shareAccessError && hasRole(profile, 'customer')) {
+      return { success: false, error: shareAccessError };
     }
 
     return {
@@ -213,15 +247,19 @@ export const GroupOrderRepository = {
 
     const createdAt = nowIso();
     const nextId = Date.now();
+    const shareToken = normalizeShareToken(groupOrderData.shareToken || buildShareToken());
+    const shareExpiresAt = buildShareExpiresAt(groupOrderData.endAt || nowIso());
     const nextOrder = normalizeGroupOrder({
       ...groupOrderData,
       id: nextId,
       ownerUserId: groupOrderData.ownerUserId || (isOwnerOrAdmin(profile) ? profile.id : 1),
       guideUserId: groupOrderData.guideUserId || profile.id,
       authorizedGuideIds: groupOrderData.authorizedGuideIds || [],
+      shareToken,
+      shareExpiresAt,
+      sharePath: groupOrderData.sharePath || buildCustomerEntryPath(nextId, shareToken),
       status: Number(groupOrderData.status || GroupOrderStatus.OPEN),
       qrCodeUrl: groupOrderData.qrCodeUrl || '',
-      sharePath: groupOrderData.sharePath || buildCustomerEntryPath(nextId),
       startAt: groupOrderData.startAt || '',
       endAt: groupOrderData.endAt || '',
       pickupNote: groupOrderData.pickupNote || '',
@@ -261,11 +299,18 @@ export const GroupOrderRepository = {
     const groupOrders = getAllGroupOrders();
     const target = groupOrders.find(item => sameId(item.id, id));
     if (!canManageGroupOrder(target, profile)) return { success: false, error: '当前角色不能编辑此团单' };
+    const shareToken = normalizeShareToken(groupOrderData.shareToken || target.shareToken || buildShareToken());
+    const shareExpiresAt = normalizeShareToken(groupOrderData.shareExpiresAt)
+      || target.shareExpiresAt
+      || buildShareExpiresAt(groupOrderData.endAt || target.endAt);
 
     const updated = normalizeGroupOrder({
       ...target,
       ...groupOrderData,
       id: target.id,
+      shareToken,
+      shareExpiresAt,
+      sharePath: buildCustomerEntryPath(target.id, shareToken),
       status: Number(groupOrderData.status || target.status),
       updatedAt: nowIso(),
     });

@@ -12,7 +12,15 @@ const nowIso = () => new Date().toISOString();
 const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
 const sameId = (a, b) => String(a) === String(b);
 const trimText = value => String(value || '').trim();
+const parseDateTime = (value) => {
+  if (!value) return 0;
+  const text = String(value).trim();
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text.replace(' ', 'T');
+  const time = new Date(normalized).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
 const isSeedDataAllowed = () => Boolean(config.allowSeedDataFallback);
+const normalizeShareToken = value => String(value || '').trim();
 
 const safeGetStorage = (key, fallback = null) => {
   try {
@@ -163,6 +171,26 @@ const canViewSharedGroupOrder = (groupOrder, profile) => {
   const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
   return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
+const canManageSharedGroupOrder = (groupOrder, profile) => {
+  if (!groupOrder) return false;
+  if (isOwnerOrAdmin(profile)) return true;
+  if (!profile || !hasRole(profile, 'guide')) return false;
+  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
+  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
+};
+const getShareAccessError = (groupOrder, profile, shareToken = '') => {
+  if (!groupOrder) return '未找到团单';
+  if (canManageSharedGroupOrder(groupOrder, profile)) return '';
+  if (!profile || !hasRole(profile, 'customer')) return '';
+  const normalizedToken = normalizeShareToken(shareToken);
+  if (!normalizedToken) return '请从分享链接进入团单';
+  if (normalizeShareToken(groupOrder.shareToken) !== normalizedToken) return '分享链接无效';
+  const shareExpireTime = parseDateTime(groupOrder.shareExpiresAt || groupOrder.endAt);
+  if (!shareExpireTime || shareExpireTime <= Date.now()) return '分享入口已过期';
+  const groupOrderEndTime = parseDateTime(groupOrder.endAt);
+  if (groupOrderEndTime <= Date.now()) return '当前团单已停止收单';
+  return '';
+};
 
 const appendHistory = (order, nextStatus, note, profile, payload = {}) => ({
   id: `${order.id}-${Date.now()}`,
@@ -259,12 +287,15 @@ export const CustomerOrderRepository = {
     return { ...result, data: order };
   },
 
-  async getGroupOrderEntry(groupOrderId) {
+  async getGroupOrderEntry(groupOrderId, options = {}) {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({
         resource: 'customerOrders',
         action: 'getGroupOrderEntry',
-        data: { groupOrderId },
+        data: {
+          groupOrderId,
+          shareToken: normalizeShareToken(options.shareToken),
+        },
       });
     }
 
@@ -275,6 +306,8 @@ export const CustomerOrderRepository = {
     const profile = AuthService.getCurrentProfile();
     const groupOrder = GroupOrderRepository.listAll().find(item => sameId(item.id, groupOrderId));
     if (!groupOrder) return { success: false, error: '未找到团单' };
+    const shareAccessError = getShareAccessError(groupOrder, profile, options.shareToken);
+    if (shareAccessError) return { success: false, error: shareAccessError };
     if (!canViewSharedGroupOrder(groupOrder, profile)) {
       return { success: false, error: '当前角色不能进入此团单' };
     }
@@ -285,12 +318,15 @@ export const CustomerOrderRepository = {
     };
   },
 
-  async create(orderData) {
+  async create(orderData, options = {}) {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({
         resource: 'customerOrders',
         action: 'create',
-        data: orderData,
+        data: {
+          ...orderData,
+          shareToken: normalizeShareToken(options.shareToken),
+        },
       });
     }
 
@@ -305,6 +341,8 @@ export const CustomerOrderRepository = {
 
     const groupOrder = GroupOrderRepository.listAll().find(item => sameId(item.id, orderData.groupOrderId));
     if (!groupOrder) return { success: false, error: '未找到团单' };
+    const shareAccessError = getShareAccessError(groupOrder, profile, options.shareToken);
+    if (shareAccessError) return { success: false, error: shareAccessError };
     if (Number(groupOrder.status) !== 1) return { success: false, error: '当前团单已停止收单' };
 
     const state = getStoredState();

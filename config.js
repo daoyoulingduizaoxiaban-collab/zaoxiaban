@@ -31,11 +31,12 @@ const devMode = Object.freeze({
 });
 
 const isDev = APP_ENV === ENVIRONMENTS.DEV;
+const isProd = APP_ENV === ENVIRONMENTS.PROD;
 
 export default {
   appEnv: APP_ENV,
   isDev,
-  isProd: APP_ENV === ENVIRONMENTS.PROD,
+  isProd,
 
   baseUrl: BASE_URL,
   cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',
@@ -44,8 +45,8 @@ export default {
 
   allowRolePreview: isDev && devMode.allowRolePreview,
   allowQaTools: isDev && devMode.allowQaTools,
-  allowMockIdentity: isDev && devMode.allowMockIdentity,
-  allowSeedDataFallback: isDev && devMode.allowSeedDataFallback,
+  allowMockIdentity: isDev && devMode.allowMockIdentity && !isProd,
+  allowSeedDataFallback: isDev && devMode.allowSeedDataFallback && !isProd,
 
   requestDelayMs: (isDev && devMode.allowMockIdentity) ? 500 : 0,
 };

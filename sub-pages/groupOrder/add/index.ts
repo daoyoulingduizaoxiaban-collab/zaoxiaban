@@ -160,6 +160,14 @@ Page({
       [`formData.${field}`]: value
     });
   },
+  onDateTimeChange(e: any) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail.value;
+    if (!field) return;
+    this.setData({
+      [`formData.${field}`]: String(value || '').trim(),
+    });
+  },
 
   onRemoveGoods(e: any) {
     const { index } = e.currentTarget.dataset;

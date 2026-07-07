@@ -22,6 +22,19 @@ const saveReadMessageIds = (ids) => {
   }
   return true;
 };
+const getReminderTitle = (order) => {
+  const status = Number(order && order.status);
+  if (status === 0) return '订单待付款提醒';
+  if (status === 1) return '订单待确认提醒';
+  if (status === 2) return '订单已完成提醒';
+  if (status === 3) return '订单已取消提醒';
+  return '订单状态提醒';
+};
+const getReminderDesc = (order) => {
+  const title = order.groupOrderTitle || '团单';
+  const price = Number(order.totalPrice || 0).toFixed(2);
+  return `${order.customerName || '客户'} 提交《${title}》，金额 ¥${price}`;
+};
 
 Page({
   data: {
@@ -63,16 +76,16 @@ Page({
     }
 
     const readIds = readMessageIds();
-    const messages = (res.data || []).map((order) => {
-      const id = `order-${order.id}-${order.status}`;
-      return {
-        id,
-        orderId: order.id,
-        title: order.statusText || '客户订单更新',
-        desc: `${order.customerName || '客户'}｜${order.groupOrderTitle || '团单'}｜￥${order.totalPrice || 0}`,
-        isRead: readIds.includes(id),
-      };
-    });
+      const messages = (res.data || []).map((order) => {
+        const id = `order-${order.id}-${order.status}`;
+        return {
+          id,
+          orderId: order.id,
+          title: getReminderTitle(order),
+          desc: getReminderDesc(order),
+          isRead: readIds.includes(id),
+        };
+      });
     this.setData({ messages });
   },
 

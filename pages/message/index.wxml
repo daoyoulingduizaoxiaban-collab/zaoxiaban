@@ -1,4 +1,4 @@
-<nav nav-type="title" title-text="消息" />
+<nav nav-type="title" title-text="订单提醒" />
 
 <view class="message-list">
   <view wx:if="{{disabledReason}}">
@@ -13,7 +13,7 @@
       wx:key="id"
       title="{{item.title}}"
       description="{{item.desc}}"
-      note="{{item.isRead ? '已读' : '未读'}}"
+      note="{{item.isRead ? '已读' : '未读提醒'}}"
       arrow
       data-id="{{item.id}}"
       data-order-id="{{item.orderId}}"
@@ -21,8 +21,8 @@
     />
   </t-cell-group>
   <view wx:else>
-    <t-empty icon="chat" description="暂无消息" />
-    <t-button theme="primary" size="large" block bind:tap="goCustomerOrders">查看客户订单</t-button>
+    <t-empty icon="chat" description="暂无订单提醒" />
+    <t-button theme="primary" size="large" block bind:tap="goCustomerOrders">前往订单中心</t-button>
   </view>
 </view>
 
@@ -30,7 +30,7 @@
   <view class="message-detail-panel" catchtap="stopMessageDetailTap">
     <view class="message-detail-title">{{selectedMessage.title}}</view>
     <view class="message-detail-desc">{{selectedMessage.desc}}</view>
-    <view class="message-detail-state">已标记为已读，正在打开对应订单详情。</view>
+    <view class="message-detail-state">提醒已标记为已读，即将打开对应订单。</view>
     <button class="message-detail-close" bindtap="closeMessageDetail">知道了</button>
   </view>
 </view>

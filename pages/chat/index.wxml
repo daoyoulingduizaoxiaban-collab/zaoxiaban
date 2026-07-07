@@ -4,9 +4,9 @@
 
 <view class="chat-container">
   <view wx:if="{{disabledReason}}" class="disabled-card">
-    <view class="disabled-title">客户沟通入口</view>
-    <view class="disabled-desc">{{disabledReason}}</view>
-    <t-button theme="primary" size="large" block bind:tap="onGoOrders">查看客户订单</t-button>
+      <view class="disabled-title">订单公告</view>
+      <view class="disabled-desc">{{disabledReason}}</view>
+    <t-button theme="primary" size="large" block bind:tap="onGoOrders">进入订单中心</t-button>
   </view>
   <scroll-view class="content" scroll-y scroll-into-view="{{ anchor }}">
     <view class="messages">
@@ -43,13 +43,13 @@
 
 <view class="block" style="margin-bottom: {{ keyboardHeight }}px" />
 <view wx:if="{{!disabledReason}}" class="bottom" style="margin-bottom: {{ keyboardHeight }}px">
-  <view class="input">
-    <input
-      value="{{ input }}"
-      type="text"
-      confirm-type="send"
-      placeholder="请输入"
-      placeholder-style="color: #00000066"
+    <view class="input">
+      <input
+        value="{{ input }}"
+        type="text"
+        confirm-type="send"
+        placeholder="公告页不支持新消息发送"
+        placeholder-style="color: #00000066"
       adjust-position="{{ false }}"
       hold-keyboard
       confirm-hold
@@ -59,5 +59,5 @@
       bindconfirm="sendMessage"
     />
   </view>
-  <t-button class="send" theme="primary" shape="round" disabled="{{ !input }}" bind:tap="sendMessage">发送</t-button>
-</view>
+    <t-button class="send" theme="primary" shape="round" disabled="{{ !input }}" bind:tap="sendMessage">发送</t-button>
+  </view>

@@ -3,7 +3,7 @@ import Mock from './mock/index';
 import createBus from './utils/eventBus';
 import { AuthService } from './services/auth/authService';
 
-if (config.allowMockIdentity) {
+if (config.allowMockIdentity && !config.isProd) {
   Mock();
 }
 
@@ -45,7 +45,7 @@ App({
   },
   onShareAppMessage() {
     return {
-      title: '团主早下班',
+      title: '导游领队早下班',
       path: '/pages/my/index',
     };
   },

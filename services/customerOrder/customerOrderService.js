@@ -80,8 +80,8 @@ export const CustomerOrderService = {
     };
   },
 
-  async getGroupOrderDetail(groupOrderId) {
-    const entryResult = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId);
+  async getGroupOrderDetail(groupOrderId, shareToken = '') {
+    const entryResult = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId, { shareToken });
     if (!entryResult.success) return entryResult;
 
     const orderResult = await CustomerOrderRepository.listByGroupOrder(groupOrderId);
@@ -105,8 +105,8 @@ export const CustomerOrderService = {
     };
   },
 
-  async getOrderEntry(groupOrderId) {
-    const result = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId);
+  async getOrderEntry(groupOrderId, shareToken = '') {
+    const result = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId, { shareToken });
     if (!result.success) return result;
 
     return {
@@ -158,7 +158,7 @@ export const CustomerOrderService = {
     return '';
   },
 
-  async create(payload) {
+  async create(payload, shareToken = '') {
     const error = this.validateCreatePayload(payload);
     if (error) return { success: false, error };
     let paymentProofUrls = payload.paymentProofUrls || [];
@@ -180,7 +180,7 @@ export const CustomerOrderService = {
       paymentProofUrls,
       declaredAmount: paymentProofUrls.length ? normalizeNumber(payload.totalPrice) : '',
       totalPrice: normalizeNumber(payload.totalPrice),
-    });
+    }, { shareToken });
   },
 
   async declarePaid(id, payload = {}) {

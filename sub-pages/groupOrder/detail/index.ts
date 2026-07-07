@@ -8,7 +8,11 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
-const buildCustomerEntryPath = id => `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(id || ''))}`;
+const buildCustomerEntryPath = (id, shareToken = '') => {
+  const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(id || ''))}`;
+  const normalizedToken = String(shareToken || '').trim();
+  return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
+};
 
 Page({
   data: {
@@ -55,9 +59,10 @@ Page({
 
   onShareAppMessage() {
     const groupOrder = this.data.groupOrder || {};
+    const fallbackPath = buildCustomerEntryPath(this.data.groupOrderId, groupOrder.shareToken);
     return {
       title: `${groupOrder.title || '团单'}｜客户下单入口`,
-      path: groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId),
+      path: groupOrder.sharePath || fallbackPath,
     };
   },
 
@@ -66,13 +71,13 @@ Page({
     try {
       const res = await CustomerOrderService.getGroupOrderDetail(id)
       if (res.success) {
-        const groupOrder = {
-          ...res.data,
-          sharePath: res.data.sharePath || buildCustomerEntryPath(id),
+      const groupOrder = {
+        ...res.data,
+          sharePath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
         };
         this.setData({
           groupOrder,
-          customerEntryPath: res.data.sharePath || buildCustomerEntryPath(id),
+          customerEntryPath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
           isDetailLoaded: true,
@@ -105,7 +110,8 @@ Page({
   },
 
   onSave() {
-    const path = this.data.groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId);
+    const groupOrder = this.data.groupOrder || {};
+    const path = groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId, groupOrder.shareToken);
     if (!this.data.groupOrderId) {
       wx.showToast({
         title: '缺少团单 ID',
@@ -392,7 +398,7 @@ Page({
       return;
     }
 
-    navigateByUrl(buildCustomerEntryPath(id), {
+    navigateByUrl(this.data.customerEntryPath || buildCustomerEntryPath(id, this.data.groupOrder && this.data.groupOrder.shareToken), {
       fail: () => {
         wx.showToast({
           title: '打开客户下单页失败',
@@ -407,7 +413,8 @@ Page({
       wx.showToast({ title: '当前账号不能复制客户下单入口', icon: 'none' });
       return;
     }
-    const path = this.data.groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId);
+    const groupOrder = this.data.groupOrder || {};
+    const path = groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId, groupOrder.shareToken);
     wx.setClipboardData({
       data: path,
       success: () => wx.showToast({ title: '客户入口已复制', icon: 'none' }),

@@ -13,6 +13,21 @@ const getProductPriceDisplay = (product) => {
   const maxPrice = Math.max(...prices);
   return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
 };
+const parseDateTime = value => {
+  if (!value) return 0;
+  const safeText = String(value).trim().replace(' ', 'T');
+  const time = new Date(safeText).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+const validateDateWindow = (startAt, endAt) => {
+  const startTime = parseDateTime(startAt);
+  const endTime = parseDateTime(endAt);
+  if (!startTime) return '出团时间格式不正确';
+  if (!endTime) return '收单截止时间格式不正确';
+  if (startTime > endTime) return '收单截止时间不能早于或等于出团时间';
+  if (endTime <= Date.now()) return '当前团单已超过收单截止时间';
+  return '';
+};
 
 const normalizeProduct = product => ({
   ...normalizeProductImageFields(product),
@@ -60,6 +75,8 @@ export const GroupOrderService = {
     if (String(groupOrder.description || '').trim().length > 200) return '团单描述最多 200 个字';
     if (!String(groupOrder.startAt || '').trim()) return '请输入出团或活动时间';
     if (!String(groupOrder.endAt || '').trim()) return '请输入收单截止时间';
+    const dateWindowError = validateDateWindow(groupOrder.startAt, groupOrder.endAt);
+    if (dateWindowError) return dateWindowError;
     if (!String(groupOrder.pickupNote || '').trim()) return '请输入取货/交付/集合说明';
     if (!String(groupOrder.paymentNote || '').trim()) return '请输入付款方式或付款备注';
     if (!String(groupOrder.contactName || '').trim()) return '请输入团主联系人';
