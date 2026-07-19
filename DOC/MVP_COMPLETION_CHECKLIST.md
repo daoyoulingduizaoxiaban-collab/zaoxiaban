@@ -1,9 +1,9 @@
 # MVP_COMPLETION_CHECKLIST
 
 ## 文件用途
-本文件只管理真人可用 MVP 的上线 gate、未完成待办和完成判定。稳定业务原则写在 `DOC/BUSINESS_LOGIC_PRINCIPLES.md`，当前验收状态写在 `DOC/ACCEPTANCE.md`，具体 BUG row 写在 `QA/QA_BUG_REPORT_202607021815.md`。
+本文件只管理真人可用 MVP 的上线 gate、未完成待办和完成判定。稳定业务原则写在 `DOC/BUSINESS_LOGIC_PRINCIPLES.md`。
 
-本文件不保留已完成历史清单，不复制 BUG row，不写每日进度，不新增第二份角色矩阵。AGENT 开发时按本文找待办，按 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 判断业务逻辑，按 `QA/QA_BUG_REPORT_202607021815.md` 修当前不通过问题。
+本文件不保留已完成历史清单，不写每日进度，不新增第二份角色矩阵。AGENT 开发时按本文找待办，按 `DOC/BUSINESS_LOGIC_PRINCIPLES.md` 判断业务逻辑。BUG 由使用者自行在微信开发者工具实测后口头/对话回报，不再维护 QA BUG 文件。
 
 ## 完成判定
 每个待办只有同时满足以下条件才可勾选：
