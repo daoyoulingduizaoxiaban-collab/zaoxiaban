@@ -1206,7 +1206,7 @@ exports.main = async (event = {}) => {
     const resourceHandler = handlers[resource];
     const actionHandler = resourceHandler && resourceHandler[action];
     if (!actionHandler) return failure('资料操作不存在');
-    return actionHandler(data, profile);
+    return await actionHandler(data, profile);
   } catch (err) {
     return failure(toPublicError(err));
   }

@@ -112,3 +112,6 @@ project.private.config.json
 node_modules/
 *.zip
 .DS_Store
+
+# 本地后端数据库（仅本地测试用，不入库）
+local-server/.data/
