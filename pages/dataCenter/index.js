@@ -4,18 +4,19 @@ import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
+// 清零态：每次返回新对象，避免共享引用被意外改写。
+const emptySummaryList = () => [
+  { name: '团单', number: 0 },
+  { name: '客户订单', number: 0 },
+  { name: '待确认收款', number: 0 },
+  { name: '已确认收款', number: 0 },
+];
+const emptyFinanceSummary = () => ({ receivable: 0, received: 0 });
+
 Page({
   data: {
-    summaryList: [
-      { name: '团单', number: 0 },
-      { name: '客户订单', number: 0 },
-      { name: '待确认收款', number: 0 },
-      { name: '已确认收款', number: 0 },
-    ],
-    financeSummary: {
-      receivable: 0,
-      received: 0,
-    },
+    summaryList: emptySummaryList(),
+    financeSummary: emptyFinanceSummary(),
     dataModeText: '读取中',
     // 统一三态：loading / ready / error / empty
     pageState: 'loading',
@@ -31,13 +32,8 @@ Page({
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.DATA_CENTER)) {
       this.setData({
-        summaryList: [
-          { name: '团单', number: 0 },
-          { name: '客户订单', number: 0 },
-          { name: '待确认收款', number: 0 },
-          { name: '已确认收款', number: 0 },
-        ],
-        financeSummary: { receivable: 0, received: 0 },
+        summaryList: emptySummaryList(),
+        financeSummary: emptyFinanceSummary(),
         dataModeText: AuthService.getAccessStateText(profile),
         pageState: 'empty',
         stateText: AuthService.getAccessStateText(profile),
@@ -53,13 +49,8 @@ Page({
     const failed = [groupOrderRes, customerOrderRes].find(res => !res.success);
     if (failed) {
       this.setData({
-        summaryList: [
-          { name: '团单', number: 0 },
-          { name: '客户订单', number: 0 },
-          { name: '待确认收款', number: 0 },
-          { name: '已确认收款', number: 0 },
-        ],
-        financeSummary: { receivable: 0, received: 0 },
+        summaryList: emptySummaryList(),
+        financeSummary: emptyFinanceSummary(),
         dataModeText: failed.error || '资料读取失败',
         pageState: 'error',
         stateText: failed.error || '资料读取失败，请稍后重试',
