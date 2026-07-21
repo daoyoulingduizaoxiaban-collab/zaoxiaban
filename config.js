@@ -21,34 +21,39 @@ const CLOUD_ENV_IDS = Object.freeze({
   [ENVIRONMENTS.PROD]: '',
 });
 
-const BASE_URL = '';
-
 const devMode = Object.freeze({
   allowRolePreview: true,
-  allowQaTools: true,
-  allowMockIdentity: true,
-  allowSeedDataFallback: true,
 });
 
 const isDev = APP_ENV === ENVIRONMENTS.DEV;
 const isProd = APP_ENV === ENVIRONMENTS.PROD;
+
+// 数据后端开关：
+//   'local' —— 本地 Node 服务（付费云开发前测试，见 local-server/），前台走 wx.request。
+//   'cloud' —— 微信云开发，前台走 wx.cloud.callFunction。
+// PROD 固定 cloud；DEV 默认 local（改成 'cloud' 即无痛切到云开发，业务代码不变）。
+const DATA_BACKEND = isProd ? 'cloud' : 'local';
 
 export default {
   appEnv: APP_ENV,
   isDev,
   isProd,
 
-  baseUrl: BASE_URL,
   cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',
 
-  useCloudBusinessData: true,
+  dataBackend: DATA_BACKEND,
+  // 本地后端地址与开发用 openId（仅 dataBackend==='local' 生效）。
+  // localDevOpenId 决定你以谁的身份登录：填 owner 白名单里的值即以 owner 测，换成别的字符串即普通客户。
+  localBaseUrl: 'http://localhost:3000',
+  localDevOpenId: 'dev-owner-openid',
 
   allowRolePreview: isDev && devMode.allowRolePreview,
-  allowQaTools: isDev && devMode.allowQaTools,
-  allowMockIdentity: isDev && devMode.allowMockIdentity && !isProd,
-  allowSeedDataFallback: isDev && devMode.allowSeedDataFallback && !isProd,
 
-  requestDelayMs: (isDev && devMode.allowMockIdentity) ? 500 : 0,
+  // @deprecated 以下 mock/seed 开关已关闭（运行时惰性）。物理删除见 C-MOCK-REMOVE。
+  allowMockIdentity: false,
+  allowSeedDataFallback: false,
+  allowQaTools: false,
+  useCloudBusinessData: true,
 };
 
 // config/menu.js

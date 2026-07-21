@@ -9,6 +9,7 @@ import {
   normalizeReviewStatus,
   normalizeRoles,
 } from './roleScope';
+import { callBackendFunction, isBackendConfigured } from '~/services/backend/backendCall';
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
@@ -198,25 +199,16 @@ const wxLogin = () => new Promise((resolve) => {
   });
 });
 
-const callCloudAuth = (loginCode, requestedRole) => new Promise((resolve) => {
-  if (!config.cloudEnvId || !wx.cloud || !wx.cloud.callFunction) {
-    resolve({ success: false, error: '账号服务暂时不可用' });
-    return;
-  }
-
-  wx.cloud.callFunction({
+const callCloudAuth = async (loginCode, requestedRole) => {
+  if (!isBackendConfigured()) return { success: false, error: '账号服务暂时不可用' };
+  const result = await callBackendFunction({
     name: 'authLogin',
-    data: { code: loginCode, requestedRole },
-    success: res => resolve({
-      success: true,
-      data: res.result || {},
-    }),
-    fail: () => resolve({
-      success: false,
-      error: '账号服务暂时不可用',
-    }),
+    event: { code: loginCode, requestedRole },
+    openId: config.localDevOpenId, // 云模式忽略；本地模式以此 openId 登录
   });
-});
+  if (result && result.openId) return { success: true, data: result };
+  return { success: false, error: (result && result.error) || '微信账号验证失败' };
+};
 
 const buildMockOpenId = role => `mock-openid-${role}`;
 

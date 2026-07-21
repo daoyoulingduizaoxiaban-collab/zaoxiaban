@@ -1,5 +1,11 @@
 import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
+import { callBackendFunction, isBackendConfigured, isLocalBackend } from '~/services/backend/backendCall';
+
+const getCallerOpenId = () => {
+  const profile = AuthService.getRealProfile() || AuthService.getCurrentProfile();
+  return (profile && profile.openId) || config.localDevOpenId || '';
+};
 
 export const CLOUD_SAVE_MODE = 'wechat-cloud-repository';
 export const LOCAL_SAVE_MODE_TEXT = '资料已保存';
@@ -30,52 +36,27 @@ const getCloudCallerContext = () => {
   };
 };
 
-export const isCloudBusinessEnabled = () => {
-  const profile = AuthService.getCurrentProfile();
-  return Boolean(
-    config.useCloudBusinessData
-    && config.cloudEnvId
-    && profile
-    && !profile.isMockOpenId
-    && wx.cloud
-    && wx.cloud.callFunction
-  );
+export const isCloudBusinessEnabled = () => Boolean(AuthService.getCurrentProfile() && isBackendConfigured());
+
+export const isCloudBusinessConfigured = () => isBackendConfigured();
+
+export const callBusinessData = ({ resource, action, data = {} }) => {
+  if (!isCloudBusinessEnabled()) return Promise.resolve({ success: false, error: '资料服务暂时不可用' });
+  return callBackendFunction({
+    name: 'businessData',
+    event: { resource, action, data, context: getCloudCallerContext() },
+    openId: getCallerOpenId(),
+  });
 };
 
-export const isCloudBusinessConfigured = () => Boolean(
-  config.useCloudBusinessData
-  && config.cloudEnvId
-  && wx.cloud
-  && wx.cloud.callFunction
-);
-
-export const callBusinessData = ({ resource, action, data = {} }) => new Promise((resolve) => {
-  if (!isCloudBusinessEnabled()) {
-    resolve({ success: false, error: '资料服务暂时不可用' });
-    return;
-  }
-
-  wx.cloud.callFunction({
+export const callPublicBusinessData = ({ resource, action, data = {} }) => {
+  if (!isCloudBusinessConfigured()) return Promise.resolve({ success: false, error: '资料服务暂时不可用' });
+  return callBackendFunction({
     name: 'businessData',
-    data: { resource, action, data, context: getCloudCallerContext() },
-    success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
-    fail: () => resolve({ success: false, error: '资料保存失败，请稍后重试' }),
+    event: { resource, action, data, context: getCloudCallerContext() },
+    openId: getCallerOpenId(),
   });
-});
-
-export const callPublicBusinessData = ({ resource, action, data = {} }) => new Promise((resolve) => {
-  if (!isCloudBusinessConfigured()) {
-    resolve({ success: false, error: '资料服务暂时不可用' });
-    return;
-  }
-
-  wx.cloud.callFunction({
-    name: 'businessData',
-    data: { resource, action, data, context: getCloudCallerContext() },
-    success: res => resolve(res.result || { success: false, error: '资料服务暂时不可用' }),
-    fail: () => resolve({ success: false, error: '资料读取失败，请稍后重试' }),
-  });
-});
+};
 
 const getCloudFileName = (path, index, prefix = 'uploads') => {
   const name = String(path || '').split('/').pop() || `image-${index}.jpg`;
@@ -89,7 +70,13 @@ const uploadOneFile = (path, index, prefix) => new Promise((resolve) => {
     return;
   }
 
-  if (!isCloudBusinessEnabled() || !wx.cloud.uploadFile) {
+  // 本地后端无云存储：本地测试时直接沿用临时路径（图片为选填，不阻塞主流程）。
+  if (isLocalBackend()) {
+    resolve({ success: true, data: path });
+    return;
+  }
+
+  if (!isCloudBusinessEnabled() || !wx.cloud || !wx.cloud.uploadFile) {
     resolve({ success: false, error: '图片上传服务暂时不可用' });
     return;
   }
