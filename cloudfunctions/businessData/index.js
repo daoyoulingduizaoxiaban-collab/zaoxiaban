@@ -64,6 +64,13 @@ const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APP
 const ALL_ROLES = ['owner', 'admin', 'guide', 'customer', 'provider'];
 const normalizeShareToken = value => String(value || '').trim();
 const buildShareToken = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+const parseExpiryTime = (value) => {
+  if (!value) return 0;
+  const text = String(value);
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text;
+  const time = new Date(normalized).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
 const buildShareExpiresAt = (endAt) => {
   const endTime = parseExpiryTime(endAt);
   const safeTime = endTime || Date.now();
@@ -80,13 +87,6 @@ const normalizeRoles = (roles, fallbackRole = '') => {
 };
 const hasRole = (profile, role) => normalizeRoles(profile && profile.roles, profile && profile.role).includes(role);
 const hasAnyRole = (profile, roles = []) => normalizeRoles(profile && profile.roles, profile && profile.role).some(role => roles.includes(role));
-const parseExpiryTime = (value) => {
-  if (!value) return 0;
-  const text = String(value);
-  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text;
-  const time = new Date(normalized).getTime();
-  return Number.isNaN(time) ? 0 : time;
-};
 const isRoleExpired = profile => Boolean(profile && parseExpiryTime(profile.roleExpiresAt || profile.rolesExpireAt || profile.expiresAt) < Date.now() && parseExpiryTime(profile.roleExpiresAt || profile.rolesExpireAt || profile.expiresAt));
 const roleLabel = (role) => {
   const labels = {

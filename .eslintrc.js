@@ -69,7 +69,16 @@ module.exports = {
     'object-shorthand': 0,
     'no-shadow': 0,
     'no-unused-expressions': 0,
-    'no-unused-vars': 0,
+    // R5-3 漂移兜底：挡未用变量（catch 绑定/函数参数/解构去字段/下划线前缀豁免）
+    'no-unused-vars': [
+      'error',
+      {
+        args: 'none',
+        caughtErrors: 'none',
+        varsIgnorePattern: '^_',
+        ignoreRestSiblings: true,
+      },
+    ],
     'consistent-return': 0,
     'no-return-assign': 0,
     'func-names': 0,

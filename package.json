@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky install",
     "lint": "npx eslint ./ --no-eslintrc -c ./.eslintrc.js",
     "lint:fix": "npm run lint:fix-eslint && npm run lint:fix-prettier",
     "lint:fix-eslint": "eslint --ext .js,.ts ./ --max-warnings 0 --ignore-path .gitignore --ignore-path .eslintignore --fix",
@@ -31,11 +32,8 @@
     "prettier": "^3.0.2"
   },
   "lint-staged": {
-    "{src,example,script}/**/*.{js,ts,wxml,html,json,less}": [
-      "prettier --write"
-    ],
     "**/*.{js,ts}": [
-      "eslint --fix"
+      "eslint --no-eslintrc -c ./.eslintrc.js --fix"
     ]
   }
 }

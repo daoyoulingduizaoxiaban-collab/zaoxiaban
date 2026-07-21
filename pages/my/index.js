@@ -10,13 +10,6 @@ import {
 } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
-const TAB_URLS = new Set([
-  '/pages/groupOrder/index',
-  '/pages/customerOrders/index',
-  '/pages/productManagement/index',
-  '/pages/my/index',
-]);
-
 const SETTING_ICON_TEXT = {
   setting: '⚙',
   user: '人',
