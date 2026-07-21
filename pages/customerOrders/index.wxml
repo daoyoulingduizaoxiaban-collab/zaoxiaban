@@ -4,49 +4,43 @@
 <view class="save-mode" wx:if="{{saveModeText}}">{{saveModeText}}</view>
 
 <view class="customerOrders-container">
-  <view class="access-card" wx:if="{{!authReady || isLoading}}">
-    <view class="access-title">正在确认账号状态</view>
-    <view class="access-desc">请稍候，系统正在读取你的身份与客户订单权限。</view>
-  </view>
-
-  <view class="access-card" wx:elif="{{!canUseBusiness}}">
+  <view class="access-card" wx:if="{{authReady && !isLoading && !canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
     <view class="access-desc">通过管理员确认身份后，可查看与你相关的客户订单。</view>
     <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>
 
-  <view class="order-filter" wx:if="{{canUseBusiness}}">
-    <t-dropdown-menu>
-      <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
-    </t-dropdown-menu>
-  </view>
+  <block wx:else>
+    <view class="order-filter" wx:if="{{canUseBusiness}}">
+      <t-dropdown-menu>
+        <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
+      </t-dropdown-menu>
+    </view>
 
-  <view wx:if="{{canUseBusiness && isLoading}}" class="empty-state">
-    <t-empty icon="info-circle" description="正在加载客户订单" />
-  </view>
-
-  <view wx:elif="{{canUseBusiness && loadErrorText}}" class="empty-state">
-    <t-empty icon="info-circle" description="{{loadErrorText}}" />
-  </view>
-
-  <t-cell-group theme="card" wx:elif="{{canUseBusiness}}">
-    <block wx:for="{{ customerOrdersList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow="{{false}}"
-        bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-        <t-icon slot="left-icon" name="usergroup" size="48rpx" color="#0052d9" />
-      </t-cell>
-      <view class="order-actions">
-        <text class="order-meta">商品 {{item.itemCount || 0}} 件｜状态记录 {{item.historyCount || 0}} 条</text>
-        <t-button wx:if="{{item.paymentProofUrls.length}}" size="small" variant="outline" theme="default" bind:tap="previewOrderPaymentProof" data-id="{{item.id}}">查看凭证</t-button>
-        <t-button wx:if="{{item.canHandle}}" size="small" variant="outline" theme="primary" bind:tap="onOrderAction" data-id="{{item.id}}">处理订单</t-button>
-      </view>
-    </block>
-  </t-cell-group>
-
-  <view wx:if="{{canUseBusiness && !isLoading && !loadErrorText && customerOrdersList.length === 0 }}" class="empty-state">
-    <t-empty icon="info-circle" description="暂无客户订单" />
-    <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
-  </view>
+    <page-state
+      state="{{pageState}}"
+      loading-text="正在加载客户订单"
+      error-text="{{loadErrorText}}"
+      empty-text="{{emptyText}}"
+      empty-cta-text="{{emptyCta}}"
+      bind:retry="loadQaOrders"
+      bind:emptycta="onLogin"
+    >
+      <t-cell-group theme="card">
+        <block wx:for="{{ customerOrdersList }}" wx:key="id">
+          <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="客户：{{ item.customerName }}｜金额：￥{{ item.totalPrice }}" hover arrow="{{false}}"
+            bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
+            <t-icon slot="left-icon" name="usergroup" size="48rpx" color="#0052d9" />
+          </t-cell>
+          <view class="order-actions">
+            <text class="order-meta">商品 {{item.itemCount || 0}} 件｜状态记录 {{item.historyCount || 0}} 条</text>
+            <t-button wx:if="{{item.paymentProofUrls.length}}" size="small" variant="outline" theme="default" bind:tap="previewOrderPaymentProof" data-id="{{item.id}}">查看凭证</t-button>
+            <t-button wx:if="{{item.canHandle}}" size="small" variant="outline" theme="primary" bind:tap="onOrderAction" data-id="{{item.id}}">处理订单</t-button>
+          </view>
+        </block>
+      </t-cell-group>
+    </page-state>
+  </block>
 
   <t-fab wx:if="{{canCreateCustomerOrder}}" icon="add" bind:click="onGoToEdit" bind:tap="onGoToEdit" aria-label="客户下单" style="right: 32rpx; bottom: 180rpx;" />
 

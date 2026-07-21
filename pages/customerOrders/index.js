@@ -31,6 +31,10 @@ Page({
     accessStateText: '',
     isLoading: true,
     loadErrorText: '',
+    // 数据区统一三态：loading / ready / error / empty（权限/未登录仍由 access-card 处理）
+    pageState: 'loading',
+    emptyText: '暂无客户订单',
+    emptyCta: '',
     pendingOrderId: '',
     actionPanelVisible: false,
     detailVisible: false,
@@ -143,12 +147,13 @@ Page({
         accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
+        pageState: 'empty',
         pendingOrderId: '',
       });
       return;
     }
 
-    this.setData({ isLoading: true, loadErrorText: '' });
+    this.setData({ isLoading: true, loadErrorText: '', pageState: 'loading' });
     const res = await CustomerOrderService.listVisible();
     if (!res.success) {
       const errorText = res.error || '加载客户订单失败';
@@ -165,14 +170,16 @@ Page({
         accessStateText: AuthService.getAccessStateText(profile),
         isLoading: false,
         loadErrorText: errorText,
+        pageState: 'error',
       });
       return;
     }
 
     const orders = this.decorateOrdersForAction(res.data || [], AuthService.getCurrentProfile());
+    const filtered = this.filterOrdersByStatus(orders, this.data.currentStatus);
     this.setData({
       allCustomerOrdersList: orders,
-      customerOrdersList: this.filterOrdersByStatus(orders, this.data.currentStatus),
+      customerOrdersList: filtered,
       roleScopeText: this.getRoleScopeText(res.meta),
       canCreateCustomerOrder: this.canCreateCustomerOrder() && orders.some(order => order.groupOrderId),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
@@ -182,6 +189,8 @@ Page({
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
       isLoading: false,
       loadErrorText: '',
+      pageState: filtered.length ? 'ready' : 'empty',
+      emptyText: '暂无客户订单',
     });
     this.openPendingOrderDetail();
     })();
@@ -200,10 +209,13 @@ Page({
 
   onStatusChange(e) {
     const status = Number(e.detail.value);
+    const filtered = this.filterOrdersByStatus(this.data.allCustomerOrdersList, status);
     this.setData({
       currentStatus: status,
-      customerOrdersList: this.filterOrdersByStatus(this.data.allCustomerOrdersList, status),
+      customerOrdersList: filtered,
       loadErrorText: '',
+      pageState: filtered.length ? 'ready' : 'empty',
+      emptyText: status < 0 ? '暂无客户订单' : '该状态下暂无订单',
     });
   },
 
@@ -541,6 +553,7 @@ Page({
       authReady: false,
       isLoading: true,
       loadErrorText: '',
+      pageState: 'loading',
     });
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
