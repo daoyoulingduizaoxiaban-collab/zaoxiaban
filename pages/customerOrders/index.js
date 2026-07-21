@@ -4,6 +4,7 @@ import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
 import { consumeTabRouteQuery, navigateByUrl, parseRouteQuery } from '~/utils/navigation';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
   .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
@@ -16,25 +17,19 @@ const ROLE_TEXT = {
 };
 
 Page({
+  // access-state + 三态字段与 helper 来自 behavior（R1）
+  behaviors: [useAccessPage],
+
   data: {
     titleText: '客户订单',
     allCustomerOrdersList: [],
     customerOrdersList: [],
     statusOptions: [{ label: '全部', value: -1 }, ...getMemberOrderStatusList()],
     currentStatus: -1,
-    roleScopeText: '',
     canCreateCustomerOrder: false,
     saveModeText: '',
-    isLoggedIn: false,
-    canUseBusiness: false,
-    authReady: false,
-    accessStateText: '',
-    isLoading: true,
-    loadErrorText: '',
-    // 数据区统一三态：loading / ready / error / empty（权限/未登录仍由 access-card 处理）
-    pageState: 'loading',
+    // 覆写 behavior 空态默认文案
     emptyText: '暂无客户订单',
-    emptyCta: '',
     pendingOrderId: '',
     actionPanelVisible: false,
     detailVisible: false,
@@ -145,15 +140,13 @@ Page({
         canUseBusiness: false,
         authReady: true,
         accessStateText: accessText,
-        isLoading: false,
-        loadErrorText: '',
-        pageState: 'empty',
         pendingOrderId: '',
+        ...this.threeState('empty'),
       });
       return;
     }
 
-    this.setData({ isLoading: true, loadErrorText: '', pageState: 'loading' });
+    this.setData(this.loadingState());
     const res = await CustomerOrderService.listVisible();
     if (!res.success) {
       const errorText = res.error || '加载客户订单失败';
@@ -168,9 +161,7 @@ Page({
         canUseBusiness: true,
         authReady: true,
         accessStateText: AuthService.getAccessStateText(profile),
-        isLoading: false,
-        loadErrorText: errorText,
-        pageState: 'error',
+        ...this.threeState('error', { errorText }),
       });
       return;
     }
@@ -187,10 +178,7 @@ Page({
       canUseBusiness: true,
       authReady: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
-      isLoading: false,
-      loadErrorText: '',
-      pageState: filtered.length ? 'ready' : 'empty',
-      emptyText: '暂无客户订单',
+      ...this.threeState(filtered.length ? 'ready' : 'empty', { emptyText: '暂无客户订单' }),
     });
     this.openPendingOrderDetail();
     })();
@@ -213,9 +201,9 @@ Page({
     this.setData({
       currentStatus: status,
       customerOrdersList: filtered,
-      loadErrorText: '',
-      pageState: filtered.length ? 'ready' : 'empty',
-      emptyText: status < 0 ? '暂无客户订单' : '该状态下暂无订单',
+      ...this.threeState(filtered.length ? 'ready' : 'empty', {
+        emptyText: status < 0 ? '暂无客户订单' : '该状态下暂无订单',
+      }),
     });
   },
 
@@ -549,12 +537,7 @@ Page({
       }
       return;
     }
-    this.setData({
-      authReady: false,
-      isLoading: true,
-      loadErrorText: '',
-      pageState: 'loading',
-    });
+    this.setData(this.loadingState());
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().refreshTabBar();
