@@ -186,6 +186,19 @@ profile 增加/使用团主申请子结构，至少包含：
 
 独立云资源；`dataBackend` 固定 `cloud`；用户用真实 OpenID，默认客户；升级团主需审核。deploy、migration、数据删除、schema 调整、云函数环境变量调整须使用者明确授权；代理开发与自动化测试默认不得直接操作 PROD。
 
+### 身份模拟配置（本地与云端同一套机制）
+
+身份来源统一：owner/admin 由 allowlist 环境变量决定，其余登录者默认 customer，团主需审核升级。本地因取不到真实微信 OpenID，额外用 `config.localDevOpenId` 指定"以谁登录"。
+
+| 身份 | 本地（`dataBackend:'local'`） | 云端（`dataBackend:'cloud'`） |
+| --- | --- | --- |
+| owner | `localDevOpenId` = server `OWNER_OPENIDS` 里的值（默认 `dev-owner-openid`） | 云函数环境变量 `OWNER_OPENIDS` = 使用者真实 OpenID |
+| admin | server 加 `ADMIN_OPENIDS=<x>` 且 `localDevOpenId=<x>` | 云函数 `ADMIN_OPENIDS` = 对方 OpenID |
+| customer | `localDevOpenId` = 任意非 allowlist 字符串（如 `cust-1`） | 真实用户登录即客户，无需配置 |
+| 团主 guide | 需审核升级；开发期本地 server 可提供 `GUIDE_OPENIDS` 便捷 allowlist 直接扮团主 | 客户在 App 内申请 → owner/admin 审核通过 |
+
+切换身份：改 `localDevOpenId` → 开发者工具「清缓存」→ 重新登录。`GUIDE_OPENIDS` 仅本地开发便捷用，`PROD` 禁止用 allowlist 直接发团主。
+
 ## A9. 命名与正式文案
 
 - 用户可见团主角色统一称「团主」，不得出现「导游」「领队」「导游/领队」。内部 role key 仍为 `guide`，文档提及内部 key 时须注明"内部 role key 为 `guide`，用户显示为团主"。
@@ -206,6 +219,22 @@ profile 增加/使用团主申请子结构，至少包含：
 - 重开小程序后核心资料仍存在。
 - 无权/停用/过期/资料不归属/分享无效在前端和后端都被挡住。
 - 核心流程经过微信开发者工具画面实测验证。
+
+## A11. 页面加载与状态呈现（全站统一三态）
+
+每个需要向后端取数的页面统一走 `loading / ready / error` 三态，全站一套约定，不各写各的：
+
+- **loading**：进入页面、尚未拿到数据时显示统一「加载中」占位（转圈或骨架），不得先显示旧档/空档再突然重刷。
+- **ready**：数据到位后一次性显示正式内容。
+- **error**：取数失败显示统一失败画面，含原因文案与「重试」入口；不得停在加载中或白屏。
+- 已有本地缓存的资料（如登录档）可先渲染再后台校验，但校验结果无变化时不得重复重渲染造成闪烁。
+- 空数据显示正式空状态与引导 CTA，与 error 区分开。
+
+## A12. 功能入口编排原则
+
+- 每个功能只有**一个固定入口位置**。有权限的角色在同一位置看到它，无权限的角色隐藏；**不得同一功能对 A 角色出现在底部 NAV、对 B 角色却出现在「我的」页**。
+- 底部 NAV 放**跨角色的日常主流程**；「我的」页放**个人 / 账号 / 管理 / 角色申请**，不重复 NAV 的主流程入口。
+- 具体每个功能落在哪、对哪些角色可见，见 Part B「B5 功能入口编排表」。
 
 ---
 
@@ -261,6 +290,28 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 供应商不是入口/角色，而是团主在**商品管理**内维护的关联数据：新增/编辑供应商实体 → 创建/编辑商品时选择关联供应商 → 客户下单页与订单详情展示必要供应商信息（名称/联系方式等对外字段），不展示任何内部营运字段。
 
+## B5. 功能入口编排表（NAV vs 我的，位置固定）
+
+落实 A12：每个功能只有一个固定位置，有权限就在该位置显示，无权限隐藏。此表取代 B3 旧「我的页三区」的粗描述。
+
+| 功能 | 固定入口位置 | 客户 | 团主 | 管理层 |
+| --- | --- | --- | --- | --- |
+| 团单 | **底部 NAV** | ✅(自己相关) | ✅ | ✅ |
+| 客户订单 | **底部 NAV** | ✅(自己的) | ✅(本团) | ✅ |
+| 商品库（浏览/管理） | **底部 NAV** | ✅浏览 | ✅管理 | ✅ |
+| 我的 | **底部 NAV** | ✅ | ✅ | ✅ |
+| 个人资料 / 设置 | 我的·账号区 | ✅ | ✅ | ✅ |
+| 操作记录 | 我的·账号区 | — | ✅(自己相关) | ✅(管理记录) |
+| 申请成为团主 | 我的·账号区 | ✅(未持 guide 时) | — | — |
+| 用户审核 | 我的·管理区 | — | — | ✅ |
+| 供应商实体维护 | 商品库内（非独立入口） | — | ✅ | ✅ |
+| ~~工作台/首页(home)~~ | **废弃** | — | — | — |
+
+规则补充：
+- 底部 NAV 一栏对无权限角色**隐藏该 tab**（如客户看不到"商品管理"写操作、但保留浏览）。同一功能不因角色不同而在 NAV / 我的之间搬家。
+- 「我的」页**不再重复** NAV 的团单/客户订单/商品库/工作台入口。
+- 工作台(home)废弃：其内容已被 NAV 覆盖；保留路由仅作兼容，不再作为正式入口。
+
 ---
 
 # Part C — 开发项 CHECKLIST
@@ -277,6 +328,20 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
   - 改动：删 `mock/*`；清 `config.js` 的 `allowMockIdentity/allowSeedDataFallback/allowQaTools`；`services/auth/authService.js`（删 `normalizeMockProfile`/mock openId/`DEFAULT_ROLE_PROFILES` 假档）；各 `repositories/*` 删本地假数据兜底；`pages/home|my|setting` 删 QA/mock 入口。
   - 依赖：必须在 **C-LOCAL-BACKEND 之后**，否则 DEV 无云又无 mock 会空转。
   - 判定：全站无 mock/seed/假身份路径；DEV 任何读写都进真实后端库。
+
+## C-UX. 加载三态 / 入口编排 / 本地身份（已定方案，待开发）
+
+- [ ] **C-LOADING-UX 全站加载三态**
+  - 改动：新增共用状态组件（loading/error/empty），各数据页统一接入 `pageState`；登录后到拿到数据前显示加载中，成功显示正式内容，失败显示失败+重试。
+  - 判定：全站数据页无"先显旧档再突然重刷"或白屏；失败有重试；空数据有正式空状态。
+
+- [ ] **C-ENTRY-IA 功能入口编排落地**
+  - 改动：按 Part B「B5」把入口位置固定；「我的」页移除与 NAV 重复的团单/客户订单/商品库/工作台入口；废弃 home 作为正式入口。
+  - 判定：同一功能对所有有权限角色出现在同一固定位置；无重复入口；无权限角色隐藏。
+
+- [ ] **C-DEV-IDENTITY 本地身份模拟便捷开关**
+  - 改动：本地 server 支持 `GUIDE_OPENIDS` 便捷 allowlist（仅本地）；`config.localDevOpenId` 说明与默认；按 A8 表让本地可扮 owner/admin/customer/guide。
+  - 判定：改 `localDevOpenId` + 清缓存 + 重登即可切换四种身份；`GUIDE_OPENIDS` 不在 PROD 生效。
 
 ## C1. 模型简化（本次重构地基，优先）
 
@@ -346,6 +411,12 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 - [ ] **D-LOCAL-BACKEND**：DEV `dataBackend:'local'` 时，登录与团单/商品/订单读写全部命中本地服务与本地库，重开仍在；改 config 切 `cloud` 后同流程连云开发、业务代码零改动。
 - [ ] **D-MOCK-REMOVE**：全站搜不到 mock/seed/假身份路径；DEV 任一读写都进真实后端库，无本地假数据兜底。
+
+## D-UX. 加载三态 / 入口编排 / 本地身份
+
+- [ ] **D-LOADING-UX**：各数据页进入显示加载中→成功显示内容→失败显示失败+重试；无白屏、无"旧档突然重刷"；空数据有空状态。
+- [ ] **D-ENTRY-IA**：分别以客户/团主/管理层验证每个功能入口位置固定一致；「我的」页无 NAV 重复入口；home 不作正式入口。
+- [ ] **D-DEV-IDENTITY**：按 A8 表切 owner/admin/customer/guide 各能正确进入对应权限；`GUIDE_OPENIDS` 仅本地生效。
 
 ## D1. 模型简化
 
