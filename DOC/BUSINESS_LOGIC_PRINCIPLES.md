@@ -159,12 +159,20 @@ profile 增加/使用团主申请子结构，至少包含：
 
 可见范围：owner/admin 看自己的管理操作记录；团主看自己的团单/商品/收款相关记录；默认不开放普通角色查看他人记录；不得因多角色把不同 effective principal 的记录混在同一视角。
 
-## A8. 环境切分与 DEV 测试模式
+## A8. 环境切分与数据后端
 
-只区分 `DEV` 与 `PROD` 两个正式环境，前台配置、云函数、云数据库、云存储完全分开。环境语义由 `config.js` 表达，不得用单一 `isMock` 承载环境、资料来源、角色预览、QA 工具多种含义。
+区分 `DEV` 与 `PROD` 两个环境。数据后端由 config 的 `dataBackend` 开关在 `local` 与 `cloud` 之间切换。系统**不含任何 mock / seed / 本地假数据**：所有读写都落到当前选定的真实后端，DEV 测试即写入真实（本地或云端）数据库。
 
-- `DEV`：开发、代理开发、自测与多人内测。
-- `PROD`：正式用户环境，永远禁止角色预览、QA 工具、mock 身份、Seed fallback、debug 角色切换。
+- `DEV`：开发与内测，`dataBackend` 可为 `local` 或 `cloud`。
+- `PROD`：正式环境，`dataBackend` 固定 `cloud`，永远禁止本地后端、角色预览与 debug 切换。
+
+### 数据后端：local / cloud（同一份源码）
+
+- `cloud`：微信云开发（云函数 + 云数据库 + 云存储），前台走 `wx.cloud.callFunction`。
+- `local`：本地 Node 服务，**直接运行 `cloudfunctions/*` 同一份云函数源码**（套 wx-server-sdk 本地垫片 + 本地数据库），前台改走 `wx.request` 到本地地址。
+- 两者共用同一套云函数逻辑与集合 schema，切换只改 config、不改业务代码；买云开发后把 `cloudfunctions/*` 原样上传即可。
+- 本地库与云端库数据相互独立、不自动迁移；如需搬运另做导出/导入。
+- 本地模式取不到真实微信 OpenID，注入固定开发用 openId（可在本地 config 指定为 owner），仅 `local` 生效；`cloud`/`PROD` 一律使用真实 OpenID。
 
 ### DEV 角色预览（owner 专用）
 
@@ -172,11 +180,11 @@ profile 增加/使用团主申请子结构，至少包含：
 
 ### DEV 多人真人测试
 
-角色预览关闭时，不同微信账号真人进入 DEV。每人用真实 OpenID，默认成为 approved 客户；需要团主时由 DEV owner/admin 审核升级。测试者不得看到角色预览入口或 QA 工具。
+角色预览关闭时，不同微信账号真人进入 DEV（`dataBackend: cloud`）。每人用真实 OpenID，默认成为 approved 客户；需要团主时由 DEV owner/admin 审核升级。测试者不得看到角色预览入口。
 
 ### PROD
 
-独立云资源；用户用真实 OpenID，默认客户；升级团主需审核。deploy、migration、数据删除、schema 调整、云函数环境变量调整须使用者明确授权；代理开发与自动化测试默认不得直接操作 PROD。
+独立云资源；`dataBackend` 固定 `cloud`；用户用真实 OpenID，默认客户；升级团主需审核。deploy、migration、数据删除、schema 调整、云函数环境变量调整须使用者明确授权；代理开发与自动化测试默认不得直接操作 PROD。
 
 ## A9. 命名与正式文案
 
@@ -257,7 +265,18 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 # Part C — 开发项 CHECKLIST
 
-每项：**目标 / 主要改动文件 / 完成判定**。完成判定须同时满足：功能走正式 service/repository/cloud function 路径（非 mock/local fallback）、前后端权限符合 Part A、微信开发者工具画面实测通过、需云端资料者有重开后仍在的 readback 证据。
+每项：**目标 / 主要改动文件 / 完成判定**。完成判定须同时满足：功能走 service/repository/后端（`dataBackend` 选定的 local 或 cloud，无 mock/假数据）路径、前后端权限符合 Part A、微信开发者工具画面实测通过、需持久化资料者有重开后仍在的 readback 证据。
+
+## C0. 数据后端与去 mock（测试地基，先做）
+
+- [ ] **C-LOCAL-BACKEND 本地后端 + `dataBackend` 切换**
+  - 改动：`config.js`（加 `dataBackend: 'local' | 'cloud'` 开关与本地服务地址）、`repositories/cloudBusinessRepository.js` 与 `services/auth/authService.js` 的调用收口处（`callBusinessData`/`callPublicBusinessData`/`callCloudAuth`：local 走 `wx.request`，cloud 走 `wx.cloud.callFunction`）、新增本地 Node 服务（Express + wx-server-sdk 本地垫片 + 本地库，`require` 现有 `cloudfunctions/*` 同一份源码）。
+  - 判定：DEV 下 `dataBackend:'local'` 时登录/读写全部命中本地服务与本地库，重开仍在；切 `cloud` 后不改业务代码即连云开发；本地注入的开发用 openId 仅 local 生效。
+
+- [ ] **C-MOCK-REMOVE 移除全部 mock / seed / 本地假数据**
+  - 改动：删 `mock/*`；清 `config.js` 的 `allowMockIdentity/allowSeedDataFallback/allowQaTools`；`services/auth/authService.js`（删 `normalizeMockProfile`/mock openId/`DEFAULT_ROLE_PROFILES` 假档）；各 `repositories/*` 删本地假数据兜底；`pages/home|my|setting` 删 QA/mock 入口。
+  - 依赖：必须在 **C-LOCAL-BACKEND 之后**，否则 DEV 无云又无 mock 会空转。
+  - 判定：全站无 mock/seed/假身份路径；DEV 任何读写都进真实后端库。
 
 ## C1. 模型简化（本次重构地基，优先）
 
@@ -315,13 +334,18 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 ## C7. 正式化与文案
 
-- [ ] **C-COPY 清测试字串 + 产品文案（J1/J2/J6）**：全站移除 `云端团单/测试/DEBUG/自动化/待串接/资料已同步/当前资料仅保存到本设备` 等；`config.js` 把 `allowMockIdentity/allowSeedDataFallback/allowQaTools/useCloudBusinessData` 与 `appEnv` 可视化并在 UI 入口加 `isProd` 硬关。判定：PROD 路径看不到任何 mock/QA 开关与测试字样；`isRolePreview` 不在 PROD 生效。
+- [ ] **C-COPY 清测试字串 + 产品文案（J1/J2/J6）**：全站移除 `云端团单/测试/DEBUG/自动化/待串接/资料已同步/当前资料仅保存到本设备` 等；`config.js` 把 `dataBackend`、`appEnv` 可视化并在 UI 入口加 `isProd` 硬关。判定：PROD 路径看不到内部开关与测试字样；`isRolePreview` 不在 PROD 生效。
 
 ---
 
 # Part D — 测试项 CHECKLIST
 
 每项对应 Part C 开发项，供微信开发者工具人工实测与后续自动化脚本（miniprogram-automator）。运行方式见文末。测试须覆盖正向 + 负向（无权/停用/过期/资料不归属/分享无效），且后端拒绝无权请求，不能只靠前端 toast/disabled。
+
+## D0. 数据后端与去 mock
+
+- [ ] **D-LOCAL-BACKEND**：DEV `dataBackend:'local'` 时，登录与团单/商品/订单读写全部命中本地服务与本地库，重开仍在；改 config 切 `cloud` 后同流程连云开发、业务代码零改动。
+- [ ] **D-MOCK-REMOVE**：全站搜不到 mock/seed/假身份路径；DEV 任一读写都进真实后端库，无本地假数据兜底。
 
 ## D1. 模型简化
 
