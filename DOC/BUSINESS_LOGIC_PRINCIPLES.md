@@ -1,275 +1,375 @@
-# BUSINESS_LOGIC_PRINCIPLES
+# 业务逻辑与开发主文档（MASTER）
 
-## 文件用途
-本文件是本项目唯一的业务逻辑原则来源。AGENT 和 QA 判断产品逻辑时，先以本文件为准。
+## 0. 文件用途与阅读顺序
 
-本文件只写稳定业务原则，不写 BUG 清单、开发进度、交接记录或每日验收结果。当前待办和上线 gate 看 `DOC/MVP_COMPLETION_CHECKLIST.md`；具体代码仍以当前仓库为准。
+本文件是本项目**唯一的业务逻辑与开发可信源**。AGENT / CLAUDE 判断产品逻辑、决定开发顺序、编写测试时，一律以本文件为准；具体代码实现仍以当前仓库为准，但若代码与本文件冲突，以本文件为目标、把代码改到符合本文件。
 
-## 1. MVP 主线
-本产品是给中国团主使用的微信小程序。MVP 必须围绕一条可上线业务闭环收敛：
+本文件分四个明确分区，可单文件驱动开发：
 
-1. 用户通过微信登录，取得正式 OpenID。
-2. owner/admin 审核用户身份与角色。
-3. provider 供应商维护商品或服务。
-4. 团主选择商品并开团。
-5. customer 客户从团单入口下单并声明付款。
-6. 团主确认收款并查看订单状态。
+- **Part A — 业务原则**：稳定的产品规则，改动需谨慎并记入变更记录。
+- **Part B — 角色能力矩阵**：每个角色能看到/使用什么，是代码 `services/auth/roleScope.js` 的唯一对照源。
+- **Part C — 开发项 CHECKLIST**：AGENT 照此逐项落地，每项含目标 / 改动文件 / 完成判定。
+- **Part D — 测试项 CHECKLIST**：每个开发项对应的验收点，供人工实测与后续自动化。
 
-任何功能若不能支持这条闭环，应被视为非核心能力。不得为了非核心能力牺牲登录、审核、角色权限、供应商商品、团单、客户订单和收款闭环。
+BUG 由使用者在微信开发者工具实测后于对话回报，不在本文件维护逐条 BUG。
 
-## 2. 身份、状态与角色
-微信 OpenID 是正式身份锚点。正式用户权限必须来自云端 `users` profile 或等价正式资料，不得来自前端参数、本地 storage、QA override、分享链接或 mock 资料。
+### 0.1 变更记录
 
-用户状态至少分为：
+- **2026-07-21 角色模型简化（本次重构）**
+  - `provider` 不再是登录角色，降级为"团主管理的供应商实体"，与商品关联。移除 provider 登录选项、申请供应商流程、provider 专属后台。
+  - 移除聊天（chat）功能。团主与客户之间的沟通改由**订单/付款状态操作**表达（见 A6）。消息页定位为"订单状态提醒"。
+  - **customer 为默认开放身份**：任何人微信登录（含普通打开、扫码、分享链接进入）即成为 `approved` 客户，无需审核即可下单。
+  - **guide（团主）是唯一需审核的用户角色**：客户可申请升级为团主，经 owner/admin 审核通过后 `roles[]` **追加** `guide` 并保留 `customer`。
+  - 明确"申请团主"为独立开发项与测试项（C-GUIDE-APPLY / D-GUIDE-APPLY）。
+  - 明确多角色 `roles[]` **追加不覆盖**规则，防止升级团主时冲掉客户功能。
 
-- `pending_review`：已登录但等待审核。
-- `approved`：已审核通过。
-- `rejected`：审核被拒。
-- `disabled`：账号停用。
+---
 
-正式业务功能只对 `approved`、未过期、且具备对应角色或场景权限的用户开放。未登录、待审核、被拒、停用或角色使用期限已过的用户不能看到完整业务入口，也不能绕过前端直接调用后端写入。
+# Part A — 业务原则
 
-正式角色包括：
+## A1. MVP 主线闭环
 
-- `owner`：产品拥有者和最高业务管理者。
-- `admin`：运营管理员，权限低于 owner。
-- `guide`：内部 role key，用户界面显示为「团主」，管理自己的团单、本团商品和客户订单。
-- `provider`：供应商，维护自己的供应商资料和商品或服务。
-- `customer`：客户，查看和处理自己的订单；也可以通过合法团单分享进行受限下单。
+本产品是给中国团主使用的微信小程序。MVP 围绕一条可上线业务闭环收敛：
 
-角色能力可以是多重的。同一个 OpenID 可以同时是团主，也可以在别人分享的团单里作为 customer 下单。系统不能只用单一 `role` 粗暴判断所有场景，必须支持 `roles[]`，并根据当前入口和业务场景计算 `effectiveRole` 或等价有效身份。`role` 可以保留为 primary role 兼容字段，但不能成为唯一权限来源。
+1. 用户微信登录，取得正式 OpenID，默认成为**已审核客户**。
+2. 客户可申请升级为**团主**，由 owner/admin 审核。
+3. 团主维护自己的**商品**，并可关联**供应商实体**（供应商是数据，不是账号角色）。
+4. 团主选择商品并**开团**。
+5. 客户从团单入口**下单**并声明付款。
+6. 团主**确认收款**，并可更新团单与客户订单状态；客户可查看并更新自己订单的付款状态。
+7. owner/admin 审核用户升级、管理全局资料。
 
-## 3. 审核与 owner 规则
-第一位 owner 必须由受控 allowlist 或等价机制产生，不能由前端自选。owner/admin 审核用户时，必须保存审核状态、一个或多个正式角色、角色使用期限、审核人、审核时间、更新时间和必要备注。角色使用期限留空表示不设期限；一旦期限已过，即使用户仍能登录，也不得继续使用业务功能，必须显示正式不可用状态并引导联系管理员续期。
+任何功能若不能支持这条闭环，视为非核心能力，不得为它牺牲登录、客户下单、团主审核、商品供应商、团单、客户订单和收款闭环。
 
-新用户直接打开小程序、普通扫码、首页、搜索或非团单分享路径进入时，首次微信登录后只能进入 `pending_review`，不得自动成为 customer、guide、provider、admin 或 owner。
+## A2. 角色与身份模型
 
-admin 不能把自己升成 owner，不能修改或停用 owner，不能指派 owner。owner/admin 的审核与角色变更必须写入操作记录。
+微信 OpenID 是正式身份锚点。正式用户权限必须来自云端 `users` profile，不得来自前端参数、本地 storage、QA override、分享链接或 mock 资料。
 
-为了让同一个微信账号测试不同角色，系统可以提供 owner 专用的「运营验收模式」。该模式只改变预览视角，不修改 owner 的真实角色：
+### 用户角色（auth role，写入 `roles[]`）
 
-- `realProfile`：当前 OpenID 的真实云端身份。
-- `effectiveProfile`：当前页面和流程使用的预览身份。
+- `customer` **客户 — 默认开放身份**。任何微信登录用户默认拥有，无需审核。可浏览团单商品、下单、声明与更新自己订单的付款状态、查看自己订单。
+- `guide` **内部 role key，UI 显示为「团主」— 唯一需审核的用户角色**。管理自己的商品、供应商实体、团单、本团客户订单，确认收款。
+- `admin` 运营管理员：审核团主申请、管理用户与全局资料，权限低于 owner。
+- `owner` 产品拥有者与最高业务管理者，来自受控 allowlist。
 
-只有真实 owner 且状态为 `approved` 时，才可以启用角色预览。普通用户不得通过参数伪造 owner、admin、guide、customer 或 provider。
+> **`provider` 不再是角色。** 供应商是团主在商品管理里维护的**数据实体**（名称、联系方式、服务说明等），用于与商品关联并在下单页向客户展示必要信息。任何"以 provider 身份登录/申请/进入 provider 后台"的旧路径都应移除。
 
-## 4. Customer 下单规则
-customer 下单分为完整 customer 与受限下单两种场景。
+### 多角色规则（关键）
 
-完整 customer 是正式角色，若用户不是从合法团单分享进入，而是直接注册或从普通入口进入，必须经过 owner/admin 审核后才能成为完整 customer。
+同一个 OpenID 可同时拥有多个角色。典型：一个人既是 `customer`，申请通过后又是 `guide`。
 
-受限下单是分享场景能力。用户从合法团单分享链接、团单码或带有效 share token 的入口进入时，可以获得该团单的受限客户下单能力。受限客户只允许：
+- 系统必须以 `roles[]` 为权限真相，`role` 只作 primary role 兼容字段，不得作为唯一权限来源。
+- 权限判断根据当前入口与业务场景计算 `effectiveRole`（有效身份）。
+- **升级追加、绝不覆盖**：客户申请团主通过后，`roles[]` 必须由 `[customer]` 变为 `[customer, guide]`，不得替换成 `[guide]`。任何审核/升级写入都必须保证既有角色不丢失。
+- **多角色不得互相影响**：拥有 guide 的用户，其 customer 能用的功能必须完全不受影响；团主身份的资料与客户身份的资料分开归属（见 A5）。
+- 所有面向用户的角色文案、入口过滤、列表范围，必须基于 `roles[]` / `effectiveRole`，不得只读单一 `profile.role`（现有 `getRoleScopeText` 等仍读单一 role，属待修项，见 C-MULTIROLE）。
 
-- 查看该分享团单。
-- 查看该团单可下单商品。
-- 提交自己的订单。
-- 声明自己的付款。
-- 查看自己的订单和付款状态。
+## A3. 用户状态机
 
-受限客户不得进入完整业务 tab、商品库管理、团主工作台、供应商后台、资料中心、用户审核或其他客户资料。
+账户状态字段 `reviewStatus`（`status` 为兼容别名）：
 
-分享入口必须验证团单仍有效、未过截止时间、可售、未删除、未停用。无效分享路径必须显示正式错误页或返回安全页面，不得放开完整客户权限。
+- `approved`：**默认状态**。所有微信登录用户即为 approved 客户。
+- `disabled`：账号被 owner/admin 停用，禁止一切业务功能。
+- `rejected`：保留字段，主要用于团主申请被拒的展示（账户本身仍是 approved 客户）。
 
-若一个已审核团主从别人分享链接进入，系统应进入客户下单场景，而不是强行跳回团主工作台。完成或退出该分享流程后，再回到其原本团主身份首屏。
+因为客户默认开放，**账户级不再有"全员 pending_review 等待审核"这一步**。审核只发生在**团主升级申请**上，用独立的申请状态表达：
 
-## 5. Provider 供应商规则
-provider 是 MVP 正式角色，不是后续占位角色。
+### 团主申请状态（`guideApplication`）
 
-供应商必须能完成以下正式流程：
+profile 增加/使用团主申请子结构，至少包含：
 
-- 申请成为 provider。
-- 由 owner/admin 审核通过、拒绝或停用。
-- 维护自己的供应商资料。
-- 新增、编辑、上下架自己的商品或服务。
-- 让团主在开团或本团商品流程中选用可用商品。
-- 让 customer 在下单时看到必要供应商资讯。
+- `status`：`none` | `pending` | `approved` | `rejected`。
+- `submittedAt`、`reviewedBy`、`reviewedAt`、`remark`。
+- 通过时可设 `roleExpiresAt`（团主角色使用期限，留空表示不限期）。
 
-provider 只能管理自己的资料和商品。provider 不得看到团主团单管理、客户资料中心、用户审核、owner/admin 功能、其他供应商资料或其他供应商商品管理。
+规则：
 
-provider 被停用后，不得新增或修改商品；其商品不得被新团单继续选用。既有交易资料必须保留历史状态，不得直接删除造成订单追溯断裂。
+- 客户提交团主申请后，`guideApplication.status = pending`，**账户仍是 approved 客户**，客户功能不受影响，团主功能尚不开放。
+- owner/admin 审核通过：`roles[]` 追加 `guide`，`guideApplication.status = approved`，写操作记录。
+- 审核拒绝：`guideApplication.status = rejected`，`roles[]` 不变（仍是客户）。
+- 团主角色期限已过：即使仍能登录并作为客户使用，也不得继续使用团主功能，须显示正式不可用状态并引导联系管理员续期；客户功能不受影响。
+- `disabled` 账户：一切业务功能关闭，前端导向安全状态、后端拒绝读写。
 
-## 6. 团主与团单规则
-团主是团单经营者。内部 role key 仍为 `guide`。团主可以建立团单、维护本团商品、查看自己团单下的客户订单，并确认收款。
+## A4. 权限边界
 
-团单必须有清楚归属。团主只能管理自己创建或被授权管理的团单。customer 只能通过分享或自己的订单关联读取指定团单的可下单信息。provider 默认不能管理团单。
-
-团单商品必须保存商品快照，避免供应商商品后续变更影响历史订单追溯。商品下架或供应商停用后，新团单不得继续选用；既有团单和订单应显示正式状态，而不是删除历史。
-
-## 7. 核心资料模型与归属
-本节是开发代理需要遵守的最小资料模型。
-
-`users` 保存微信身份、审核状态、正式角色、角色使用期限、基础资料与审核记录。OpenID 是身份锚点，本地缓存只能加速显示，不能作为权限真相来源。
-
-`providerProfiles` 或等价资料保存供应商对外资料。provider 只能维护自己的供应商资料；owner/admin 可管理全部供应商。
-
-`products` 保存商品或服务资料。商品必须包含名称、图片、价格、说明、状态、创建者、归属 principal、供应商归属和软删除状态。provider 只能管理自己的商品；团主（内部 role key `guide`）可以管理自己创建的商品；owner/admin 可管理全局商品。
-
-`groupOrders` 保存团主开团资料。团单必须记录团主 principal（内部 `guide` principal）、状态、时间、收单规则、联系说明、分享路径或 share token。
-
-`groupOrderProducts` 保存团单与商品的关联，并保存商品快照、价格快照、供应商归属和可售状态。它是订单追溯的重要资料，不得只依赖实时商品表。
-
-`customerOrders` 保存客户在指定团单下的订单。订单必须记录 group order、customer principal、items、金额、状态、付款资料和创建/更新时间。
-
-`payments` 与 `paymentStatusHistory` 保存付款声明、团主确认、金额、方式、备注、可选凭证、操作者、状态变化和时间。付款状态必须可追溯。
-
-`operationLogs` 或等价资料保存正式业务操作记录。它不是可编辑业务资料，也不是聊天、通知或 BUG 记录。每条记录至少应保存 actor principal、OpenID、当时角色或 effectiveRole、动作、资源类型、资源 id、操作摘要、结果、发生时间和必要上下文。
-
-资料归属必须清楚：
-
-- 团主身份建立的商品和团单归属于内部 `guide` principal。
-- provider 身份建立的商品归属于 provider principal。
-- customer 身份建立的订单归属于 customer principal。
-- 受限分享下单必须记录 groupOrderId、share token 或等价来源、customer principal 和 `restrictedCustomer` 等价标记。
-- owner/admin 可以按权限查看和管理全局资料，但关键操作必须写入操作记录。
-
-同一 OpenID 在不同场景下的资料不能混用。一个人既是团主（内部 role key `guide`）又是 customer 时，不能因为 OpenID 相同就看到或修改不属于当前场景的资料。
-
-## 8. 权限边界
-前端隐藏入口只是体验优化，不能替代后端权限。所有正式写入和敏感读取必须由 service/repository/cloud function 做最终判断。
+前端隐藏入口只是体验优化，不能替代后端权限。所有正式写入和敏感读取必须由 service / repository / cloud function 做最终判断。
 
 权限判断至少包含：
 
 - 当前 OpenID 是否存在正式 user profile。
-- 用户状态是否为 `approved`。
-- 角色使用期限是否仍有效。
+- 账户是否为 `approved`（未 `disabled`）。
+- 目标动作要求的角色是否在 `roles[]` 内，且该角色未过期。
 - 当前场景的 `effectiveRole` 是否允许该动作。
-- 资料是否归属于当前 principal。
-- 分享下单是否来自合法、有效、未过期、可售的团单入口。
-- provider 商品、团主团单、customer 订单是否互相越权。
+- 资料是否归属于当前 principal（团主只管自己的团单/商品/供应商；客户只管自己的订单）。
+- 分享下单入口是否来自合法、有效、未过期、可售的团单。
 
-任何未审核、被拒、停用、角色不符、资料不归属、分享无效或试图伪造身份的请求，后端都必须拒绝。
+任何账户停用、角色不符、期限已过、资料不归属、分享无效或伪造身份的请求，后端必须拒绝。
 
-角色入口验收必须覆盖以下场景，不能只检查单一角色或单一首页：
+后端**不得直接信任前端传入的角色或预览角色**；必须以云端 profile 为准。
 
-- 未登录/游客。
-- `pending_review`、`rejected`、`disabled`、过期账号。
-- 团主（内部 role key `guide`）。
-- `customer`。
-- `provider`。
-- `admin`。
-- `owner`。
-- 多角色账号和场景化入口。
+## A5. 核心资料模型与归属
 
-每个角色至少检查登录后首屏、tab/custom tab bar、首页快捷入口、My 服务列表、核心列表页与详情页、空状态 CTA、分享/扫码入口、直达 route、返回 fallback，以及后端拒绝无权读写。本文件只定义业务原则，不维护逐页 BUG row。
+- `users`：微信身份、`roles[]`、primary `role`、`reviewStatus`、`guideApplication`、`roleExpiresAt`、基础资料、审核记录。OpenID 是锚点，本地缓存只能加速显示，不能作为权限真相。
+- `providers`（供应商实体）：由团主创建维护的对外供应商资料（名称、联系方式、介绍、服务范围等）。**归属于创建它的 guide principal**；无独立账号登录。owner/admin 可管理全局供应商实体。
+- `products`：商品/服务，含名称、图片、价格、说明、状态、创建者、归属 guide principal、关联的供应商实体 id、软删除状态。团主只管自己的商品；owner/admin 管全局。
+- `groupOrders`：团主开团资料，记录 guide principal、状态、时间、收单规则、联系说明、分享路径 / share token。
+- `groupOrderProducts`：团单与商品关联，保存商品快照、价格快照、供应商实体快照、可售状态，用于订单追溯，不得只依赖实时商品表。
+- `customerOrders`：客户在指定团单下的订单，记录 group order、customer principal、items、金额、状态、付款资料、创建/更新时间。
+- `payments` / `paymentStatusHistory`：付款声明、团主确认、金额、方式、备注、可选凭证、操作者、状态变化、时间，必须可追溯。
+- `operationLogs`：正式业务操作记录（见 A7）。追加写入，不可编辑。
 
-## 9. 订单与收款
-客户订单记录客户在指定团单内的购买内容、金额、付款状态和历史。
+**归属规则**：团主身份建立的商品/团单/供应商实体归 guide principal；客户身份建立的订单归 customer principal。同一 OpenID 拥有多角色时，不得因 OpenID 相同就跨场景看到或修改不属于当前 effectiveRole 的资料。
 
-付款声明由 customer 发起，团主确认。MVP 不要求付款凭证图片必填；customer 可用付款方式、付款金额和备注提交声明，图片凭证是选填补充证据。
+## A6. 订单、付款状态流转（替代聊天）
 
-付款状态至少区分：
+团主与客户之间**不做即时聊天**。双方通过订单与付款状态的变更来协作与知情：
 
-- 未付款。
-- 客户已声明付款。
-- 团主已确认收款。
-- 已取消。
+### 客户可做的操作
 
-团主只能确认自己团单下的订单收款。customer 只能查看和处理自己的订单。provider 默认不能查看客户个人付款资料。
+- 从合法团单入口浏览本团商品并下单。
+- 声明付款：填写付款方式、付款金额、必要备注；付款凭证图片**选填**（无图片时显示"未上传凭证"，不得因此阻止声明）。
+- 更新/撤回自己订单的付款声明状态（在团主确认前）。
+- 查看自己订单的状态与付款结果。
 
-## 10. 操作记录规则
-操作记录是系统审计能力，用来让使用者回看自己做过的关键正式操作，并让权限问题可以被追查。它不替代业务资料本身，也不能作为修改业务状态的入口。
+### 团主可做的操作
 
-MVP 至少需要记录这些正式操作：
+- 查看自己团单下的客户订单、付款状态、必要客户下单资料。
+- 确认收款 / 拒绝 / 取消，写入付款状态历史（操作者、时间、金额、备注）。
+- 更新团单状态（进行中、停止收单、结束等）与客户订单状态。
 
-- owner/admin 审核、拒绝、停用、改角色、续期或调整用户权限。
-- 团主建立或编辑团单、维护本团商品、确认收款、取消订单。
-- provider 新增、编辑、上下架或停用商品。
-- customer 下单、声明付款、取消自己的订单。
+### 付款状态（至少）
 
-可见范围必须受限：
+`未付款` → `客户已声明付款` → `团主已确认收款`，以及 `已取消` / `已拒绝` 分支。每次流转写入 `paymentStatusHistory`。
 
-- owner/admin 可以查看自己的管理操作记录。
-- 团主可以查看自己的团单、商品、收款相关操作记录。
-- 操作记录默认不开放给其他普通角色查看，除非某条业务流程明确需要。
-- 不得因为同一 OpenID 有多角色，就把不同 effective principal 的操作记录混在同一业务视角里显示。
+### 消息页定位
 
-操作记录必须追加写入，不允许普通业务页面任意编辑或删除。若将来需要清理、导出或全局审计，必须先定义 owner/admin 的可见范围、脱敏规则和保留期限。
+`pages/message` 定位为**订单状态提醒**：展示与当前用户相关的订单/付款状态变化，点击进入对应订单详情。不得出现聊天/对话术语。`pages/chat` 及"客户沟通"正式入口移除或降级为导回订单相关页面。
 
-## 11. 环境切分与 DEV 测试模式
-本项目只区分两个正式环境：`DEV` 与 `PROD`。不再单独规划第三套 QA 环境。
+## A7. 操作记录规则
 
-`DEV` 是开发、代理开发、使用者自测和多人内测环境。`PROD` 是正式使用者环境。两者必须在前台配置、云函数、云数据库和云存储上完全分开，避免开发测试污染正式环境。
+操作记录是审计能力，让用户回看自己的关键操作、让权限问题可追查。它不替代业务资料，也不是修改业务状态的入口。
 
-环境最小结构如下：
+至少记录：
 
-- `DEV` 前台配置只连接 `DEV` 微信云环境。
-- `DEV` 云函数只读写 `DEV` 云数据库与 `DEV` 云存储。
-- `PROD` 前台配置只连接 `PROD` 微信云环境。
-- `PROD` 云函数只读写 `PROD` 云数据库与 `PROD` 云存储。
+- owner/admin 审核团主申请、拒绝、停用、改角色、续期。
+- 团主建立/编辑团单、维护商品与供应商实体、确认/拒绝/取消收款、更新订单状态。
+- 客户下单、声明/撤回付款、取消自己的订单。
 
-`DEV` 内部再用一个受控开关区分两种测试模式。该开关只允许影响 `DEV`，不得影响 `PROD`。
+每条至少含：actor principal、脱敏 OpenID、当时 effectiveRole、动作、资源类型、资源 id、摘要、结果、时间、必要上下文。追加写入；不得写入完整 OpenID、手机号、支付口令等敏感明文；重试需幂等去重。
 
-### DEV 单人角色预览模式
-当 `DEV` 的角色预览开关打开时，表示只有使用者本人进行测试。此模式用于让同一个真实微信 OpenID 模拟不同角色和审核状态完成上线前流程检查。
+可见范围：owner/admin 看自己的管理操作记录；团主看自己的团单/商品/收款相关记录；默认不开放普通角色查看他人记录；不得因多角色把不同 effective principal 的记录混在同一视角。
 
-规则如下：
+## A8. 环境切分与 DEV 测试模式
 
-- 只有真实 `owner`、状态为 `approved`、且 OpenID 命中受控 owner 来源时，才可以使用角色预览。
-- 可预览身份包括 `visitor`、`pending_review`、`rejected`、`disabled`、`customer`、`guide`、`provider`、`admin`、`owner`。
-- 角色预览只改变当前页面、入口、权限判断和测试流程使用的 `effectiveProfile` 或等价有效身份。
-- 角色预览不得修改云端 `users` 中使用者本人的真实 owner 身份。
-- 角色预览产生的测试资料必须仍写入 `DEV` 云数据库，并能用模拟 principal 或等价字段隔离，避免不同预览身份互相污染资料归属。
-- 后端/cloud function 不得直接信任前端传入的预览角色；必须先确认真实 OpenID 是 `DEV` 环境的 approved owner，才允许启用预览身份。
-- 非 owner、未审核 owner、`PROD` 环境、或角色预览开关关闭时，任何 simulation / preview 参数都必须被后端拒绝。
+只区分 `DEV` 与 `PROD` 两个正式环境，前台配置、云函数、云数据库、云存储完全分开。环境语义由 `config.js` 表达，不得用单一 `isMock` 承载环境、资料来源、角色预览、QA 工具多种含义。
 
-### DEV 多人真人测试模式
-当 `DEV` 的角色预览开关关闭时，表示开放不同微信账号的真人进入 `DEV` 环境测试。此时不得使用同一账号模拟不同正式角色。
+- `DEV`：开发、代理开发、自测与多人内测。
+- `PROD`：正式用户环境，永远禁止角色预览、QA 工具、mock 身份、Seed fallback、debug 角色切换。
 
-规则如下：
+### DEV 角色预览（owner 专用）
 
-- 每个测试者使用自己的真实微信 OpenID 登录。
-- 新测试者首次登录后进入 `pending_review`。
-- 使用者本人或指定 `DEV` owner/admin 在 `DEV` 环境审核测试者，并分配 `customer`、`guide`、`provider`、`admin` 等角色和角色期限。
-- 测试者看到的入口、权限、资料归属必须来自自己的真实 `DEV` users profile。
-- 测试者不得看到角色预览入口、QA/mock 工具或任何可自行切换正式角色的入口。
-- 所有测试资料仍写入同一套 `DEV` 云数据库；不得因为多人测试而切到 `PROD` 或另建第三套 QA 环境。
+只有真实 `owner`、`approved` 且 OpenID 命中受控来源时可用。预览只改变 `effectiveProfile`（当前页面/入口/权限使用的预览视角），不修改云端真实 owner 身份（`realProfile`）。可预览身份：`visitor`、`disabled`、`customer`、`guide`、`admin`、`owner`（`provider` 与 `pending_review` 已随模型简化移除）。后端必须先确认真实 OpenID 是 DEV 环境 approved owner 才允许启用预览。
 
-### PROD 正式环境
-`PROD` 是正式使用者环境，必须按正式上线规则运行。
+### DEV 多人真人测试
 
-规则如下：
+角色预览关闭时，不同微信账号真人进入 DEV。每人用真实 OpenID，默认成为 approved 客户；需要团主时由 DEV owner/admin 审核升级。测试者不得看到角色预览入口或 QA 工具。
 
-- `PROD` 必须使用独立的云函数、云数据库、云存储和前台配置。
-- `PROD` 永远禁止角色预览、QA 工具、mock 身份、Seed 身份、debug 角色切换和本地资料 fallback 作为正式能力。
-- `PROD` 用户必须使用真实微信 OpenID，通过 owner/admin 审核后取得正式角色。
-- `PROD` 的 deploy、migration、数据删除、schema 调整、云函数环境变量调整和批量数据操作，都必须经过使用者明确授权。
-- 代理开发和自动化测试默认不得直接操作 `PROD` 环境。
+### PROD
 
-环境配置应表达这些业务意图：当前环境是 `DEV` 或 `PROD`、当前连接的 `cloudEnvId`、是否允许 `DEV` 角色预览、是否允许 QA/demo 工具、是否使用微信云业务资料。不得用单一 `isMock` 同时承载环境、资料来源、角色预览和 QA 工具多种语义。
+独立云资源；用户用真实 OpenID，默认客户；升级团主需审核。deploy、migration、数据删除、schema 调整、云函数环境变量调整须使用者明确授权；代理开发与自动化测试默认不得直接操作 PROD。
 
-## 12. 正式资料层与 mock/QA 原则
-MVP 正式资料层采用微信云数据库 + 云函数。页面不得直接读写正式数据库、云函数、storage 或 `mock/qaSeed.ts`；页面只调用 service/repository。
+## A9. 命名与正式文案
 
-mock、local、QA seed 只用于开发和验收辅助，不能包装成正式数据。正式模式下不得向普通用户暴露 mock、Seed、QA、debug、MVP、未完成、待串接等内部字样。
+- 用户可见团主角色统一称「团主」，不得出现「导游」「领队」「导游/领队」。内部 role key 仍为 `guide`，文档提及内部 key 时须注明"内部 role key 为 `guide`，用户显示为团主"。
+- 正式模式不得显示 QA、mock、Seed、debug、MVP、未完成、后续、待串接、云端团单、测试账号、自动化 等内部字样。
+- 保存/状态文案用产品语言：`已保存` / `保存失败` / `权限不足` / `网络问题`，不暴露 storage / mock / 同步实现细节。
+- 未登录、停用、无权、空状态、错误状态、加载状态都要有正式简体中文文案与稳定画面。
 
-若需要最小 QA/mock 资料，应按本文件的核心闭环准备：
+## A10. 上线判断
 
-- 至少一个 owner/admin。
-- 至少一个 pending/rejected/disabled 用户状态样本。
-- 至少一个团主（内部 role key `guide`）。
-- 至少一个 provider 和其供应商资料。
-- 至少一个 provider 商品和一个团主商品。
-- 至少一个开放团单和一个停止/过期团单。
-- 至少一个团单商品关联。
-- 至少一个受限分享下单场景。
-- 至少一笔未付款、已声明付款、已确认收款、已取消订单。
+以真实业务闭环能否完成为准，不以 commit 数、打勾数或静态检查为准。MVP 可上线最低条件：
 
-QA/mock 资料只用于打开页面、验证空状态/错误状态/正常状态和辅助自动化，不得作为正式业务能力完成的证据。`DEV` 多人真人测试模式不得依赖 mock 身份；必须使用真实微信 OpenID 和 `DEV` 云端 users profile。
-
-## 13. 上线判断原则
-上线判断以真实业务闭环是否可完成为准，不以 commit 数量、文件打勾或静态检查数量为准。
-
-可以视为 MVP 可上线的最低条件是：
-
-- owner/admin 能审核用户。
-- provider 能维护供应商资料与商品。
-- 团主能开团并选择商品。
-- customer 能通过合法团单入口下单。
-- customer 能声明付款，凭证选填。
-- 团主能确认收款。
+- 微信登录默认成为可下单客户。
+- 客户能申请团主，owner/admin 能审核通过并保留客户身份（多角色不冲突）。
+- 团主能维护商品与供应商实体、开团、选品。
+- 客户能从合法团单入口下单、声明付款（凭证选填）。
+- 团主能确认收款、更新订单/团单状态；客户能查看并更新自己订单付款状态。
 - owner/admin 与团主能查看自己的关键操作记录。
-- 资料重开后仍存在。
-- 无权角色在前端和后端都不能越权。
-- 核心流程经过微信开发工具画面实测验证。
+- 重开小程序后核心资料仍存在。
+- 无权/停用/过期/资料不归属/分享无效在前端和后端都被挡住。
+- 核心流程经过微信开发者工具画面实测验证。
 
-没有微信开发工具画面实测或等价可接受操作证据时，不能把 GUI、workflow、图片、付款、分享、权限等项目宣告完成。
+---
+
+# Part B — 角色能力矩阵
+
+本部分是 `services/auth/roleScope.js` 中 `FEATURE_ALLOWED_ROLES`、tab bar 过滤、"我的"页入口的**唯一对照源**。代码调整后必须与本表一致。
+
+## B1. 功能 × 角色矩阵
+
+✅=可见可用；(自己)=仅限本人/本人归属资料；—=不可见。`owner`/`admin` 统称管理层。
+
+| 功能键 | 页面 | 客户 customer | 团主 guide | 管理层 owner/admin |
+|---|---|---|---|---|
+| `home` | pages/home | ✅ | ✅ | ✅ |
+| `groupOrders` | pages/groupOrder | ✅(仅自己下过单关联的团单) | ✅(自己创建/被授权的团单) | ✅ |
+| `groupOrderCreate` | 开团主流程 | — | ✅ | ✅ |
+| `products` 浏览 | 商品浏览 | ✅(可下单商品) | ✅ | ✅ |
+| `productManage` 管理 | pages/productManagement | — | ✅(自己的商品) | ✅ |
+| `providerManage` 供应商实体 | 团主商品/供应商维护 | — | ✅(自己的供应商实体) | ✅ |
+| `customerOrders` | pages/customerOrders | ✅(自己的订单) | ✅(自己团单下的订单) | ✅ |
+| `customerOrderCreate` 下单 | 下单流程 | ✅ | ✅(经分享作客户时) | ✅ |
+| `dataCenter` | pages/dataCenter | — | ✅ | ✅ |
+| `message` 订单提醒 | pages/message | ✅(自己相关) | ✅(自己相关) | ✅ |
+| `guideApply` 申请团主 | pages/tourGuides/edit | ✅(未持有 guide 时) | —(已是团主) | ✅ |
+| `userReview` 用户审核 | pages/userReview | — | — | ✅ |
+| `operationLogs` | pages/operationLogs | — | ✅(自己的) | ✅(自己的管理记录) |
+| `profile`/`infoEdit`/`settings` | 我的/资料/设置 | ✅ | ✅ | ✅ |
+| `search` | pages/search | — | ✅ | ✅ |
+| ~~`chat`~~ 聊天 | ~~pages/chat~~ | 移除 | 移除 | 移除 |
+| ~~`providers` 后台~~ | ~~pages/providers~~ | 移除(降为 providerManage 实体) | — | ✅ |
+| ~~`release` 独立发布入口~~ | ~~pages/release~~ | 收敛进 groupOrderCreate 单一主入口 | | |
+
+> 多角色账户按 `roles[]` 取并集：同时是 customer+guide 的用户，看到 customer 与 guide 两栏所有 ✅ 的并集，且各自的"(仅自己)"范围分别成立。
+
+## B2. 底部 tab bar（custom-tab-bar）
+
+tab 由 `canUseFeature` 过滤，「我的」恒显：
+
+- **客户**：首页 / 团单(我的) / 客户订单(我的) / 我的
+- **团主**（含 customer+guide）：首页 / 团单 / 客户订单 / 商品库 / 我的
+- **管理层**：全部
+- **停用/未登录**：仅安全状态页，无业务 tab
+
+## B3. "我的"页入口分区（对应 J3）
+
+三区，同角色只显示可用项，不同层级不混排：
+
+- **常用工作**：客户=我的订单、去下单；团主=开团、我的团单、商品与供应商、待确认收款。
+- **资料与权限**：个人资料、设置；客户未持有 guide 时显示「申请成为团主」。
+- **管理**（仅 owner/admin）：用户审核、全局资料、操作记录。
+
+## B4. 供应商实体的定位
+
+供应商不是入口/角色，而是团主在**商品管理**内维护的关联数据：新增/编辑供应商实体 → 创建/编辑商品时选择关联供应商 → 客户下单页与订单详情展示必要供应商信息（名称/联系方式等对外字段），不展示任何内部营运字段。
+
+---
+
+# Part C — 开发项 CHECKLIST
+
+每项：**目标 / 主要改动文件 / 完成判定**。完成判定须同时满足：功能走正式 service/repository/cloud function 路径（非 mock/local fallback）、前后端权限符合 Part A、微信开发者工具画面实测通过、需云端资料者有重开后仍在的 readback 证据。
+
+## C1. 模型简化（本次重构地基，优先）
+
+- [ ] **C-PROVIDER-REMOVE 移除 provider 角色，改为供应商实体**
+  - 改动：`services/auth/roleScope.js`（删 `AUTH_ROLES.PROVIDER`、`FEATURE_KEYS.PROVIDERS`、相关 allowed roles、`canUseProviderPortal`）、`cloudfunctions/authLogin/index.js`（删 `ROLE_PROVIDER`、登录选项、`providerId` 默认逻辑）、`pages/login/*`（删申请 provider 选项）、`pages/home/*` 与 `pages/my/index.js`（删「申请供应商」入口）、`pages/providers/*`（改造为团主的供应商实体管理或迁移到商品管理下）、`enum`/`config` 相关。
+  - 判定：全站无"以 provider 身份登录/申请/进入 provider 后台"路径；团主可在商品管理里新增供应商实体并与商品关联；旧 provider 账户数据有迁移或兼容处理，不造成崩溃。
+
+- [ ] **C-CHAT-REMOVE 移除聊天**
+  - 改动：`pages/chat/*`（移除或降级）、`pages/message/*`（改为订单提醒）、首页/我的页对话入口引用、`services/auth/roleScope.js`（删 `FEATURE_KEYS.CHAT`）。
+  - 判定：正式用户看不到聊天/客户沟通入口；消息页为订单状态提醒，点击进订单详情；无聊天术语。
+
+- [ ] **C-CUSTOMER-DEFAULT 登录即已审核客户**
+  - 改动：`cloudfunctions/authLogin/index.js`（新用户 `buildDefaultProfile` → `role:'customer'`、`roles:['customer']`、`reviewStatus:'approved'`，移除全员 pending 逻辑）、`pages/login/*`（去掉"选择申请身份+提交审核"，改为直接登录进入）、`services/auth/authService.js`（bootstrap 默认客户）。
+  - 判定：任意新 OpenID 登录后立即可作为客户浏览团单商品并下单；无 pending 拦截页挡住客户。owner/admin allowlist 命中仍自动 approved 管理层。
+
+## C2. 团主申请与多角色
+
+- [ ] **C-GUIDE-APPLY 客户申请升级团主（独立立项）**
+  - 改动：`pages/tourGuides/edit/*`（申请单：申请人、时间、说明、状态）、`pages/my/index.js`（「申请成为团主」入口，仅未持有 guide 的客户可见）、`services/auth/authService.js` + 相关云函数（写 `guideApplication.status='pending'`，账户维持 approved 客户）、`pages/userReview/*`（团主申请出现在审核列表）。
+  - 判定：客户能提交团主申请；提交后客户功能不受影响；owner/admin 审核列表能看到申请并可通过/拒绝；结果可回写可追溯。
+
+- [ ] **C-MULTIROLE roles[] 追加不覆盖 + effectiveRole 全面化**
+  - 改动：审核通过写入处（`pages/userReview/index.js` 现为 `role: roles[0]`，需改为**追加** guide 并保留 customer）、`cloudfunctions/authLogin` 与 `businessData`（`effectiveRole` 一致化）、`services/auth/roleScope.js` 的 `getRoleScopeText`（改读 `roles[]`/`effectiveRole`，不再只读单一 `profile.role`）、所有按 `profile.role` 做入口/文案判断处。
+  - 判定：客户升团主后 `roles[]` = `[customer, guide]`；作为客户的功能完全不受影响；多角色账户文案与入口正确；单一 `role` 不再是任何权限或文案的唯一来源。
+
+## C3. 角色能力矩阵落地
+
+- [ ] **C-MATRIX roleScope 与 Part B 对齐**
+  - 改动：`services/auth/roleScope.js` 的 `FEATURE_ALLOWED_ROLES`、`custom-tab-bar/index.js` 的 tab 过滤、`pages/my/index.js` 入口分区。
+  - 判定：客户/团主/管理层三类（含多角色并集）在 tab、首页、我的页看到的入口与 Part B 完全一致；无权入口前端隐藏、后端拒绝。
+
+- [ ] **C-MY-GROUPING 我的页三区重构（J3）**：`pages/my/index.*` 按"常用工作/资料与权限/管理"分区，不同角色项目同页隐藏。判定：各角色进入"我的"首屏一次可理解唯一主流程目标。
+
+- [ ] **C-CREATE-CONVERGE 开团入口收敛（J4）**：`app.json`、`pages/my/index.js`、`pages/groupOrder/*`、`pages/release/*`、`utils/navigation.js`。保留单一主创建入口，其他页仅"跳转到主入口"。判定：任一路径进入开团都落到同一创建流程。
+
+## C4. 团主开团、商品、供应商、团单闭环
+
+- [ ] **C-PRODUCT 团主商品管理**：`pages/productManagement/*`、`services/product/productService.js`、`sub-pages/product/*`。新增/编辑/上下架/软删除自己的商品，含供应商实体关联；上下架用可辨识 toggle（J9）；删除二次确认并提示"下架/软删除，不影响历史团单与订单"（J8）；两套列表明确"管理/浏览"定位（J7）。判定：保存后列表/详情/开团选品即时更新，重开仍在；团主不得改他人商品。
+- [ ] **C-PROVIDER-ENTITY 供应商实体维护**：团主可新增/编辑供应商实体并与商品关联；客户下单页/订单详情展示必要供应商对外信息，不展示内部字段。判定：商品能带出关联供应商信息；停用/删除供应商实体不破坏历史订单追溯。
+- [ ] **C-GROUP 开团流程**：`sub-pages/groupOrder/add/*`。出团时间/收单截止用微信日期时间 picker（禁自由文本）、付款说明/取货集合用可编辑模板、必填与格式校验（时间顺序、金额、数量边界）（J5）。判定：空数据有校验提示，picker 保存后可回填。
+- [ ] **C-GROUP-PRODUCT 本团商品**：保存商品/价格/供应商/可售状态快照；下架或供应商停用后新团单不得选用，既有团单保留历史状态。
+- [ ] **C-GUIDE-ORDERVIEW 团主客户订单视图**：`pages/customerOrders/*`。团主查看自己团单下订单与付款状态，可更新订单/团单状态与确认收款；不得看他人团单订单。
+
+## C5. 客户下单、付款、分享
+
+- [ ] **C-ORDER 客户下单**：`pages/customerOrders/edit*`。从合法团单入口选品提交订单，记录 group order/customer principal/items/金额/状态/时间。判定：客户只见自己订单。
+- [ ] **C-PAY 付款声明（凭证选填）**：付款方式/金额/备注可提交声明，图片选填；有图走正式 media picker + 持久化存储，不存临时本地路径。客户可在团主确认前更新/撤回声明。团主确认/拒绝/取消写状态历史。凭证仅客户本人/所属团主/管理层可见（J13 报表用语与行为一致）。
+- [ ] **C-SHARE 分享下单 token 校验（J12）**：`pages/customerOrders/edit*`、`repositories/groupOrderRepository.js`、`services/customerOrder/*`、`cloudfunctions/businessData/index.js`。入口不只靠 `groupOrderId`，须校验 share token、团单状态、截止时间、可售性；非法/过期导向安全页并说明拒绝原因。已是团主者从他人分享进入时进入客户下单场景，退出后回团主首屏。
+- [ ] **C-SHARE-QR 分享/QR 行为一致（J16）**：文案、按钮、实际功能一致；未实作 QR 则移除"暂无团单二维码"改为可实现替代（如复制链接）。
+
+## C6. owner/admin 与操作记录
+
+- [ ] **C-REVIEW 审核与停用防误操作（J11）**：`pages/userReview/*`、`services/auth/authService.js`、审核 API。拒绝/停用二次确认 + 必填原因；`roleExpiresAt` 用日期选择器；记录 `reviewedAt/reviewedBy/reviewResult/reviewNote`。owner 安全边界：首位 owner 来自 allowlist；admin 不能升自己为 owner、不能改/停用/指派 owner。
+- [ ] **C-LOG 操作记录**：`pages/operationLogs/*`、`repositories/operationLogRepository.js`、写入点。按 A7 记录关键操作，幂等去重，脱敏；owner/admin 看自己管理记录、团主看自己相关记录；查询 API 校验身份/归属；列表支持时间/类型/状态筛选、分页、空/错/载状态。
+
+## C7. 正式化与文案
+
+- [ ] **C-COPY 清测试字串 + 产品文案（J1/J2/J6）**：全站移除 `云端团单/测试/DEBUG/自动化/待串接/资料已同步/当前资料仅保存到本设备` 等；`config.js` 把 `allowMockIdentity/allowSeedDataFallback/allowQaTools/useCloudBusinessData` 与 `appEnv` 可视化并在 UI 入口加 `isProd` 硬关。判定：PROD 路径看不到任何 mock/QA 开关与测试字样；`isRolePreview` 不在 PROD 生效。
+
+---
+
+# Part D — 测试项 CHECKLIST
+
+每项对应 Part C 开发项，供微信开发者工具人工实测与后续自动化脚本（miniprogram-automator）。运行方式见文末。测试须覆盖正向 + 负向（无权/停用/过期/资料不归属/分享无效），且后端拒绝无权请求，不能只靠前端 toast/disabled。
+
+## D1. 模型简化
+
+- [ ] **D-CUSTOMER-DEFAULT**：全新 OpenID 登录 → 立即为 approved 客户 → 可浏览团单商品并下单，无 pending 拦截。owner allowlist OpenID → 自动管理层。
+- [ ] **D-PROVIDER-REMOVE**：全站无 provider 登录/申请/后台入口；团主商品管理可新增供应商实体并关联商品；旧 provider 数据不致崩溃。
+- [ ] **D-CHAT-REMOVE**：无聊天/客户沟通入口；消息页为订单提醒，点击进订单详情；无聊天术语。
+
+## D2. 团主申请与多角色
+
+- [ ] **D-GUIDE-APPLY**：客户提交团主申请 → 客户功能仍可用 → owner/admin 审核列表可见 → 通过后该用户获得团主功能。
+- [ ] **D-MULTIROLE**：客户升团主后 `roles[]`=`[customer,guide]`；用该账号验证 customer 下单与 guide 开团/收款同时可用、互不影响；多角色文案与入口正确；后端按 roles[] 判权。团主角色过期 → 团主功能关闭但客户功能正常。
+
+## D3. 矩阵与导航
+
+- [ ] **D-MATRIX**：分别以客户 / 团主 / 管理层（及 customer+guide 多角色）验证 tab bar、首页、我的页入口与 Part B 一致；无权入口隐藏且后端拒绝。
+- [ ] **D-NAV**：我的页三区正确；开团入口任一路径落到同一主流程。
+
+## D4. 团主闭环
+
+- [ ] **D-PRODUCT**：新增/编辑/上下架(toggle)/软删除(二次确认+风险提示)商品，重开仍在；管理/浏览列表定位清晰。
+- [ ] **D-PROVIDER-ENTITY**：团主新增/编辑供应商实体并与商品关联；下单页/订单详情展示对外供应商信息、不露内部字段；停用/删除供应商实体不破坏历史订单追溯。
+- [ ] **D-GROUP**：开团表单 picker 校验与回填；本团商品快照；下架/停用商品不被新团单选用，历史保留。
+- [ ] **D-GUIDE-ORDERVIEW**：团主看自己团单订单、改状态、确认收款；不得见他人团单订单。
+
+## D5. 客户下单与付款
+
+- [ ] **D-ORDER**：客户从合法团单入口下单，只见自己订单。
+- [ ] **D-PAY**：无凭证也能声明付款并显示"未上传凭证"；有凭证走正式存储；客户可更新声明；团主确认/拒绝/取消写历史；客户重进看到状态变化；凭证权限受限。
+- [ ] **D-SHARE**：合法分享可下单；非法/过期/无效分享导向安全页并说明；团主从他人分享进入走客户场景，退出回团主首屏。
+- [ ] **D-SHARE-QR**：分享/QR 文案、按钮与实际功能一致；未实作 QR 时不出现"暂无团单二维码"，改为可实现替代（如复制链接）。
+
+## D6. 管理与审计
+
+- [ ] **D-REVIEW**：拒绝/停用二次确认+必填原因+日期 picker；owner 安全边界（admin 不能改/停用/升 owner）。
+- [ ] **D-LOG**：关键操作写入记录且幂等脱敏；owner/admin 与团主各自可见范围正确；筛选/分页/空错载状态可用；无权查询后端拒绝。
+
+## D7. 正式化
+
+- [ ] **D-COPY**：正式登录后首页/消息/列表/分享页无测试字样；PROD 无 mock/QA 开关；关键保存节点文案为产品语言。
+
+## D8. 全量画面 smoke（对应旧 Gate I/J17）
+
+- [ ] **D-SMOKE-ROUTE**：`app.json` 所有 route 可在开发者工具打开，无阻塞 console error，带 id/无 id/无权/错误 id 都有安全状态。
+- [ ] **D-SMOKE-WORKFLOW**：tab 切换、带 id 详情、eventChannel picker、分享入口、列表卡片、空状态 CTA、返回 fallback 用真实入口验证并留证。
+- [ ] **D-SMOKE-CLOSEDLOOP**：登录成客户 → 申请团主 → 审核通过 → 团主建供应商/商品/开团 → 客户下单声明付款 → 团主确认收款 → 双方查订单状态 → 查操作记录 → 重开仍在，全链路走通。
+
+---
+
+## 附：自动化测试运行约定（供后续启用）
+
+采用微信官方 `miniprogram-automator` + jest，脚本运行在使用者本机（需在微信开发者工具开启"自动化/CLI 端口"）。为省 token：脚本一次写好、静默运行，只回传"通过数 / 失败项"，失败时才附该项日志。测试按 Part D 逐项对应，随 Part C 开发项增量补充，不在重构未定稿时对旧 UI 批量写脚本。默认只跑 DEV，禁止对 PROD 自动化写入。
