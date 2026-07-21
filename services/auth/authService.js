@@ -9,12 +9,16 @@ import {
   normalizeReviewStatus,
   normalizeRoles,
 } from './roleScope';
-import { callBackendFunction, isBackendConfigured } from '~/services/backend/backendCall';
+import { callBackendFunction, isBackendConfigured, isLocalBackend } from '~/services/backend/backendCall';
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
 const AUTH_ROLE_PREVIEW_KEY = 'dao_you_ling_role_preview';
+const AUTH_REFRESH_THROTTLE_KEY = 'dao_you_ling_auth_refresh_throttle';
 const REFRESH_SESSION_TTL_MS = 45 * 1000;
+// 全局刷新节流窗口：增强编译下 authService 会随组件重载被重建成多份实例，
+// 模块级缓存存不住，因此节流状态放 storage（跨实例/重载共享）。
+const REFRESH_THROTTLE_MS = 15 * 1000;
 const SESSION_STORAGE_KEYS = Object.freeze([
   'dao_you_ling_product_picker_result',
   'dao_you_ling_read_messages',
@@ -28,40 +32,6 @@ const nowIso = () => new Date().toISOString();
 let refreshSessionInFlight = null;
 let lastRefreshSessionAt = 0;
 let lastRefreshSessionResult = null;
-
-const DEFAULT_ROLE_PROFILES = Object.freeze({
-  [AUTH_ROLES.OWNER]: {
-    id: 1,
-    displayName: '林秝帆',
-    phone: '13800000001',
-    city: '上海',
-  },
-  [AUTH_ROLES.ADMIN]: {
-    id: 4,
-    displayName: '运营管理员',
-    phone: '13800000004',
-    city: '上海',
-  },
-  [AUTH_ROLES.GUIDE]: {
-    id: 2,
-    displayName: '张团主',
-    phone: '13800000002',
-    city: '杭州',
-  },
-  [AUTH_ROLES.CUSTOMER]: {
-    id: 3,
-    displayName: '王客户',
-    phone: '13800000003',
-    city: '南京',
-  },
-  [AUTH_ROLES.PROVIDER]: {
-    id: 5,
-    providerId: 'provider-1',
-    displayName: '杭州伴手礼供应商',
-    phone: '13800000005',
-    city: '杭州',
-  },
-});
 
 const safeGetStorage = (key, fallback = null) => {
   try {
@@ -93,6 +63,7 @@ const resetRefreshSessionCache = () => {
   refreshSessionInFlight = null;
   lastRefreshSessionAt = 0;
   lastRefreshSessionResult = null;
+  try { wx.removeStorageSync(AUTH_REFRESH_THROTTLE_KEY); } catch (e) { /* ignore */ }
 };
 
 const clearSessionStorage = () => {
@@ -108,13 +79,8 @@ const clearSessionStorage = () => {
   }
 };
 
-const ignorePreviewProfileInFormalMode = profile => (
-  !config.allowMockIdentity && profile && profile.isMockOpenId ? null : profile
-);
-
-const ignorePreviewSessionInFormalMode = session => (
-  !config.allowMockIdentity && session && session.isMockOpenId ? null : session
-);
+const ignorePreviewProfileInFormalMode = profile => profile;
+const ignorePreviewSessionInFormalMode = session => session;
 
 const buildStoredRefreshResult = () => {
   const profile = ignorePreviewProfileInFormalMode(safeGetStorage(AUTH_PROFILE_KEY, null));
@@ -210,69 +176,35 @@ const callCloudAuth = async (loginCode, requestedRole) => {
   return { success: false, error: (result && result.error) || '微信账号验证失败' };
 };
 
-const buildMockOpenId = role => `mock-openid-${role}`;
-
-const ALL_QA_ROLE_OPTIONS = Object.freeze(Object.values(AUTH_ROLES).map(role => ({
-  label: getRoleLabel(role),
-  value: role,
-})));
-
-const normalizeRole = role => (Object.values(AUTH_ROLES).includes(role) ? role : AUTH_ROLES.CUSTOMER);
-
 const buildRoleLabelText = roles => normalizeRoles(roles)
   .map(role => getRoleLabel(role))
   .join('、');
 
 const normalizeCloudProfile = (data, requestedRole) => {
   const role = data.role || requestedRole || AUTH_ROLES.CUSTOMER;
-  const defaults = DEFAULT_ROLE_PROFILES[role] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.CUSTOMER];
   const profile = data.profile || {};
   const roles = normalizeRoles(profile.roles || data.roles || [], role);
   const roleLabel = buildRoleLabelText(roles) || getRoleLabel(role);
 
   return {
-    id: profile.id || data.id || defaults.id,
+    id: profile.id || data.id || '',
     openId: data.openId,
     unionId: data.unionId || '',
     role,
     roles,
     requestedRole: profile.requestedRole || data.requestedRole || role,
     roleLabel,
-    displayName: profile.displayName || defaults.displayName,
+    displayName: profile.displayName || '微信用户',
     phone: profile.phone || '',
     avatarUrl: profile.avatarUrl || '/static/avatar1.png',
-    city: profile.city || defaults.city,
-    providerId: profile.providerId || defaults.providerId || '',
+    city: profile.city || '',
+    providerId: profile.providerId || '',
     status: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
     reviewStatus: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
     roleExpiresAt: profile.roleExpiresAt || data.roleExpiresAt || '',
     rolesExpireAt: profile.rolesExpireAt || data.rolesExpireAt || profile.roleExpiresAt || data.roleExpiresAt || '',
     reviewRemark: profile.reviewRemark || data.reviewRemark || '',
     authSource: 'wechat-cloud',
-    isMockOpenId: false,
-  };
-};
-
-const normalizeMockProfile = (role, overrides = {}) => {
-  const normalizedRole = normalizeRole(role);
-  const defaults = DEFAULT_ROLE_PROFILES[normalizedRole] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.GUIDE];
-  return {
-    id: defaults.id,
-    providerId: defaults.providerId || '',
-    openId: overrides.openId || buildMockOpenId(normalizedRole),
-    unionId: '',
-    role: normalizedRole,
-    roles: [normalizedRole],
-    roleLabel: getRoleLabel(normalizedRole),
-    displayName: defaults.displayName,
-    phone: defaults.phone,
-    avatarUrl: '/static/avatar1.png',
-    city: defaults.city,
-    status: 'active',
-    reviewStatus: REVIEW_STATUS.APPROVED,
-    authSource: 'mock-auth-adapter',
-    isMockOpenId: true,
-    qaOverride: Boolean(overrides.qaOverride),
   };
 };
 
@@ -291,7 +223,6 @@ const mergeProfileTimestamps = (nextProfile) => {
 
 export const AuthService = {
   roleOptions: MVP_ROLE_OPTIONS,
-  qaRoleOptions: ALL_QA_ROLE_OPTIONS,
   storageKey: AUTH_PROFILE_KEY,
   sessionKey: AUTH_SESSION_KEY,
 
@@ -311,7 +242,7 @@ export const AuthService = {
   },
 
   isFormalSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
-    return Boolean(profile && session && !profile.isMockOpenId && session.cloudOpenIdVerified);
+    return Boolean(profile && session && session.cloudOpenIdVerified);
   },
 
   normalizeReviewStatus,
@@ -323,7 +254,6 @@ export const AuthService = {
   getAccessState(profile = this.getCurrentProfile()) {
     if (!profile) return 'logged_out';
     if (profile.isVisitorPreview) return 'logged_out';
-    if (profile.isMockOpenId || profile.qaOverride) return 'approved';
     const status = normalizeReviewStatus(profile.reviewStatus || profile.status);
     if (status === REVIEW_STATUS.APPROVED && isRoleExpired(profile)) return 'expired';
     if (status === REVIEW_STATUS.APPROVED) return 'approved';
@@ -349,16 +279,12 @@ export const AuthService = {
     return textMap[state] || textMap.logged_out;
   },
 
-  isDemoSession(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
-    return Boolean(profile && (profile.isMockOpenId || (session && session.qaOverride)));
+  isDemoSession() {
+    return false;
   },
 
-  canShowQaTools(profile = this.getCurrentProfile(), session = this.getCurrentSession()) {
-    return Boolean(
-      config.allowQaTools
-      && profile
-      && (profile.isMockOpenId || (session && session.qaOverride))
-    );
+  canShowQaTools() {
+    return false;
   },
 
   canUseRolePreview(profile = this.getRealProfile()) {
@@ -394,7 +320,7 @@ export const AuthService = {
   async login({ role = AUTH_ROLES.CUSTOMER } = {}) {
     if (!refreshSessionInFlight) resetRefreshSessionCache();
     const loginResult = await wxLogin();
-    let profileSource = config.allowMockIdentity ? normalizeMockProfile(role) : null;
+    let profileSource = null;
     let authStatus = {
       wxLoginCalled: loginResult.success,
       wxLoginCodeAvailable: Boolean(loginResult.code),
@@ -432,7 +358,6 @@ export const AuthService = {
       role: profile.role,
       roles: profile.roles || [profile.role],
       authSource: profile.authSource,
-      isMockOpenId: profile.isMockOpenId,
       cloudOpenIdVerified: authStatus.cloudOpenIdVerified,
       wxLoginCalled: authStatus.wxLoginCalled,
       wxLoginCodeAvailable: authStatus.wxLoginCodeAvailable,
@@ -453,39 +378,44 @@ export const AuthService = {
 
     const currentProfile = this.getRealProfile();
     const currentSession = this.getCurrentSession();
+
+    // 全局节流（storage 共享，跨模块实例/重载有效）：
+    // 15s 内已成功刷新过同一 openId，直接复用当前档，不再打后端，杜绝 authLogin storm。
+    if (currentProfile && currentSession) {
+      const throttle = safeGetStorage(AUTH_REFRESH_THROTTLE_KEY, null);
+      if (throttle
+        && String(throttle.openId) === String(currentProfile.openId)
+        && (Date.now() - Number(throttle.at || 0)) < REFRESH_THROTTLE_MS) {
+        return { success: true, data: { profile: currentProfile, session: currentSession } };
+      }
+    }
     if (canReuseRefreshResult(currentProfile, currentSession)) {
       return buildStoredRefreshResult() || lastRefreshSessionResult;
     }
 
     refreshSessionInFlight = (async () => {
-      if (!currentProfile && config.allowMockIdentity) {
-        return this.login({ role: AUTH_ROLES.CUSTOMER });
-      }
-      if (currentProfile && currentProfile.isMockOpenId) {
-        return { success: true, data: { profile: currentProfile, session: currentSession } };
-      }
-      if (!currentProfile || currentProfile.isMockOpenId || !currentSession || !currentSession.cloudOpenIdVerified) {
+      if (!currentProfile || !currentSession) {
         return { success: false, error: '当前没有可刷新的正式登录状态' };
       }
 
-      const loginResult = await wxLogin();
-      if (!loginResult.success || !loginResult.code) {
-        return { success: false, error: loginResult.error || '微信登录状态刷新失败' };
+      // 云模式需要 wxLogin 换 code；本地模式用固定 openId，无需 code。
+      let code = '';
+      if (!isLocalBackend()) {
+        if (!currentSession.cloudOpenIdVerified) {
+          return { success: false, error: '当前没有可刷新的正式登录状态' };
+        }
+        const loginResult = await wxLogin();
+        if (!loginResult.success || !loginResult.code) {
+          return { success: false, error: loginResult.error || '微信登录状态刷新失败' };
+        }
+        code = loginResult.code;
       }
 
-      const cloudResult = await callCloudAuth(loginResult.code, currentProfile.requestedRole || currentProfile.role);
+      const cloudResult = await callCloudAuth(code, currentProfile.requestedRole || currentProfile.role);
       if (!cloudResult.success || !cloudResult.data || !cloudResult.data.openId) {
         return { success: false, error: cloudResult.error || '账号状态刷新失败，请稍后重试' };
       }
-
-      const latestProfile = this.getRealProfile();
-      const latestSession = this.getCurrentSession();
-      if (
-        !latestProfile
-        || !latestSession
-        || String(latestProfile.openId || '') !== String(currentProfile.openId || '')
-        || String(latestSession.openId || '') !== String(currentSession.openId || '')
-      ) {
+      if (String(cloudResult.data.openId) !== String(currentProfile.openId || '')) {
         return { success: false, error: '登录状态已变更，请重新登录' };
       }
 
@@ -515,46 +445,14 @@ export const AuthService = {
       if (result && result.success) {
         lastRefreshSessionAt = Date.now();
         lastRefreshSessionResult = buildStoredRefreshResult() || result;
+        // 写全局节流状态（storage 共享）：后续 15s 内的刷新直接复用，跨模块实例/重载有效。
+        const p = result.data && result.data.profile;
+        if (p && p.openId) safeSetStorage(AUTH_REFRESH_THROTTLE_KEY, { at: Date.now(), openId: p.openId });
       }
       return result;
     } finally {
       refreshSessionInFlight = null;
     }
-  },
-
-  applyQaOverride({ qaRoleOverride = AUTH_ROLES.GUIDE, qaOpenIdOverride = '' } = {}) {
-    if (!config.allowQaTools) {
-      return {
-        success: false,
-        error: '当前账号不支持身份切换',
-      };
-    }
-
-    const role = normalizeRole(qaRoleOverride);
-    const profileSource = normalizeMockProfile(role, {
-      openId: qaOpenIdOverride || buildMockOpenId(role),
-      qaOverride: true,
-    });
-    const profile = mergeProfileTimestamps(profileSource);
-    const session = {
-      openId: profile.openId,
-      role: profile.role,
-      roles: profile.roles || [profile.role],
-      authSource: 'qa-role-override',
-      isMockOpenId: true,
-      qaOverride: true,
-      cloudOpenIdVerified: false,
-      wxLoginCalled: false,
-      wxLoginCodeAvailable: false,
-      fallbackReason: '演示身份切换，未调用正式登录',
-      updatedAt: nowIso(),
-    };
-
-    safeSetStorage(AUTH_PROFILE_KEY, profile);
-    safeSetStorage(AUTH_SESSION_KEY, session);
-    resetRefreshSessionCache();
-
-    return { success: true, data: { profile, session } };
   },
 
   updateCurrentProfile(profilePatch = {}) {

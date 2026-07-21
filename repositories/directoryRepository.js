@@ -1,4 +1,3 @@
-import { QaSeedMock } from '~/mock/qaSeed';
 import { callBusinessData, getSaveModeText, isCloudBusinessEnabled } from './cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import config from '~/config';
@@ -42,7 +41,7 @@ const getLocalUsers = () => {
   if (!isLocalDirectoryFallbackAllowed()) return null;
   const stored = safeGetStorage(USERS_STORAGE_KEY, null);
   if (stored && Array.isArray(stored.users)) return stored.users;
-  const users = QaSeedMock.getUsers();
+  const users = [];
   safeSetStorage(USERS_STORAGE_KEY, { mode: 'local-directory-repository', users });
   return users;
 };
@@ -57,7 +56,7 @@ const getLocalProviders = () => {
   if (!isLocalDirectoryFallbackAllowed()) return null;
   const stored = safeGetStorage(PROVIDERS_STORAGE_KEY, null);
   if (stored && Array.isArray(stored.providers)) return stored.providers;
-  const providers = QaSeedMock.getProviders();
+  const providers = [];
   safeSetStorage(PROVIDERS_STORAGE_KEY, { mode: 'local-directory-repository', providers });
   return providers;
 };

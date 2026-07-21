@@ -76,10 +76,14 @@ Page({
     settingList: [],
   },
 
-  async onShow() {
-    if (this._refreshProfileInFlight) return this._refreshProfileInFlight;
-    this._refreshProfileInFlight = (async () => {
-    await AuthService.refreshSession();
+  onShow() {
+    // 立即用本地已存档渲染（不等后端），避免首屏空白 1 秒。
+    this.renderProfileView();
+    // 后台校验登录状态；仅当身份/状态真的变了才重渲染，避免无谓闪烁。
+    this.backgroundRefreshProfile();
+  },
+
+  renderProfileView() {
     const profile = AuthService.getCurrentProfile();
     const session = AuthService.getCurrentSession();
     const canUseBusiness = AuthService.canUseBusiness(profile);
@@ -102,12 +106,30 @@ Page({
       settingList: this.buildSettingList(profile),
     });
     this.refreshTabBar();
-    })();
+  },
+
+  profileFingerprint(profile) {
+    if (!profile) return 'none';
+    return [
+      profile.openId,
+      (profile.roles || []).join(','),
+      profile.reviewStatus || profile.status || '',
+      profile.roleExpiresAt || '',
+      profile.isRolePreview ? 'preview' : '',
+    ].join('|');
+  },
+
+  async backgroundRefreshProfile() {
+    if (this._bgRefreshing) return;
+    this._bgRefreshing = true;
+    const before = this.profileFingerprint(AuthService.getCurrentProfile());
     try {
-      return await this._refreshProfileInFlight;
+      await AuthService.refreshSession();
     } finally {
-      this._refreshProfileInFlight = null;
+      this._bgRefreshing = false;
     }
+    const after = this.profileFingerprint(AuthService.getCurrentProfile());
+    if (before !== after) this.renderProfileView();
   },
 
   refreshTabBar() {

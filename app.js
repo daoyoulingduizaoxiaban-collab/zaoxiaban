@@ -1,11 +1,6 @@
-import config from './config';
-import Mock from './mock/index';
-import createBus from './utils/eventBus';
-import { AuthService } from './services/auth/authService';
-
-if (config.allowMockIdentity && !config.isProd) {
-  Mock();
-}
+import config from '~/config';
+import createBus from '~/utils/eventBus';
+import { AuthService } from '~/services/auth/authService';
 
 App({
   onLaunch() {

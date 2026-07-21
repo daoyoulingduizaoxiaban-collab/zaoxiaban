@@ -1,8 +1,8 @@
 import {
   BOTTOM_BAR_LIST
-} from '../config.js'
-import { AuthService } from '../services/auth/authService';
-import { FEATURE_KEYS, canUseFeature } from '../services/auth/roleScope';
+} from '~/config';
+import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 
 const TAB_FEATURE_MAP = {
   groupOrder: FEATURE_KEYS.GROUP_ORDERS,
@@ -92,13 +92,14 @@ Component({
     },
     handleChange(e) {
       try {
+        const { value } = e.detail;
+        // 防循环：程序化 setData({value}) 会让 t-tab-bar 回吐 change；
+        // 若目标就是当前页，不再 switchTab（否则 switchTab 跳自己 → show → 又 change → 死循环）。
+        if (!value || value === this.getCurrentTabValue()) return;
         const nextList = this.getVisibleTabs();
         if (!areTabListsEqual(this.data.list, nextList)) {
           this.setData({ list: nextList });
         }
-        const {
-          value
-        } = e.detail;
         const item = nextList.find(i => i.value === value);
 
         if (item) {

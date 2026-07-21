@@ -1,6 +1,5 @@
 import { GroupOrder } from '~/models/GroupOrder';
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
-import { QaSeedMock } from '~/mock/qaSeed';
 import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { filterGroupOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
@@ -72,7 +71,7 @@ const getStoredState = () => {
   const state = {
     mode: 'local-group-order-repository',
     updatedAt: nowIso(),
-    groupOrders: QaSeedMock.getGroupOrders().map(normalizeGroupOrder),
+    groupOrders: [],
   };
   saveState(state);
   return state;
@@ -85,7 +84,7 @@ const getAllGroupOrders = () => getStoredState().groupOrders
 const getAllCustomerOrders = () => {
   const stored = safeGetStorage(CUSTOMER_ORDER_STORAGE_KEY, null);
   if (stored && Array.isArray(stored.orders)) return stored.orders;
-  return QaSeedMock.getCustomerOrders();
+  return [];
 };
 
 const canManageGroupOrder = (groupOrder, profile) => {

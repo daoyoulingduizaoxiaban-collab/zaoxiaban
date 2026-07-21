@@ -1,6 +1,5 @@
 import { Product } from '~/models/Product';
 import { ProductStatus } from '~/enum/ProductStatus';
-import { QaSeedMock } from '~/mock/qaSeed';
 import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole, hasRole } from '~/services/auth/roleScope';
@@ -41,7 +40,7 @@ const saveStoredProducts = (products) => {
 const getAllProducts = () => {
   const storedProducts = getStoredProducts();
   if (storedProducts) return storedProducts;
-  return config.allowSeedDataFallback ? QaSeedMock.getProducts() : null;
+  return null;
 };
 
 const ensureSeedDataAvailable = () => {

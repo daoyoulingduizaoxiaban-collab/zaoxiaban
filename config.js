@@ -48,12 +48,6 @@ export default {
   localDevOpenId: 'dev-owner-openid',
 
   allowRolePreview: isDev && devMode.allowRolePreview,
-
-  // @deprecated 以下 mock/seed 开关已关闭（运行时惰性）。物理删除见 C-MOCK-REMOVE。
-  allowMockIdentity: false,
-  allowSeedDataFallback: false,
-  allowQaTools: false,
-  useCloudBusinessData: true,
 };
 
 // config/menu.js

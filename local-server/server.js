@@ -69,12 +69,20 @@ const server = http.createServer(async (req, res) => {
     return send(res, 200, { ok: true });
   }
 
+  if (req.method === 'POST' && url === '/log') {
+    const body = await readBody(req);
+    console.log('[client]', JSON.stringify(body));
+    return send(res, 200, { ok: true });
+  }
+
   if (req.method === 'POST' && url.startsWith('/fn/')) {
     const name = url.slice('/fn/'.length);
     const fn = cloudFns[name];
     if (!fn || typeof fn.main !== 'function') return send(res, 404, { error: `未知云函数: ${name}` });
     const body = await readBody(req);
     const openId = body.openId || process.env.OWNER_OPENIDS.split(',')[0];
+    const ev = body.event || {};
+    console.log(`[req] ${name} ${ev.resource || ''}.${ev.action || ''} openId=${openId}`);
     // 模拟 wx.cloud.callFunction：result 即云函数 main 的返回
     let result;
     try {

@@ -1,4 +1,3 @@
-import { QaSeedMock } from '~/mock/qaSeed';
 import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { filterCustomerOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
@@ -46,7 +45,7 @@ const getStatusText = (status) => {
 
 const getProductMap = () => {
   const map = {};
-  QaSeedMock.getProducts().forEach((product) => {
+  [].forEach((product) => {
     map[String(product.id)] = product;
   });
   return map;
@@ -76,7 +75,7 @@ const normalizeOrder = (order) => ({
 
 const enrichSeedOrders = () => {
   const productMap = getProductMap();
-  const groupOrders = QaSeedMock.getGroupOrders();
+  const groupOrders = [];
   const memberOrders = groupOrders.flatMap(groupOrder => (
     (groupOrder.memberOrderList || []).map(memberOrder => ({
       ...memberOrder,
@@ -85,7 +84,7 @@ const enrichSeedOrders = () => {
     }))
   ));
 
-  return QaSeedMock.getCustomerOrders().map((order) => {
+  return [].map((order) => {
     const memberOrder = memberOrders.find(item => sameId(item.id, order.id));
     const productList = (memberOrder && memberOrder.productList ? memberOrder.productList : []).map((item) => {
       const product = productMap[String(item.productId)] || {};
