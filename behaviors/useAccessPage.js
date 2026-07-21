@@ -1,5 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { debugLog } from '~/utils/debugLog';
 
 /**
  * 共享「鉴权 + 加载三态」脚手架（R1）。
@@ -51,11 +52,13 @@ export const useAccessPage = Behavior({
 
     // 进入加载态的字段对象（authReady 归 false，表示身份/数据都在重新确认）
     loadingState() {
+      debugLog('access', this.route || this.is || '', '→ loading');
       return { authReady: false, isLoading: true, loadErrorText: '', pageState: 'loading' };
     },
 
     // 三态落地字段对象。state: 'ready' | 'error' | 'empty'
     threeState(state, { errorText = '', emptyText, emptyCta = '' } = {}) {
+      debugLog('access', this.route || this.is || '', `→ ${state}`, errorText || '');
       const base = {
         isLoading: false,
         pageState: state,

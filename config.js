@@ -48,6 +48,10 @@ export default {
   localDevOpenId: 'dev-owner-openid',
 
   allowRolePreview: isDev && devMode.allowRolePreview,
+
+  // R6-2 调试日志开关：开时关键页/behavior 打带时间戳日志，便于排查加载三态瞬态（空白闪帧等）。
+  // 默认 DEV 开、PROD 关；需要静默时在 DEV 手动改为 false。
+  debugLog: isDev,
 };
 
 // config/menu.js
