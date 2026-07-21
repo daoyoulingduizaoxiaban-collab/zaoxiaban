@@ -4,6 +4,7 @@
     "t-navbar": "tdesign-miniprogram/navbar/navbar",
     "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
     "t-cell": "tdesign-miniprogram/cell/cell",
-    "t-icon": "/components/t-icon/index"
+    "t-icon": "/components/t-icon/index",
+    "t-button": "tdesign-miniprogram/button/button"
   }
 }

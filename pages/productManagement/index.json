@@ -4,6 +4,7 @@
     "t-search": "tdesign-miniprogram/search/search",
     "t-dropdown-menu": "tdesign-miniprogram/dropdown-menu/dropdown-menu",
     "t-dropdown-item": "tdesign-miniprogram/dropdown-item/dropdown-item",
+    "t-button": "tdesign-miniprogram/button/button",
     "page-state": "/components/page-state/index"
   }
 }
