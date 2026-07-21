@@ -4,24 +4,11 @@
   <view class="login__subtitle">用于开团、团单、商品库和客户订单的身份识别。</view>
 
   <view class="login__content">
-    <view class="login__section-title">提交使用申请</view>
     <view class="login__notice">{{authNotice}}</view>
-    <view class="login__role-title">申请身份</view>
-    <view class="login__role-list">
-      <button
-        wx:for="{{roleOptions}}"
-        wx:key="value"
-        class="login__role-button {{selectedRole === item.value ? 'login__role-button--active' : ''}}"
-        data-role="{{item.value}}"
-        bindtap="onRoleSelect"
-      >
-        {{item.label}}
-      </button>
-    </view>
 
     <view class="login__button">
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
-        微信登录并提交申请
+        微信登录
       </button>
     </view>
   </view>

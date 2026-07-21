@@ -26,7 +26,6 @@ Page({
     canViewProducts: false,
     canViewCustomerOrders: false,
     canViewDataCenter: false,
-    canApplyProvider: false,
     canViewOperationLogs: false,
     isSummaryLoading: false,
     summaryCards: [
@@ -69,8 +68,6 @@ Page({
     const canViewProducts = canUseFeature(profile, FEATURE_KEYS.PRODUCTS);
     const canViewCustomerOrders = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
     const canViewDataCenter = canUseFeature(profile, FEATURE_KEYS.DATA_CENTER);
-    const roles = profile && Array.isArray(profile.roles) ? profile.roles : [];
-    const canApplyProvider = canUseBusiness && !roles.includes('provider');
     const canViewOperationLogs = canUseFeature(profile, FEATURE_KEYS.OPERATION_LOGS);
 
     this.setData({
@@ -85,7 +82,6 @@ Page({
       canViewProducts,
       canViewCustomerOrders,
       canViewDataCenter,
-      canApplyProvider,
       canViewOperationLogs,
     });
     if (canUseBusiness) {
@@ -211,10 +207,6 @@ Page({
       return;
     }
     this.openUrl('/pages/dataCenter/index');
-  },
-
-  goProviderApply() {
-    this.openUrl('/pages/providers/edit/index?apply=1');
   },
 
   goOperationLogs() {

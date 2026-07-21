@@ -47,8 +47,9 @@ const getBootstrapRole = async () => {
   return existingPrivileged.data && existingPrivileged.data.length ? '' : ROLE_OWNER;
 };
 
+// provider 不再是可申请角色；未指定或非法一律归为默认客户。
 const normalizeRequestedRole = role => (
-  [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER].includes(role) ? role : ROLE_GUIDE
+  [ROLE_GUIDE, ROLE_CUSTOMER].includes(role) ? role : ROLE_CUSTOMER
 );
 
 const normalizeReviewStatus = status => (status === ACTIVE_STATUS ? REVIEW_STATUS.APPROVED : (status || REVIEW_STATUS.PENDING));
@@ -68,7 +69,7 @@ const buildRoleLabel = (role) => {
 };
 
 const PREVIEW_STATUSES = new Set([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED]);
-const PREVIEWABLE_ROLES = Object.freeze([ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER, ROLE_ADMIN, ROLE_OWNER]);
+const PREVIEWABLE_ROLES = Object.freeze([ROLE_GUIDE, ROLE_CUSTOMER, ROLE_ADMIN, ROLE_OWNER]);
 const ALL_PREVIEW_ROLES = new Set([...PREVIEW_STATUSES, ...PREVIEWABLE_ROLES, 'visitor']);
 const isRolePreviewAllowed = () => APP_IS_DEV && ALLOW_ROLE_PREVIEW;
 
@@ -140,32 +141,30 @@ const ensureUsersCollection = async () => {
 
 const buildDefaultProfile = (openId, unionId, requestedRole, bootstrapRole = '') => {
   const privilegedRole = getPrivilegedRole(openId) || bootstrapRole;
-  const normalizedRole = privilegedRole || normalizeRequestedRole(requestedRole);
-  const reviewStatus = privilegedRole ? REVIEW_STATUS.APPROVED : REVIEW_STATUS.PENDING;
+  // 客户为默认开放身份：任何新用户登录即成为已审核客户，无需审核。
+  // 仅 owner/admin allowlist 命中者拿到对应管理角色（同样 approved）。
+  const normalizedRole = privilegedRole || ROLE_CUSTOMER;
   const now = db.serverDate();
   const profile = {
     openId,
     unionId: unionId || '',
     role: normalizedRole,
     roles: [normalizedRole],
-    requestedRole: privilegedRole ? normalizedRole : normalizeRequestedRole(requestedRole),
+    requestedRole: normalizedRole,
     roleExpiresAt: '',
     rolesExpireAt: '',
     displayName: '微信用户',
     phone: '',
     avatarUrl: '',
-    status: reviewStatus,
-    reviewStatus,
-    reviewedBy: privilegedRole ? getSystemReviewer(bootstrapRole) : '',
-    reviewedAt: privilegedRole ? now : '',
-    reviewRemark: privilegedRole ? getSystemReviewRemark(bootstrapRole) : '',
+    status: REVIEW_STATUS.APPROVED,
+    reviewStatus: REVIEW_STATUS.APPROVED,
+    reviewedBy: privilegedRole ? getSystemReviewer(bootstrapRole) : 'system-default',
+    reviewedAt: now,
+    reviewRemark: privilegedRole ? getSystemReviewRemark(bootstrapRole) : '默认开放客户，无需审核',
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
   };
-  if (normalizedRole === ROLE_PROVIDER) {
-    profile.providerId = `provider-${openId}`;
-  }
   return profile;
 };
 
@@ -173,10 +172,10 @@ const toClientProfile = doc => ({
   id: doc._id,
   openId: doc.openId,
   unionId: doc.unionId || '',
-  role: doc.role || ROLE_GUIDE,
-  roles: normalizeRoles(doc.roles, doc.role || ROLE_GUIDE),
+  role: doc.role || ROLE_CUSTOMER,
+  roles: normalizeRoles(doc.roles, doc.role || ROLE_CUSTOMER),
   requestedRole: doc.requestedRole || '',
-  roleLabel: normalizeRoles(doc.roles, doc.role || ROLE_GUIDE).map(buildRoleLabel).join('、'),
+  roleLabel: normalizeRoles(doc.roles, doc.role || ROLE_CUSTOMER).map(buildRoleLabel).join('、'),
   displayName: doc.displayName || '微信用户',
   phone: doc.phone || '',
   avatarUrl: doc.avatarUrl || '',
@@ -228,7 +227,7 @@ exports.main = async (event = {}) => {
     const currentRoles = normalizeRoles(profile.roles, currentRole);
     const currentReviewStatus = normalizeReviewStatus(profile.reviewStatus || profile.status || REVIEW_STATUS.PENDING);
     const canUpdateRequestedRole = currentReviewStatus === REVIEW_STATUS.PENDING
-      && [ROLE_GUIDE, ROLE_CUSTOMER, ROLE_PROVIDER].includes(currentRole);
+      && [ROLE_GUIDE, ROLE_CUSTOMER].includes(currentRole);
     const nextRole = privilegedRole || currentRole;
     const nextRoles = privilegedRole ? normalizeRoles([privilegedRole], nextRole) : currentRoles;
     let nextRequestedRole = profile.requestedRole || currentRole;
@@ -251,10 +250,6 @@ exports.main = async (event = {}) => {
       updateData.reviewedAt = db.serverDate();
       updateData.reviewRemark = getSystemReviewRemark(bootstrapRole);
     }
-    if (nextRole === ROLE_PROVIDER && !profile.providerId) {
-      updateData.providerId = `provider-${openId}`;
-    }
-
     await users.doc(profile._id).update({ data: updateData });
     const normalizedProfile = toClientProfile({
       ...profile,

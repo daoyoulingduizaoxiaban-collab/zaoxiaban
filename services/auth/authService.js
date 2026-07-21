@@ -225,15 +225,15 @@ const ALL_QA_ROLE_OPTIONS = Object.freeze(Object.values(AUTH_ROLES).map(role => 
   value: role,
 })));
 
-const normalizeRole = role => (Object.values(AUTH_ROLES).includes(role) ? role : AUTH_ROLES.GUIDE);
+const normalizeRole = role => (Object.values(AUTH_ROLES).includes(role) ? role : AUTH_ROLES.CUSTOMER);
 
 const buildRoleLabelText = roles => normalizeRoles(roles)
   .map(role => getRoleLabel(role))
   .join('、');
 
 const normalizeCloudProfile = (data, requestedRole) => {
-  const role = data.role || requestedRole || AUTH_ROLES.GUIDE;
-  const defaults = DEFAULT_ROLE_PROFILES[role] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.GUIDE];
+  const role = data.role || requestedRole || AUTH_ROLES.CUSTOMER;
+  const defaults = DEFAULT_ROLE_PROFILES[role] || DEFAULT_ROLE_PROFILES[AUTH_ROLES.CUSTOMER];
   const profile = data.profile || {};
   const roles = normalizeRoles(profile.roles || data.roles || [], role);
   const roleLabel = buildRoleLabelText(roles) || getRoleLabel(role);
@@ -399,7 +399,7 @@ export const AuthService = {
     return { success: true };
   },
 
-  async login({ role = AUTH_ROLES.GUIDE } = {}) {
+  async login({ role = AUTH_ROLES.CUSTOMER } = {}) {
     if (!refreshSessionInFlight) resetRefreshSessionCache();
     const loginResult = await wxLogin();
     let profileSource = config.allowMockIdentity ? normalizeMockProfile(role) : null;
@@ -467,7 +467,7 @@ export const AuthService = {
 
     refreshSessionInFlight = (async () => {
       if (!currentProfile && config.allowMockIdentity) {
-        return this.login({ role: AUTH_ROLES.GUIDE });
+        return this.login({ role: AUTH_ROLES.CUSTOMER });
       }
       if (currentProfile && currentProfile.isMockOpenId) {
         return { success: true, data: { profile: currentProfile, session: currentSession } };

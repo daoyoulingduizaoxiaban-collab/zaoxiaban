@@ -229,15 +229,6 @@ Page({
       });
     }
 
-    if (!hasRole(profile, AUTH_ROLES.PROVIDER)) {
-      list.push({
-        name: '申请供应商',
-        icon: 'shop',
-        type: 'providerApply',
-        url: '/pages/providers/edit/index?apply=1',
-      });
-    }
-
     if (profile && hasRole(profile, AUTH_ROLES.CUSTOMER)) {
       list.push({
         name: '客户资料',
@@ -429,12 +420,9 @@ Page({
   showRolePreviewActions() {
     const roles = [
       { label: '游客', value: 'visitor' },
-      { label: '待审核', value: 'pending_review' },
-      { label: '已拒绝', value: 'rejected' },
       { label: '已停用', value: 'disabled' },
       { label: '客户', value: AUTH_ROLES.CUSTOMER },
       { label: '团主', value: AUTH_ROLES.GUIDE },
-      { label: '供应商', value: AUTH_ROLES.PROVIDER },
       { label: '运营管理员', value: AUTH_ROLES.ADMIN },
       { label: '产品拥有者', value: AUTH_ROLES.OWNER },
     ];
