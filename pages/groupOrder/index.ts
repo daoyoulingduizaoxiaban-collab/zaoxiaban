@@ -9,26 +9,21 @@ import {
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 Page({
+  // access-state + 三态字段与 helper（buildAccessState/loadingState/threeState）来自 behavior（R1）
+  behaviors: [useAccessPage],
+
   data: {
     titleText: '团单',
     itineraryList: [],
     searchKeyword: '',
     statusOptions: getGroupOrderStatusList(),
     currentStatus: 0,
-    roleScopeText: '',
     canCreateGroupOrder: false,
-    isLoggedIn: false,
-    canUseBusiness: false,
-    authReady: false,
-    accessStateText: '',
-    isLoading: true,
-    loadErrorText: '',
-    // 数据区统一三态：loading / ready / error / empty（权限/未登录仍由 access-card 处理）
-    pageState: 'loading',
+    // 覆写 behavior 的空态默认文案
     emptyText: '暂无团单',
-    emptyCta: '',
     isNavigatingCreate: false,
   },
 
@@ -85,14 +80,12 @@ Page({
         canUseBusiness: false,
         authReady: true,
         accessStateText: accessText,
-        isLoading: false,
-        loadErrorText: '',
-        pageState: 'empty',
+        ...(this as any).threeState('empty'),
       });
       return;
     }
 
-    this.setData({ isLoading: true, loadErrorText: '', pageState: 'loading' });
+    this.setData((this as any).loadingState());
 
     try {
       const res = await GroupOrderService.listVisible();
@@ -102,31 +95,23 @@ Page({
 
         this.setData({
           itineraryList: list,
-          roleScopeText: this.getRoleScopeText(),
           canCreateGroupOrder: this.canCreateGroupOrder(),
-          isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+          ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDERS),
           canUseBusiness: true,
-          authReady: true,
-          accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
-          isLoading: false,
-          loadErrorText: '',
-          pageState: list.length ? 'ready' : 'empty',
-          emptyText: '暂无团单',
-          emptyCta: this.computeEmptyCta(),
+          ...(this as any).threeState(list.length ? 'ready' : 'empty', {
+            emptyText: '暂无团单',
+            emptyCta: this.computeEmptyCta(),
+          }),
         });
       } else {
         const errorText = res.error || '加载团单失败';
         this.setData({
           itineraryList: [],
-          roleScopeText: errorText,
           canCreateGroupOrder: this.canCreateGroupOrder(),
-          isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+          ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDERS),
           canUseBusiness: true,
-          authReady: true,
-          accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
-          isLoading: false,
-          loadErrorText: errorText,
-          pageState: 'error',
+          roleScopeText: errorText,
+          ...(this as any).threeState('error', { errorText }),
         });
         wx.showToast({
           title: errorText,
@@ -136,15 +121,11 @@ Page({
     } catch (err) {
       this.setData({
         itineraryList: [],
-        roleScopeText: '加载团单失败',
         canCreateGroupOrder: this.canCreateGroupOrder(),
-        isLoggedIn: Boolean(AuthService.getCurrentProfile()),
+        ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDERS),
         canUseBusiness: true,
-        authReady: true,
-        accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
-        isLoading: false,
-        loadErrorText: '加载团单失败',
-        pageState: 'error',
+        roleScopeText: '加载团单失败',
+        ...(this as any).threeState('error', { errorText: '加载团单失败' }),
       });
       wx.showToast({
         title: '加载团单失败',
@@ -199,10 +180,7 @@ Page({
       return;
     }
     this.setData({
-      authReady: false,
-      isLoading: true,
-      loadErrorText: '',
-      pageState: 'loading',
+      ...(this as any).loadingState(),
       isNavigatingCreate: false,
     });
     await AuthService.refreshSession();
@@ -248,7 +226,7 @@ Page({
   },
 
   async applyFilters() {
-    if (!this.data.canUseBusiness) return;
+    if (!(this.data as any).canUseBusiness) return;
     const {
       searchKeyword,
       currentStatus
@@ -264,8 +242,7 @@ Page({
       this.setData({
         itineraryList: [],
         roleScopeText: errorText,
-        loadErrorText: errorText,
-        pageState: 'error',
+        ...(this as any).threeState('error', { errorText }),
       });
       wx.showToast({
         title: errorText,
@@ -278,10 +255,10 @@ Page({
     this.setData({
       itineraryList: list,
       roleScopeText: this.getRoleScopeText(),
-      loadErrorText: '',
-      pageState: list.length ? 'ready' : 'empty',
-      emptyText: (searchKeyword || Number(currentStatus) > 0) ? '没有符合条件的团单' : '暂无团单',
-      emptyCta: this.computeEmptyCta(),
+      ...(this as any).threeState(list.length ? 'ready' : 'empty', {
+        emptyText: (searchKeyword || Number(currentStatus) > 0) ? '没有符合条件的团单' : '暂无团单',
+        emptyCta: this.computeEmptyCta(),
+      }),
     });
   }
 
