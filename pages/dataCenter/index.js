@@ -17,8 +17,9 @@ Page({
       received: 0,
     },
     dataModeText: '读取中',
-    disabledReason: '',
-    isLoading: false,
+    // 统一三态：loading / ready / error / empty
+    pageState: 'loading',
+    stateText: '',
   },
 
   async onShow() {
@@ -38,13 +39,13 @@ Page({
         ],
         financeSummary: { receivable: 0, received: 0 },
         dataModeText: AuthService.getAccessStateText(profile),
-        disabledReason: AuthService.getAccessStateText(profile),
-        isLoading: false,
+        pageState: 'empty',
+        stateText: AuthService.getAccessStateText(profile),
       });
       return;
     }
 
-    this.setData({ isLoading: true, disabledReason: '', dataModeText: '读取中' });
+    this.setData({ pageState: 'loading', stateText: '', dataModeText: '读取中' });
     const [groupOrderRes, customerOrderRes] = await Promise.all([
       GroupOrderService.listVisible(),
       CustomerOrderService.listVisible(),
@@ -60,8 +61,8 @@ Page({
         ],
         financeSummary: { receivable: 0, received: 0 },
         dataModeText: failed.error || '资料读取失败',
-        disabledReason: failed.error || '资料读取失败，请稍后重试',
-        isLoading: false,
+        pageState: 'error',
+        stateText: failed.error || '资料读取失败，请稍后重试',
       });
       return;
     }
@@ -81,8 +82,8 @@ Page({
         received: confirmedOrders.reduce((sum, order) => sum + Number(order.confirmedAmount || order.totalPrice || 0), 0),
       },
       dataModeText: getSaveModeText(groupOrderRes.meta),
-      disabledReason: '',
-      isLoading: false,
+      pageState: 'ready',
+      stateText: '',
     });
   },
 

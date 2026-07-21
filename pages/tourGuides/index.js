@@ -9,7 +9,9 @@ Page({
     tourGuidesList: [],
     canCreateTourGuide: false,
     canEditOwnTourGuide: false,
-    disabledReason: '',
+    // 统一三态：loading / ready / error / empty
+    pageState: 'loading',
+    stateText: '',
   },
 
   onLoad() {
@@ -35,15 +37,29 @@ Page({
         tourGuidesList: [],
         canCreateTourGuide: false,
         canEditOwnTourGuide: false,
-        disabledReason: AuthService.getAccessStateText(profile),
+        pageState: 'empty',
+        stateText: AuthService.getAccessStateText(profile),
       });
       this.isLoadingTourGuides = false;
       return;
     }
 
+    this.setData({ pageState: 'loading', stateText: '' });
     const res = await DirectoryRepository.listGuides();
-    const visibleUsers = res.success ? res.data : [];
-
+    const canCreateTourGuide = isOwnerOrAdmin(profile);
+    const canEditOwnTourGuide = hasRole(profile, AUTH_ROLES.GUIDE);
+    if (!res.success) {
+      this.setData({
+        tourGuidesList: [],
+        canCreateTourGuide,
+        canEditOwnTourGuide,
+        pageState: 'error',
+        stateText: res.error || '读取团主资料失败，请稍后重试',
+      });
+      this.isLoadingTourGuides = false;
+      return;
+    }
+    const visibleUsers = res.data || [];
     this.setData({
       tourGuidesList: visibleUsers
         .map(user => ({
@@ -52,9 +68,10 @@ Page({
           statusText: user.displayRole,
           description: `${user.city || '城市未填写'}｜手机号 ${user.phone || '未填写'}`,
         })),
-      canCreateTourGuide: isOwnerOrAdmin(profile),
-      canEditOwnTourGuide: hasRole(profile, AUTH_ROLES.GUIDE),
-      disabledReason: visibleUsers.length ? '' : (res.error || '当前账号没有可查看的团主资料。'),
+      canCreateTourGuide,
+      canEditOwnTourGuide,
+      pageState: visibleUsers.length ? 'ready' : 'empty',
+      stateText: visibleUsers.length ? '' : '当前账号没有可查看的团主资料。',
     });
     this.isLoadingTourGuides = false;
   },

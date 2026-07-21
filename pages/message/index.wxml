@@ -1,29 +1,28 @@
 <nav nav-type="title" title-text="订单提醒" />
 
 <view class="message-list">
-  <view wx:if="{{disabledReason}}">
-    <t-empty icon="info-circle" description="{{disabledReason}}" />
-  </view>
-  <view wx:elif="{{isLoading}}">
-    <t-loading theme="spinner" size="48rpx" />
-  </view>
-  <t-cell-group wx:elif="{{messages.length}}" theme="card">
-    <t-cell
-      wx:for="{{messages}}"
-      wx:key="id"
-      title="{{item.title}}"
-      description="{{item.desc}}"
-      note="{{item.isRead ? '已读' : '未读提醒'}}"
-      arrow
-      data-id="{{item.id}}"
-      data-order-id="{{item.orderId}}"
-      bind:tap="openOrder"
-    />
-  </t-cell-group>
-  <view wx:else>
-    <t-empty icon="chat" description="暂无订单提醒" />
-    <t-button theme="primary" size="large" block bind:tap="goCustomerOrders">前往订单中心</t-button>
-  </view>
+  <page-state
+    state="{{pageState}}"
+    error-text="{{stateText}}"
+    empty-text="{{stateText}}"
+    empty-cta-text="{{emptyCta}}"
+    bind:retry="loadMessages"
+    bind:emptycta="goCustomerOrders"
+  >
+    <t-cell-group theme="card">
+      <t-cell
+        wx:for="{{messages}}"
+        wx:key="id"
+        title="{{item.title}}"
+        description="{{item.desc}}"
+        note="{{item.isRead ? '已读' : '未读提醒'}}"
+        arrow
+        data-id="{{item.id}}"
+        data-order-id="{{item.orderId}}"
+        bind:tap="openOrder"
+      />
+    </t-cell-group>
+  </page-state>
 </view>
 
 <view wx:if="{{detailVisible}}" class="message-detail-mask" catchtap="closeMessageDetail">

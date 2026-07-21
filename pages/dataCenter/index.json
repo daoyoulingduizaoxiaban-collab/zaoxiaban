@@ -4,6 +4,7 @@
     "sub-nav": "/components/sub-nav/index",
     "t-progress": "tdesign-miniprogram/progress/progress",
     "t-empty": "/components/t-empty/index",
-    "t-loading": "tdesign-miniprogram/loading/loading"
+    "t-loading": "tdesign-miniprogram/loading/loading",
+    "page-state": "/components/page-state/index"
   }
 }

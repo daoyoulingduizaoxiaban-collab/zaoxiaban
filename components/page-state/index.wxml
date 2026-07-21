@@ -1,0 +1,19 @@
+<view wx:if="{{state === 'loading'}}" class="page-state page-state--loading">
+  <t-loading theme="spinner" size="48rpx" text="{{loadingText}}" layout="vertical" />
+</view>
+
+<view wx:elif="{{state === 'error'}}" class="page-state page-state--error">
+  <t-empty icon="{{errorIcon}}" description="{{errorText}}" />
+  <view class="page-state__action">
+    <t-button theme="primary" size="medium" bind:tap="onRetry">{{retryText}}</t-button>
+  </view>
+</view>
+
+<view wx:elif="{{state === 'empty'}}" class="page-state page-state--empty">
+  <t-empty icon="{{emptyIcon}}" description="{{emptyText}}" />
+  <view wx:if="{{emptyCtaText}}" class="page-state__action">
+    <t-button theme="primary" size="medium" bind:tap="onEmptyCta">{{emptyCtaText}}</t-button>
+  </view>
+</view>
+
+<slot wx:else />

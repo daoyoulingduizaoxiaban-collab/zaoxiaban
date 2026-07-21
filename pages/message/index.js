@@ -39,8 +39,10 @@ const getReminderDesc = (order) => {
 Page({
   data: {
     messages: [],
-    isLoading: false,
-    disabledReason: '',
+    // 'loading' | 'ready' | 'error' | 'empty'
+    pageState: 'loading',
+    stateText: '',
+    emptyCta: '',
     detailVisible: false,
     selectedMessage: null,
   },
@@ -59,34 +61,41 @@ Page({
     if (!canUseFeature(profile, FEATURE_KEYS.MESSAGE)) {
       this.setData({
         messages: [],
-        disabledReason: getRoleScopeText(profile, FEATURE_KEYS.MESSAGE),
+        pageState: 'empty',
+        stateText: getRoleScopeText(profile, FEATURE_KEYS.MESSAGE),
+        emptyCta: '',
       });
       return;
     }
 
-    this.setData({ isLoading: true, disabledReason: '' });
+    this.setData({ pageState: 'loading', stateText: '' });
     const res = await CustomerOrderService.listVisible();
-    this.setData({ isLoading: false });
     if (!res.success) {
       this.setData({
         messages: [],
-        disabledReason: res.error || '暂时无法读取消息',
+        pageState: 'error',
+        stateText: res.error || '暂时无法读取消息',
       });
       return;
     }
 
     const readIds = readMessageIds();
-      const messages = (res.data || []).map((order) => {
-        const id = `order-${order.id}-${order.status}`;
-        return {
-          id,
-          orderId: order.id,
-          title: getReminderTitle(order),
-          desc: getReminderDesc(order),
-          isRead: readIds.includes(id),
-        };
-      });
-    this.setData({ messages });
+    const messages = (res.data || []).map((order) => {
+      const id = `order-${order.id}-${order.status}`;
+      return {
+        id,
+        orderId: order.id,
+        title: getReminderTitle(order),
+        desc: getReminderDesc(order),
+        isRead: readIds.includes(id),
+      };
+    });
+    this.setData({
+      messages,
+      pageState: messages.length ? 'ready' : 'empty',
+      stateText: messages.length ? '' : '暂无订单提醒',
+      emptyCta: messages.length ? '' : '前往订单中心',
+    });
   },
 
   goCustomerOrders() {

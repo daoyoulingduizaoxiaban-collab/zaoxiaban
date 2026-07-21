@@ -1,26 +1,29 @@
 <nav nav-type="my" titleText="{{titleText}}" />
 
 <view class="tourGuides-container">
-  <view class="native-list" wx:if="{{tourGuidesList.length}}">
-    <view
-      wx:for="{{tourGuidesList}}"
-      wx:key="id"
-      class="native-row"
-      data-id="{{item.id}}"
-      bindtap="goToDetail"
-    >
-      <view class="native-avatar">团</view>
-      <view class="native-main">
-        <view class="native-title">{{item.title}}</view>
-        <view class="native-desc">{{item.description}}</view>
+  <page-state
+    state="{{pageState}}"
+    error-text="{{stateText}}"
+    empty-text="{{stateText}}"
+    bind:retry="loadTourGuides"
+  >
+    <view class="native-list">
+      <view
+        wx:for="{{tourGuidesList}}"
+        wx:key="id"
+        class="native-row"
+        data-id="{{item.id}}"
+        bindtap="goToDetail"
+      >
+        <view class="native-avatar">团</view>
+        <view class="native-main">
+          <view class="native-title">{{item.title}}</view>
+          <view class="native-desc">{{item.description}}</view>
+        </view>
+        <view class="native-note">{{item.statusText}}</view>
       </view>
-      <view class="native-note">{{item.statusText}}</view>
     </view>
-  </view>
-
-  <view wx:if="{{ tourGuidesList.length === 0 }}" class="empty-state">
-    <text>{{disabledReason || '暂无团主资料'}}</text>
-  </view>
+  </page-state>
 
   <button wx:if="{{canCreateTourGuide}}" class="floating-action" bindtap="onGoToEdit">新增团主</button>
   <view wx:elif="{{canEditOwnTourGuide}}" class="own-edit">

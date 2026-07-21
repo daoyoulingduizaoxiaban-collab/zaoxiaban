@@ -7,34 +7,33 @@
     <view class="mode-desc">{{dataModeText}}</view>
   </view>
 
-  <view wx:if="{{isLoading}}" class="panel">
-    <t-loading theme="spinner" size="48rpx" />
-  </view>
-
-  <view wx:elif="{{disabledReason}}" class="panel">
-    <t-empty icon="info-circle" description="{{disabledReason}}" />
-  </view>
-
-  <view class="summary-grid" wx:else>
-    <view class="summary-card" wx:for="{{summaryList}}" wx:key="name">
-      <view class="summary-label">{{item.name}}</view>
-      <view class="summary-value">{{item.number}}</view>
+  <page-state
+    state="{{pageState}}"
+    error-text="{{stateText}}"
+    empty-text="{{stateText}}"
+    bind:retry="loadSummary"
+  >
+    <view class="summary-grid">
+      <view class="summary-card" wx:for="{{summaryList}}" wx:key="name">
+        <view class="summary-label">{{item.name}}</view>
+        <view class="summary-value">{{item.number}}</view>
+      </view>
     </view>
-  </view>
 
-  <view class="finance-grid" wx:if="{{!disabledReason && !isLoading}}">
-    <view class="finance-card">
-      <view class="summary-label">应收金额</view>
-      <view class="finance-value">￥{{financeSummary.receivable}}</view>
+    <view class="finance-grid">
+      <view class="finance-card">
+        <view class="summary-label">应收金额</view>
+        <view class="finance-value">￥{{financeSummary.receivable}}</view>
+      </view>
+      <view class="finance-card">
+        <view class="summary-label">已收金额</view>
+        <view class="finance-value">￥{{financeSummary.received}}</view>
+      </view>
     </view>
-    <view class="finance-card">
-      <view class="summary-label">已收金额</view>
-      <view class="finance-value">￥{{financeSummary.received}}</view>
-    </view>
-  </view>
 
-  <view class="panel" wx:if="{{!disabledReason && !isLoading}}">
-    <view class="panel-title">经营分析</view>
-    <view class="panel-desc">当前显示团单与客户订单汇总，便于核对开团进度与收款状态。</view>
-  </view>
+    <view class="panel">
+      <view class="panel-title">经营分析</view>
+      <view class="panel-desc">当前显示团单与客户订单汇总，便于核对开团进度与收款状态。</view>
+    </view>
+  </page-state>
 </view>

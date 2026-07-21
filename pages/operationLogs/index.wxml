@@ -7,19 +7,23 @@
     </t-dropdown-menu>
   </view>
 
-  <view wx:if="{{isLoading}}" class="empty-state">正在读取操作记录</view>
-  <view wx:elif="{{disabledReason}}" class="empty-state">{{disabledReason}}</view>
-  <view wx:elif="{{logs.length === 0}}" class="empty-state">暂无操作记录</view>
-
-  <view wx:else class="log-list">
-    <view class="log-card" wx:for="{{logs}}" wx:key="id">
-      <view class="log-card__head">
-        <text class="log-card__type">{{item.typeText}}</text>
-        <text class="log-card__time">{{item.occurredAt || '最近'}}</text>
+  <page-state
+    state="{{pageState}}"
+    loading-text="正在读取操作记录"
+    error-text="{{stateText}}"
+    empty-text="{{stateText}}"
+    bind:retry="loadLogs"
+  >
+    <view class="log-list">
+      <view class="log-card" wx:for="{{logs}}" wx:key="id">
+        <view class="log-card__head">
+          <text class="log-card__type">{{item.typeText}}</text>
+          <text class="log-card__time">{{item.occurredAt || '最近'}}</text>
+        </view>
+        <view class="log-card__title">{{item.actionText}}｜{{item.resourceText}}</view>
+        <view class="log-card__summary">{{item.summary}}</view>
+        <view class="log-card__meta">{{item.actorName}}｜{{item.actorRole}}｜{{item.result}}</view>
       </view>
-      <view class="log-card__title">{{item.actionText}}｜{{item.resourceText}}</view>
-      <view class="log-card__summary">{{item.summary}}</view>
-      <view class="log-card__meta">{{item.actorName}}｜{{item.actorRole}}｜{{item.result}}</view>
     </view>
-  </view>
+  </page-state>
 </view>

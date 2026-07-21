@@ -1,5 +1,6 @@
 {
   "usingComponents": {
-    "nav": "/components/nav/index"
+    "nav": "/components/nav/index",
+    "page-state": "/components/page-state/index"
   }
 }

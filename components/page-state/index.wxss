@@ -1,0 +1,13 @@
+.page-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 96rpx 32rpx;
+}
+
+.page-state__action {
+  margin-top: 32rpx;
+  display: flex;
+  justify-content: center;
+}

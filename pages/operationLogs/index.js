@@ -7,8 +7,9 @@ Page({
     filters: OPERATION_LOG_FILTERS,
     currentType: 'all',
     logs: [],
-    isLoading: true,
-    disabledReason: '',
+    // 统一三态：loading / ready / error / empty
+    pageState: 'loading',
+    stateText: '',
   },
 
   async onLoad() {
@@ -25,17 +26,22 @@ Page({
     if (!canUseFeature(profile, FEATURE_KEYS.OPERATION_LOGS)) {
       this.setData({
         logs: [],
-        isLoading: false,
-        disabledReason: getRoleScopeText(profile, FEATURE_KEYS.OPERATION_LOGS),
+        pageState: 'empty',
+        stateText: getRoleScopeText(profile, FEATURE_KEYS.OPERATION_LOGS),
       });
       return;
     }
-    this.setData({ isLoading: true, disabledReason: '' });
+    this.setData({ pageState: 'loading', stateText: '' });
     const res = await OperationLogService.listVisible({ type: this.data.currentType });
+    if (!res.success) {
+      this.setData({ logs: [], pageState: 'error', stateText: res.error || '读取操作记录失败' });
+      return;
+    }
+    const logs = res.data || [];
     this.setData({
-      isLoading: false,
-      logs: res.success ? (res.data || []) : [],
-      disabledReason: res.success ? '' : (res.error || '读取操作记录失败'),
+      logs,
+      pageState: logs.length ? 'ready' : 'empty',
+      stateText: logs.length ? '' : '暂无操作记录',
     });
   },
 

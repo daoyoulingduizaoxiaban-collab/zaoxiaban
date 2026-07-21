@@ -8,6 +8,7 @@
     "t-button": "tdesign-miniprogram/button/button",
     "t-loading": "tdesign-miniprogram/loading/loading",
     "t-empty": "/components/t-empty/index",
+    "page-state": "/components/page-state/index",
     "nav": "/components/nav"
   },
   "navigationStyle": "custom",

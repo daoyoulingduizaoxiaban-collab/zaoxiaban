@@ -32,8 +32,9 @@ Page({
     canReview: false,
     selectedRolesById: {},
     roleExpiresAtById: {},
-    isLoading: false,
-    loadErrorText: '',
+    // 统一三态：loading / ready / error / empty
+    pageState: 'loading',
+    stateText: '',
   },
 
   async onLoad() {
@@ -55,22 +56,22 @@ Page({
         users: [],
         selectedRolesById: {},
         roleExpiresAtById: {},
-        isLoading: false,
-        loadErrorText: '',
+        pageState: 'empty',
+        stateText: '当前账号没有用户审核权限',
       });
       return;
     }
 
-    this.setData({ isLoading: true, loadErrorText: '' });
+    this.setData({ pageState: 'loading', stateText: '' });
     const res = await DirectoryRepository.listPendingUsers();
-    this.setData({ isLoading: false });
     if (!res.success) {
       const errorText = res.error || '加载审核列表失败';
       this.setData({
         users: [],
         selectedRolesById: {},
         roleExpiresAtById: {},
-        loadErrorText: errorText,
+        pageState: 'error',
+        stateText: errorText,
       });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
@@ -91,7 +92,13 @@ Page({
         roleExpiresAt: roleExpiresAtById[id],
       };
     });
-    this.setData({ users, selectedRolesById, roleExpiresAtById, loadErrorText: '' });
+    this.setData({
+      users,
+      selectedRolesById,
+      roleExpiresAtById,
+      pageState: users.length ? 'ready' : 'empty',
+      stateText: users.length ? '' : '暂无可审核用户',
+    });
   },
 
   onRoleToggle(e) {

@@ -4,6 +4,7 @@
     "t-button": "tdesign-miniprogram/button/button",
     "t-empty": "/components/t-empty/index",
     "t-cell": "tdesign-miniprogram/cell/cell",
-    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group"
+    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
+    "page-state": "/components/page-state/index"
   }
 }

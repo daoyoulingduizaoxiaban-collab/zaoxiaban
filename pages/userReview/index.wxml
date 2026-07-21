@@ -1,15 +1,15 @@
 <nav title-text="{{titleText}}" />
 
 <view class="review-page">
-  <view class="no-access" wx:if="{{!canReview}}">
-    <t-empty icon="info-circle" description="当前账号没有用户审核权限" />
-  </view>
-
-  <view wx:else>
+  <page-state
+    state="{{pageState}}"
+    loading-text="正在加载审核列表"
+    error-text="{{stateText}}"
+    empty-text="{{stateText}}"
+    bind:retry="refresh"
+  >
     <view class="review-summary">用户角色审核与期限</view>
-    <t-empty wx:if="{{isLoading}}" icon="info-circle" description="正在加载审核列表" />
-    <t-empty wx:elif="{{loadErrorText}}" icon="info-circle" description="{{loadErrorText}}" />
-    <t-cell-group theme="card" wx:elif="{{users.length}}">
+    <t-cell-group theme="card">
       <view class="review-card" wx:for="{{users}}" wx:key="id">
         <t-cell title="{{item.displayName || item.name || '微信用户'}}" description="申请身份：{{item.requestedRoleLabel}}" note="{{item.accountNote}}" />
         <view class="section-label">可用角色</view>
@@ -43,6 +43,5 @@
         </view>
       </view>
     </t-cell-group>
-    <t-empty wx:else icon="info-circle" description="暂无可审核用户" />
-  </view>
+  </page-state>
 </view>
