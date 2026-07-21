@@ -1,0 +1,51 @@
+<view wx:if="{{visible}}" class="detail-mask" catchtap="onClose">
+  <view class="detail-panel" catchtap="stopTap">
+    <view class="detail-panel__header">
+      <text class="detail-panel__title">{{detail.title || '客户订单'}}</text>
+      <button class="detail-panel__close" catchtap="onClose">关闭</button>
+    </view>
+    <scroll-view scroll-y class="detail-panel__body">
+      <view class="detail-section">
+        <view class="detail-summary-grid">
+          <view class="detail-summary-card">
+            <text class="detail-summary-label">状态</text>
+            <text class="detail-summary-value">{{detail.statusText}}</text>
+          </view>
+          <view class="detail-summary-card">
+            <text class="detail-summary-label">客户</text>
+            <text class="detail-summary-value">{{detail.customerName}}</text>
+          </view>
+          <view class="detail-summary-card">
+            <text class="detail-summary-label">金额</text>
+            <text class="detail-summary-value">￥{{detail.totalPrice}}</text>
+          </view>
+        </view>
+      </view>
+      <view class="detail-section">
+        <view class="detail-section__title">付款资料</view>
+        <view class="detail-row"><text>付款方式</text><text>{{detail.paymentMethod || '未填写'}}</text></view>
+        <view class="detail-row"><text>申报金额</text><text>{{detail.declaredAmount ? '￥' + detail.declaredAmount : '未填写'}}</text></view>
+        <view class="detail-row"><text>实收金额</text><text>{{detail.confirmedAmount ? '￥' + detail.confirmedAmount : '未确认'}}</text></view>
+        <view class="detail-row"><text>付款凭证</text><text>{{detail.proofText}}</text></view>
+        <view class="detail-note">{{detail.paymentRemark || detail.confirmRemark || '暂无付款备注'}}</view>
+      </view>
+      <view class="detail-section">
+        <view class="detail-section__title">商品明细</view>
+        <view class="detail-line" wx:for="{{detail.displayItems}}" wx:key="title">
+          <view class="detail-line__main">{{item.title}}</view>
+          <view class="detail-line__meta">数量 {{item.quantity}}｜￥{{item.totalPrice}}</view>
+        </view>
+        <view wx:if="{{detail.displayItems.length === 0}}" class="detail-note">暂无商品</view>
+      </view>
+      <view class="detail-section">
+        <view class="detail-section__title">状态记录</view>
+        <view class="history-line" wx:for="{{detail.displayHistory}}" wx:key="createdAt">
+          <view>{{item.createdAt || '最近'}}｜{{item.statusText || '状态更新'}}</view>
+          <view>{{item.actorText}} {{item.amount ? '｜￥' + item.amount : ''}} {{item.paymentMethod ? '｜' + item.paymentMethod : ''}}</view>
+          <view>{{item.proofText}} {{item.note ? '｜' + item.note : ''}}</view>
+        </view>
+        <view wx:if="{{detail.displayHistory.length === 0}}" class="detail-note">暂无记录</view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

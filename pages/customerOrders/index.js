@@ -36,30 +36,10 @@ Page({
     selectedOrderDetail: null,
     actionType: '',
     actionOrderId: '',
+    actionOrder: null,
     actionPanelTitle: '',
     actionSubmitText: '提交',
     isSubmittingAction: false,
-    actionForm: {
-      paymentMethod: '',
-      paymentRemark: '',
-      paymentProofUrls: [],
-      declaredAmount: '',
-      confirmedAmount: '',
-      confirmRemark: '',
-      cancelRemark: '',
-    },
-  },
-
-  getEmptyActionForm() {
-    return {
-      paymentMethod: '',
-      paymentRemark: '',
-      paymentProofUrls: [],
-      declaredAmount: '',
-      confirmedAmount: '',
-      confirmRemark: '',
-      cancelRemark: '',
-    };
   },
 
   getAvailableOrderActions(order, profile = AuthService.getCurrentProfile()) {
@@ -88,10 +68,10 @@ Page({
       actionPanelVisible: false,
       actionType: '',
       actionOrderId: '',
+      actionOrder: null,
       actionPanelTitle: '',
       actionSubmitText: '提交',
       isSubmittingAction: false,
-      actionForm: this.getEmptyActionForm(),
       detailVisible: false,
       selectedOrderDetail: null,
       ...extraState,
@@ -278,8 +258,6 @@ Page({
     this.setData({ detailVisible: false, selectedOrderDetail: null });
   },
 
-  stopDetailTap() {},
-
   onOrderAction(e) {
     const { id } = e.currentTarget.dataset;
     const order = this.data.customerOrdersList.find(item => String(item.id) === String(id));
@@ -315,92 +293,21 @@ Page({
 
     const order = [...this.data.customerOrdersList, ...this.data.allCustomerOrdersList]
       .find(item => String(item.id) === String(id));
-    const actionForm = this.getEmptyActionForm();
-    if (action === 'declarePaid' && order) {
-      actionForm.declaredAmount = String(order.totalPrice || '');
-    }
-    if (action === 'confirmPayment' && order) {
-      actionForm.confirmedAmount = String(order.declaredAmount || order.totalPrice || '');
-    }
 
     this.setData({
       actionPanelVisible: true,
       actionType: action,
       actionOrderId: id,
+      actionOrder: order || null,
       actionPanelTitle: config.title,
       actionSubmitText: config.submitText,
       isSubmittingAction: false,
-      actionForm,
     });
   },
 
   closeActionPanel() {
     if (this.data.isSubmittingAction) return;
     this.resetActionState();
-  },
-
-  stopPanelTap() {},
-
-  onActionInput(e) {
-    const { field } = e.currentTarget.dataset;
-    const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
-    if (!field) return;
-    this.setData({ [`actionForm.${field}`]: value });
-  },
-
-  chooseActionPaymentProof() {
-    if (this.data.isSubmittingAction) return;
-    if (!wx.chooseMedia) {
-      wx.showToast({ title: '暂时无法选择图片，请稍后重试', icon: 'none' });
-      return;
-    }
-
-    const currentUrls = this.data.actionForm.paymentProofUrls || [];
-    const remainCount = 3 - currentUrls.length;
-    if (remainCount <= 0) {
-      wx.showToast({ title: '最多上传 3 张付款凭证', icon: 'none' });
-      return;
-    }
-
-    wx.chooseMedia({
-      count: remainCount,
-      mediaType: ['image'],
-      success: (res) => {
-        const paths = (res.tempFiles || []).map(file => file.tempFilePath).filter(Boolean);
-        if (!paths.length) {
-          wx.showToast({ title: '未选择可用图片', icon: 'none' });
-          return;
-        }
-        this.setData({
-          'actionForm.paymentProofUrls': [...currentUrls, ...paths].slice(0, 3),
-        });
-      },
-      fail: (err) => {
-        const message = err && err.errMsg && err.errMsg.includes('cancel')
-          ? '已取消选择图片'
-          : '选择付款凭证失败，请重试';
-        wx.showToast({ title: message, icon: 'none' });
-      },
-    });
-  },
-
-  removeActionPaymentProof(e) {
-    if (this.data.isSubmittingAction) return;
-    const index = Number(e.currentTarget.dataset.index);
-    const paymentProofUrls = (this.data.actionForm.paymentProofUrls || [])
-      .filter((_, itemIndex) => itemIndex !== index);
-    this.setData({ 'actionForm.paymentProofUrls': paymentProofUrls });
-  },
-
-  previewActionPaymentProof(e) {
-    const index = Number(e.currentTarget.dataset.index || 0);
-    const urls = this.data.actionForm.paymentProofUrls || [];
-    if (!urls.length) return;
-    wx.previewImage({
-      current: urls[index] || urls[0],
-      urls,
-      fail: () => wx.showToast({ title: '付款凭证预览失败', icon: 'none' }),
-    });
   },
 
   previewOrderPaymentProof(e) {
@@ -424,72 +331,8 @@ Page({
     return [...customerOrdersList, ...allCustomerOrdersList].find(item => String(item.id) === String(actionOrderId));
   },
 
-  buildActionPayload() {
-    const { actionType, actionForm } = this.data;
-    const paymentMethod = String(actionForm.paymentMethod || '').trim();
-    const paymentRemark = String(actionForm.paymentRemark || '').trim();
-    const paymentProofUrls = actionForm.paymentProofUrls || [];
-    const declaredAmountText = String(actionForm.declaredAmount || '').trim();
-    const confirmedAmountText = String(actionForm.confirmedAmount || '').trim();
-    const confirmRemark = String(actionForm.confirmRemark || '').trim();
-    const cancelRemark = String(actionForm.cancelRemark || '').trim();
-
-    if (actionType === 'declarePaid') {
-      const declaredAmount = Number(declaredAmountText);
-      const order = this.getActionOrder();
-      const totalPrice = Number(order && order.totalPrice ? order.totalPrice : 0);
-      if (!declaredAmountText || Number.isNaN(declaredAmount) || declaredAmount <= 0) {
-        return { error: '请填写有效付款金额' };
-      }
-      if (totalPrice > 0 && declaredAmount > totalPrice) {
-        return { error: '付款金额不能超过订单金额' };
-      }
-      if (!paymentMethod) {
-        return { error: '请填写付款方式' };
-      }
-      return {
-        data: {
-          paymentMethod,
-          paymentRemark,
-          paymentProofUrls,
-          declaredAmount,
-          note: `客户声明已付款：￥${declaredAmount}｜${[paymentMethod, paymentRemark, paymentProofUrls.length ? `凭证 ${paymentProofUrls.length} 张` : '未上传凭证'].filter(Boolean).join('｜')}`,
-        },
-      };
-    }
-
-    if (actionType === 'confirmPayment') {
-      const confirmedAmount = Number(confirmedAmountText);
-      const order = this.getActionOrder();
-      const totalPrice = Number(order && order.totalPrice ? order.totalPrice : 0);
-      if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
-        return { error: '请填写有效实收金额' };
-      }
-      if (totalPrice > 0 && confirmedAmount > totalPrice) {
-        return { error: '实收金额不能超过订单金额' };
-      }
-      return {
-        data: {
-          confirmedAmount,
-          confirmRemark,
-          note: `团主确认收款：实收 ¥${confirmedAmount}${confirmRemark ? `｜${confirmRemark}` : ''}`,
-        },
-      };
-    }
-
-    if (actionType === 'cancelOrder') {
-      return {
-        data: {
-          cancelRemark,
-          note: cancelRemark ? `订单已取消：${cancelRemark}` : '订单已取消',
-        },
-      };
-    }
-
-    return { error: '未知订单操作' };
-  },
-
-  async submitActionPanel() {
+  // 组件校验通过后回传 payload；页面负责调服务 + 刷新
+  async onActionSubmit(e) {
     const { actionOrderId, actionType, isSubmittingAction } = this.data;
     if (isSubmittingAction) return;
     if (!actionOrderId || !this.getActionOrder()) {
@@ -497,13 +340,8 @@ Page({
       return;
     }
 
-    const actionPayload = this.buildActionPayload();
-    if (actionPayload.error) {
-      wx.showToast({ title: actionPayload.error, icon: 'none' });
-      return;
-    }
-
-    await this.runOrderAction(actionOrderId, actionType, actionPayload.data);
+    const payload = (e.detail && e.detail.payload) || {};
+    await this.runOrderAction(actionOrderId, actionType, payload);
   },
 
   async runOrderAction(id, action, actionPayload = {}) {

@@ -46,114 +46,19 @@
 
 </view>
 
-<view wx:if="{{actionPanelVisible}}" class="action-mask" catchtap="closeActionPanel">
-  <view class="action-panel" catchtap="stopPanelTap">
-    <view class="action-panel__header">
-      <text class="action-panel__title">{{actionPanelTitle}}</text>
-      <text class="action-panel__close" bind:tap="closeActionPanel">关闭</text>
-    </view>
+<order-action-panel
+  visible="{{actionPanelVisible}}"
+  action-type="{{actionType}}"
+  title="{{actionPanelTitle}}"
+  submit-text="{{actionSubmitText}}"
+  order="{{actionOrder}}"
+  submitting="{{isSubmittingAction}}"
+  bind:submit="onActionSubmit"
+  bind:close="closeActionPanel"
+/>
 
-    <view wx:if="{{actionType === 'declarePaid'}}" class="action-form">
-      <view class="action-field">
-        <text class="action-label">付款金额</text>
-        <input class="action-input" type="digit" placeholder="请输入实际付款金额" value="{{actionForm.declaredAmount}}" data-field="declaredAmount" bindinput="onActionInput" />
-      </view>
-      <view class="action-field">
-        <text class="action-label">付款方式</text>
-        <input class="action-input" placeholder="微信/支付宝/现金/转账" value="{{actionForm.paymentMethod}}" data-field="paymentMethod" bindinput="onActionInput" />
-      </view>
-      <view class="action-field">
-        <text class="action-label">付款备注</text>
-        <textarea class="action-textarea" placeholder="填写流水尾号、代付人或其他核对信息" value="{{actionForm.paymentRemark}}" data-field="paymentRemark" bindinput="onActionInput" />
-      </view>
-      <view class="action-proof">
-        <view class="action-proof__header">
-          <text class="action-label">付款凭证</text>
-          <button size="mini" plain bindtap="chooseActionPaymentProof" disabled="{{isSubmittingAction}}">上传</button>
-        </view>
-        <view class="action-proof__list" wx:if="{{actionForm.paymentProofUrls.length}}">
-          <view class="action-proof__item" wx:for="{{actionForm.paymentProofUrls}}" wx:key="*this">
-            <image src="{{item}}" mode="aspectFill" bindtap="previewActionPaymentProof" data-index="{{index}}" />
-            <text bindtap="removeActionPaymentProof" data-index="{{index}}">移除</text>
-          </view>
-        </view>
-      </view>
-      <view class="action-hint">请填写付款金额、付款方式；可上传付款凭证，方便团主核对收款。</view>
-    </view>
-
-    <view wx:elif="{{actionType === 'confirmPayment'}}" class="action-form">
-      <view class="action-field">
-        <text class="action-label">实收金额</text>
-        <input class="action-input" type="digit" placeholder="请输入实际到账金额" value="{{actionForm.confirmedAmount}}" data-field="confirmedAmount" bindinput="onActionInput" />
-      </view>
-      <view class="action-field">
-        <text class="action-label">确认备注</text>
-        <textarea class="action-textarea" placeholder="例：已核对微信到账，少付/多付说明" value="{{actionForm.confirmRemark}}" data-field="confirmRemark" bindinput="onActionInput" />
-      </view>
-    </view>
-
-    <view wx:else class="action-form">
-      <view class="action-field">
-        <text class="action-label">取消原因</text>
-        <textarea class="action-textarea" placeholder="选填，方便持续追踪" value="{{actionForm.cancelRemark}}" data-field="cancelRemark" bindinput="onActionInput" />
-      </view>
-    </view>
-
-    <view class="action-panel__footer">
-      <t-button size="large" variant="outline" bind:tap="closeActionPanel" disabled="{{isSubmittingAction}}">取消</t-button>
-      <t-button size="large" theme="primary" loading="{{isSubmittingAction}}" bind:tap="submitActionPanel">{{actionSubmitText}}</t-button>
-    </view>
-  </view>
-</view>
-
-<view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetailPanel">
-  <view class="detail-panel" catchtap="stopDetailTap">
-    <view class="detail-panel__header">
-      <text class="detail-panel__title">{{selectedOrderDetail.title || '客户订单'}}</text>
-      <button class="detail-panel__close" catchtap="closeDetailPanel">关闭</button>
-    </view>
-    <scroll-view scroll-y class="detail-panel__body">
-      <view class="detail-section">
-        <view class="detail-summary-grid">
-          <view class="detail-summary-card">
-            <text class="detail-summary-label">状态</text>
-            <text class="detail-summary-value">{{selectedOrderDetail.statusText}}</text>
-          </view>
-          <view class="detail-summary-card">
-            <text class="detail-summary-label">客户</text>
-            <text class="detail-summary-value">{{selectedOrderDetail.customerName}}</text>
-          </view>
-          <view class="detail-summary-card">
-            <text class="detail-summary-label">金额</text>
-            <text class="detail-summary-value">￥{{selectedOrderDetail.totalPrice}}</text>
-          </view>
-        </view>
-      </view>
-      <view class="detail-section">
-        <view class="detail-section__title">付款资料</view>
-        <view class="detail-row"><text>付款方式</text><text>{{selectedOrderDetail.paymentMethod || '未填写'}}</text></view>
-        <view class="detail-row"><text>申报金额</text><text>{{selectedOrderDetail.declaredAmount ? '￥' + selectedOrderDetail.declaredAmount : '未填写'}}</text></view>
-        <view class="detail-row"><text>实收金额</text><text>{{selectedOrderDetail.confirmedAmount ? '￥' + selectedOrderDetail.confirmedAmount : '未确认'}}</text></view>
-        <view class="detail-row"><text>付款凭证</text><text>{{selectedOrderDetail.proofText}}</text></view>
-        <view class="detail-note">{{selectedOrderDetail.paymentRemark || selectedOrderDetail.confirmRemark || '暂无付款备注'}}</view>
-      </view>
-      <view class="detail-section">
-        <view class="detail-section__title">商品明细</view>
-        <view class="detail-line" wx:for="{{selectedOrderDetail.displayItems}}" wx:key="title">
-          <view class="detail-line__main">{{item.title}}</view>
-          <view class="detail-line__meta">数量 {{item.quantity}}｜￥{{item.totalPrice}}</view>
-        </view>
-        <view wx:if="{{selectedOrderDetail.displayItems.length === 0}}" class="detail-note">暂无商品</view>
-      </view>
-      <view class="detail-section">
-        <view class="detail-section__title">状态记录</view>
-        <view class="history-line" wx:for="{{selectedOrderDetail.displayHistory}}" wx:key="createdAt">
-          <view>{{item.createdAt || '最近'}}｜{{item.statusText || '状态更新'}}</view>
-          <view>{{item.actorText}} {{item.amount ? '｜￥' + item.amount : ''}} {{item.paymentMethod ? '｜' + item.paymentMethod : ''}}</view>
-          <view>{{item.proofText}} {{item.note ? '｜' + item.note : ''}}</view>
-        </view>
-        <view wx:if="{{selectedOrderDetail.displayHistory.length === 0}}" class="detail-note">暂无记录</view>
-      </view>
-    </scroll-view>
-  </view>
-</view>
+<order-detail
+  visible="{{detailVisible}}"
+  detail="{{selectedOrderDetail}}"
+  bind:close="closeDetailPanel"
+/>
