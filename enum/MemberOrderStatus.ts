@@ -21,7 +21,7 @@ export const getMemberOrderStatusText = (value: MemberOrderStatus): string => {
 export const getMemberOrderStatusList = () => {
   // 濾掉 Enum 自動生成的反向映射 (針對 TS 數字 Enum 的處理)
   return Object.keys(MemberOrderStatus)
-    .filter(key => isNaN(Number(key)))
+    .filter(key => Number.isNaN(Number(key)))
     .map(key => {
       const value = MemberOrderStatus[key as keyof typeof MemberOrderStatus];
       return {

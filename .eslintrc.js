@@ -92,4 +92,42 @@ module.exports = {
     'no-undef': 0,
     'no-proto': 0,
   },
+  // 页面已全量转 .ts（R2）：让校对员也看得懂 .ts，补回「重复方法/未用变量」兜底。
+  // 仅语法级 lint（不接 type-aware，保持快、无需给全项目补类型）。
+  overrides: [
+    {
+      files: ['*.ts'],
+      parser: '@typescript-eslint/parser',
+      parserOptions: {
+        ecmaVersion: 2018,
+        sourceType: 'module',
+      },
+      plugins: ['@typescript-eslint'],
+      rules: {
+        // 基础 no-unused-vars 关掉，交给 TS 版（同样的务实豁免）
+        'no-unused-vars': 'off',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            args: 'none',
+            caughtErrors: 'none',
+            varsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
+        // 重复方法/成员：Page({}) 里重复方法=重复 key，由 no-dupe-keys 兜（核心规则）
+        'no-dupe-class-members': 'off',
+        '@typescript-eslint/no-dupe-class-members': 'error',
+        // 定位为「抓 bug 的兜底」而非「重排版」：关掉纯风格规则，避免把从未 lint 过的
+        // .ts（models/sub-pages 等）逼着全量改格式。格式仍由开发者工具/prettier 负责。
+        'lines-between-class-members': 'off',
+        'no-use-before-define': 'off',
+        'arrow-body-style': 'off',
+        'prefer-destructuring': 'off',
+        'no-nested-ternary': 'off',
+        'max-classes-per-file': 'off',
+        'no-plusplus': 'off',
+      },
+    },
+  ],
 };

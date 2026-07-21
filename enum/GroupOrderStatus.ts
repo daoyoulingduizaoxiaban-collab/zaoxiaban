@@ -12,7 +12,7 @@ export const GroupOrderStatusText = Object.freeze({
 
 export const getGroupOrderStatusList = () => {
   return Object.keys(GroupOrderStatus)
-    .filter(key => isNaN(Number(key)))
+    .filter(key => Number.isNaN(Number(key)))
     .map(key => {
       const value = GroupOrderStatus[key];
       return {

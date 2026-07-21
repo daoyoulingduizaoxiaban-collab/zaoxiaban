@@ -15,7 +15,7 @@ export const ProductStatusText = Object.freeze({
  */
 export const getProductStatusList = () => {
   return Object.keys(ProductStatus)
-    .filter(key => isNaN(Number(key))) // 過濾掉 Enum 反向映射產生的數字 key
+    .filter(key => Number.isNaN(Number(key))) // 過濾掉 Enum 反向映射產生的數字 key
     .map(key => {
       const value = ProductStatus[key as keyof typeof ProductStatus];
       return {

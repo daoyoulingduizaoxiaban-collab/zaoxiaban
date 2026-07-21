@@ -1,6 +1,3 @@
-import {
-  GroupOrder
-} from '~/models/GroupOrder';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import {
   getGroupOrderStatusList,

@@ -48,7 +48,7 @@ export class GroupOrder {
 
     // 已收：僅加總已付款訂單的金額 (假設欄位為 isPaid)
     this.totalReceived = this.memberOrderList.reduce((sum, order) => {
-      if (order.status == MemberOrderStatus.PAID && order.totalPrice > 0) {
+      if (order.status === MemberOrderStatus.PAID && order.totalPrice > 0) {
         return sum + order.totalPrice;
       }
       return sum;
