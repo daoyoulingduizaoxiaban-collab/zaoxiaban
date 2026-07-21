@@ -79,7 +79,7 @@ Page({
   },
 
   async onLoad(options = {}) {
-    this._skipNextShowRefresh = true;
+    (this as any)._skipNextShowRefresh = true;
     await AuthService.refreshSession();
     const pendingOrderId = options.orderId || options.id || '';
     const currentStatus = options.status !== undefined ? Number(options.status) : this.data.currentStatus;
@@ -105,8 +105,8 @@ Page({
   },
 
   async loadQaOrders() {
-    if (this._loadOrdersInFlight) return this._loadOrdersInFlight;
-    this._loadOrdersInFlight = (async () => {
+    if ((this as any)._loadOrdersInFlight) return (this as any)._loadOrdersInFlight;
+    (this as any)._loadOrdersInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
@@ -121,12 +121,12 @@ Page({
         authReady: true,
         accessStateText: accessText,
         pendingOrderId: '',
-        ...this.threeState('empty'),
+        ...(this as any).threeState('empty'),
       });
       return;
     }
 
-    this.setData(this.loadingState());
+    this.setData((this as any).loadingState());
     const res = await CustomerOrderService.listVisible();
     if (!res.success) {
       const errorText = res.error || '加载客户订单失败';
@@ -141,7 +141,7 @@ Page({
         canUseBusiness: true,
         authReady: true,
         accessStateText: AuthService.getAccessStateText(profile),
-        ...this.threeState('error', { errorText }),
+        ...(this as any).threeState('error', { errorText }),
       });
       return;
     }
@@ -158,14 +158,14 @@ Page({
       canUseBusiness: true,
       authReady: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
-      ...this.threeState(filtered.length ? 'ready' : 'empty', { emptyText: '暂无客户订单' }),
+      ...(this as any).threeState(filtered.length ? 'ready' : 'empty', { emptyText: '暂无客户订单' }),
     });
     this.openPendingOrderDetail();
     })();
     try {
-      return await this._loadOrdersInFlight;
+      return await (this as any)._loadOrdersInFlight;
     } finally {
-      this._loadOrdersInFlight = null;
+      (this as any)._loadOrdersInFlight = null;
     }
   },
 
@@ -181,7 +181,7 @@ Page({
     this.setData({
       currentStatus: status,
       customerOrdersList: filtered,
-      ...this.threeState(filtered.length ? 'ready' : 'empty', {
+      ...(this as any).threeState(filtered.length ? 'ready' : 'empty', {
         emptyText: status < 0 ? '暂无客户订单' : '该状态下暂无订单',
       }),
     });
@@ -368,14 +368,14 @@ Page({
   },
 
   async onShow() {
-    if (this._skipNextShowRefresh) {
-      this._skipNextShowRefresh = false;
+    if ((this as any)._skipNextShowRefresh) {
+      (this as any)._skipNextShowRefresh = false;
       if (typeof this.getTabBar === 'function' && this.getTabBar()) {
         this.getTabBar().refreshTabBar();
       }
       return;
     }
-    this.setData(this.loadingState());
+    this.setData((this as any).loadingState());
     await AuthService.refreshSession();
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
       this.getTabBar().refreshTabBar();

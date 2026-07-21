@@ -32,7 +32,7 @@
     "prettier": "^3.0.2"
   },
   "lint-staged": {
-    "**/*.{js,ts}": [
+    "**/*.js": [
       "eslint --no-eslintrc -c ./.eslintrc.js --fix"
     ]
   }
