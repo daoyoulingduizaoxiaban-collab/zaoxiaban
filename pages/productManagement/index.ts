@@ -9,8 +9,12 @@ import {
   getProductStatusList,
   getProductStatusTextByValue
 } from '~/enum/ProductStatus'
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 Page({
+  // access-state + 三态字段与 helper 来自 behavior（R1）
+  behaviors: [useAccessPage],
+
   data: {
     productList: [] as Product[],
     allProducts: [] as Product[],
@@ -18,20 +22,11 @@ Page({
     titleText: '商品库',
     statusOptions: getProductStatusList(),
     currentStatus: 0,
-    roleScopeText: '',
     saveModeText: '',
-    isLoading: false,
-    loadErrorText: '',
-    // 商品目录区统一三态：loading / ready / error / empty
-    pageState: 'loading',
+    // 覆写 behavior 空态默认文案
     emptyText: '当前没有商品',
-    emptyCta: '',
-    authReady: false,
     canManageProducts: false,
     canShowProductCatalog: false,
-    isLoggedIn: false,
-    canUseBusiness: false,
-    accessStateText: '',
     detailVisible: false,
     selectedProduct: null,
     selectedPriceRules: [],
@@ -43,20 +38,11 @@ Page({
 
   syncAccessShell() {
     const profile = AuthService.getCurrentProfile();
-    const canUseBusiness = AuthService.canUseBusiness(profile);
     this.setData({
-      isLoading: true,
-      loadErrorText: '',
-      pageState: 'loading',
-      authReady: false,
+      ...(this as any).buildAccessState(FEATURE_KEYS.PRODUCTS),
+      ...(this as any).loadingState(), // shell 阶段身份未最终确认：authReady 归 false + 进 loading
       canManageProducts: canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE),
       canShowProductCatalog: true,
-      isLoggedIn: Boolean(profile),
-      canUseBusiness,
-      accessStateText: AuthService.getAccessStateText(profile),
-      roleScopeText: canUseBusiness
-        ? getRoleScopeText(profile, FEATURE_KEYS.PRODUCTS)
-        : AuthService.getAccessStateText(profile),
     });
   },
 
@@ -104,7 +90,7 @@ Page({
     (this as any)._fetchInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
     if (!AuthService.canUseBusiness(profile)) {
-      this.setData({ isLoading: true, loadErrorText: '', pageState: 'loading' });
+      this.setData((this as any).loadingState());
       const publicRes = await ProductService.listPublic({
         keyword: this.data.searchQuery,
       });
@@ -122,8 +108,7 @@ Page({
           canUseBusiness: false,
           accessStateText: AuthService.getAccessStateText(profile),
           authReady: true,
-          isLoading: false,
-          loadErrorText: errorText,
+          ...(this as any).threeState('error', { errorText }),
         });
         return;
       }
@@ -139,16 +124,15 @@ Page({
         canUseBusiness: false,
         accessStateText: AuthService.getAccessStateText(profile),
         authReady: true,
-        isLoading: false,
-        loadErrorText: '',
-        pageState: publicProducts.length ? 'ready' : 'empty',
-        emptyText: '当前暂无公开商品',
-        emptyCta: profile ? '' : '去登录',
+        ...(this as any).threeState(publicProducts.length ? 'ready' : 'empty', {
+          emptyText: '当前暂无公开商品',
+          emptyCta: profile ? '' : '去登录',
+        }),
       });
       return;
     }
 
-    this.setData({ isLoading: true, loadErrorText: '', pageState: 'loading' });
+    this.setData((this as any).loadingState());
     const res = await ProductService.listVisible({
       keyword: this.data.searchQuery,
       status: this.data.currentStatus,
@@ -168,9 +152,7 @@ Page({
         canUseBusiness: true,
         accessStateText: AuthService.getAccessStateText(profile),
         authReady: true,
-        isLoading: false,
-        loadErrorText: errorText,
-        pageState: 'error',
+        ...(this as any).threeState('error', { errorText }),
       });
       return;
     }
@@ -187,11 +169,10 @@ Page({
       canUseBusiness: true,
       accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
       authReady: true,
-      isLoading: false,
-      loadErrorText: '',
-      pageState: products.length ? 'ready' : 'empty',
-      emptyText: this.canManageProducts() ? '当前没有商品，可点右下角新增' : '当前账号暂无可管理商品',
-      emptyCta: '',
+      ...(this as any).threeState(products.length ? 'ready' : 'empty', {
+        emptyText: this.canManageProducts() ? '当前没有商品，可点右下角新增' : '当前账号暂无可管理商品',
+        emptyCta: '',
+      }),
     });
     })();
     try {
