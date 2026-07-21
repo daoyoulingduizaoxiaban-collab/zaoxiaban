@@ -25,7 +25,25 @@ Page({
     accessStateText: '',
     isLoading: true,
     loadErrorText: '',
+    // 数据区统一三态：loading / ready / error / empty（权限/未登录仍由 access-card 处理）
+    pageState: 'loading',
+    emptyText: '暂无团单',
+    emptyCta: '',
     isNavigatingCreate: false,
+  },
+
+  computeEmptyCta() {
+    if (this.canCreateGroupOrder()) return '新建团单';
+    if (!AuthService.getCurrentProfile()) return '去登录';
+    return '';
+  },
+
+  onGroupEmptyCta() {
+    if (this.canCreateGroupOrder()) {
+      this.addItinerary();
+      return;
+    }
+    this.onLogin();
   },
 
   async onLoad() {
@@ -69,14 +87,12 @@ Page({
         accessStateText: accessText,
         isLoading: false,
         loadErrorText: '',
+        pageState: 'empty',
       });
       return;
     }
 
-    this.setData({ isLoading: true, loadErrorText: '' });
-    wx.showLoading({
-      title: '加载中'
-    });
+    this.setData({ isLoading: true, loadErrorText: '', pageState: 'loading' });
 
     try {
       const res = await GroupOrderService.listVisible();
@@ -94,6 +110,9 @@ Page({
           accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
           isLoading: false,
           loadErrorText: '',
+          pageState: list.length ? 'ready' : 'empty',
+          emptyText: '暂无团单',
+          emptyCta: this.computeEmptyCta(),
         });
       } else {
         const errorText = res.error || '加载团单失败';
@@ -107,6 +126,7 @@ Page({
           accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
           isLoading: false,
           loadErrorText: errorText,
+          pageState: 'error',
         });
         wx.showToast({
           title: errorText,
@@ -124,13 +144,12 @@ Page({
         accessStateText: AuthService.getAccessStateText(AuthService.getCurrentProfile()),
         isLoading: false,
         loadErrorText: '加载团单失败',
+        pageState: 'error',
       });
       wx.showToast({
         title: '加载团单失败',
         icon: 'none'
       });
-    } finally {
-      wx.hideLoading();
     }
     })();
     try {
@@ -183,6 +202,7 @@ Page({
       authReady: false,
       isLoading: true,
       loadErrorText: '',
+      pageState: 'loading',
       isNavigatingCreate: false,
     });
     await AuthService.refreshSession();
@@ -245,6 +265,7 @@ Page({
         itineraryList: [],
         roleScopeText: errorText,
         loadErrorText: errorText,
+        pageState: 'error',
       });
       wx.showToast({
         title: errorText,
@@ -253,10 +274,14 @@ Page({
       return;
     }
 
+    const list = this.normalizeGroupOrders(res.data);
     this.setData({
-      itineraryList: this.normalizeGroupOrders(res.data),
+      itineraryList: list,
       roleScopeText: this.getRoleScopeText(),
       loadErrorText: '',
+      pageState: list.length ? 'ready' : 'empty',
+      emptyText: (searchKeyword || Number(currentStatus) > 0) ? '没有符合条件的团单' : '暂无团单',
+      emptyCta: this.computeEmptyCta(),
     });
   }
 
