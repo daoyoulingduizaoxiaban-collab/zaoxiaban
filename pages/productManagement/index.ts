@@ -1,7 +1,7 @@
 import { Product } from '../../models/Product';
 import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, canUseProviderPortal, getRoleScopeText } from '~/services/auth/roleScope';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
@@ -26,6 +26,7 @@ Page({
     // 覆写 behavior 空态默认文案
     emptyText: '当前没有商品',
     canManageProducts: false,
+    canManageProviders: false,
     canShowProductCatalog: false,
     detailVisible: false,
     selectedProduct: null,
@@ -42,6 +43,7 @@ Page({
       ...(this as any).buildAccessState(FEATURE_KEYS.PRODUCTS),
       ...(this as any).loadingState(), // shell 阶段身份未最终确认：authReady 归 false + 进 loading
       canManageProducts: canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE),
+      canManageProviders: canUseProviderPortal(profile),
       canShowProductCatalog: true,
     });
   },
@@ -147,6 +149,7 @@ Page({
         roleScopeText: errorText,
         saveModeText: '',
         canManageProducts: this.canManageProducts(),
+        canManageProviders: this.canManageProviders(),
         canShowProductCatalog: true,
         isLoggedIn: Boolean(profile),
         canUseBusiness: true,
@@ -164,6 +167,7 @@ Page({
       roleScopeText: this.getRoleScopeText(),
       saveModeText: AuthService.getCurrentProfile() ? getSaveModeText(res.meta) : '',
       canManageProducts: this.canManageProducts(),
+      canManageProviders: this.canManageProviders(),
       canShowProductCatalog: true,
       isLoggedIn: Boolean(AuthService.getCurrentProfile()),
       canUseBusiness: true,
@@ -205,6 +209,11 @@ Page({
 
   canManageProducts() {
     return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.PRODUCT_MANAGE);
+  },
+
+  // 供应商是团主管理商品的上游，入口从「我的」移进商品库（D-4/B5）。owner/admin/团主可用。
+  canManageProviders() {
+    return canUseProviderPortal(AuthService.getCurrentProfile());
   },
 
   onLogin() {
@@ -258,6 +267,16 @@ Page({
   onOpenProductList() {
     navigateByUrl('/sub-pages/product/list/index', {
       fail: () => wx.showToast({ title: '打开商品列表失败', icon: 'none' }),
+    });
+  },
+
+  onOpenProviders() {
+    if (!this.canManageProviders()) {
+      wx.showToast({ title: '当前账号没有供应商资料管理权限', icon: 'none' });
+      return;
+    }
+    navigateByUrl('/pages/providers/index', {
+      fail: () => wx.showToast({ title: '打开供应商资料失败', icon: 'none' }),
     });
   },
 

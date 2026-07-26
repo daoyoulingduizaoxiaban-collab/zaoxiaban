@@ -7,6 +7,7 @@
       <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
     </t-dropdown-menu>
     <button class="list-entry" bindtap="onOpenProductList">列表</button>
+    <button class="list-entry" wx:if="{{canManageProviders}}" bindtap="onOpenProviders">供应商</button>
   </view>
 
   <view class="mode-banner">

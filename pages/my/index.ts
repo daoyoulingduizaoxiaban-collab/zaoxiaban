@@ -5,7 +5,6 @@ import {
   FEATURE_KEYS,
   canUseAdminPortal,
   canUseFeature,
-  canUseProviderPortal,
   hasRole,
 } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
@@ -167,7 +166,7 @@ Page({
       { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index', feature: FEATURE_KEYS.INFO_EDIT },
       { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index', feature: FEATURE_KEYS.USER_REVIEW },
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
-      { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index', feature: FEATURE_KEYS.PROVIDERS },
+      // 「供应商资料」入口已移进「商品库」页（D-4/B5：供应商是团主管理商品的上游，归商品域）。
       { name: '操作记录', icon: 'time', type: 'operationLogs', url: '/pages/operationLogs/index', feature: FEATURE_KEYS.OPERATION_LOGS },
     ];
 
@@ -292,7 +291,7 @@ Page({
     if (this.lastNavKey === navKey && now - (this.lastNavAt || 0) < 800) return;
     this.lastNavKey = navKey;
     this.lastNavAt = now;
-    const loginRequiredTypes = ['tourGuides', 'providers', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
+    const loginRequiredTypes = ['tourGuides', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
     if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
       this.onLogin();
       return;
@@ -324,20 +323,7 @@ Page({
       });
       return;
     }
-    if (type === 'providers') {
-      const profile = AuthService.getCurrentProfile();
-      if (!canUseProviderPortal(profile)) {
-        wx.showModal({
-          title: '供应商资料',
-          content: '当前账号没有供应商资料管理权限。',
-          showCancel: false,
-          confirmText: '知道了',
-        });
-        return;
-      }
-      this.openUrl('/pages/providers/index');
-      return;
-    }
+    // 供应商入口已移进「商品库」页（D-4），此处不再处理 type === 'providers'。
     this.onShowToast('#t-toast', name);
   },
 
