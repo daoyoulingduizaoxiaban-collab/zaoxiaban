@@ -17,7 +17,6 @@ Page({
     isDirty: false,
     formData: {
       title: '',
-      date: '',
       contact: '',
       note: '',
       statusText: '可显示资料'
@@ -27,7 +26,6 @@ Page({
   getEmptyFormData() {
     return {
       title: '',
-      date: '',
       contact: '',
       note: '',
       statusText: '可显示资料'
@@ -94,17 +92,10 @@ Page({
     this.setData({
       pageErrorText: '',
       'formData.title': provider.title || '',
-      'formData.date': (provider.updatedAt || '').slice(0, 10),
       'formData.contact': provider.contact || '',
       'formData.note': provider.note || '',
       'formData.statusText': provider.statusText || '可显示资料',
     });
-  },
-
-  showDatePicker() {
-    const today = new Date().toISOString().slice(0, 10);
-    this.setData({ 'formData.date': today });
-    wx.showToast({ title: '已填入今日维护日期', icon: 'none' });
   },
 
   onInputChange(e) {
@@ -147,10 +138,10 @@ Page({
     }
     this.setData({ isDirty: false });
     wx.showToast({ title: '供应商资料已保存', icon: 'success' });
-    setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
+    setTimeout(() => navigateBackOrTab('/pages/providers/index'), 300);
   },
 
   onBack() {
-    navigateBackOrTab('/pages/my/index');
+    navigateBackOrTab('/pages/providers/index');
   }
 });

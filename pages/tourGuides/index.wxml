@@ -3,6 +3,7 @@
 <view class="tourGuides-container">
   <page-state
     state="{{pageState}}"
+    loading-text="正在加载团主资料"
     error-text="{{stateText}}"
     empty-text="{{stateText}}"
     bind:retry="loadTourGuides"

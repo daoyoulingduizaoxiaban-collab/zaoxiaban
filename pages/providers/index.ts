@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { AUTH_ROLES, canUseProviderPortal, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { canUseProviderPortal, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateByUrl } from '~/utils/navigation';
 
@@ -9,7 +9,6 @@ Page({
     providersList: [],
     disabledReason: '',
     canCreateProvider: false,
-    canEditOwnProvider: false,
     providerActionIcon: 'add',
     providerActionLabel: '新增供应商',
   },
@@ -26,7 +25,6 @@ Page({
         providersList: [],
         disabledReason: '当前账号没有供应商资料管理权限。',
         canCreateProvider: false,
-        canEditOwnProvider: false,
         providerActionIcon: 'add',
         providerActionLabel: '新增供应商',
       });
@@ -36,7 +34,6 @@ Page({
     const res = await DirectoryRepository.listProviders();
     const providers = res.success ? res.data : [];
     const canCreateProvider = isOwnerOrAdmin(profile);
-    const canEditOwnProvider = profile && hasRole(profile, AUTH_ROLES.PROVIDER);
     this.setData({
       providersList: providers.map(provider => ({
         ...provider,
@@ -47,7 +44,6 @@ Page({
       })),
       disabledReason: res.success ? '' : (res.error || '当前账号没有供应商资料管理权限。'),
       canCreateProvider,
-      canEditOwnProvider,
       providerActionIcon: canCreateProvider ? 'add' : 'edit',
       providerActionLabel: canCreateProvider ? '新增供应商' : '编辑供应商资料',
     });
@@ -137,11 +133,6 @@ Page({
   async onShow() {
     await AuthService.refreshSession();
     await this.loadProviders();
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setData({
-        value: 'providers'
-      });
-    }
   },
 
   onGoToEdit(e) {

@@ -26,7 +26,6 @@ Page({
     submitText: '保存团主',
     formData: {
       title: '',
-      date: '',
       city: '',
       phone: '',
       statusText: '团主'
@@ -36,7 +35,6 @@ Page({
   getEmptyFormData() {
     return {
       title: '',
-      date: '',
       city: '',
       phone: '',
       statusText: '团主'
@@ -110,17 +108,10 @@ Page({
     this.setData({
       pageErrorText: '',
       'formData.title': user.name || user.displayName || '',
-      'formData.date': (user.updatedAt || '').slice(0, 10),
       'formData.city': user.city || '',
       'formData.phone': user.phone || '',
       'formData.statusText': user.displayRole || user.roleLabel || user.role || '团主',
     });
-  },
-
-  showDatePicker() {
-    const today = new Date().toISOString().slice(0, 10);
-    this.setData({ 'formData.date': today });
-    wx.showToast({ title: '已填入今日维护日期', icon: 'none' });
   },
 
   onInputChange(e) {
