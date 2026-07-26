@@ -35,6 +35,11 @@ Page({
     // 统一三态：loading / ready / error / empty
     pageState: 'loading',
     stateText: '',
+    // 拒绝/停用二次确认弹窗
+    reviewDialogVisible: false,
+    reviewDialogTitle: '',
+    reviewReason: '',
+    pendingReview: null,
   },
 
   async onLoad() {
@@ -124,19 +129,24 @@ Page({
     });
   },
 
-  onExpiresAtInput(e) {
+  onExpiresAtChange(e) {
     const { id } = e.currentTarget.dataset;
     if (!id) return;
     this.setData({ [`roleExpiresAtById.${id}`]: e.detail.value || '' });
   },
 
-  async reviewUser(e) {
+  onExpiresAtClear(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id) return;
+    this.setData({ [`roleExpiresAtById.${id}`]: '' });
+  },
+
+  // 提交审核结果（通过直接调用；拒绝/停用经二次确认后调用）
+  async submitReview({ id, status, remark }) {
     if (!this.data.canReview || !isOwnerOrAdmin(AuthService.getCurrentProfile())) {
       wx.showToast({ title: '当前账号没有用户审核权限', icon: 'none' });
-      return;
+      return false;
     }
-    const { id, status } = e.currentTarget.dataset;
-    if (!id || !status) return;
     const roles = normalizeSelectedRoles(this.data.selectedRolesById[id] || [], AUTH_ROLES.CUSTOMER);
     const res = await DirectoryRepository.reviewUser({
       id,
@@ -144,13 +154,56 @@ Page({
       role: roles[0],
       roles,
       roleExpiresAt: this.data.roleExpiresAtById[id] || '',
-      reviewRemark: status === REVIEW_STATUS.APPROVED ? '审核通过' : '审核未通过',
+      reviewRemark: remark,
     });
     if (!res.success) {
       wx.showToast({ title: res.error || '审核操作失败', icon: 'none' });
-      return;
+      return false;
     }
     wx.showToast({ title: '审核已更新', icon: 'success' });
     this.refresh();
+    return true;
+  },
+
+  // 通过：无需原因，直接执行
+  approveUser(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id) return;
+    this.submitReview({ id, status: REVIEW_STATUS.APPROVED, remark: '审核通过' });
+  },
+
+  // 拒绝/停用：打开二次确认 + 必填原因弹窗
+  openReviewDialog(e) {
+    const { id, status } = e.currentTarget.dataset;
+    if (!id || !status) return;
+    const title = status === REVIEW_STATUS.REJECTED ? '拒绝该用户申请' : '停用该用户';
+    this.setData({
+      reviewDialogVisible: true,
+      reviewDialogTitle: title,
+      reviewReason: '',
+      pendingReview: { id, status },
+    });
+  },
+
+  onReasonInput(e) {
+    this.setData({ reviewReason: e.detail.value || '' });
+  },
+
+  closeReviewDialog() {
+    this.setData({ reviewDialogVisible: false, pendingReview: null, reviewReason: '' });
+  },
+
+  stopPropagation() {},
+
+  async confirmReview() {
+    const pending = this.data.pendingReview;
+    if (!pending) return;
+    const reason = String(this.data.reviewReason || '').trim();
+    if (!reason) {
+      wx.showToast({ title: '请填写原因后再提交', icon: 'none' });
+      return;
+    }
+    const ok = await this.submitReview({ id: pending.id, status: pending.status, remark: reason });
+    if (ok) this.closeReviewDialog();
   },
 });

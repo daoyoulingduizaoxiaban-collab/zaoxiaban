@@ -43,8 +43,6 @@ Page({
     pageState: 'loading',
     stateText: '',
     emptyCta: '',
-    detailVisible: false,
-    selectedMessage: null,
   },
 
   onLoad() {
@@ -115,18 +113,10 @@ Page({
   openOrder(e) {
     const { id, orderId } = e.currentTarget.dataset;
     if (id) this.markRead({ currentTarget: { dataset: { id } } });
-    const selectedMessage = this.data.messages.find(item => item.id === id) || null;
-    this.setData({ detailVisible: Boolean(selectedMessage), selectedMessage });
     if (orderId) {
       navigateByUrl(`/pages/customerOrders/index?orderId=${encodeURIComponent(String(orderId))}&fromMessage=1`, {
         fail: () => wx.showToast({ title: '打开订单详情失败', icon: 'none' }),
       });
     }
   },
-
-  closeMessageDetail() {
-    this.setData({ detailVisible: false, selectedMessage: null });
-  },
-
-  stopMessageDetailTap() {},
 });

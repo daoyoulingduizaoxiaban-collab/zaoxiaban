@@ -24,12 +24,3 @@
     </t-cell-group>
   </page-state>
 </view>
-
-<view wx:if="{{detailVisible}}" class="message-detail-mask" catchtap="closeMessageDetail">
-  <view class="message-detail-panel" catchtap="stopMessageDetailTap">
-    <view class="message-detail-title">{{selectedMessage.title}}</view>
-    <view class="message-detail-desc">{{selectedMessage.desc}}</view>
-    <view class="message-detail-state">提醒已标记为已读，即将打开对应订单。</view>
-    <button class="message-detail-close" bindtap="closeMessageDetail">知道了</button>
-  </view>
-</view>

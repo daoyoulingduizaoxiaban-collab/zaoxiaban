@@ -28,20 +28,50 @@
         </view>
         <view class="expiry-row">
           <view class="section-label">使用期限</view>
-          <input
-            class="expiry-input"
-            value="{{roleExpiresAtById[item.id || item._id]}}"
-            data-id="{{item.id || item._id}}"
-            placeholder="YYYY-MM-DD，留空表示不设期限"
-            bindinput="onExpiresAtInput"
-          />
+          <view class="expiry-control">
+            <picker
+              mode="date"
+              class="expiry-picker"
+              value="{{roleExpiresAtById[item.id || item._id]}}"
+              data-id="{{item.id || item._id}}"
+              bindchange="onExpiresAtChange"
+            >
+              <view class="expiry-value {{roleExpiresAtById[item.id || item._id] ? '' : 'expiry-value--placeholder'}}">
+                {{roleExpiresAtById[item.id || item._id] || '点击选择到期日（留空表示不设期限）'}}
+              </view>
+            </picker>
+            <view
+              wx:if="{{roleExpiresAtById[item.id || item._id]}}"
+              class="expiry-clear"
+              data-id="{{item.id || item._id}}"
+              bindtap="onExpiresAtClear"
+            >清除</view>
+          </view>
         </view>
         <view class="action-row">
-          <t-button theme="primary" size="small" data-id="{{item.id || item._id}}" data-status="approved" bindtap="reviewUser">通过</t-button>
-          <t-button theme="danger" variant="outline" size="small" data-id="{{item.id || item._id}}" data-status="rejected" bindtap="reviewUser">拒绝</t-button>
-          <t-button theme="default" variant="outline" size="small" data-id="{{item.id || item._id}}" data-status="disabled" bindtap="reviewUser">停用</t-button>
+          <t-button theme="primary" size="small" data-id="{{item.id || item._id}}" bindtap="approveUser">通过</t-button>
+          <t-button theme="danger" variant="outline" size="small" data-id="{{item.id || item._id}}" data-status="rejected" bindtap="openReviewDialog">拒绝</t-button>
+          <t-button theme="default" variant="outline" size="small" data-id="{{item.id || item._id}}" data-status="disabled" bindtap="openReviewDialog">停用</t-button>
         </view>
       </view>
     </t-cell-group>
   </page-state>
+</view>
+
+<view wx:if="{{reviewDialogVisible}}" class="review-dialog-mask" catchtap="closeReviewDialog">
+  <view class="review-dialog" catchtap="stopPropagation">
+    <view class="review-dialog-title">{{reviewDialogTitle}}</view>
+    <view class="review-dialog-tip">此操作需填写原因，提交后将记录并通知处理结果。</view>
+    <textarea
+      class="review-dialog-input"
+      value="{{reviewReason}}"
+      placeholder="请填写原因（必填）"
+      maxlength="200"
+      bindinput="onReasonInput"
+    />
+    <view class="review-dialog-actions">
+      <t-button theme="default" variant="outline" size="small" bindtap="closeReviewDialog">取消</t-button>
+      <t-button theme="danger" size="small" bindtap="confirmReview">确认提交</t-button>
+    </view>
+  </view>
 </view>
