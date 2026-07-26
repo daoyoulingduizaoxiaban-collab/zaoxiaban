@@ -7,6 +7,17 @@
     </t-dropdown-menu>
   </view>
 
+  <view class="date-bar">
+    <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+      <view class="date-pick">{{startDate || '开始日期'}}</view>
+    </picker>
+    <text class="date-sep">至</text>
+    <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+      <view class="date-pick">{{endDate || '结束日期'}}</view>
+    </picker>
+    <view wx:if="{{startDate || endDate}}" class="date-clear" bindtap="onClearDate">清除</view>
+  </view>
+
   <page-state
     state="{{pageState}}"
     loading-text="正在读取操作记录"
@@ -24,6 +35,10 @@
         <view class="log-card__summary">{{item.summary}}</view>
         <view class="log-card__meta">{{item.actorName}}｜{{item.actorRole}}｜{{item.result}}</view>
       </view>
+    </view>
+
+    <view wx:if="{{hasMore}}" class="load-more">
+      <button size="mini" loading="{{loadingMore}}" bindtap="onLoadMore">加载更多</button>
     </view>
   </page-state>
 </view>

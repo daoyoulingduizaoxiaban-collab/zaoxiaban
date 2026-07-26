@@ -6,6 +6,22 @@ import { CustomerOrderRepository } from './customerOrderRepository';
 
 const sameId = (a, b) => String(a) === String(b);
 
+// 时间筛选（C-LOG）：日期选择器传 'YYYY-MM-DD'，起始取当日 00:00、结束取当日 23:59。
+const parseDayStart = (value) => {
+  if (!value) return 0;
+  const t = new Date(`${value}T00:00:00`).getTime();
+  return Number.isNaN(t) ? 0 : t;
+};
+const parseDayEnd = (value) => {
+  if (!value) return 0;
+  const t = new Date(`${value}T23:59:59`).getTime();
+  return Number.isNaN(t) ? 0 : t;
+};
+const toTime = (value) => {
+  const t = new Date(value).getTime();
+  return Number.isNaN(t) ? NaN : t;
+};
+
 const maskOpenId = openId => {
   const text = String(openId || '');
   if (text.length <= 8) return text ? '已验证账号' : '';
@@ -34,7 +50,7 @@ const buildLog = (profile, patch) => ({
 });
 
 export const OperationLogRepository = {
-  async listVisible({ type = 'all' } = {}) {
+  async listVisible({ type = 'all', startDate = '', endDate = '', page = 1, pageSize = 20 } = {}) {
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.OPERATION_LOGS)) {
       return { success: false, error: '当前账号不能查看操作记录' };
@@ -92,11 +108,40 @@ export const OperationLogRepository = {
       }));
     });
 
-    const filtered = type && type !== 'all' ? logs.filter(item => item.type === type) : logs;
+    let filtered = type && type !== 'all' ? logs.filter(item => item.type === type) : logs;
+
+    // 时间筛选：起/止任一存在即生效；无法解析时间的记录在筛选下排除。
+    const startTime = parseDayStart(startDate);
+    const endTime = parseDayEnd(endDate);
+    if (startTime || endTime) {
+      filtered = filtered.filter((item) => {
+        const t = toTime(item.occurredAt);
+        if (Number.isNaN(t)) return false;
+        if (startTime && t < startTime) return false;
+        if (endTime && t > endTime) return false;
+        return true;
+      });
+    }
+
+    const sorted = filtered.sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || '')));
+
+    // 分页：按 occurredAt 倒序后切片，meta 带 total / hasMore 供页面「加载更多」。
+    const total = sorted.length;
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeSize = Math.max(1, Number(pageSize) || 20);
+    const startIdx = (safePage - 1) * safeSize;
+    const pageData = sorted.slice(startIdx, startIdx + safeSize);
+
     return {
       success: true,
-      data: filtered.sort((a, b) => String(b.occurredAt || '').localeCompare(String(a.occurredAt || ''))),
-      meta: { source: 'business-record-readback' },
+      data: pageData,
+      meta: {
+        source: 'business-record-readback',
+        total,
+        page: safePage,
+        pageSize: safeSize,
+        hasMore: startIdx + safeSize < total,
+      },
     };
   },
 };
