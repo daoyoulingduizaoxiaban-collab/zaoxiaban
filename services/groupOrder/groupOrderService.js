@@ -1,5 +1,7 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
+import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
+import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
 import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { filterFormalProducts } from '~/utils/productContent';
@@ -57,6 +59,37 @@ export const GroupOrderService = {
     return {
       ...result,
       data: result.data.map(normalizeGroupOrder),
+    };
+  },
+
+  // 团单列表带聚合（A-1）：为每个可见团单 join 客户订单，算 人数/已收/应收。
+  // 客户订单按当前角色 listVisible 收敛（管理者=全团口径；客户仅自己那单，故页面对客户不显金额）。
+  // 聚合口径与 customerOrderService.getGroupOrderDetail 保持一致（应收=非取消合计；已收=已确认 confirmedAmount）。
+  async listVisibleWithStats(filters = {}) {
+    const result = await this.listVisible(filters);
+    if (!result.success) return result;
+    const orderRes = await CustomerOrderRepository.listVisible();
+    const orders = orderRes.success ? (orderRes.data || []) : [];
+    const statsByGroup = new Map();
+    orders.forEach((order) => {
+      const key = String(order.groupOrderId);
+      const stat = statsByGroup.get(key) || { totalReceivable: 0, totalReceived: 0, totalCustomers: 0 };
+      stat.totalCustomers += 1;
+      if (Number(order.status) !== MemberOrderStatus.CANCELLED) {
+        stat.totalReceivable += normalizeNumber(order.totalPrice);
+      }
+      if (Number(order.status) === MemberOrderStatus.CONFIRMED) {
+        stat.totalReceived += normalizeNumber(order.confirmedAmount || order.totalPrice);
+      }
+      statsByGroup.set(key, stat);
+    });
+    return {
+      ...result,
+      data: result.data.map((groupOrder) => {
+        const stat = statsByGroup.get(String(groupOrder.id))
+          || { totalReceivable: 0, totalReceived: 0, totalCustomers: 0 };
+        return { ...groupOrder, ...stat };
+      }),
     };
   },
 
