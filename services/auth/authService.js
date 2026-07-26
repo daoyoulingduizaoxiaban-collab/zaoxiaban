@@ -128,7 +128,7 @@ const buildPreviewProfile = (profile, previewRole) => {
       realRoleLabel: profile.roleLabel,
     };
   }
-  if ([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED].includes(role)) {
+  if (role === REVIEW_STATUS.DISABLED) {
     return {
       ...profile,
       role: AUTH_ROLES.CUSTOMER,
@@ -300,12 +300,15 @@ export const AuthService = {
     if (!this.canUseRolePreview(profile)) {
       return { success: false, error: '当前账号不能使用角色预览' };
     }
+    // A8 可预览身份：visitor / disabled / customer / guide / admin / owner
+    // （pending_review、rejected、provider 已随模型简化移除，不再作为预览身份）。
     const allowed = [
       'visitor',
-      REVIEW_STATUS.PENDING,
-      REVIEW_STATUS.REJECTED,
       REVIEW_STATUS.DISABLED,
-      ...Object.values(AUTH_ROLES),
+      AUTH_ROLES.OWNER,
+      AUTH_ROLES.ADMIN,
+      AUTH_ROLES.GUIDE,
+      AUTH_ROLES.CUSTOMER,
     ];
     if (!allowed.includes(role)) return { success: false, error: '未知预览身份' };
     safeSetStorage(AUTH_ROLE_PREVIEW_KEY, role);
