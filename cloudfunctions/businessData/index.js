@@ -1118,6 +1118,9 @@ const userActions = {
   },
 };
 
+// D-6 供应商停用/软删除两档模型：status（active/disabled，可回切）+ deletedAt（软删，getAllActive 已滤）。
+const normalizeProviderStatus = status => (status === 'disabled' ? 'disabled' : 'active');
+
 const normalizeProviderPayload = (payload, existing = {}) => ({
   ...existing,
   id: payload.id || existing.id || existing._id || '',
@@ -1125,6 +1128,7 @@ const normalizeProviderPayload = (payload, existing = {}) => ({
   contact: trimText(payload.contact || existing.contact),
   statusText: trimText(payload.statusText || existing.statusText || '可显示资料'),
   note: trimText(payload.note || existing.note),
+  status: normalizeProviderStatus(payload.status || existing.status),
   updatedAt: nowIso(),
   createdAt: existing.createdAt || payload.createdAt || nowIso(),
   deletedAt: existing.deletedAt || '',
@@ -1186,6 +1190,51 @@ const providerActions = {
       });
     }
     return success(created);
+  },
+
+  // D-6：停用/启用（可回切）。停用后该供应商商品不进新团单选品，历史订单不受影响。
+  async setStatus({ id, status }, profile) {
+    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    const target = await getById('providers', id);
+    if (!target) return failure('未找到供应商资料');
+    if (!isOwnerOrAdmin(profile) && !sameProviderId(target, profile.providerId || profile.id)) {
+      return failure('当前账号没有供应商资料维护权限');
+    }
+    if (target.deletedAt) return failure('供应商已删除，无法变更状态');
+    const nextStatus = normalizeProviderStatus(status);
+    await getCollection('providers').doc(String(target._id || target.id)).update({
+      data: { status: nextStatus, updatedAt: nowIso() },
+    });
+    return success(toId({ ...target, status: nextStatus }));
+  },
+
+  // D-6：软删除（保留快照供历史订单追溯，仅移出列表与选品）。
+  async remove({ id }, profile) {
+    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    const target = await getById('providers', id);
+    if (!target) return failure('未找到供应商资料');
+    if (!isOwnerOrAdmin(profile) && !sameProviderId(target, profile.providerId || profile.id)) {
+      return failure('当前账号没有供应商资料维护权限');
+    }
+    if (target.deletedAt) return success(target);
+    const deletedAt = nowIso();
+    await getCollection('providers').doc(String(target._id || target.id)).update({
+      data: { deletedAt, updatedAt: deletedAt },
+    });
+    return success(toId({ ...target, deletedAt }));
+  },
+
+  // D-6 内部用：跨服务（productService.listSelectable）判定供应商有效性，返回 id → 是否有效。
+  // 只暴露 id/有效性，不含敏感资料，故仅要求登录审核通过、不限角色（选品者未必是供应商角色）。
+  async statusMap(payload, profile) {
+    assertApprovedProfile(profile);
+    const result = await getCollection('providers').limit(100).get();
+    const map = {};
+    (result.data || []).forEach((raw) => {
+      const provider = toId(raw);
+      map[String(provider.id)] = !provider.deletedAt && provider.status !== 'disabled';
+    });
+    return success(map);
   },
 };
 
