@@ -5,7 +5,7 @@ import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 const buildCustomerEntryPath = (id, shareToken = '') => {
@@ -477,7 +477,7 @@ Page({
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE)) return false;
     if (isOwnerOrAdmin(profile)) return true;
-    if (!profile || profile.role !== 'guide' || !groupOrder) return false;
+    if (!profile || !hasRole(profile, 'guide') || !groupOrder) return false;
 
     const sameId = (a, b) => String(a) === String(b);
     const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
