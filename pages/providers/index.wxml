@@ -4,9 +4,9 @@
   <view wx:if="{{disabledReason}}" class="mode-tip">{{disabledReason}}</view>
   <t-cell-group theme="card">
     <block wx:for="{{ providersList }}" wx:key="id">
-      <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.contactText }}｜{{ item.noteText }}" hover arrow
-        bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-        <t-icon slot="left-icon" name="shop" size="48rpx" color="#0052d9" />
+      <t-cell title="{{ item.title }}" note="{{ item.stateLabel }}" description="{{ item.contactText }}｜{{ item.noteText }}" hover arrow
+        bind:tap="goToDetail" data-id="{{ item.id }}" t-class-note="{{ item.isDisabled ? 'provider-disabled' : '' }}">
+        <t-icon slot="left-icon" name="shop" size="48rpx" color="{{ item.isDisabled ? '#c0c4cc' : '#0052d9' }}" />
       </t-cell>
     </block>
   </t-cell-group>

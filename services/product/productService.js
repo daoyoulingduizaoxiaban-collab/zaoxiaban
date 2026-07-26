@@ -1,5 +1,6 @@
 import { ProductStatus } from '~/enum/ProductStatus';
 import { ProductRepository } from '~/repositories/productRepository';
+import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
@@ -58,13 +59,22 @@ export const ProductService = {
   },
 
   // 选品取数（团单 add / product-picker 专用）：仅返回「上架」商品（C4：下架不得进入新团单）。
-  // 「供应商停用不得选用」待 D-6 供应商软删除模型落地后在此叠加过滤（当前无供应商停用状态）。
+  // D-6：叠加「供应商有效」过滤——供应商已停用/软删除的商品不得进入新团单；
+  // 无 providerId（团主自建）的商品不受此限。历史订单已落库，不受影响。
   async listSelectable(filters = {}) {
     const result = await this.listVisible(filters);
     if (!result.success) return result;
+    const published = (result.data || []).filter(product => Number(product.status) === ProductStatus.PUBLISHED);
+    const statusRes = await DirectoryRepository.getProviderStatusMap();
+    const providerActiveMap = statusRes.success ? (statusRes.data || {}) : {};
     return {
       ...result,
-      data: (result.data || []).filter(product => Number(product.status) === ProductStatus.PUBLISHED),
+      data: published.filter((product) => {
+        const providerId = product.providerId ? String(product.providerId) : '';
+        if (!providerId) return true;
+        // 状态图查不到该供应商时保守放行（避免误伤既有商品）；仅在明确停用/软删时过滤。
+        return providerActiveMap[providerId] !== false;
+      }),
     };
   },
 

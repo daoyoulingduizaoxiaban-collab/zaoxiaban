@@ -90,6 +90,11 @@ const normalizeUser = user => ({
   updatedAt: user.updatedAt || '',
 });
 
+// D-6 供应商停用/软删除两档模型：
+//   status：'active' 可选用 ／ 'disabled' 停用（可恢复，新团单不可选，历史订单不受影响）
+//   deletedAt：非空＝软删除（彻底移出列表，仍保留快照供历史订单追溯）
+const PROVIDER_STATUS = { ACTIVE: 'active', DISABLED: 'disabled' };
+
 const normalizeProvider = provider => ({
   ...provider,
   id: provider.id || provider._id || `P${Date.now()}`,
@@ -97,8 +102,17 @@ const normalizeProvider = provider => ({
   contact: provider.contact || '',
   statusText: provider.statusText || '可显示资料',
   note: provider.note || '',
+  status: provider.status === PROVIDER_STATUS.DISABLED ? PROVIDER_STATUS.DISABLED : PROVIDER_STATUS.ACTIVE,
+  deletedAt: provider.deletedAt || '',
   updatedAt: provider.updatedAt || '',
 });
+
+// 供应商是否「有效」＝未停用且未软删除（选品/新团单可选用的判定）
+const isProviderActive = provider => Boolean(
+  provider && provider.status !== PROVIDER_STATUS.DISABLED && !provider.deletedAt
+);
+
+const isProviderDeleted = provider => Boolean(provider && provider.deletedAt);
 
 const canEditUser = (target, profile) => Boolean(
   profile && target && (
@@ -319,7 +333,8 @@ export const DirectoryRepository = {
     if (cloudRes) return cloudRes;
     const localProviders = getLocalProviders();
     if (!localProviders) return unavailableError();
-    const providers = localProviders.map(normalizeProvider);
+    // D-6：软删除的供应商始终不进列表；停用的仍返回（带 status，供管理端恢复/标识）。
+    const providers = localProviders.map(normalizeProvider).filter(provider => !isProviderDeleted(provider));
     return {
       success: true,
       data: isOwnerOrAdmin(profile)
@@ -327,6 +342,20 @@ export const DirectoryRepository = {
         : providers.filter(provider => sameId(provider.id, profile.providerId || profile.id)),
       meta: { saveMode: 'local-directory-repository' },
     };
+  },
+
+  // D-6 内部用：跨服务（productService.listSelectable）判定供应商有效性，返回 id → 是否有效。
+  // 只暴露 id/有效性，不含联系人等敏感资料，故不做可见范围收敛。
+  async getProviderStatusMap() {
+    const cloudRes = await callCloud('providers', 'statusMap', {});
+    if (cloudRes) return cloudRes;
+    const localProviders = getLocalProviders();
+    if (!localProviders) return unavailableError();
+    const map = {};
+    localProviders.map(normalizeProvider).forEach((provider) => {
+      map[String(provider.id)] = isProviderActive(provider);
+    });
+    return { success: true, data: map, meta: { saveMode: 'local-directory-repository' } };
   },
 
   async getProviderById(id) {
@@ -369,6 +398,47 @@ export const DirectoryRepository = {
       ? providers.map(item => (sameId(item.id, next.id) ? next : item))
       : [...providers, next];
     saveLocalProviders(nextProviders);
+    return { success: true, data: next, meta: { saveMode: 'local-directory-repository' } };
+  },
+
+  // D-6：停用/启用（可回切）。停用后该供应商的商品不再进新团单选品，历史订单不受影响。
+  async setProviderStatus(payload = {}) {
+    const profile = AuthService.getCurrentProfile();
+    if (!canUseProviderPortal(profile)) return { success: false, error: '当前账号没有供应商资料维护权限' };
+    const nextStatus = payload.status === PROVIDER_STATUS.DISABLED ? PROVIDER_STATUS.DISABLED : PROVIDER_STATUS.ACTIVE;
+    const cloudRes = await callCloud('providers', 'setStatus', { id: payload.id, status: nextStatus });
+    if (cloudRes) return cloudRes;
+    const localProviders = getLocalProviders();
+    if (!localProviders) return unavailableError();
+    const providers = localProviders.map(normalizeProvider);
+    const target = providers.find(item => sameId(item.id, payload.id));
+    if (!target) return { success: false, error: '未找到供应商资料' };
+    if (!isOwnerOrAdmin(profile) && !sameId(target.id, profile.providerId || profile.id)) {
+      return { success: false, error: '当前账号没有供应商资料维护权限' };
+    }
+    if (isProviderDeleted(target)) return { success: false, error: '供应商已删除，无法变更状态' };
+    const next = normalizeProvider({ ...target, status: nextStatus, updatedAt: nowIso() });
+    saveLocalProviders(providers.map(item => (sameId(item.id, next.id) ? next : item)));
+    return { success: true, data: next, meta: { saveMode: 'local-directory-repository' } };
+  },
+
+  // D-6：软删除（保留快照供历史订单追溯，仅移出列表与选品）。
+  async removeProvider(payload = {}) {
+    const profile = AuthService.getCurrentProfile();
+    if (!canUseProviderPortal(profile)) return { success: false, error: '当前账号没有供应商资料维护权限' };
+    const cloudRes = await callCloud('providers', 'remove', { id: payload.id });
+    if (cloudRes) return cloudRes;
+    const localProviders = getLocalProviders();
+    if (!localProviders) return unavailableError();
+    const providers = localProviders.map(normalizeProvider);
+    const target = providers.find(item => sameId(item.id, payload.id));
+    if (!target) return { success: false, error: '未找到供应商资料' };
+    if (!isOwnerOrAdmin(profile) && !sameId(target.id, profile.providerId || profile.id)) {
+      return { success: false, error: '当前账号没有供应商资料维护权限' };
+    }
+    if (isProviderDeleted(target)) return { success: true, data: target, meta: { saveMode: 'local-directory-repository' } };
+    const next = normalizeProvider({ ...target, deletedAt: nowIso(), updatedAt: nowIso() });
+    saveLocalProviders(providers.map(item => (sameId(item.id, next.id) ? next : item)));
     return { success: true, data: next, meta: { saveMode: 'local-directory-repository' } };
   },
 };
