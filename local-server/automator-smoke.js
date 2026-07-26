@@ -31,7 +31,6 @@ const PAGES = [
   '/pages/customerOrders/index',
   '/pages/productManagement/index',
   '/pages/my/index',
-  '/pages/home/index',
   '/pages/search/index',
 ];
 

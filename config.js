@@ -56,7 +56,6 @@ export default {
 
 // config/menu.js
 export const BOTTOM_BAR_LIST = [
-  // { icon: 'home', value: 'home', label: '首頁', path: '/pages/home/index' },
   {
     icon: 'bulletpoint',
     value: 'groupOrder',

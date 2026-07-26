@@ -39,32 +39,8 @@ Page({
     canShowRolePreviewNotice: false,
     realRoleText: '',
     previewRoleText: '',
-    gridList: [
-      {
-        name: '工作台',
-        icon: 'app',
-        type: 'home',
-        url: '/pages/home/index',
-      },
-      {
-        name: '团单',
-        icon: 'root-list',
-        type: 'all',
-        url: '/pages/groupOrder/index',
-      },
-      {
-        name: '客户订单',
-        icon: 'search',
-        type: 'progress',
-        url: '/pages/customerOrders/index',
-      },
-      {
-        name: '商品库',
-        icon: 'upload',
-        type: 'published',
-        url: '/pages/productManagement/index',
-      },
-    ],
+    // 九宫格不再重复底部 NAV 的团单/客户订单/商品库/工作台入口（A12/B5）；实际项由 buildGridList 按角色生成。
+    gridList: [],
 
     settingList: [],
   },
@@ -134,35 +110,8 @@ Page({
   buildGridList(profile) {
     if (!AuthService.canUseBusiness(profile)) return [];
 
+    // 我的页九宫格只放非 NAV 主流程的辅助入口（消息/搜索/数据中心）；团单/客户订单/商品库/工作台/开团不在此重复（A12/B5）。
     const list = [
-      {
-        name: '工作台',
-        icon: 'app',
-        type: 'home',
-        url: '/pages/home/index',
-        feature: FEATURE_KEYS.HOME,
-      },
-      {
-        name: '团单',
-        icon: 'root-list',
-        type: 'all',
-        url: '/pages/groupOrder/index',
-        feature: FEATURE_KEYS.GROUP_ORDERS,
-      },
-      {
-        name: '客户订单',
-        icon: 'search',
-        type: 'progress',
-        url: '/pages/customerOrders/index',
-        feature: FEATURE_KEYS.CUSTOMER_ORDERS,
-      },
-      {
-        name: '商品库',
-        icon: 'upload',
-        type: 'published',
-        url: '/pages/productManagement/index',
-        feature: FEATURE_KEYS.PRODUCTS,
-      },
       {
         name: '消息',
         icon: 'chat',
@@ -189,15 +138,6 @@ Page({
         icon: 'data-display',
         type: 'dataCenter',
         url: '/pages/dataCenter/index',
-      });
-    }
-
-    if (canUseFeature(profile, FEATURE_KEYS.RELEASE)) {
-      filteredList.push({
-        name: '开团',
-        icon: 'add',
-        type: 'release',
-        url: '/pages/release/index',
       });
     }
 
@@ -245,12 +185,7 @@ Page({
     }
 
     if (profile && hasRole(profile, AUTH_ROLES.CUSTOMER)) {
-      list.push({
-        name: '客户资料',
-        icon: 'user',
-        type: 'customerProfile',
-        url: '/pages/customer/edit/index',
-      });
+      // 客户资料并入「账号资料」(info-edit) 唯一自我编辑入口；此处不再单列（归并决策）。
       list.push({
         name: '申请团主',
         icon: 'usergroup',

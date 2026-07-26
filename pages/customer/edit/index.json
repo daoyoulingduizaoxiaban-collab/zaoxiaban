@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "sub-nav": "/components/sub-nav/index",
-    "t-button": "tdesign-miniprogram/button/button",
-    "t-cell-group": "tdesign-miniprogram/cell-group/cell-group",
-    "t-empty": "/components/t-empty/index",
-    "t-input": "tdesign-miniprogram/input/input"
-  }
-}
