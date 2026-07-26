@@ -157,6 +157,12 @@ Page({
       return;
     }
 
+    const items = this.buildSelectedItems();
+    if (!items.length) {
+      wx.showToast({ title: '请至少选择一件商品', icon: 'none' });
+      return;
+    }
+
     const payload = {
       groupOrderId: this.data.groupOrderId,
       shareToken: this.data.shareToken,
@@ -166,7 +172,7 @@ Page({
       paymentMethod: this.data.formData.paymentMethod,
       paymentRemark: this.data.formData.paymentRemark,
       paymentProofUrls: this.data.formData.paymentProofUrls,
-      items: this.buildSelectedItems(),
+      items,
       totalPrice: this.data.totalPrice,
     };
 

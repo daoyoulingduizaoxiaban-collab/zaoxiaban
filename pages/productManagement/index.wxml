@@ -6,7 +6,7 @@
     <t-dropdown-menu wx:if="{{canUseBusiness}}" t-class="dropdown-custom">
       <t-dropdown-item options="{{statusOptions}}" value="{{currentStatus}}" bind:change="onStatusChange" />
     </t-dropdown-menu>
-    <button class="list-entry" bindtap="onOpenProductList">列表</button>
+    <button class="list-entry" bindtap="onOpenProductList">浏览</button>
     <button class="list-entry" wx:if="{{canManageProviders}}" bindtap="onOpenProviders">供应商</button>
   </view>
 

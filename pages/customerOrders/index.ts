@@ -13,7 +13,6 @@ const ROLE_TEXT = {
   guide: '团主',
   owner: '产品拥有者',
   admin: '运营管理员',
-  provider: '供应商',
 };
 
 Page({
@@ -87,7 +86,7 @@ Page({
       pendingOrderId: pendingOrderId ? String(pendingOrderId) : '',
       currentStatus: Number.isNaN(currentStatus) ? this.data.currentStatus : currentStatus,
     });
-    await this.loadQaOrders();
+    await this.loadOrders();
   },
 
   consumePendingRouteQuery() {
@@ -104,7 +103,7 @@ Page({
     }
   },
 
-  async loadQaOrders() {
+  async loadOrders() {
     if ((this as any)._loadOrdersInFlight) return (this as any)._loadOrdersInFlight;
     (this as any)._loadOrdersInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
@@ -362,7 +361,7 @@ Page({
       return;
     }
 
-    await this.loadQaOrders();
+    await this.loadOrders();
     this.resetActionState();
     wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
   },
@@ -381,7 +380,7 @@ Page({
       this.getTabBar().refreshTabBar();
     }
     this.consumePendingRouteQuery();
-    await this.loadQaOrders();
+    await this.loadOrders();
   },
 
   onGoToEdit(e) {

@@ -23,7 +23,7 @@
       error-text="{{loadErrorText}}"
       empty-text="{{emptyText}}"
       empty-cta-text="{{emptyCta}}"
-      bind:retry="loadQaOrders"
+      bind:retry="loadOrders"
       bind:emptycta="onLogin"
     >
       <t-cell-group theme="card">

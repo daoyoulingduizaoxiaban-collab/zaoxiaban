@@ -23,9 +23,13 @@
   </view>
 
   <scroll-view scroll-y class="product-list">
-    <view class="empty-tip" wx:if="{{isLoading}}">正在加载商品</view>
-    <view class="empty-tip" wx:elif="{{pageErrorText}}">{{pageErrorText}}</view>
-    <block wx:else>
+    <page-state
+      state="{{pageState}}"
+      loading-text="正在加载商品"
+      error-text="{{loadErrorText}}"
+      empty-text="{{emptyText}}"
+      bind:retry="loadProducts"
+    >
       <block wx:for="{{filteredList}}" wx:key="id">
         <view class="product-card" bindtap="openDetail" data-id="{{item.id}}">
           <view class="cover-image-wrap">
@@ -53,8 +57,7 @@
           </view>
         </view>
       </block>
-    </block>
-    <view class="empty-tip" wx:if="{{!isLoading && !pageErrorText && filteredList.length === 0}}">{{emptyText}}</view>
+    </page-state>
   </scroll-view>
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeDetail">

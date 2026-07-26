@@ -321,6 +321,10 @@ Page({
   },
 
   async onToggleStatus(e: any) {
+    if (!this.canManageProducts()) {
+      wx.showToast({ title: '当前角色不能修改商品状态', icon: 'none' });
+      return;
+    }
     const id = String(e.currentTarget.dataset.id);
     const item = this.data.allProducts.find(product => String(product.id) === id);
     if (!item) {
@@ -342,11 +346,15 @@ Page({
   },
 
   onDelete(e: any) {
+    if (!this.canManageProducts()) {
+      wx.showToast({ title: '当前角色不能删除商品', icon: 'none' });
+      return;
+    }
     const id = String(e.currentTarget.dataset.id);
 
     wx.showModal({
       title: '提示',
-      content: `确定要删除此商品吗？删除后将不再展示给客户。${this.data.saveModeText}`,
+      content: `确定要删除此商品吗？删除后将不再展示给客户，不影响历史团单与订单。${this.data.saveModeText}`,
       success: async (modalRes) => {
         if (modalRes.confirm) {
           const res = await ProductService.softDelete(id);

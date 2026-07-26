@@ -5,7 +5,7 @@ import { normalizeProductImageFields } from '~/utils/productImage';
 
 Page({
   data: {
-    titleText: '商品列表',
+    titleText: '商品浏览',
     allProducts: [],
     filteredList: [],
     searchKeyword: '',
@@ -14,8 +14,8 @@ Page({
     detailVisible: false,
     selectedProduct: null,
     selectedPriceRules: [],
-    isLoading: true,
-    pageErrorText: '',
+    pageState: 'loading',
+    loadErrorText: '',
     emptyText: '当前没有可浏览商品',
     canUseBusiness: false,
     accessStateText: '',
@@ -42,7 +42,7 @@ Page({
     const profile = AuthService.getCurrentProfile();
     const canUseBusiness = AuthService.canUseBusiness(profile);
 
-    this.setData({ isLoading: true, pageErrorText: '' });
+    this.setData({ pageState: 'loading', loadErrorText: '' });
     const res = canUseBusiness
       ? await ProductService.listVisible({ status: ProductStatus.PUBLISHED })
       : await ProductService.listPublic({ status: ProductStatus.PUBLISHED });
@@ -50,8 +50,8 @@ Page({
       const errorText = res.error || '加载商品失败';
       wx.showToast({ title: errorText, icon: 'none' });
       this.resetDetailState({
-        isLoading: false,
-        pageErrorText: errorText,
+        pageState: 'error',
+        loadErrorText: errorText,
         allProducts: [],
         filteredList: [],
         pendingProductId: '',
@@ -62,11 +62,11 @@ Page({
     this.setData({
       allProducts: products,
       filteredList: products,
-      isLoading: false,
-      pageErrorText: '',
+      pageState: products.length ? 'ready' : 'empty',
+      loadErrorText: '',
       accessStateText: AuthService.getAccessStateText(profile),
       canUseBusiness,
-      emptyText: products.length ? '' : '当前没有可浏览商品',
+      emptyText: '当前没有可浏览商品',
     });
     this.openPendingProductDetail();
   },
@@ -113,7 +113,8 @@ Page({
       minPrice: null,
       maxPrice: null,
       filteredList: this.data.allProducts,
-      emptyText: this.data.allProducts.length ? '' : '当前没有可浏览商品',
+      pageState: this.data.allProducts.length ? 'ready' : 'empty',
+      emptyText: '当前没有可浏览商品',
     });
   },
 
@@ -148,6 +149,7 @@ Page({
 
     this.setData({
       filteredList: results,
+      pageState: results.length ? 'ready' : 'empty',
       emptyText: query || min || max ? '找不到符合条件的商品' : '当前没有可浏览商品',
     });
   },
