@@ -22,12 +22,13 @@ const parseDateTime = value => {
   return Number.isNaN(time) ? 0 : time;
 };
 const validateDateWindow = (startAt, endAt) => {
+  // 本系统定位为团主记账+出团基本信息记录，日期不做顺序/过期防呆
+  // （可补记已过去的团单）；仅校验格式，避免存入无法解析的日期。
+  // 客户下单时的「已停止收单」拦截另在下单/取单流程按 endAt 判定。
   const startTime = parseDateTime(startAt);
   const endTime = parseDateTime(endAt);
   if (!startTime) return '出团时间格式不正确';
   if (!endTime) return '收单截止时间格式不正确';
-  if (startTime > endTime) return '收单截止时间不能早于或等于出团时间';
-  if (endTime <= Date.now()) return '当前团单已超过收单截止时间';
   return '';
 };
 

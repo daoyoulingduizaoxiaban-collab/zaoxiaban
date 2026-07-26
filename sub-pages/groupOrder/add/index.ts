@@ -217,15 +217,12 @@ Page({
     );
   },
 
-  // 前端必填/顺序校验：与 GroupOrderService.validate 口径一致（收单截止不早于出团时间）。
+  // 前端必填校验（记账+基本信息定位，日期不做顺序/过期防呆，仅要求已填写）。
   buildFormError() {
     const { formData, selectedGoods } = this.data;
     if (!String(formData.title || '').trim()) return '请输入团单名称';
     if (!String(formData.startAt || '').trim()) return '请选择出团时间';
     if (!String(formData.endAt || '').trim()) return '请选择收单截止时间';
-    const startTime = new Date(String(formData.startAt).replace(' ', 'T')).getTime();
-    const endTime = new Date(String(formData.endAt).replace(' ', 'T')).getTime();
-    if (startTime && endTime && startTime > endTime) return '收单截止时间不能早于出团时间';
     if (!String(formData.pickupNote || '').trim()) return '请输入取货/集合说明';
     if (!String(formData.paymentNote || '').trim()) return '请输入付款方式或备注';
     if (!String(formData.contactName || '').trim()) return '请输入团主联系人';
