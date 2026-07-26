@@ -1150,7 +1150,7 @@ const sameProviderId = (provider, providerId) => Boolean(
 
 const providerActions = {
   async listVisible(payload, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const providers = await getAllActive('providers');
     if (isOwnerOrAdmin(profile)) return success(providers);
     const providerId = profile.providerId || profile.id;
@@ -1158,7 +1158,7 @@ const providerActions = {
   },
 
   async getById({ id }, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const provider = await getById('providers', id);
     if (provider && !isOwnerOrAdmin(profile) && !sameProviderId(provider, profile.providerId || profile.id)) {
       return failure('当前账号没有供应商资料查看权限');
@@ -1167,7 +1167,7 @@ const providerActions = {
   },
 
   async save(payload, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const scopedPayload = isOwnerOrAdmin(profile)
       ? payload
       : { ...payload, id: payload.id || profile.providerId || profile.id };
@@ -1194,7 +1194,7 @@ const providerActions = {
 
   // D-6：停用/启用（可回切）。停用后该供应商商品不进新团单选品，历史订单不受影响。
   async setStatus({ id, status }, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const target = await getById('providers', id);
     if (!target) return failure('未找到供应商资料');
     if (!isOwnerOrAdmin(profile) && !sameProviderId(target, profile.providerId || profile.id)) {
@@ -1210,7 +1210,7 @@ const providerActions = {
 
   // D-6：软删除（保留快照供历史订单追溯，仅移出列表与选品）。
   async remove({ id }, profile) {
-    assertApprovedProfile(profile, ['owner', 'admin', 'provider']);
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin', 'provider']);
     const target = await getById('providers', id);
     if (!target) return failure('未找到供应商资料');
     if (!isOwnerOrAdmin(profile) && !sameProviderId(target, profile.providerId || profile.id)) {
