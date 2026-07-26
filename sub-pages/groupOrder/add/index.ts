@@ -74,8 +74,9 @@ Page({
         endAt: '',
         pickupNote: '',
         paymentNote: '',
-        contactName: '',
-        contactPhone: '',
+        // 联系人/电话默认预填团主自己的资料，可再修改
+        contactName: profile && profile.displayName ? profile.displayName : '',
+        contactPhone: profile && profile.phone ? profile.phone : '',
         customerNotice: '',
         status: GroupOrderStatus.OPEN,
       },
@@ -216,6 +217,23 @@ Page({
     );
   },
 
+  // 前端必填/顺序校验：与 GroupOrderService.validate 口径一致（收单截止不早于出团时间）。
+  buildFormError() {
+    const { formData, selectedGoods } = this.data;
+    if (!String(formData.title || '').trim()) return '请输入团单名称';
+    if (!String(formData.startAt || '').trim()) return '请选择出团时间';
+    if (!String(formData.endAt || '').trim()) return '请选择收单截止时间';
+    const startTime = new Date(String(formData.startAt).replace(' ', 'T')).getTime();
+    const endTime = new Date(String(formData.endAt).replace(' ', 'T')).getTime();
+    if (startTime && endTime && startTime > endTime) return '收单截止时间不能早于出团时间';
+    if (!String(formData.pickupNote || '').trim()) return '请输入取货/集合说明';
+    if (!String(formData.paymentNote || '').trim()) return '请输入付款方式或备注';
+    if (!String(formData.contactName || '').trim()) return '请输入团主联系人';
+    if (!String(formData.contactPhone || '').trim()) return '请输入联系电话';
+    if (!selectedGoods.length) return '请至少添加一件团单商品';
+    return '';
+  },
+
   async onSave() {
     const { formData, selectedGoods, groupOrderId, isEdit } = this.data;
 
@@ -224,6 +242,13 @@ Page({
       wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
       return;
     }
+
+    const formError = this.buildFormError();
+    if (formError) {
+      wx.showToast({ title: formError, icon: 'none' });
+      return;
+    }
+
     this.setData({ isSubmitting: true });
     wx.showLoading({ title: isEdit ? '保存中...' : '团单建立中...' });
 

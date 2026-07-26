@@ -105,7 +105,7 @@
       </view>
     </view>
 
-    <view class="add-goods-btn-wrap">请使用底部按钮添加团单商品</view>
+    <view class="add-goods-btn-wrap" wx:if="{{selectedGoods.length === 0}}">请使用底部按钮添加团单商品</view>
   </view>
 
   <view class="footer">

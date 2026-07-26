@@ -15,10 +15,6 @@
   </t-dropdown-menu>
 </view>
 
-<view class="create-entry" wx:if="{{canCreateGroupOrder}}">
-  <button class="create-entry__button" bindtap="addItinerary">新建团单</button>
-</view>
-
 <view class="role-scope" wx:if="{{authReady}}">{{roleScopeText}}</view>
 
 <view class="itinerary-container">
@@ -49,8 +45,8 @@
           bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
           <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
         </t-cell>
-        <view class="row-actions">
-          <button size="mini" plain bindtap="viewItinerary" data-id="{{item.id}}">查看详情</button>
+        <view class="group-stats" wx:if="{{item.canManage}}">
+          <text class="group-meta">人数 {{item.totalCustomers || 0}}｜已收 ¥{{item.totalReceived || 0}} / 应收 ¥{{item.totalReceivable || 0}}</text>
         </view>
       </block>
     </t-cell-group>

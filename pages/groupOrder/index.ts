@@ -4,7 +4,7 @@ import {
   getGroupOrderStatusTextByValue
 } from '~/enum/GroupOrderStatus'
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { FEATURE_KEYS, canUseFeature, getRoleScopeText, canManageGroupOrder } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 import { useAccessPage } from '~/behaviors/useAccessPage';
 
@@ -57,15 +57,18 @@ Page({
   },
 
   normalizeGroupOrders(list) {
+    const profile = AuthService.getCurrentProfile();
     return list.map(item => ({
       ...item,
-      statusText: getGroupOrderStatusTextByValue(item.status)
+      statusText: getGroupOrderStatusTextByValue(item.status),
+      // 团主/管理层卡显示人数+金额；客户卡因隐私不显（A6）
+      canManage: canManageGroupOrder(item, profile),
     }));
   },
 
+  // 单一取数路径（合并原 fetchItineraryList 无筛选 与 applyFilters 带筛选）：
+  // 读 this.data 的 searchKeyword/currentStatus，用 listVisibleWithStats 带回人数/已收/应收。
   async fetchItineraryList() {
-    if ((this as any)._fetchInFlight) return (this as any)._fetchInFlight;
-    (this as any)._fetchInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS);
@@ -84,8 +87,14 @@ Page({
 
     this.setData((this as any).loadingState());
 
+    const { searchKeyword, currentStatus } = this.data;
+    const isFiltered = Boolean(searchKeyword) || Number(currentStatus) > 0;
+
     try {
-      const res = await GroupOrderService.listVisible();
+      const res = await GroupOrderService.listVisibleWithStats({
+        keyword: searchKeyword,
+        status: currentStatus,
+      });
       if (res.success) {
 
         const list = this.normalizeGroupOrders(res.data);
@@ -95,8 +104,9 @@ Page({
           canCreateGroupOrder: this.canCreateGroupOrder(),
           ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDERS),
           canUseBusiness: true,
+          roleScopeText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS),
           ...(this as any).threeState(list.length ? 'ready' : 'empty', {
-            emptyText: '暂无团单',
+            emptyText: isFiltered ? '没有符合条件的团单' : '暂无团单',
             emptyCta: this.computeEmptyCta(),
           }),
         });
@@ -129,18 +139,6 @@ Page({
         icon: 'none'
       });
     }
-    })();
-    try {
-      return await (this as any)._fetchInFlight;
-    } finally {
-      (this as any)._fetchInFlight = null;
-    }
-  },
-
-  getRoleScopeText() {
-    const profile = AuthService.getCurrentProfile();
-    if (!AuthService.canUseBusiness(profile)) return AuthService.getAccessStateText(profile);
-    return getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS);
   },
 
   canCreateGroupOrder() {
@@ -213,50 +211,13 @@ Page({
   onSearchChange(e) {
     this.setData({
       searchKeyword: e.detail.value
-    }, () => this.applyFilters());
+    }, () => this.fetchItineraryList());
   },
 
   onStatusChange(e) {
     this.setData({
       currentStatus: e.detail.value
-    }, () => this.applyFilters());
-  },
-
-  async applyFilters() {
-    if (!(this.data as any).canUseBusiness) return;
-    const {
-      searchKeyword,
-      currentStatus
-    } = this.data;
-
-    const res = await GroupOrderService.listVisible({
-      keyword: searchKeyword,
-      status: currentStatus
-    });
-
-    if (!res.success) {
-      const errorText = res.error || '加载团单失败';
-      this.setData({
-        itineraryList: [],
-        roleScopeText: errorText,
-        ...(this as any).threeState('error', { errorText }),
-      });
-      wx.showToast({
-        title: errorText,
-        icon: 'none'
-      });
-      return;
-    }
-
-    const list = this.normalizeGroupOrders(res.data);
-    this.setData({
-      itineraryList: list,
-      roleScopeText: this.getRoleScopeText(),
-      ...(this as any).threeState(list.length ? 'ready' : 'empty', {
-        emptyText: (searchKeyword || Number(currentStatus) > 0) ? '没有符合条件的团单' : '暂无团单',
-        emptyCta: this.computeEmptyCta(),
-      }),
-    });
+    }, () => this.fetchItineraryList());
   }
 
 });
