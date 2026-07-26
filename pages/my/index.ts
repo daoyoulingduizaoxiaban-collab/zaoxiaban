@@ -161,7 +161,9 @@ Page({
     }
 
     const roleEntries = [
-      { name: '个人资料', icon: 'user', type: 'profile', url: '/pages/profile/index', feature: FEATURE_KEYS.PROFILE },
+      // 「个人资料」入口已移除(P0-2)：它指向 pages/profile 用户目录页(列出他人姓名/手机),
+      // FEATURE_KEYS.PROFILE 含客户/团主 → 普通用户可点入=隐私泄露。自我编辑统一走「账号资料」(info-edit)。
+      // 用户目录的管理层入口另在 W4/D-1 按管理层门控重建。
       { name: '账号资料', icon: 'edit', type: 'infoEdit', url: '/pages/my/info-edit/index', feature: FEATURE_KEYS.INFO_EDIT },
       { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index', feature: FEATURE_KEYS.USER_REVIEW },
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
@@ -249,9 +251,9 @@ Page({
   },
 
   onNavigateTo() {
-    const profile = AuthService.getCurrentProfile();
-    const url = profile && profile.id ? `/pages/profile/edit/index?id=${profile.id}` : '/pages/profile/index';
-    this.openUrl(url);
+    // 头像卡「编辑」图标 → 统一走「账号资料」(info-edit) 唯一自我编辑入口(归并决策·已定)。
+    // 原先导向 pages/profile/edit(#17,归管理端)/pages/profile 用户目录(泄露),均已弃用。
+    this.openUrl('/pages/my/info-edit/index');
   },
 
   onLogout() {
@@ -290,7 +292,7 @@ Page({
     if (this.lastNavKey === navKey && now - (this.lastNavAt || 0) < 800) return;
     this.lastNavKey = navKey;
     this.lastNavAt = now;
-    const loginRequiredTypes = ['profile', 'tourGuides', 'providers', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
+    const loginRequiredTypes = ['tourGuides', 'providers', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
     if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
       this.onLogin();
       return;
