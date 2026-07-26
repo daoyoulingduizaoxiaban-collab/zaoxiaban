@@ -57,6 +57,17 @@ export const ProductService = {
     };
   },
 
+  // 选品取数（团单 add / product-picker 专用）：仅返回「上架」商品（C4：下架不得进入新团单）。
+  // 「供应商停用不得选用」待 D-6 供应商软删除模型落地后在此叠加过滤（当前无供应商停用状态）。
+  async listSelectable(filters = {}) {
+    const result = await this.listVisible(filters);
+    if (!result.success) return result;
+    return {
+      ...result,
+      data: (result.data || []).filter(product => Number(product.status) === ProductStatus.PUBLISHED),
+    };
+  },
+
   async getById(id) {
     const result = await ProductRepository.getById(id);
     if (!result.success) return result;

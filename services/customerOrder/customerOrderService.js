@@ -3,6 +3,7 @@ import { ProductStatus } from '~/enum/ProductStatus';
 import { CustomerOrderRepository } from '~/repositories/customerOrderRepository';
 import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
+import { canManageGroupOrder } from '~/services/auth/roleScope';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { filterFormalProducts } from '~/utils/productContent';
 
@@ -84,23 +85,39 @@ export const CustomerOrderService = {
     const entryResult = await CustomerOrderRepository.getGroupOrderEntry(groupOrderId, { shareToken });
     if (!entryResult.success) return entryResult;
 
+    // 可见范围收口（A6/B1）：管理者（owner/admin/归属或授权 guide）见全团订单与收款统计；
+    // 客户仅见「自己那一单」，不得看到他人订单与全团应收/已收/人数。
+    const profile = AuthService.getCurrentProfile();
+    const canManage = canManageGroupOrder(entryResult.data, profile);
+    const profileId = profile && profile.id;
+
     const orderResult = await CustomerOrderRepository.listByGroupOrder(groupOrderId);
-    const memberOrderList = orderResult.success ? orderResult.data.map(normalizeOrderListItem) : [];
-    const totalReceivable = memberOrderList
-      .filter(order => Number(order.status) !== MemberOrderStatus.CANCELLED)
-      .reduce((sum, order) => sum + normalizeNumber(order.totalPrice), 0);
-    const totalReceived = memberOrderList
-      .filter(order => Number(order.status) === MemberOrderStatus.CONFIRMED)
-      .reduce((sum, order) => sum + normalizeNumber(order.confirmedAmount || order.totalPrice), 0);
+    const allMemberOrders = orderResult.success ? orderResult.data.map(normalizeOrderListItem) : [];
+    const memberOrderList = canManage
+      ? allMemberOrders
+      : allMemberOrders.filter(order => String(order.customerUserId) === String(profileId));
+
+    // 统计仅对管理者按全团口径计算；客户不返回全团统计（置 0，页面亦不展示）。
+    const totalReceivable = canManage
+      ? memberOrderList
+        .filter(order => Number(order.status) !== MemberOrderStatus.CANCELLED)
+        .reduce((sum, order) => sum + normalizeNumber(order.totalPrice), 0)
+      : 0;
+    const totalReceived = canManage
+      ? memberOrderList
+        .filter(order => Number(order.status) === MemberOrderStatus.CONFIRMED)
+        .reduce((sum, order) => sum + normalizeNumber(order.confirmedAmount || order.totalPrice), 0)
+      : 0;
 
     return {
       ...entryResult,
       data: {
         ...entryResult.data,
+        canManageGroupOrder: canManage,
         memberOrderList,
         totalReceivable,
         totalReceived,
-        totalCustomers: memberOrderList.length,
+        totalCustomers: canManage ? memberOrderList.length : 0,
       },
     };
   },

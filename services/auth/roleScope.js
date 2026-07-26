@@ -68,7 +68,9 @@ const FEATURE_ALLOWED_ROLES = Object.freeze({
   [FEATURE_KEYS.RELEASE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.MESSAGE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.SEARCH]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
-  [FEATURE_KEYS.PROFILE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
+  // PROFILE = 用户目录 / 改他人资料页（pages/profile/*），归并决策归管理端（D-1）：仅 owner/admin。
+  // 普通用户自我编辑走 INFO_EDIT（pages/my/info-edit）。放行客户/团主会经用户目录泄露他人姓名/手机。
+  [FEATURE_KEYS.PROFILE]: [AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.INFO_EDIT]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.SETTINGS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.USER_REVIEW]: [AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
@@ -187,6 +189,16 @@ export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = [
   }
 
   return [];
+};
+
+// 团单管理归属：owner/admin 全量；guide 仅本人创建或被授权管理的团单。
+// 供 groupOrderRepository（管理动作门控）与 customerOrderService（详情可见范围收口）共用。
+export const canManageGroupOrder = (groupOrder, profile) => {
+  if (!profile || !groupOrder) return false;
+  if (isOwnerOrAdmin(profile)) return true;
+  if (!hasRole(profile, AUTH_ROLES.GUIDE)) return false;
+  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
+  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
 
 export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile) => {

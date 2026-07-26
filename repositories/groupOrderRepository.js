@@ -2,7 +2,7 @@ import { GroupOrder } from '~/models/GroupOrder';
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
-import { filterGroupOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
+import { canManageGroupOrder, filterGroupOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
 
 const GROUP_ORDER_STORAGE_KEY = 'dao_you_ling_local_group_orders';
@@ -87,13 +87,6 @@ const getAllCustomerOrders = () => {
   return [];
 };
 
-const canManageGroupOrder = (groupOrder, profile) => {
-  if (!profile || !groupOrder) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  if (!hasRole(profile, 'guide')) return false;
-  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
-  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
-};
 const getShareAccessError = (groupOrder, profile, shareToken = '') => {
   if (!groupOrder) return '未找到团单';
   if (isOwnerOrAdmin(profile) || canManageGroupOrder(groupOrder, profile)) return '';
