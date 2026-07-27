@@ -1,4 +1,4 @@
-<nav nav-type="title" title-text="订单提醒" />
+<sub-nav title="订单提醒" />
 
 <view class="message-list">
   <page-state

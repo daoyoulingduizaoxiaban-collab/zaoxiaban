@@ -9,7 +9,8 @@
     "t-loading": "tdesign-miniprogram/loading/loading",
     "t-empty": "/components/t-empty/index",
     "page-state": "/components/page-state/index",
-    "nav": "/components/nav"
+    "nav": "/components/nav",
+    "sub-nav": "/components/sub-nav/index"
   },
   "navigationStyle": "custom",
   "disableScroll": true

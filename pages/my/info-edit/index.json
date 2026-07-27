@@ -1,6 +1,7 @@
 {
   "navigationStyle": "custom",
   "usingComponents": {
-    "nav": "/components/nav"
+    "nav": "/components/nav",
+    "sub-nav": "/components/sub-nav/index"
   }
 }

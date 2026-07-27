@@ -10,7 +10,6 @@
           <view class="name">{{personalInfo.name}}</view>
           <view class="tags">
             <t-tag class="tag" variant="light">{{personalInfo.star}}</t-tag>
-            <t-tag class="tag" variant="light">{{personalInfo.city}}</t-tag>
             <t-tag class="tag" variant="light">{{personalInfo.authSourceText}}</t-tag>
           </view>
         </view>

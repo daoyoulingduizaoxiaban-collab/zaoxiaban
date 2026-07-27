@@ -1,4 +1,4 @@
-<nav nav-type="my" titleText="账号资料" />
+<sub-nav title="账号资料" />
 
 <view wx:if="{{!canEdit}}" class="info-edit info-edit--empty">
   <view class="empty-title">{{disabledReason}}</view>

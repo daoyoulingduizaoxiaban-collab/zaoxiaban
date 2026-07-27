@@ -59,19 +59,19 @@ export default {
 // config/menu.js
 export const BOTTOM_BAR_LIST = [
   {
-    icon: 'bulletpoint',
+    icon: 'usergroup',
     value: 'groupOrder',
     label: '团单',
     path: '/pages/groupOrder/index'
   },
   {
-    icon: 'usergroup',
+    icon: 'order',
     value: 'customerOrders',
     label: '客户订单',
     path: '/pages/customerOrders/index'
   },
   {
-    icon: 'data-display',
+    icon: 'shop',
     value: 'productManagement',
     label: '商品库',
     path: '/pages/productManagement/index'
