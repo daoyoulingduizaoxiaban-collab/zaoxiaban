@@ -6,6 +6,12 @@
   <view class="login__content">
     <view class="login__notice">{{authNotice}}</view>
 
+    <view wx:if="{{showLocalIdentity}}" class="login__local-identity">
+      <view class="login__local-identity-label">测试身份（本地测试用·留空即管理员本人）</view>
+      <input class="login__local-identity-input" value="{{localIdentity}}" placeholder="填你的名字/编号，如 zhang3" bindinput="onLocalIdentityInput" />
+      <view class="login__local-identity-tip">不同人填不同身份＝各自独立账号（默认客户，可在用户审核升级团主）。</view>
+    </view>
+
     <view class="login__button">
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
         微信登录

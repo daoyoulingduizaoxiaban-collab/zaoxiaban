@@ -11,6 +11,7 @@ import {
   normalizeRoles,
 } from './roleScope';
 import { callBackendFunction, isBackendConfigured, isLocalBackend } from '~/services/backend/backendCall';
+import { resolveLocalOpenId } from './localIdentity';
 
 const AUTH_PROFILE_KEY = 'dao_you_ling_auth_profile';
 const AUTH_SESSION_KEY = 'dao_you_ling_auth_session';
@@ -171,7 +172,7 @@ const callCloudAuth = async (loginCode, requestedRole) => {
   const result = await callBackendFunction({
     name: 'authLogin',
     event: { code: loginCode, requestedRole },
-    openId: config.localDevOpenId, // 云模式忽略；本地模式以此 openId 登录
+    openId: resolveLocalOpenId(), // 云模式忽略；本地模式以此 openId 登录（测试身份 or owner）
   });
   if (result && result.openId) return { success: true, data: result };
   return { success: false, error: (result && result.error) || '微信账号验证失败' };

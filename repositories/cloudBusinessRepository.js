@@ -1,10 +1,11 @@
 import config from '~/config';
 import { AuthService } from '~/services/auth/authService';
 import { callBackendFunction, isBackendConfigured, isLocalBackend } from '~/services/backend/backendCall';
+import { resolveLocalOpenId } from '~/services/auth/localIdentity';
 
 const getCallerOpenId = () => {
   const profile = AuthService.getRealProfile() || AuthService.getCurrentProfile();
-  return (profile && profile.openId) || config.localDevOpenId || '';
+  return (profile && profile.openId) || resolveLocalOpenId() || '';
 };
 
 export const CLOUD_SAVE_MODE = 'wechat-cloud-repository';

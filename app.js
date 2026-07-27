@@ -1,9 +1,17 @@
 import config from '~/config';
 import createBus from '~/utils/eventBus';
 import { AuthService } from '~/services/auth/authService';
+import { setLocalIdentity } from '~/services/auth/localIdentity';
+
+// 本地测试：扫码/启动带 ?tester=xxx 时记为该测试身份（DEV+local 才生效；见 localIdentity）。
+const applyTesterQuery = (options) => {
+  const tester = options && options.query && options.query.tester;
+  if (tester) setLocalIdentity(tester);
+};
 
 App({
-  onLaunch() {
+  onLaunch(options) {
+    applyTesterQuery(options);
     if (config.cloudEnvId && wx.cloud && wx.cloud.init) {
       wx.cloud.init({
         env: config.cloudEnvId,
@@ -29,7 +37,8 @@ App({
 
     this.setUnreadNum(0);
   },
-  onShow() {
+  onShow(options) {
+    applyTesterQuery(options);
     AuthService.refreshSession().then((res) => {
       if (res && res.success) {
         this.globalData.userInfo = res.data.profile;
