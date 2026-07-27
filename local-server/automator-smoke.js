@@ -68,11 +68,13 @@ const verdictOf = (s) => {
     // best-effort 收 console 报错（部分开发者工具版本不支持）
     try {
       mp.on('console', (msg) => {
-        const t = msg.type ? msg.type() : '';
-        if (t === 'error' || t === 'warn') {
-          const a = msg.args ? msg.args() : '';
-          console.log(`  [console.${t}]`, JSON.stringify(a));
-        }
+        try {
+          const t = typeof msg.type === 'function' ? msg.type() : (msg.type || '');
+          if (t === 'error' || t === 'warn') {
+            const a = typeof msg.args === 'function' ? msg.args() : (msg.args || '');
+            console.log(`  [console.${t}]`, JSON.stringify(a));
+          }
+        } catch (e) { /* 忽略:listener 出错不应掀翻整个冒烟 */ }
       });
     } catch (e) { /* 忽略：版本不支持 */ }
 
@@ -80,7 +82,7 @@ const verdictOf = (s) => {
       let state = {};
       try {
         const page = await mp.reLaunch(route);
-        await mp.waitFor(SETTLE_MS);
+        await page.waitFor(SETTLE_MS);
         state = readState(await page.data());
       } catch (e) {
         results.push({ route, verdict: `ERROR(${e.message})`, state: {} });
