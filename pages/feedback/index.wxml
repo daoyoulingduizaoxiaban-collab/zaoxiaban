@@ -1,0 +1,23 @@
+<view class="feedback-page">
+  <view class="tip">测试环境问题反馈 · 所有角色可用。请描述你遇到的问题（操作、期望、实际结果），我会据此修正。</view>
+
+  <view class="field">
+    <view class="label">问题描述<text class="req">*</text></view>
+    <textarea
+      class="textarea"
+      value="{{content}}"
+      placeholder="例如：在团单详情点『确认收款』后没反应 / 页面报错 / 显示不对……"
+      maxlength="1000"
+      bindinput="onContentInput"
+    />
+  </view>
+
+  <view class="field">
+    <view class="label">出现在哪个页面/功能（已自动带出，可修改）</view>
+    <input class="input" value="{{contextPage}}" placeholder="页面路径或功能名" bindinput="onContextInput" />
+  </view>
+
+  <button class="submit-btn" bindtap="onSubmit" disabled="{{submitting}}">
+    {{submitting ? '提交中…' : '提交反馈'}}
+  </button>
+</view>

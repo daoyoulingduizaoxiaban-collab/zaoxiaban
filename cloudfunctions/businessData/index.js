@@ -15,6 +15,7 @@ const COLLECTIONS = [
   'customerOrders',
   'payments',
   'paymentStatusHistory',
+  'feedbacks',
 ];
 
 const PRODUCT_STATUS = {
@@ -1248,12 +1249,42 @@ const providerActions = {
   },
 };
 
+// 测试环境「报Bug」：任意登录用户(含未审核)皆可提交；owner/admin 可列出收集。
+const feedbackActions = {
+  async create(payload, profile) {
+    assertProfile(profile);
+    const content = trimText(payload.content);
+    if (!content) return failure('请填写问题描述');
+    const now = nowIso();
+    const doc = {
+      content: content.slice(0, 1000),
+      contextPage: trimText(payload.contextPage).slice(0, 200),
+      openId: profile.openId || '',
+      role: profile.role || (Array.isArray(profile.roles) ? profile.roles[0] : '') || '',
+      roleLabel: roleLabelText(profile.roles || [profile.role]) || '',
+      displayName: profile.displayName || '',
+      createdAt: now,
+    };
+    const res = await getCollection('feedbacks').add({ data: doc });
+    return success(toId({ ...doc, _id: (res && (res._id || res.id)) || '', id: (res && (res._id || res.id)) || '' }));
+  },
+  async list(_payload, profile) {
+    assertApprovedProfile(profile, ['owner', 'admin']);
+    const result = await getCollection('feedbacks').limit(200).get();
+    const rows = (result.data || [])
+      .map(toId)
+      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    return success(rows);
+  },
+};
+
 const handlers = {
   users: userActions,
   providers: providerActions,
   products: productActions,
   groupOrders: groupOrderActions,
   customerOrders: customerOrderActions,
+  feedbacks: feedbackActions,
 };
 
 exports.main = async (event = {}) => {

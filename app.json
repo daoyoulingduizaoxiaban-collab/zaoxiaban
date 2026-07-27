@@ -19,7 +19,8 @@
     "pages/userReview/index",
     "pages/profile/index",
     "pages/profile/edit/index",
-    "pages/message/index"
+    "pages/message/index",
+    "pages/feedback/index"
   ],
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast",

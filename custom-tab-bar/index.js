@@ -1,4 +1,4 @@
-import {
+import config, {
   BOTTOM_BAR_LIST
 } from '~/config';
 import { AuthService } from '~/services/auth/authService';
@@ -59,11 +59,16 @@ Component({
   methods: {
     getVisibleTabs() {
       const profile = AuthService.getCurrentProfile();
-      return BOTTOM_BAR_LIST.filter((item) => {
+      const tabs = BOTTOM_BAR_LIST.filter((item) => {
         if (item.value === 'my') return true;
         const featureKey = TAB_FEATURE_MAP[item.value];
         return featureKey ? canUseFeature(profile, featureKey) : AuthService.canUseBusiness(profile);
       });
+      // 测试环境：所有角色可见「报Bug」入口（非 tab 页，点击走 navigateTo）。
+      if (config.isDev) {
+        tabs.push({ icon: 'help-circle', value: 'feedback', label: '报Bug', path: '/pages/feedback/index' });
+      }
+      return tabs;
     },
 
     getCurrentTabValue() {
@@ -93,6 +98,15 @@ Component({
     handleChange(e) {
       try {
         const { value } = e.detail;
+        if (value === 'feedback') {
+          // 报Bug 是普通页(非 tab)：navigateTo 打开，tab 高亮维持当前页，避免 switchTab 失败。
+          this.setData({ value: this.getCurrentTabValue() });
+          wx.navigateTo({
+            url: '/pages/feedback/index',
+            fail: () => wx.showToast({ title: '打开反馈页失败', icon: 'none' }),
+          });
+          return;
+        }
         // 防循环：程序化 setData({value}) 会让 t-tab-bar 回吐 change；
         // 若目标就是当前页，不再 switchTab（否则 switchTab 跳自己 → show → 又 change → 死循环）。
         if (!value || value === this.getCurrentTabValue()) return;
