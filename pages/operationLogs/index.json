@@ -1,6 +1,6 @@
 {
   "usingComponents": {
-    "t-navbar": "tdesign-miniprogram/navbar/navbar",
+    "sub-nav": "/components/sub-nav/index",
     "t-dropdown-menu": "tdesign-miniprogram/dropdown-menu/dropdown-menu",
     "t-dropdown-item": "tdesign-miniprogram/dropdown-item/dropdown-item",
     "page-state": "/components/page-state/index"

@@ -2,7 +2,7 @@ import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
-import { navigateByUrl, navigateBackOrTab } from '~/utils/navigation';
+import { navigateByUrl } from '~/utils/navigation';
 
 Page({
   behaviors: [useToastBehavior],
@@ -14,10 +14,6 @@ Page({
   async onLoad() {
     await AuthService.refreshSession();
     this.refreshSettingState();
-  },
-
-  onNavBack() {
-    navigateBackOrTab('/pages/my/index');
   },
 
   async onShow() {

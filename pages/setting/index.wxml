@@ -1,4 +1,4 @@
-<t-navbar title="设置" left-arrow fixed="{{true}}" placeholder="{{true}}" bind:go-back="onNavBack" />
+<sub-nav title="设置" fallback-url="/pages/my/index" />
 <view class="setting">
   <view class="setting-login" wx:if="{{!isLoggedIn}}">
     <view class="setting-login__title">登录后查看账号与资料保存状态</view>

@@ -1,4 +1,4 @@
-<t-navbar title="操作记录" left-arrow fixed="{{true}}" placeholder="{{true}}" bind:go-back="onNavBack" />
+<sub-nav title="操作记录" fallback-url="/pages/my/index" />
 
 <view class="operation-logs">
   <view class="filter-bar">
