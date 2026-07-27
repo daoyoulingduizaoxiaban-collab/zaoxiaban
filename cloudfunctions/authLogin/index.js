@@ -194,6 +194,16 @@ const toClientProfile = doc => ({
 exports.main = async (event = {}) => {
   const wxContext = cloud.getWXContext();
   const openId = wxContext.OPENID;
+  // 环境自检日志：白名单/预览开关没生效时肉眼可查（控制台→云函数→authLogin→日志）。
+  // 掐头去尾打 openid，既能对上号又不落全量敏感值。
+  const maskId = id => (String(id || '').length > 9 ? `${String(id).slice(0, 5)}…${String(id).slice(-4)}` : String(id || ''));
+  console.warn('[authLogin] env自检', JSON.stringify({
+    APP_ENV,
+    ALLOW_ROLE_PREVIEW,
+    ownerAllowlist: parseOpenIdList(process.env.OWNER_OPENIDS).map(maskId),
+    adminAllowlist: parseOpenIdList(process.env.ADMIN_OPENIDS).map(maskId),
+    caller: maskId(openId),
+  }));
   const unionId = wxContext.UNIONID || '';
   const context = event.context || {};
   if (
