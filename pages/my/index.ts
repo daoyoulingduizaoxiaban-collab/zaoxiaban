@@ -109,15 +109,9 @@ Page({
   buildGridList(profile) {
     if (!AuthService.canUseBusiness(profile)) return [];
 
-    // 我的页九宫格只放非 NAV 主流程的辅助入口（消息/搜索/数据中心）；团单/客户订单/商品库/工作台/开团不在此重复（A12/B5）。
+    // 我的页九宫格只放非 NAV 主流程的辅助入口（搜索/数据中心）；团单/客户订单/商品库/工作台/开团不在此重复（A12/B5）。
+    // 「消息」入口已按用户决定(2026-07-27)拿掉；pages/message 页本体+注解保留备用（见该页「消息机制说明」）。
     const list = [
-      {
-        name: '消息',
-        icon: 'chat',
-        type: 'message',
-        url: '/pages/message/index',
-        feature: FEATURE_KEYS.MESSAGE,
-      },
       {
         name: '搜索',
         icon: 'search',
