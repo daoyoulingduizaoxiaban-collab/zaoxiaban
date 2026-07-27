@@ -177,7 +177,9 @@ Page({
         desc: item.startAt || item.pickupNote || '查看团单详情',
         type: 'groupOrder',
       }));
-    const products = (productsRes.success ? productsRes.data : [])
+    // 客户无 PRODUCTS 功能：搜索不返回商品结果（客户不得浏览/搜索商品库，B1）。
+    const canSearchProducts = canUseFeature(profile, FEATURE_KEYS.PRODUCTS);
+    const products = (canSearchProducts && productsRes.success ? productsRes.data : [])
       .filter(item => match(item.title) || match(item.description))
       .slice(0, 8)
       .map(item => ({
