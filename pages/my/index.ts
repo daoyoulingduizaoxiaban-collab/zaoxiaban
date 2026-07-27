@@ -209,8 +209,14 @@ Page({
       authSourceText = '账号资料已载入';
     }
 
+    // 未设昵称(默认「微信用户」)时,显示可辨识的账号(openId 掐头去尾),便于分辨当前是谁。
+    const rawName = String(profile.displayName || '').trim();
+    const openId = String(profile.openId || '');
+    const maskedAccount = openId.length > 9 ? `${openId.slice(0, 5)}…${openId.slice(-4)}` : openId;
+    const isGenericName = !rawName || rawName === '微信用户';
+
     return {
-      name: profile.displayName,
+      name: isGenericName ? (maskedAccount || '微信用户') : rawName,
       city: profile.city || '未填写城市',
       star: profile.roleLabel,
       image: profile.avatarUrl || '/static/avatar1.png',

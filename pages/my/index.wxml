@@ -35,10 +35,7 @@
       <t-button theme="primary" variant="outline" size="small" bindtap="onRefreshAccessState">重新检查状态</t-button>
       <t-button theme="default" variant="outline" size="small" bindtap="onContactAdmin">联系管理员</t-button>
     </view>
-    <view class="auth-actions" wx:if="{{isLoggedIn}}">
-      <t-button theme="default" variant="outline" size="small" bindtap="onLogout">退出登录</t-button>
-    </view>
-    <view class="auth-actions" wx:else>
+    <view class="auth-actions" wx:if="{{!isLoggedIn}}">
       <button class="login-action-native" catchtap="onLogin" bindtouchend="onLoginTouchEnd">登录后继续</button>
     </view>
     <t-divider wx:if="{{canUseBusiness}}" t-class="divider-class" />
@@ -81,5 +78,9 @@
       <text class="setting-row__icon">{{item.iconText}}</text>
       <text class="setting-row__title">{{item.name}}</text>
     </button>
+  </view>
+
+  <view wx:if="{{isLoggedIn}}" class="logout-bar">
+    <button class="logout-btn" bindtap="onLogout">退出登录</button>
   </view>
 </view>
