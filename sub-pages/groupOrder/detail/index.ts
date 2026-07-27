@@ -5,14 +5,31 @@ import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services/auth/roleScope';
-import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
+import { navigateByUrl } from '~/utils/navigation';
 
 const buildCustomerEntryPath = (id, shareToken = '') => {
   const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(id || ''))}`;
   const normalizedToken = String(shareToken || '').trim();
   return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
 };
+
+const buildPriceDisplay = (priceSetting = []) => {
+  const prices = (priceSetting || []).map(rule => Number(rule.unitPrice || 0)).filter(price => price > 0);
+  if (!prices.length) return '未设置价格';
+  const min = Math.min(...prices);
+  const max = Math.max(...prices);
+  return min === max ? `￥${min}` : `￥${min} ~ ￥${max}`;
+};
+
+// 客户视图「本团在售商品」：仅取快照中「上架(status=2)」的商品对外展示（A6）。
+const buildOnSaleProducts = (productList = []) => (productList || [])
+  .filter(product => Number(product.status) === 2)
+  .map(product => ({
+    id: product.id,
+    title: product.title,
+    description: product.description || '',
+    priceDisplay: buildPriceDisplay(product.priceSetting),
+  }));
 
 Page({
   data: {
@@ -33,14 +50,19 @@ Page({
     },
     saveModeText: '读取团单资料中',
     customerEntryPath: '',
-    isDetailLoaded: false,
+    pageState: 'loading',
+    loadErrorText: '',
+    forceReadonly: false,
     canManageGroupOrder: false,
-    detailErrorText: '',
+    onSaleProducts: [],
+    showOnSaleProducts: false,
   },
 
   async onLoad(options) {
     await AuthService.refreshSession();
+    const forceReadonly = String(options.readonly || '') === '1';
     const id = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
+    this.setData({ forceReadonly });
     if (id) {
       this.setData({
         groupOrderId: id,
@@ -50,8 +72,8 @@ Page({
     } else {
       this.setData({
         pageTitle: '团单详情',
-        isDetailLoaded: true,
-        detailErrorText: '缺少团单 ID，请返回团单列表重新进入。',
+        pageState: 'error',
+        loadErrorText: '缺少团单 ID，请返回团单列表重新进入。',
         saveModeText: '无法读取团单资料',
       });
     }
@@ -67,26 +89,29 @@ Page({
   },
 
   async fetchGroupOrderDetail(id) {
-
+    this.setData({ pageState: 'loading' });
     try {
       const res = await CustomerOrderService.getGroupOrderDetail(id)
       if (res.success) {
-      const groupOrder = {
-        ...res.data,
+        const groupOrder = {
+          ...res.data,
           sharePath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
         };
+        // 门控改用数据层返回的 canManageGroupOrder 标记；readonly=1 强制走客户视图（E-4）。
+        const canManageGroupOrder = Boolean(res.data.canManageGroupOrder) && !this.data.forceReadonly;
         this.setData({
           groupOrder,
           customerEntryPath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
           saveModeText: getSaveModeText(res.meta),
-          isDetailLoaded: true,
-          detailErrorText: '',
-          canManageGroupOrder: this.canManageGroupOrder(groupOrder),
+          canManageGroupOrder,
+          onSaleProducts: canManageGroupOrder ? [] : buildOnSaleProducts(res.data.productList),
+          pageState: 'ready',
+          loadErrorText: '',
         });
       } else {
         const errorText = res.error || '加载团单失败';
-        this.setData({ isDetailLoaded: true, saveModeText: errorText, detailErrorText: errorText });
+        this.setData({ pageState: 'error', saveModeText: errorText, loadErrorText: errorText });
         wx.showToast({
           title: errorText,
           icon: 'none'
@@ -94,7 +119,7 @@ Page({
       }
 
     } catch (err) {
-      this.setData({ isDetailLoaded: true, saveModeText: '加载团单失败', detailErrorText: '加载团单失败' });
+      this.setData({ pageState: 'error', saveModeText: '加载团单失败', loadErrorText: '加载团单失败' });
       wx.showToast({
         title: '加载团单失败',
         icon: 'none'
@@ -105,25 +130,12 @@ Page({
 
   },
 
-  onBack() {
-    navigateBackOrTab('/pages/groupOrder/index');
+  onRetry() {
+    this.fetchGroupOrderDetail(this.data.groupOrderId);
   },
 
-  onSave() {
-    const groupOrder = this.data.groupOrder || {};
-    const path = groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId, groupOrder.shareToken);
-    if (!this.data.groupOrderId) {
-      wx.showToast({
-        title: '缺少团单 ID',
-        icon: 'none'
-      });
-      return;
-    }
-    wx.setClipboardData({
-      data: path,
-      success: () => wx.showToast({ title: '客户入口已复制', icon: 'none' }),
-      fail: () => wx.showToast({ title: '复制客户入口失败', icon: 'none' }),
-    });
+  toggleOnSaleProducts() {
+    this.setData({ showOnSaleProducts: !this.data.showOnSaleProducts });
   },
 
   onExportReport() {
@@ -153,23 +165,6 @@ Page({
       data: lines.join('\n'),
       success: () => wx.showToast({ title: '报表摘要已复制', icon: 'success' }),
       fail: () => wx.showToast({ title: '导出报表失败', icon: 'none' }),
-    });
-  },
-
-  goToOrderDetail(e) {
-    const orderId = e.currentTarget.dataset.id;
-
-    if (!orderId) {
-      wx.showToast({
-        title: '未找到订单 ID',
-        icon: 'none'
-      });
-      return;
-    }
-
-    wx.showToast({
-      title: '请在客户订单页查看详情',
-      icon: 'none'
     });
   },
 
@@ -471,21 +466,6 @@ Page({
         confirmColor: app.globalData.themeColor
       })
     }
-  },
-
-  canManageGroupOrder(groupOrder) {
-    const profile = AuthService.getCurrentProfile();
-    if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE)) return false;
-    if (isOwnerOrAdmin(profile)) return true;
-    if (!profile || !hasRole(profile, 'guide') || !groupOrder) return false;
-
-    const sameId = (a, b) => String(a) === String(b);
-    const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
-    const authorizedGuideOpenIds = groupOrder.authorizedGuideOpenIds || [];
-    return sameId(groupOrder.guideUserId, profile.id)
-      || sameId(groupOrder.guideOpenId, profile.openId)
-      || authorizedGuideIds.some(id => sameId(id, profile.id))
-      || authorizedGuideOpenIds.some(openId => sameId(openId, profile.openId));
   },
 
   stopPanelTap() {},

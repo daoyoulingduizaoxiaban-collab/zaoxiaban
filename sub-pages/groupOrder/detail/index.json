@@ -6,6 +6,7 @@
     "t-cell": "tdesign-miniprogram/cell/cell",
     "sub-nav": "/components/sub-nav/index",
     "t-popup": "tdesign-miniprogram/popup/popup",
-    "t-dialog": "tdesign-miniprogram/dialog/dialog"
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "page-state": "/components/page-state/index"
   }
 }

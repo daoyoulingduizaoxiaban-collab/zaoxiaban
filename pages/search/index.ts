@@ -231,7 +231,9 @@ Page({
       return;
     }
     if (type === 'groupOrder') {
-      navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`);
+      // 不传 readonly：详情页按数据层返回的 canManageGroupOrder 分流（客户已被 P0-1 数据层收口，
+      // 管理者经搜索进入应得正常管理视图，故不再强制只读）。
+      navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}`);
       return;
     }
     if (type === 'customerOrder') {

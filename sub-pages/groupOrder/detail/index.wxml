@@ -4,143 +4,184 @@
 <view class="edit-container">
   <view class="mode-tip">{{saveModeText}}</view>
 
-  <view wx:if="{{!isDetailLoaded}}" class="empty-msg">
-    正在加载团单资料
-  </view>
-
-  <view wx:if="{{isDetailLoaded && detailErrorText}}" class="empty-msg">
-    {{detailErrorText}}
-  </view>
-
-  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="detail-info-card">
-    <view class="detail-info-row">
-      <text class="detail-info-label">团单名称</text>
-      <text class="detail-info-value">{{groupOrder.title || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">收单状态</text>
-      <text class="detail-info-value">{{groupOrder.statusText || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">描述</text>
-      <text class="detail-info-value">{{groupOrder.description || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">出团时间</text>
-      <text class="detail-info-value">{{groupOrder.startAt || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">收单截止</text>
-      <text class="detail-info-value">{{groupOrder.endAt || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">取货/集合</text>
-      <text class="detail-info-value">{{groupOrder.pickupNote || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">付款说明</text>
-      <text class="detail-info-value">{{groupOrder.paymentNote || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">联系人</text>
-      <text class="detail-info-value">{{groupOrder.contactName || '未填写'}}</text>
-    </view>
-    <view class="detail-info-row">
-      <text class="detail-info-label">联系电话</text>
-      <text class="detail-info-value">{{groupOrder.contactPhone || '未填写'}}</text>
-    </view>
-    <view class="qr-container" bindtap="previewQR">
-      <image wx:if="{{groupOrder.qrCodeUrl}}" class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
-        show-menu-by-longpress />
-      <view wx:else class="qr-image qr-image--empty">暂无团单二维码</view>
-      <view class="qr-label">点一下放大，长按分享</view>
-    </view>
-    <view class="share-entry" wx:if="{{canManageGroupOrder}}">
-      <view class="share-path">{{customerEntryPath || '客户入口加载中'}}</view>
-      <view class="share-actions">
-        <t-button size="small" theme="primary" open-type="share" disabled="{{!groupOrderId}}">分享给客户</t-button>
-        <t-button size="small" theme="default" bindtap="onCopyCustomerEntry" disabled="{{!groupOrderId}}">复制入口</t-button>
+  <page-state
+    state="{{pageState}}"
+    loading-text="正在加载团单资料"
+    error-text="{{loadErrorText}}"
+    bind:retry="onRetry"
+  >
+    <view class="detail-info-card">
+      <view class="detail-info-row">
+        <text class="detail-info-label">团单名称</text>
+        <text class="detail-info-value">{{groupOrder.title || '未填写'}}</text>
       </view>
-    </view>
-  </view>
-
-  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="statistics-card">
-    <view class="stat-item">
-      <text class="stat-label">应收总金额</text>
-      <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceivable)}}</text>
-    </view>
-    <view class="stat-item">
-      <text class="stat-label">已收总金额</text>
-      <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceived)}}</text>
-    </view>
-    <view class="stat-divider"></view>
-    <view class="stat-item">
-      <text class="stat-label">下单人数</text>
-      <text class="stat-value">{{ utils.formatNumber(groupOrder.totalCustomers)}}人</text>
-    </view>
-  </view>
-  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText}}" class="section-title">客户订单</view>
-  <block wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText && groupOrder && groupOrder.memberOrderList}}" wx:for="{{groupOrder.memberOrderList}}" wx:key="id"
-    wx:for-item="memberOrder">
-    <view class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" data-memberId="memberOrder.memberId"
-      hover-class="card-hover">
-
-      <view class="order-header">
-        <text class="order-no">订单编号：#{{memberOrder.id}}</text>
-        <text
-          class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
+      <view class="detail-info-row">
+        <text class="detail-info-label">收单状态</text>
+        <text class="detail-info-value">{{groupOrder.statusText || '未填写'}}</text>
       </view>
-
-      <view class="order-body">
-        <view class="info-item">
-          <text class="label">客户 ID：</text>
-          <text class="value">{{memberOrder.customerUserId || memberOrder.userId}}</text>
-        </view>
-        <view class="info-item">
-          <text class="label">商品数量：</text>
-          <text class="value">{{memberOrder.itemCount || memberOrder.productList.length || 0}} 件</text>
-        </view>
-        <view class="info-item">
-          <text class="label">应付总额：</text>
-          <text class="value price">￥{{memberOrder.totalPrice}}</text>
-        </view>
-        <view class="action-section" wx:if="{{canManageGroupOrder && memberOrder.status === 1}}">
-          <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
-            data-id="{{memberOrder.id}}">确认已到账</t-button>
-        </view>
-        <view class="action-section" wx:if="{{canManageGroupOrder && memberOrder.status !== 2 && memberOrder.status !== 3}}">
-          <t-button theme="danger" size="small" block variant="outline" catchtap="onCancelOrder"
-            data-id="{{memberOrder.id}}">取消订单</t-button>
+      <view class="detail-info-row">
+        <text class="detail-info-label">描述</text>
+        <text class="detail-info-value">{{groupOrder.description || '未填写'}}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-info-label">出团时间</text>
+        <text class="detail-info-value">{{groupOrder.startAt || '未填写'}}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-info-label">收单截止</text>
+        <text class="detail-info-value">{{groupOrder.endAt || '未填写'}}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-info-label">取货/集合</text>
+        <text class="detail-info-value">{{groupOrder.pickupNote || '未填写'}}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-info-label">付款说明</text>
+        <text class="detail-info-value">{{groupOrder.paymentNote || '未填写'}}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-info-label">联系人</text>
+        <text class="detail-info-value">{{groupOrder.contactName || '未填写'}}</text>
+      </view>
+      <view class="detail-info-row">
+        <text class="detail-info-label">联系电话</text>
+        <text class="detail-info-value">{{groupOrder.contactPhone || '未填写'}}</text>
+      </view>
+      <view class="qr-container" bindtap="previewQR">
+        <image wx:if="{{groupOrder.qrCodeUrl}}" class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"
+          show-menu-by-longpress />
+        <view wx:else class="qr-image qr-image--empty">暂无团单二维码</view>
+        <view class="qr-label">点一下放大，长按分享</view>
+      </view>
+      <view class="share-entry" wx:if="{{canManageGroupOrder}}">
+        <view class="share-path">{{customerEntryPath || '客户入口加载中'}}</view>
+        <view class="share-actions">
+          <t-button size="small" theme="primary" open-type="share" disabled="{{!groupOrderId}}">分享给客户</t-button>
+          <t-button size="small" theme="default" bindtap="onCopyCustomerEntry" disabled="{{!groupOrderId}}">复制入口</t-button>
         </view>
       </view>
     </view>
-  </block>
 
-  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText && groupOrder.memberOrderList.length === 0}}" class="empty-msg">
-    当前团单暂无客户订单
-  </view>
+    <!-- 管理者视图：全团应收/已收/人数统计（A6/B1：客户不可见） -->
+    <view wx:if="{{canManageGroupOrder}}" class="statistics-card">
+      <view class="stat-item">
+        <text class="stat-label">应收总金额</text>
+        <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceivable)}}</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-label">已收总金额</text>
+        <text class="stat-value">￥{{ utils.formatNumber(groupOrder.totalReceived)}}</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-label">下单人数</text>
+        <text class="stat-value">{{ utils.formatNumber(groupOrder.totalCustomers)}}人</text>
+      </view>
+    </view>
 
-  <view wx:if="{{isDetailLoaded && groupOrderId && !detailErrorText && canManageGroupOrder}}" class="footer-action-bar">
-    <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onEditGroupOrder"
-      disabled="{{!groupOrderId}}">
-      编辑团单
-    </t-button>
-    <t-button theme="primary" class="btn-primary" size="large" block bind:tap="onExportReport"
-      disabled="{{groupOrder.memberOrderList.length === 0 }}">
-      导出报表
-    </t-button>
-    <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onManageProducts"
-      disabled="{{!groupOrderId}}">
-      本团商品
-    </t-button>
-    <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onCustomerOrderEntry"
-      disabled="{{!groupOrderId}}">
-      客户下单入口
-    </t-button>
-  </view>
+    <!-- 管理者视图：全团客户订单列表（A6/B1：客户不可见他人订单） -->
+    <block wx:if="{{canManageGroupOrder}}">
+      <view class="section-title">客户订单</view>
+      <view wx:for="{{groupOrder.memberOrderList}}" wx:key="id" wx:for-item="memberOrder"
+        class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" hover-class="card-hover">
+
+        <view class="order-header">
+          <text class="order-no">订单编号：#{{memberOrder.id}}</text>
+          <text
+            class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
+        </view>
+
+        <view class="order-body">
+          <view class="info-item">
+            <text class="label">客户：</text>
+            <text class="value">{{memberOrder.customerName || memberOrder.customerUserId || memberOrder.userId}}</text>
+          </view>
+          <view class="info-item">
+            <text class="label">商品数量：</text>
+            <text class="value">{{memberOrder.itemCount || memberOrder.productList.length || 0}} 件</text>
+          </view>
+          <view class="info-item">
+            <text class="label">应付总额：</text>
+            <text class="value price">￥{{memberOrder.totalPrice}}</text>
+          </view>
+          <view class="action-section" wx:if="{{memberOrder.status === 1}}">
+            <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
+              data-id="{{memberOrder.id}}">确认已到账</t-button>
+          </view>
+          <view class="action-section" wx:if="{{memberOrder.status !== 2 && memberOrder.status !== 3}}">
+            <t-button theme="danger" size="small" block variant="outline" catchtap="onCancelOrder"
+              data-id="{{memberOrder.id}}">取消订单</t-button>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{groupOrder.memberOrderList.length === 0}}" class="empty-msg">
+        当前团单暂无客户订单
+      </view>
+    </block>
+
+    <!-- 客户视图：本团在售商品（可收合）+ 只显自己那一单（A6/B1） -->
+    <block wx:if="{{!canManageGroupOrder}}">
+      <view class="section-title onsale-title" bindtap="toggleOnSaleProducts">
+        <text>本团在售商品</text>
+        <text class="onsale-toggle">{{showOnSaleProducts ? '收起' : '展开'}}</text>
+      </view>
+      <view wx:if="{{showOnSaleProducts}}" class="onsale-list">
+        <view wx:for="{{onSaleProducts}}" wx:key="id" class="onsale-item">
+          <view class="onsale-item__main">
+            <text class="onsale-item__title">{{item.title}}</text>
+            <text wx:if="{{item.description}}" class="onsale-item__desc">{{item.description}}</text>
+          </view>
+          <text class="onsale-item__price">{{item.priceDisplay}}</text>
+        </view>
+        <view wx:if="{{onSaleProducts.length === 0}}" class="empty-msg">本团暂无在售商品</view>
+      </view>
+
+      <view class="section-title">我的订单</view>
+      <view wx:for="{{groupOrder.memberOrderList}}" wx:key="id" wx:for-item="memberOrder" class="order-card">
+        <view class="order-header">
+          <text class="order-no">订单编号：#{{memberOrder.id}}</text>
+          <text
+            class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
+        </view>
+        <view class="order-body">
+          <view class="info-item">
+            <text class="label">商品数量：</text>
+            <text class="value">{{memberOrder.itemCount || memberOrder.productList.length || 0}} 件</text>
+          </view>
+          <view class="info-item">
+            <text class="label">应付总额：</text>
+            <text class="value price">￥{{memberOrder.totalPrice}}</text>
+          </view>
+        </view>
+      </view>
+      <view wx:if="{{groupOrder.memberOrderList.length === 0}}" class="empty-msg">
+        你在本团暂无订单
+      </view>
+    </block>
+
+    <view wx:if="{{canManageGroupOrder}}" class="footer-action-bar">
+      <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onEditGroupOrder"
+        disabled="{{!groupOrderId}}">
+        编辑团单
+      </t-button>
+      <t-button theme="primary" class="btn-primary" size="large" block bind:tap="onExportReport"
+        disabled="{{groupOrder.memberOrderList.length === 0 }}">
+        导出报表
+      </t-button>
+      <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onManageProducts"
+        disabled="{{!groupOrderId}}">
+        本团商品
+      </t-button>
+      <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onCustomerOrderEntry"
+        disabled="{{!groupOrderId}}">
+        客户下单入口
+      </t-button>
+    </view>
+  </page-state>
 </view>
 
-<t-popup visible="{{showDetails}}" bind:visible-change="onCloseDetails" placement="center">
+<t-popup wx:if="{{canManageGroupOrder}}" visible="{{showDetails}}" bind:visible-change="onCloseDetails" placement="center">
   <view class="details-popup">
     <view class="popup-header">订单明细 (#{{selectedMemberOrder.id}})</view>
 
