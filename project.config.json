@@ -77,7 +77,10 @@
     "compileWorklet": false,
     "localPlugins": false,
     "swc": false,
-    "disableSWC": true
+    "disableSWC": true,
+    "lessSetting": {
+      "commonUseFilePath": "app.less"
+    }
   },
   "compileType": "miniprogram",
   "libVersion": "3.6.6",
