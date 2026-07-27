@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { OperationLogService, OPERATION_LOG_FILTERS } from '~/services/operationLog/operationLogService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
+import { navigateBackOrTab } from '~/utils/navigation';
 
 const PAGE_SIZE = 20;
 
@@ -22,6 +23,10 @@ Page({
 
   async onLoad() {
     await this.loadLogs();
+  },
+
+  onNavBack() {
+    navigateBackOrTab('/pages/my/index');
   },
 
   async onShow() {

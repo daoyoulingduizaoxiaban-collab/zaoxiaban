@@ -34,6 +34,10 @@ Page({
     this.setData({ sourceUrl, isAccessLoading: true, searchFocus: true });
   },
 
+  onNavBack() {
+    navigateBackOrTab(this.data.sourceUrl || '/pages/my/index');
+  },
+
   async onShow() {
     this.setData({ isAccessLoading: true, searchFocus: true });
     await AuthService.refreshSession();

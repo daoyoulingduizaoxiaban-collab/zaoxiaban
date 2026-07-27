@@ -1,4 +1,4 @@
-<t-navbar title="搜索" left-arrow fixed="{{true}}" placeholder="{{true}}" />
+<t-navbar title="搜索" left-arrow fixed="{{true}}" placeholder="{{true}}" bind:go-back="onNavBack" />
 <view class="page search-page">
   <view wx:if="{{isAccessLoading}}" class="result-wrap">
     <t-empty icon="info-circle" description="正在确认搜索权限" />

@@ -1,4 +1,4 @@
-<t-navbar title="操作记录" left-arrow fixed="{{true}}" placeholder="{{true}}" />
+<t-navbar title="操作记录" left-arrow fixed="{{true}}" placeholder="{{true}}" bind:go-back="onNavBack" />
 
 <view class="operation-logs">
   <view class="filter-bar">

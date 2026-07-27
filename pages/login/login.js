@@ -1,5 +1,5 @@
 import { AuthService } from '~/services/auth/authService';
-import { normalizeRouteUrl, redirectByUrl } from '~/utils/navigation';
+import { normalizeRouteUrl, redirectByUrl, navigateBackOrTab } from '~/utils/navigation';
 import { isLocalIdentityEnabled, getLocalIdentityLabel, setLocalIdentity } from '~/services/auth/localIdentity';
 
 Page({
@@ -10,6 +10,10 @@ Page({
     // 本地测试多人身份（仅 DEV+local 显示；留空＝owner，填名字/扫码带 ?tester= ＝独立账号）
     showLocalIdentity: false,
     localIdentity: '',
+  },
+
+  onNavBack() {
+    navigateBackOrTab('/pages/my/index');
   },
 
   onLoad(options = {}) {

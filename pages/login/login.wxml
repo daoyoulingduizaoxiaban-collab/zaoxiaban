@@ -1,4 +1,4 @@
-<t-navbar title="微信登录" left-arrow fixed="{{true}}" placeholder="{{true}}" />
+<t-navbar title="微信登录" left-arrow fixed="{{true}}" placeholder="{{true}}" bind:go-back="onNavBack" />
 <view class="page login">
   <view class="login__title">登录团主早下班</view>
   <view class="login__subtitle">用于开团、团单、商品库和客户订单的身份识别。</view>
