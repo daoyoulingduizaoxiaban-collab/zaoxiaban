@@ -25,13 +25,36 @@ const PROJECT = path.join(__dirname, '..');
 const WS_ENDPOINT = process.env.WS_ENDPOINT || '';
 const SETTLE_MS = Number(process.env.SETTLE_MS || 5000); // 每页停留观察时长
 
-// 逐页冒烟清单：三个 tab 页 + 几个关键业务页。按需增删。
+// 逐页冒烟清单：全站页面（app.json 主包+分包）。
+// 需参数的详情/编辑/选品页裸开无 id/token，预期落 error/empty/门控态——不崩即算通过。
 const PAGES = [
+  // Tab / 入口 / 列表页
   '/pages/groupOrder/index',
   '/pages/customerOrders/index',
   '/pages/productManagement/index',
   '/pages/my/index',
   '/pages/search/index',
+  '/pages/dataCenter/index',
+  '/pages/setting/index',
+  '/pages/operationLogs/index',
+  '/pages/userReview/index',
+  '/pages/message/index',
+  '/pages/tourGuides/index',
+  '/pages/providers/index',
+  '/pages/profile/index',
+  '/pages/feedback/index',
+  '/sub-pages/product/list/index',
+  // 需参数（裸开：预期 error/empty/门控）
+  '/pages/customerOrders/edit/index',
+  '/pages/tourGuides/edit/index',
+  '/pages/providers/edit/index',
+  '/pages/profile/edit/index',
+  '/pages/my/info-edit/index',
+  '/sub-pages/groupOrder/add/index',
+  '/sub-pages/groupOrder/detail/index',
+  '/sub-pages/groupOrder/productList/index',
+  '/sub-pages/groupOrder/product-picker/index',
+  '/sub-pages/product/add/index',
 ];
 
 const readState = (data = {}) => ({
