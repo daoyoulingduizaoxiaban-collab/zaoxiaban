@@ -6,23 +6,22 @@ const {
   toId,
   success,
   failure,
-  assertProfile,
   assertApprovedProfile,
 } = require("../lib/core");
 
 const feedbackActions = {
+  // 报 Bug 不要求登录：profile 可为 null(匿名)，有登录档就顺带记身份便于定位。
   async create(payload, profile) {
-    assertProfile(profile);
     const content = trimText(payload.content);
     if (!content) return failure('请填写问题描述');
     const now = nowIso();
     const doc = {
       content: content.slice(0, 1000),
       contextPage: trimText(payload.contextPage).slice(0, 200),
-      openId: profile.openId || '',
-      role: profile.role || (Array.isArray(profile.roles) ? profile.roles[0] : '') || '',
-      roleLabel: roleLabelText(profile.roles || [profile.role]) || '',
-      displayName: profile.displayName || '',
+      openId: (profile && profile.openId) || '',
+      role: (profile && (profile.role || (Array.isArray(profile.roles) ? profile.roles[0] : ''))) || '',
+      roleLabel: (profile && roleLabelText(profile.roles || [profile.role])) || '',
+      displayName: (profile && profile.displayName) || '匿名',
       createdAt: now,
     };
     const res = await getCollection('feedbacks').add({ data: doc });

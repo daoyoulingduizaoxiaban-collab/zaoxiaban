@@ -1,3 +1,5 @@
+<sub-nav title="问题反馈 / 报Bug" />
+
 <view class="feedback-page">
   <view class="tip">测试环境问题反馈 · 所有角色可用。请描述你遇到的问题（操作、期望、实际结果），我会据此修正。</view>
 

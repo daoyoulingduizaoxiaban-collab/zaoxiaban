@@ -106,6 +106,7 @@ const bd = async (label, resource, action, data, openId = 'dev-owner') => {
 
     // ---- feedbacks ----
     await bd('feedbacks.create(cust)', 'feedbacks', 'create', { content: '验证反馈', contextPage: 'x' }, 'cust-1');
+    await bd('feedbacks.create(anon未登录)', 'feedbacks', 'create', { content: '匿名验证反馈', contextPage: 'y' }, 'anon-probe');
     await bd('feedbacks.list', 'feedbacks', 'list', {});
 
     console.log(`\n结果: ${flags.length === 0 ? '✅ 无红旗(所有动作都正常执行,无意外抛错)' : `🚩 ${flags.length} 个红旗: ${flags.join(', ')}`}`);

@@ -1,5 +1,4 @@
 import config from '~/config';
-import { AuthService } from '~/services/auth/authService';
 import { FeedbackRepository } from '~/repositories/feedbackRepository';
 
 Page({
@@ -36,10 +35,6 @@ Page({
     const content = String(this.data.content || '').trim();
     if (!content) {
       wx.showToast({ title: '请填写问题描述', icon: 'none' });
-      return;
-    }
-    if (!AuthService.getCurrentProfile()) {
-      wx.showToast({ title: '请先登录后再反馈', icon: 'none' });
       return;
     }
     this.setData({ submitting: true });
