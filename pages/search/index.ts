@@ -160,9 +160,10 @@ Page({
     }
 
     this.setData({ isSearching: true, hasSearched: true });
+    // 三类均取角色可见集(listVisible 已按角色收敛,符 B6),再统一走客户端 match 过滤(口径一致)。
     const [groupOrdersRes, productsRes, customerOrdersRes] = await Promise.all([
       GroupOrderService.listVisible(),
-      ProductService.listVisible({ keyword }),
+      ProductService.listVisible(),
       CustomerOrderService.listVisible(),
     ]);
     const lowered = keyword.toLowerCase();
@@ -177,6 +178,7 @@ Page({
         type: 'groupOrder',
       }));
     const products = (productsRes.success ? productsRes.data : [])
+      .filter(item => match(item.title) || match(item.description))
       .slice(0, 8)
       .map(item => ({
         id: item.id,
