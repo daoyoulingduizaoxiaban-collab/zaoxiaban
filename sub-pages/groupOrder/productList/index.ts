@@ -119,6 +119,21 @@ Page({
       return;
     }
     const canManageGroupOrder = this.canManageGroupOrder(res.data);
+    // 页面访问门控：本团商品管理属团主/管理层，非管理者(如客户深链进入)导回团单详情(B1/A12)。
+    if (!canManageGroupOrder) {
+      wx.redirectTo({
+        url: `/sub-pages/groupOrder/detail/index?id=${encodeURIComponent(this.data.groupOrderId)}`,
+        fail: () => this.resetDetailState({
+          isLoading: false,
+          pageErrorText: '当前账号不能管理本团商品，请返回团单详情。',
+          rawList: [],
+          displayList: [],
+          canManageGroupOrder: false,
+          pendingProductId: '',
+        }),
+      });
+      return;
+    }
     const groupProducts = this.normalizeProducts(res.data.productList || []);
 
     this.setData({
@@ -244,7 +259,7 @@ Page({
 
     wx.showModal({
       title: '移除商品',
-      content: '确定要从本团移除此商品吗？',
+      content: '确定要从本团移除此商品吗？不影响已下单/历史订单。',
       confirmColor: '#ff4d4f',
       success: async (res) => {
         if (res.confirm) {

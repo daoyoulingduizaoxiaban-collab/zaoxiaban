@@ -16,6 +16,7 @@
 
     <view wx:elif="{{pageErrorText}}" class="empty-state">
       <text>{{pageErrorText}}</text>
+      <button class="empty-action" bindtap="loadGroupProducts">重试</button>
     </view>
 
     <block wx:elif="{{displayList.length > 0}}">
@@ -40,7 +41,7 @@
           <view class="detail-entry">查看详情</view>
         </view>
 
-        <view wx:if="{{canManageGroupOrder}}" class="p-action" catchtap="onDelete" data-index="{{index}}" data-id="{{item.id}}">
+        <view wx:if="{{canManageGroupOrder}}" class="p-action" catchtap="onDelete" data-id="{{item.id}}">
           <view class="btn-delete-icon">
             <t-icon name="delete" size="36rpx" color="#ff4d4f" />
           </view>
