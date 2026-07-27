@@ -421,6 +421,11 @@ const validateProductPayload = (product) => {
   return '';
 };
 
+// 商品是否含内部/测试文案（listPublic 用于排除，validateProductPayload 用于拦保存）。
+// 原代码在 listPublic 引用了此函数却未定义(latent bug)，拆分时补上。
+const hasInternalProductCopy = product => [product.title, product.description, product.sourceNote]
+  .some(value => INTERNAL_PRODUCT_COPY_RE.test(String(value || '')));
+
 const productActions = {
   async listPublic({ keyword = '' }) {
     const products = (await getAllActive('products')).filter(product => (
