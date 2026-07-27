@@ -7,7 +7,10 @@
       <t-cell wx:if="{{isLoad && canUseBusiness}}" bordered="{{false}}">
         <t-avatar image="{{personalInfo.image}}" slot="left-icon" size="large" />
         <view class="my-info__person" slot="description">
-          <view class="name">{{personalInfo.name}}</view>
+          <view class="name">
+            {{personalInfo.name}}
+            <text class="copy-id" catchtap="onCopyOpenId">复制ID</text>
+          </view>
           <view class="tags">
             <t-tag class="tag" variant="light">{{personalInfo.star}}</t-tag>
             <t-tag class="tag" variant="light">{{personalInfo.authSourceText}}</t-tag>

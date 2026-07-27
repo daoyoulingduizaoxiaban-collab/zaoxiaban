@@ -24,17 +24,13 @@ Page({
     isNavigatingCreate: false,
   },
 
+  // 开团入口全站只留右下 FAB（#4 已定）：空态 CTA 不再放「新建团单」，避免双新增按钮。
   computeEmptyCta() {
-    if (this.canCreateGroupOrder()) return '新建团单';
     if (!AuthService.getCurrentProfile()) return '去登录';
     return '';
   },
 
   onGroupEmptyCta() {
-    if (this.canCreateGroupOrder()) {
-      this.addItinerary();
-      return;
-    }
     this.onLogin();
   },
 
@@ -106,7 +102,9 @@ Page({
           canUseBusiness: true,
           roleScopeText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS),
           ...(this as any).threeState(list.length ? 'ready' : 'empty', {
-            emptyText: isFiltered ? '没有符合条件的团单' : '暂无团单',
+            emptyText: isFiltered
+              ? '没有符合条件的团单'
+              : (this.canCreateGroupOrder() ? '暂无团单，点右下角 + 新建' : '暂无团单'),
             emptyCta: this.computeEmptyCta(),
           }),
         });

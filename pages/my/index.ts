@@ -203,14 +203,11 @@ Page({
       authSourceText = '账号资料已载入';
     }
 
-    // 未设昵称(默认「微信用户」)时,显示可辨识的账号(openId 掐头去尾),便于分辨当前是谁。
+    // 名称显示用户本名（辨识账号改用名旁「复制ID」按钮，见 onCopyOpenId）。
     const rawName = String(profile.displayName || '').trim();
-    const openId = String(profile.openId || '');
-    const maskedAccount = openId.length > 9 ? `${openId.slice(0, 5)}…${openId.slice(-4)}` : openId;
-    const isGenericName = !rawName || rawName === '微信用户';
 
     return {
-      name: isGenericName ? (maskedAccount || '微信用户') : rawName,
+      name: rawName || '微信用户',
       city: profile.city || '未填写城市',
       star: profile.roleLabel,
       image: profile.avatarUrl || '/static/avatar1.png',
@@ -231,6 +228,20 @@ Page({
 
   onLoginTouchEnd() {
     this.onLogin();
+  },
+
+  // 复制当前账号 openId，方便对账/DEBUG（配 authLogin env自检日志、OWNER_OPENIDS 白名单用）。
+  onCopyOpenId() {
+    const profile = AuthService.getRealProfile();
+    const openId = (profile && profile.openId) || '';
+    if (!openId) {
+      wx.showToast({ title: '当前无账号ID', icon: 'none' });
+      return;
+    }
+    wx.setClipboardData({
+      data: openId,
+      success: () => wx.showToast({ title: '已复制账号ID', icon: 'success' }),
+    });
   },
 
   onLogin() {
