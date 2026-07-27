@@ -21,7 +21,10 @@
 
   <scroll-view scroll-y class="product-list">
     <view wx:if="{{isLoading}}" class="empty-state">正在加载商品库</view>
-    <view wx:elif="{{pageErrorText}}" class="empty-state">{{pageErrorText}}</view>
+    <view wx:elif="{{pageErrorText}}" class="empty-state">
+      <view class="empty-desc">{{pageErrorText}}</view>
+      <button class="empty-action" bindtap="reloadProducts">重试</button>
+    </view>
 
     <view wx:elif="{{products.length === 0}}" class="empty-state">
       <view class="empty-title">暂无可选商品</view>

@@ -1,5 +1,6 @@
 import { ProductService } from '~/services/product/productService';
 import { AuthService } from '~/services/auth/authService';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 
@@ -64,7 +65,13 @@ Page({
     (this as any)._hasLoadedProductLibrary = true;
     (this as any)._loadProductsInFlight = (async () => {
     await AuthService.refreshSession();
-    const res = await ProductService.listVisible();
+    // 页面访问门控：只有可开团的角色能选品（入口虽已门控，补页面级防御）。
+    if (!canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDER_CREATE)) {
+      this.setData({ pageErrorText: '当前账号不能选择团单商品', isLoading: false, allProducts: [], products: [] });
+      return;
+    }
+    // listSelectable：只返回上架且供应商有效的商品（C4：下架/供应商停用不得选入新团单）。
+    const res = await ProductService.listSelectable();
     if (!res.success) {
       const errorText = res.error || '加载商品库失败';
       wx.showToast({ title: errorText, icon: 'none' });
@@ -97,6 +104,13 @@ Page({
     } finally {
       (this as any)._loadProductsInFlight = null;
     }
+  },
+
+  // error 态「重试」：重置加载守卫后重新取数（A11）。
+  reloadProducts() {
+    (this as any)._hasLoadedProductLibrary = false;
+    this.setData({ pageErrorText: '', isLoading: true });
+    this.loadProductLibrary();
   },
 
   onSearchInput(e) {
@@ -152,7 +166,6 @@ Page({
         product.description,
         product.sourceNote,
         product.searchAlias,
-        title.includes('龙井') ? 'long longjing lng 龙井' : '',
       ].join(' ').toLowerCase();
 
       return searchableText.includes(normalizedKeyword);
@@ -219,11 +232,6 @@ Page({
     });
   },
 
-  calculateCount() {
-    const count = this.data.allProducts.filter(p => p.selected).length;
-    this.setData({ selectedCount: count });
-  },
-
   saveFallbackResult(products) {
     if ((this as any)._fallbackResultSaved) return true;
     try {
@@ -261,10 +269,6 @@ Page({
       return;
     }
     const selectedItems = this.data.allProducts.filter(p => p.selected);
-
-    wx.showLoading({ title: '加入中...' });
-
-    wx.hideLoading();
 
     const products = selectedItems.map(item => ({
       ...item,
