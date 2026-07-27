@@ -31,6 +31,12 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 
 **只有两个真云函数**：`authLogin`（登录）、`businessData`（所有数据）。其余历史空壳已删。**加数据功能＝往 businessData 加资源，不要新建云函数。**
 
+`businessData` 已模块化（勿再塞回单文件）：
+- `index.js` — 路由入口（require 各资源 + 建 handlers + exports.main）。
+- `lib/core.js` — 共享层：云初始化 / 常量 / 通用 helper / db 访问 / **权限判定** / 预览。
+- `resources/{products,groupOrders,customerOrders,users,providers,feedbacks}.js` — 每个资源一个文件，含该资源的 normalizer/validator + Actions 对象，从 `../lib/core` require 所需。
+- **改一个资源只动它那个文件；改共享/权限动 `lib/core.js`。**
+
 **铁律：页面不许直接 `wx.request` / `wx.cloud.callFunction`。** 一律走 `repositories/*`。仓库层是唯一对接后端的地方。
 
 ---
@@ -47,7 +53,7 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 
 | 客户端 | 云端 | 内容 |
 | --- | --- | --- |
-| `services/auth/roleScope.js` | `cloudfunctions/businessData/index.js`（顶部 helper 区） | `normalizeRoles` / `hasRole` / `isRoleExpired` / `getEffectiveRoles` / `isOwnerOrAdmin` / `canManageGroupOrder` / `canManageProduct` / `isApprovedProfile`↔`assertApprovedProfile` 等十几个镜像函数 |
+| `services/auth/roleScope.js` | `cloudfunctions/businessData/lib/core.js` | `normalizeRoles` / `hasRole` / `isRoleExpired` / `getEffectiveRoles` / `isOwnerOrAdmin` / `canManageGroupOrder` / `canManageProduct` / `isApprovedProfile`↔`assertApprovedProfile` 等十几个镜像函数 |
 
 **铁律：改动上表任一权限/校验逻辑，必须同时改客户端和云端两份，语义一致。**
 - 只改客户端 → 客户端放行、服务端拒绝（或反之），正式环境坏。
@@ -56,7 +62,8 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 **改权限的收尾清单（每次照做）：**
 1. 客户端 `roleScope.js` 改完。
 2. 云端 `businessData/index.js` 同步改（对应 helper）。
-3. `node --check cloudfunctions/businessData/index.js`。
+3. `node --check` businessData 各文件（index/lib/resources）。**⚠️ 注意：`.eslintrc.js` 里 `no-undef: 0`（关掉了）——eslint 不会抓「漏 require / 未定义引用」，别指望它当网。**
+   拆分/改动后必须跑 **`node local-server/verify-actions.js`**（owner 跑遍所有资源动作，靠「意外抛错被转成通用文案」抓漏 require/异常），须全绿零红旗。
 4. `node local-server/smoke-test.js`（起本地 server 跑鉴权/读写用例，必须全绿）。
 5. commit message 里注明「地端云端双通」。
 
@@ -102,8 +109,8 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 
 1. **云端** `cloudfunctions/businessData/index.js`：
    - `COLLECTIONS` 加集合名；
-   - 写 `const xActions = { async create(data, profile){…}, async list(data, profile){…} }`，每个动作**首行用 `assertProfile` 或 `assertApprovedProfile(profile, [allowedRoles])` 鉴权**；
-   - 在末尾 `handlers` 注册：`x: xActions`。
+   - 新建 `resources/x.js`：`const { ... } = require('../lib/core');` 引所需共享件；写 `const xActions = { async create(data, profile){…}, async list(data, profile){…} }`，每个动作**首行用 `assertProfile` 或 `assertApprovedProfile(profile, [allowedRoles])` 鉴权**；`module.exports = xActions;`；
+   - 在 `index.js` require 它并加进 `handlers`：`x: xActions`。
 2. **仓库** `repositories/xRepository.js`：方法调 `callBusinessData({ resource:'x', action:'create', data })`。
 3. **服务**（可选）`services/x/xService.js`：需要校验/聚合/口径时才加；简单 CRUD 可跳过。
 4. **页面** `pages/x/` 或 `sub-pages/…`。
