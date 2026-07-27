@@ -32,7 +32,9 @@ const isProd = APP_ENV === ENVIRONMENTS.PROD;
 //   'local' —— 本地 Node 服务（付费云开发前测试，见 local-server/），前台走 wx.request。
 //   'cloud' —— 微信云开发，前台走 wx.cloud.callFunction。
 // PROD 固定 cloud；DEV 默认 local（改成 'cloud' 即无痛切到云开发，业务代码不变）。
-const DATA_BACKEND = isProd ? 'cloud' : 'local';
+// 多人真人测试期：DEV 也走云开发（callFunction 不需合法域名，别人手机可直接测）。
+// 想切回本地单机开发：改回 isProd ? 'cloud' : 'local'。
+const DATA_BACKEND = 'cloud';
 
 export default {
   appEnv: APP_ENV,
