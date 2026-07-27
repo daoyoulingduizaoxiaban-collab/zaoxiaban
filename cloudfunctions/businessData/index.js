@@ -88,6 +88,14 @@ const normalizeRoles = (roles, fallbackRole = '') => {
 const hasRole = (profile, role) => normalizeRoles(profile && profile.roles, profile && profile.role).includes(role);
 const hasAnyRole = (profile, roles = []) => normalizeRoles(profile && profile.roles, profile && profile.role).some(role => roles.includes(role));
 const isRoleExpired = profile => Boolean(profile && parseExpiryTime(profile.roleExpiresAt || profile.rolesExpireAt || profile.expiresAt) < Date.now() && parseExpiryTime(profile.roleExpiresAt || profile.rolesExpireAt || profile.expiresAt));
+// 可过期的「提升角色」：到期后收回 guide/admin；customer 基线、owner 产品拥有者均不过期。
+// 与地端 roleScope.getEffectiveRoles 对齐（地端云端双通）：权限判定走 effectiveRoles，hasRole 保留原义。
+const EXPIRABLE_ROLES = ['guide', 'admin'];
+const getEffectiveRoles = (profile) => {
+  const roles = normalizeRoles(profile && profile.roles, profile && profile.role);
+  if (!isRoleExpired(profile)) return roles;
+  return roles.filter(role => !EXPIRABLE_ROLES.includes(role));
+};
 const roleLabel = (role) => {
   const labels = {
     owner: '产品拥有者',
@@ -267,7 +275,7 @@ const getCallerProfile = async (eventContext = {}) => {
 };
 
 const isOwnerOrAdmin = profile => (
-  profile && (hasRole(profile, 'owner') || hasRole(profile, 'admin'))
+  profile && (getEffectiveRoles(profile).includes('owner') || getEffectiveRoles(profile).includes('admin'))
 );
 
 const assertProfile = (profile) => {
@@ -279,10 +287,12 @@ const assertApprovedProfile = (profile, allowedRoles = []) => {
   if (normalizeReviewStatus(profile.reviewStatus || profile.status) !== REVIEW_STATUS.APPROVED) {
     throw new Error('当前账号尚未通过管理员审核');
   }
-  if (isRoleExpired(profile)) {
+  const effectiveRoles = getEffectiveRoles(profile);
+  // 到期只收回 guide/admin；仍有有效角色(如 customer 基线)即可用，无任何有效角色才算过期。
+  if (!effectiveRoles.length) {
     throw new Error('当前账号使用期限已过');
   }
-  if (allowedRoles.length && !hasAnyRole(profile, allowedRoles)) {
+  if (allowedRoles.length && !allowedRoles.some(role => effectiveRoles.includes(role))) {
     throw new Error('当前账号没有此操作权限');
   }
 };
@@ -290,7 +300,7 @@ const assertApprovedProfile = (profile, allowedRoles = []) => {
 const canManageProduct = (product, profile) => {
   if (!profile || !product) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (hasRole(profile, 'guide')) return sameId(product.ownerOpenId, profile.openId);
+  if (getEffectiveRoles(profile).includes('guide')) return sameId(product.ownerOpenId, profile.openId);
   if (hasRole(profile, 'provider')) return sameId(product.providerId, profile.providerId || profile.id);
   return false;
 };
@@ -300,7 +310,7 @@ const canViewProduct = (product, profile) => {
   if (isOwnerOrAdmin(profile)) return true;
   const isPublishedPublic = Number(product.status) === PRODUCT_STATUS.PUBLISHED
     && product.visibility !== 'private';
-  if (hasRole(profile, 'guide')) {
+  if (getEffectiveRoles(profile).includes('guide')) {
     return sameId(product.ownerOpenId, profile.openId) || isPublishedPublic;
   }
   if (hasRole(profile, 'provider')) return sameId(product.providerId, profile.providerId || profile.id);
@@ -311,7 +321,7 @@ const canViewProduct = (product, profile) => {
 const canManageGroupOrder = (groupOrder, profile) => {
   if (!profile || !groupOrder) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (!hasRole(profile, 'guide')) return false;
+  if (!getEffectiveRoles(profile).includes('guide')) return false;
   const authorizedOpenIds = groupOrder.authorizedGuideOpenIds || [];
   const authorizedUserIds = groupOrder.authorizedGuideIds || [];
   return sameId(groupOrder.guideOpenId, profile.openId)
@@ -673,7 +683,7 @@ const normalizeOrder = order => ({
 const canManageOrder = async (order, profile) => {
   if (!profile || !order) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (!hasRole(profile, 'guide')) return false;
+  if (!getEffectiveRoles(profile).includes('guide')) return false;
   const groupOrder = await getById('groupOrders', order.groupOrderId);
   return canManageGroupOrder(groupOrder, profile);
 };

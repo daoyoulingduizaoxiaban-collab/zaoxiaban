@@ -6,6 +6,7 @@ import {
   REVIEW_STATUS,
   isApprovedProfile,
   isRoleExpired,
+  getEffectiveRoles,
   normalizeReviewStatus,
   normalizeRoles,
 } from './roleScope';
@@ -255,7 +256,8 @@ export const AuthService = {
     if (!profile) return 'logged_out';
     if (profile.isVisitorPreview) return 'logged_out';
     const status = normalizeReviewStatus(profile.reviewStatus || profile.status);
-    if (status === REVIEW_STATUS.APPROVED && isRoleExpired(profile)) return 'expired';
+    // 到期但仍有有效角色（如 customer 基线）→ 视为 approved（客户功能仍在）；无任何有效角色才算 expired。
+    if (status === REVIEW_STATUS.APPROVED && isRoleExpired(profile) && getEffectiveRoles(profile).length === 0) return 'expired';
     if (status === REVIEW_STATUS.APPROVED) return 'approved';
     if (status === REVIEW_STATUS.REJECTED) return 'rejected';
     if (status === REVIEW_STATUS.DISABLED) return 'disabled';

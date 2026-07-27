@@ -110,25 +110,37 @@ export const isRoleExpired = (profile, now = Date.now()) => {
   return Boolean(expiryTime && expiryTime < now);
 };
 
-export const isApprovedProfile = profile => Boolean(
-  profile
-  && !isRoleExpired(profile)
-  && (
-    profile.isMockOpenId
+// 可过期的「提升角色」：到期后收回 guide/admin；customer 为基线、owner 为产品拥有者，均不过期。
+// 例：customer+guide 到期 → effectiveRoles=[customer]，客户功能仍在、团主功能关（C2/A8）。
+// 权限/可见性判定一律走 effectiveRoles；hasRole 保持「原始角色成员」语义供展示等使用。
+const EXPIRABLE_ROLES = [AUTH_ROLES.GUIDE, AUTH_ROLES.ADMIN];
+
+export const getEffectiveRoles = (profile) => {
+  const roles = normalizeRoles(profile);
+  if (!isRoleExpired(profile)) return roles;
+  return roles.filter(role => !EXPIRABLE_ROLES.includes(role));
+};
+
+export const isApprovedProfile = (profile) => {
+  if (!profile) return false;
+  const approvedByStatus = profile.isMockOpenId
     || profile.qaOverride
-    || normalizeReviewStatus(profile.reviewStatus || profile.status) === REVIEW_STATUS.APPROVED
-  )
-);
+    || normalizeReviewStatus(profile.reviewStatus || profile.status) === REVIEW_STATUS.APPROVED;
+  if (!approvedByStatus) return false;
+  // 到期后只要仍有有效角色（如 customer 基线）即可用；无任何有效角色才算过期。
+  return getEffectiveRoles(profile).length > 0;
+};
 
 export const isOwnerOrAdmin = profile => (
-  isApprovedProfile(profile) && (hasRole(profile, AUTH_ROLES.OWNER) || hasRole(profile, AUTH_ROLES.ADMIN))
+  isApprovedProfile(profile)
+  && (getEffectiveRoles(profile).includes(AUTH_ROLES.OWNER) || getEffectiveRoles(profile).includes(AUTH_ROLES.ADMIN))
 );
 
 export const getRoleLabel = role => ROLE_LABELS[role] || '未定义角色';
 
 // 供应商实体管理：团主维护自己的供应商，owner/admin 可管全局。
 export const canUseProviderPortal = profile => (
-  isOwnerOrAdmin(profile) || (isApprovedProfile(profile) && hasRole(profile, AUTH_ROLES.GUIDE))
+  isOwnerOrAdmin(profile) || (isApprovedProfile(profile) && getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE))
 );
 
 export const canUseAdminPortal = profile => isOwnerOrAdmin(profile);
@@ -136,14 +148,17 @@ export const canUseAdminPortal = profile => isOwnerOrAdmin(profile);
 export const canUseFeature = (profile, featureKey) => {
   if (!isApprovedProfile(profile)) return false;
   const allowedRoles = FEATURE_ALLOWED_ROLES[featureKey] || [];
-  return normalizeRoles(profile).some(role => allowedRoles.includes(role));
+  return getEffectiveRoles(profile).some(role => allowedRoles.includes(role));
 };
 
 export const getRoleScopeText = (profile, featureKey) => {
   if (!profile) return '请先登录后继续使用';
   if (!isApprovedProfile(profile)) return '当前账号暂无权限，请联系管理员';
 
-  const { role } = profile;
+  // 多角色/到期：按有效角色取最高优先级对应文案（owner/admin>guide>customer），单一 role 不再是唯一来源。
+  const effectiveRoles = getEffectiveRoles(profile);
+  const role = [AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN, AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER]
+    .find(r => effectiveRoles.includes(r)) || profile.role;
   const textMap = {
     [FEATURE_KEYS.GROUP_ORDERS]: {
       [AUTH_ROLES.GUIDE]: '仅显示你创建或被授权管理的团单',
@@ -174,7 +189,7 @@ export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = [
   if (!isApprovedProfile(profile)) return [];
   if (isOwnerOrAdmin(profile)) return groupOrders;
 
-  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
+  if (getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) {
     return groupOrders.filter((order) => {
       const authorizedGuideIds = order.authorizedGuideIds || [];
       return sameId(order.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
@@ -196,7 +211,7 @@ export const filterGroupOrdersByRole = (groupOrders, profile, customerOrders = [
 export const canManageGroupOrder = (groupOrder, profile) => {
   if (!profile || !groupOrder) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (!hasRole(profile, AUTH_ROLES.GUIDE)) return false;
+  if (!getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) return false;
   const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
   return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
 };
@@ -205,7 +220,7 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
   if (!isApprovedProfile(profile)) return [];
   if (isOwnerOrAdmin(profile)) return customerOrders;
 
-  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
+  if (getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) {
     const visibleGroupOrderIds = groupOrders
       .filter((order) => {
         const authorizedGuideIds = order.authorizedGuideIds || [];
@@ -232,7 +247,7 @@ export const filterProductsByRole = (products, profile) => {
   if (!isApprovedProfile(profile)) return publicProducts;
   if (isOwnerOrAdmin(profile)) return activeProducts;
 
-  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
+  if (getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) {
     return activeProducts.filter(product => (
       !product.ownerUserId
       || sameId(product.ownerUserId, profile.id)
@@ -254,7 +269,7 @@ export const filterProductsByRole = (products, profile) => {
 export const canManageProduct = (product, profile) => {
   if (!isApprovedProfile(profile) || !product) return false;
   if (isOwnerOrAdmin(profile)) return true;
-  if (hasRole(profile, AUTH_ROLES.GUIDE)) {
+  if (getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) {
     return !product.ownerUserId || sameId(product.ownerUserId, profile.id);
   }
   if (hasRole(profile, AUTH_ROLES.PROVIDER)) {
