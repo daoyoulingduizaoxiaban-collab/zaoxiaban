@@ -3,6 +3,12 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
+// 【消息机制说明·勿删】当前「消息」= 订单状态提醒：读用户可见订单，按订单状态(待付款/待确认/
+// 已完成/已取消)在客户端现算生成提醒列表，点击跳订单。已读状态存本地 storage。
+// ⚠️ 目前【没有真正的推播】(手机弹通知)。若之后要做真推送，需另立项：
+//   接微信「订阅消息」(subscribeMessage 用户授权 + 模板) + 云端在订单状态变更时触发下发。
+// 用户 2026-07-27 决定：真推送暂不做，先保留此注解备用。
+
 const READ_MESSAGE_KEY = 'dao_you_ling_read_messages';
 
 const readMessageIds = () => {
