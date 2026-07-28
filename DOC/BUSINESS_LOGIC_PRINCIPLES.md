@@ -89,6 +89,7 @@ profile 增加/使用团主申请子结构，至少包含：
 规则：
 
 - 客户提交团主申请后，`guideApplication.status = pending`，**账户仍是 approved 客户**，客户功能不受影响，团主功能尚不开放。
+- 提交申请后，申请页（`pages/tourGuides/edit` pending 态）**显示系统管理员微信二维码**，引导申请者扫码加管理员好友、私聊沟通确认；管理员线下沟通后再在审核页通过。管理员二维码图片暂以项目内固定资源提供（`/static/account/*.jpeg`）。
 - owner/admin 审核通过：`roles[]` 追加 `guide`，`guideApplication.status = approved`，写操作记录。
 - 审核拒绝：`guideApplication.status = rejected`，`roles[]` 不变（仍是客户）。
 - 团主角色期限已过：即使仍能登录并作为客户使用，也不得继续使用团主功能，须显示正式不可用状态并引导联系管理员续期；客户功能不受影响。

@@ -1,7 +1,14 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
-  <view wx:if="{{!canSave}}" class="empty-state">
+  <!-- 已提交团主申请(pending)：显示系统管理员微信 QR，引导加好友私聊，等待审核通过。 -->
+  <view wx:if="{{isGuideApplicant}}" class="applicant-qr">
+    <view class="applicant-qr__title">团主申请已提交</view>
+    <view class="applicant-qr__desc">请扫码添加系统管理员微信好友，私聊沟通确认；管理员审核通过后，即可开始使用团主功能。</view>
+    <image class="applicant-qr__img" src="/static/account/ivy.jpeg" mode="widthFix" show-menu-by-longpress bindtap="previewAdminQr" />
+    <view class="applicant-qr__tip">点击可放大 · 长按可保存/识别二维码</view>
+  </view>
+  <view wx:elif="{{!canSave}}" class="empty-state">
     <t-empty icon="info-circle" description="{{disabledReason}}" />
   </view>
   <view wx:elif="{{pageErrorText}}" class="empty-state">

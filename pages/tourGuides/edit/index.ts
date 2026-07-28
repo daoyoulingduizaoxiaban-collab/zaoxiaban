@@ -15,6 +15,7 @@ Page({
   data: {
     pageTitle: '新增团主',
     isEdit: false,
+    isGuideApplicant: false,
     canSave: false,
     canEditStatus: false,
     disabledReason: '',
@@ -76,6 +77,7 @@ Page({
       pageTitle,
       canSave,
       isApplicationMode,
+      isGuideApplicant,
       submitText: isApplicationMode ? '提交团主申请' : '保存团主',
       canEditStatus: isOwnerOrAdmin(profile),
       disabledReason,
@@ -162,9 +164,22 @@ Page({
       return;
     }
     this.setData({ isDirty: false });
+    const wasApplication = this.data.isApplicationMode;
     AuthService.updateCurrentProfile(res.data);
-    wx.showToast({ title: this.data.isApplicationMode ? '申请已提交' : '团主资料已保存', icon: 'success' });
-    setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
+    wx.showToast({ title: wasApplication ? '申请已提交' : '团主资料已保存', icon: 'success' });
+    // 申请模式：重渲染成 pending 态、当场显示管理员 QR（引导加好友），不跳走；其它情况按原逻辑返回。
+    setTimeout(() => {
+      if (wasApplication) {
+        this.initPage({});
+      } else {
+        navigateBackOrTab('/pages/my/index');
+      }
+    }, 300);
+  },
+
+  previewAdminQr() {
+    const url = '/static/account/ivy.jpeg';
+    wx.previewImage({ current: url, urls: [url], fail: () => wx.showToast({ title: '预览失败', icon: 'none' }) });
   },
 
   onBack() {
