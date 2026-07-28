@@ -153,7 +153,8 @@ Page({
     const {
       id
     } = e.currentTarget.dataset;
-    navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}&readonly=1`, {
+    // 不再强制 readonly：由后端 canManageGroupOrder 按归属决定视图——管理者看管理视图(含分享/QR)，客户看客户视图。
+    navigateByUrl(`/sub-pages/groupOrder/detail/index?id=${id}`, {
       fail: () => {
         wx.showToast({
           title: '打开详情页失败',
