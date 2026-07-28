@@ -1,5 +1,6 @@
 <view class="sub-nav" style="height: {{navHeight}}px; padding-top: {{statusHeight}}px;">
-  <button class="sub-nav__back" bindtap="onBack">返回</button>
+  <button wx:if="{{!hideBack}}" class="sub-nav__back" bindtap="onBack">返回</button>
+  <view wx:else class="sub-nav__side"></view>
   <view class="sub-nav__title">{{title}}</view>
   <view class="sub-nav__side"></view>
 </view>

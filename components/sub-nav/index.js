@@ -17,6 +17,11 @@ Component({
     customBack: {
       type: Boolean,
       value: false
+    },
+    // 隐藏返回按钮（如登录 gate 入口：只有登录一步、无返回，但保留导航栏占位不跑版）。
+    hideBack: {
+      type: Boolean,
+      value: false
     }
   },
   lifetimes: {
