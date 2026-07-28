@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { normalizeRouteUrl, redirectByUrl } from '~/utils/navigation';
 import { isLocalIdentityEnabled, getLocalIdentityLabel, setLocalIdentity } from '~/services/auth/localIdentity';
+import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
   data: {
@@ -9,6 +10,8 @@ Page({
     redirectTo: '/pages/my/index',
     // gate=1（未登录被 reLaunch 进来）：隐藏返回，作为唯一入口，只有登录一步。
     isGate: false,
+    // 显示名称：微信已停用自动取昵称，只能用 type=nickname 让用户点一次填；登录时一并存进 displayName。
+    nickname: '',
     // 本地测试多人身份（仅 DEV+local 显示；留空＝owner，填名字/扫码带 ?tester= ＝独立账号）
     showLocalIdentity: false,
     localIdentity: '',
@@ -23,6 +26,10 @@ Page({
       localIdentity: getLocalIdentityLabel(),
       isGate: String(options.gate || '') === '1',
     });
+  },
+
+  onNicknameInput(e) {
+    this.setData({ nickname: (e.detail && e.detail.value) || '' });
   },
 
   onLocalIdentityInput(e) {
@@ -54,6 +61,17 @@ Page({
         icon: 'none',
       });
 
+      // 登录时若填了昵称，存进 displayName（首页顶部即显示该名称；微信无法自动取昵称，只能这样一次性设定）。
+      const nickname = String(this.data.nickname || '').trim();
+      if (nickname && nickname !== profile.displayName) {
+        const saved = await DirectoryRepository.saveUser({ id: profile.id, name: nickname, displayName: nickname });
+        if (saved && saved.success && saved.data) {
+          AuthService.updateCurrentProfile(saved.data);
+          getApp().globalData.userInfo = saved.data;
+          this.navigateAfterLogin();
+          return;
+        }
+      }
       getApp().globalData.userInfo = profile;
       this.navigateAfterLogin();
     } catch (err) {

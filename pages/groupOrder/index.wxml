@@ -51,9 +51,6 @@
           <text class="group-card__stat">已收 ¥{{ item.totalReceived || 0 }} / 应收 ¥{{ item.totalReceivable || 0 }}</text>
         </view>
       </view>
-      <view class="group-card__footer" wx:if="{{ item.canManage }}">
-        <t-button size="small" theme="primary" variant="outline" bind:tap="editItinerary" data-id="{{ item.id }}">编辑团单</t-button>
-      </view>
     </view>
   </page-state>
 

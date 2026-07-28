@@ -12,6 +12,11 @@
       <view class="login__local-identity-tip">不同人填不同身份＝各自独立账号（默认客户，可在用户审核升级团主）。</view>
     </view>
 
+    <view class="login__nickname">
+      <input class="login__nickname-input" type="nickname" value="{{nickname}}" placeholder="显示名称（点此填写／带出微信昵称，选填）" bindinput="onNicknameInput" bindblur="onNicknameInput" />
+      <view class="login__nickname-tip">微信不允许自动读取昵称，填一次后首页即显示该名称。</view>
+    </view>
+
     <view class="login__button">
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
         微信登录
