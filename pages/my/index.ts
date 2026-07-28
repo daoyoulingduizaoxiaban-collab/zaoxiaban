@@ -45,6 +45,11 @@ Page({
   },
 
   onShow() {
+    // 未登录：直接进「微信登录」页（跳过"登录后继续"中间卡片）。登录成功回本页、失败留在登录页。
+    if (!AuthService.getCurrentProfile()) {
+      this.onLogin();
+      return;
+    }
     // 立即用本地已存档渲染（不等后端），避免首屏空白 1 秒。
     this.renderProfileView();
     // 后台校验登录状态；仅当身份/状态真的变了才重渲染，避免无谓闪烁。
