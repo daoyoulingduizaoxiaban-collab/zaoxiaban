@@ -10,7 +10,8 @@
   <view class="field-card">
     <view class="field-row">
       <text class="field-label">用户名</text>
-      <input class="field-input" value="{{personInfo.name}}" placeholder="请输入用户名" bindinput="onNameChange" />
+      <!-- type=nickname：微信官方唯一合规取昵称方式（getUserProfile 已停用），点一下可带出微信昵称，再自行修改。 -->
+      <input class="field-input" type="nickname" value="{{personInfo.name}}" placeholder="点此填写/带出微信昵称" bindinput="onNameChange" bindblur="onNameChange" />
     </view>
     <view class="field-row">
       <text class="field-label">手机号</text>

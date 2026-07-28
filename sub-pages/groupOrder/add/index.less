@@ -1,6 +1,7 @@
 .add-container {
   padding-top: 10rpx;
-  padding-bottom: 200rpx;
+  /* 底部固定 footer 是双按钮(约 232rpx)+安全区，留足空间否则商品设置区被盖住滚不到(#7)。 */
+  padding-bottom: calc(360rpx + env(safe-area-inset-bottom));
   background-color: #f6f6f6;
   min-height: 100vh;
   box-sizing: border-box;
