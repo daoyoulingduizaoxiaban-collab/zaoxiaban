@@ -32,6 +32,12 @@ Page({
     datePickerVisible: false,
     pickerField: '',
     pickerValue: '',
+    // #8 开团内嵌新增商品：填 名称+起订量+总价（支援小数），加入 selectedGoods（不必先去商品库）。
+    newProduct: {
+      title: '',
+      minQuantity: '1',
+      totalPrice: '',
+    },
     formData: {
       title: '',
       description: '',
@@ -185,6 +191,43 @@ Page({
     const { index } = e.currentTarget.dataset;
     const selectedGoods = this.data.selectedGoods.filter((_, itemIndex) => itemIndex !== Number(index));
     this.setData({ selectedGoods });
+  },
+
+  // #8 内嵌新增商品：输入变更。
+  onNewProductInput(e: any) {
+    const { field } = e.currentTarget.dataset;
+    if (!field) return;
+    this.setData({ [`newProduct.${field}`]: e.detail.value });
+  },
+
+  // #8/#1 加入商品：填「起订量+总价(支援小数)」→ 换算 unitPrice 存，下单计价逻辑不变。
+  addProductInline() {
+    const { title, minQuantity, totalPrice } = this.data.newProduct;
+    const name = String(title || '').trim();
+    const mq = Number(minQuantity);
+    const tp = Number(totalPrice);
+    if (!name) return wx.showToast({ title: '请输入商品名称', icon: 'none' });
+    if (!Number.isFinite(mq) || mq < 1) return wx.showToast({ title: '起订量需 ≥ 1', icon: 'none' });
+    if (!Number.isFinite(tp) || tp <= 0) return wx.showToast({ title: '请输入有效总价', icon: 'none' });
+    const unitPrice = tp / mq; // 支援小数，如 6 件总价 500 → 单价 83.33
+    const product = {
+      id: `inline-${Date.now()}`,
+      title: name,
+      coverUrl: '',
+      // 必须 status=2(上架)，否则客户下单页按 status===2 过滤会看不到本商品。
+      status: 2,
+      priceSetting: [{
+        minQuantity: mq,
+        unitPrice,
+        totalPrice: tp,
+        description: `${mq} 件 总价 ¥${tp}`,
+      }],
+    };
+    this.setData({
+      selectedGoods: [...this.data.selectedGoods, product],
+      newProduct: { title: '', minQuantity: '1', totalPrice: '' },
+    });
+    wx.showToast({ title: '已加入商品', icon: 'none' });
   },
 
   onGoodsImageError(e: any) {

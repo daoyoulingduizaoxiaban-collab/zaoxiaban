@@ -61,7 +61,7 @@
           <view class="goods-title">{{item.title}}</view>
           <view class="price-tags-wrapper">
             <view class="price-badge" wx:for="{{item.priceSetting}}" wx:for-item="price" wx:key="minQuantity">
-              {{price.minQuantity}}件起: ¥{{price.unitPrice}}
+              {{price.minQuantity}}件 ¥{{price.totalPrice || price.unitPrice}}
             </view>
           </view>
         </view>
@@ -69,7 +69,18 @@
       </view>
     </view>
 
-    <view class="add-goods-btn-wrap" wx:if="{{selectedGoods.length === 0}}">请使用底部按钮添加团单商品</view>
+    <view class="add-goods-btn-wrap" wx:if="{{selectedGoods.length === 0}}">还没有商品，用下方表单直接新增</view>
+
+    <!-- #8 内嵌新增商品：不必先去商品库，填名称+起订量+总价(支援小数)直接加入。 -->
+    <view class="inline-product">
+      <view class="inline-product__label">新增商品</view>
+      <input class="inline-product__input" placeholder="商品名称" value="{{newProduct.title}}" data-field="title" bindinput="onNewProductInput" />
+      <view class="inline-product__row">
+        <input class="inline-product__input inline-product__input--half" type="number" placeholder="起订量(件)" value="{{newProduct.minQuantity}}" data-field="minQuantity" bindinput="onNewProductInput" />
+        <input class="inline-product__input inline-product__input--half" type="digit" placeholder="这一档总价(元,可小数)" value="{{newProduct.totalPrice}}" data-field="totalPrice" bindinput="onNewProductInput" />
+      </view>
+      <button class="inline-product__add" bindtap="addProductInline">+ 加入商品</button>
+    </view>
   </view>
 
   <t-date-time-picker
@@ -82,7 +93,6 @@
   />
 
   <view class="footer">
-    <t-button class="footer-action" theme="primary" variant="outline" size="large" block bindtap="onSelectGoods">+ 添加团单商品</t-button>
     <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="onSave">{{isEdit ? '保存团单' : '新建团单'}}</t-button>
   </view>
 </view>
