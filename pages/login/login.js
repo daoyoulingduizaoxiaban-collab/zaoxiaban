@@ -7,6 +7,8 @@ Page({
     isSubmitting: false,
     authNotice: '登录后即可浏览团单、下单与查看订单。想开团管理，可在「我的」申请成为团主。',
     redirectTo: '/pages/my/index',
+    // gate=1（未登录被 reLaunch 进来）：隐藏返回，作为唯一入口，只有登录一步。
+    isGate: false,
     // 本地测试多人身份（仅 DEV+local 显示；留空＝owner，填名字/扫码带 ?tester= ＝独立账号）
     showLocalIdentity: false,
     localIdentity: '',
@@ -19,6 +21,7 @@ Page({
       redirectTo: normalizeRouteUrl(options.redirectTo),
       showLocalIdentity: isLocalIdentityEnabled(),
       localIdentity: getLocalIdentityLabel(),
+      isGate: String(options.gate || '') === '1',
     });
   },
 

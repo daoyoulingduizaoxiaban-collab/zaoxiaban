@@ -45,9 +45,9 @@ Page({
   },
 
   onShow() {
-    // 未登录：直接进「微信登录」页（跳过"登录后继续"中间卡片）。登录成功回本页、失败留在登录页。
+    // 未登录：reLaunch 进「微信登录」页(gate 模式:清栈+无返回=只有一步)。成功回本页、失败留登录页。
     if (!AuthService.getCurrentProfile()) {
-      this.onLogin();
+      wx.reLaunch({ url: '/pages/login/login?gate=1' });
       return;
     }
     // 立即用本地已存档渲染（不等后端），避免首屏空白 1 秒。
