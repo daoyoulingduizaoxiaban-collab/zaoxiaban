@@ -61,8 +61,13 @@ Page({
         icon: 'none',
       });
 
-      // 登录时若填了昵称，存进 displayName（首页顶部即显示该名称；微信无法自动取昵称，只能这样一次性设定）。
+      // 微信无法自动取昵称 → 首次登录强制填显示名称（#F5 决策），保证人人有名、永不显示「微信用户」。
       const nickname = String(this.data.nickname || '').trim();
+      const hasRealName = profile.displayName && profile.displayName !== '微信用户';
+      if (!hasRealName && !nickname) {
+        wx.showToast({ title: '首次登录请先填写显示名称', icon: 'none' });
+        return; // 停在登录页强制填名（finally 会复位提交态）
+      }
       if (nickname && nickname !== profile.displayName) {
         const saved = await DirectoryRepository.saveUser({ id: profile.id, name: nickname, displayName: nickname });
         if (saved && saved.success && saved.data) {
