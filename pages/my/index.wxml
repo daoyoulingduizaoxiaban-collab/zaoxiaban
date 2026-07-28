@@ -9,7 +9,7 @@
         <view class="my-info__person" slot="description">
           <view class="name">
             {{personalInfo.name}}
-            <text class="copy-id" catchtap="onCopyOpenId">复制ID</text>
+            <text wx:if="{{isDev}}" class="copy-id" catchtap="onCopyOpenId">复制ID</text>
           </view>
           <view class="tags">
             <t-tag class="tag" variant="light">{{personalInfo.star}}</t-tag>

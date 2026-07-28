@@ -3,7 +3,7 @@ import { AuthService } from '~/services/auth/authService';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
-import { navigateByUrl } from '~/utils/navigation';
+import { navigateByUrl, navigateBackOrTab } from '~/utils/navigation';
 
 const getPhotoSource = photo => (photo ? (photo.url || photo.path || '') : '');
 const needsCloudUpload = path => Boolean(
@@ -269,6 +269,8 @@ Page({
     }
     AuthService.updateCurrentProfile(res.data);
     wx.showToast({ title: '个人信息已保存', icon: 'success' });
+    // 保存后返回上一页（#F2）。
+    setTimeout(() => navigateBackOrTab('/pages/my/index'), 600);
   },
 
   onLogin() {
