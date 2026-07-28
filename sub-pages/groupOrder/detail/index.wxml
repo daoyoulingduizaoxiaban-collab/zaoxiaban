@@ -116,7 +116,10 @@
             <text class="onsale-item__title">{{item.title}}</text>
             <text wx:if="{{item.description}}" class="onsale-item__desc">{{item.description}}</text>
           </view>
-          <text class="onsale-item__price">{{item.priceDisplay}}</text>
+          <view class="onsale-item__tiers">
+            <text wx:for="{{item.priceTiers}}" wx:for-item="tier" wx:key="minQuantity" class="onsale-item__tier">{{tier.label}}</text>
+            <text wx:if="{{item.priceTiers.length === 0}}" class="onsale-item__tier">{{item.priceDisplay}}</text>
+          </view>
         </view>
         <view wx:if="{{onSaleProducts.length === 0}}" class="empty-msg">本团暂无在售商品</view>
       </view>

@@ -39,17 +39,22 @@
     bind:retry="fetchItineraryList"
     bind:emptycta="onGroupEmptyCta"
   >
-    <t-cell-group theme="card">
-      <block wx:for="{{ itineraryList }}" wx:key="id">
-        <t-cell title="{{ item.title }}" note="{{ item.statusText }}" description="{{ item.description }}" hover arrow="{{false}}"
-          bind:tap="viewItinerary" data-id="{{ item.id }}" t-class-note="status-{{ item.status }}">
-          <t-icon slot="left-icon" name="bulletpoint" size="44rpx" color="#0052d9" />
-        </t-cell>
-        <view class="group-stats" wx:if="{{item.canManage}}">
-          <text class="group-meta">人数 {{item.totalCustomers || 0}}｜已收 ¥{{item.totalReceived || 0}} / 应收 ¥{{item.totalReceivable || 0}}</text>
+    <view class="group-card" wx:for="{{ itineraryList }}" wx:key="id">
+      <view class="group-card__body" bind:tap="viewItinerary" data-id="{{ item.id }}">
+        <view class="group-card__head">
+          <text class="group-card__title">{{ item.title }}</text>
+          <text class="group-card__status status-{{ item.status }}">{{ item.statusText }}</text>
         </view>
-      </block>
-    </t-cell-group>
+        <text class="group-card__desc" wx:if="{{ item.description }}">{{ item.description }}</text>
+        <view class="group-card__stats" wx:if="{{ item.canManage }}">
+          <text class="group-card__stat">人数 {{ item.totalCustomers || 0 }}</text>
+          <text class="group-card__stat">已收 ¥{{ item.totalReceived || 0 }} / 应收 ¥{{ item.totalReceivable || 0 }}</text>
+        </view>
+      </view>
+      <view class="group-card__footer" wx:if="{{ item.canManage }}">
+        <t-button size="small" theme="primary" variant="outline" bind:tap="editItinerary" data-id="{{ item.id }}">编辑团单</t-button>
+      </view>
+    </view>
   </page-state>
 
   <t-fab wx:if="{{canCreateGroupOrder}}" icon="add" bind:tap="addItinerary" aria-label="新建团单"

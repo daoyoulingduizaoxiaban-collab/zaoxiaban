@@ -163,6 +163,14 @@ Page({
     });
   },
 
+  // 列表卡片直接编辑团单（#C4）：进开团页编辑模式。
+  editItinerary(e) {
+    const { id } = e.currentTarget.dataset;
+    navigateByUrl(`/sub-pages/groupOrder/add/index?id=${id}&from=${encodeURIComponent('/pages/groupOrder/index')}`, {
+      fail: () => wx.showToast({ title: '打开编辑团单失败', icon: 'none' }),
+    });
+  },
+
   async onShow() {
     if ((this as any)._skipNextShowRefresh) {
       (this as any)._skipNextShowRefresh = false;

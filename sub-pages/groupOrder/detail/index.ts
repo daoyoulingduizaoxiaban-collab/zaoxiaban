@@ -21,6 +21,16 @@ const buildPriceDisplay = (priceSetting = []) => {
   return min === max ? `￥${min}` : `￥${min} ~ ￥${max}`;
 };
 
+const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
+// 每一档价格区间的可读文案，优先显示总价（#C1 让客户看到全部区间，如「3件 ¥30」「5件 ¥45」）。
+const buildPriceTiers = (priceSetting = []) => (priceSetting || [])
+  .map(rule => ({
+    minQuantity: Number(rule.minQuantity || 0),
+    label: `${Number(rule.minQuantity || 0)}件 ￥${roundMoney(rule.totalPrice || rule.unitPrice)}`,
+  }))
+  .filter(tier => tier.minQuantity > 0)
+  .sort((a, b) => a.minQuantity - b.minQuantity);
+
 // 客户视图「本团在售商品」：仅取快照中「上架(status=2)」的商品对外展示（A6）。
 const buildOnSaleProducts = (productList = []) => (productList || [])
   .filter(product => Number(product.status) === 2)
@@ -29,6 +39,7 @@ const buildOnSaleProducts = (productList = []) => (productList || [])
     title: product.title,
     description: product.description || '',
     priceDisplay: buildPriceDisplay(product.priceSetting),
+    priceTiers: buildPriceTiers(product.priceSetting),
   }));
 
 Page({
