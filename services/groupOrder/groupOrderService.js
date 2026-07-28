@@ -8,11 +8,12 @@ import { filterFormalProducts } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
 
+const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
 const getProductPriceDisplay = (product) => {
   const prices = (product.priceSetting || []).map(rule => normalizeNumber(rule.unitPrice)).filter(price => price > 0);
   if (prices.length === 0) return '未设置价格';
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
+  const minPrice = roundMoney(Math.min(...prices));
+  const maxPrice = roundMoney(Math.max(...prices));
   return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
 };
 const parseDateTime = value => {

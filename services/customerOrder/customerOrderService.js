@@ -9,6 +9,8 @@ import { filterFormalProducts } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
 const trimText = value => String(value || '').trim();
+// 金额按「分」四舍五入，避免小数单价（如总价500/6件=83.333…）算出 499.9999… 的浮点垃圾。
+const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
 
 const getBestPriceRule = (priceSetting = [], quantity = 0) => {
   const count = normalizeNumber(quantity);
@@ -27,8 +29,8 @@ const getBestPriceRule = (priceSetting = [], quantity = 0) => {
 const getProductPriceDisplay = (product) => {
   const prices = (product.priceSetting || []).map(rule => normalizeNumber(rule.unitPrice)).filter(price => price > 0);
   if (prices.length === 0) return '未设置价格';
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
+  const minPrice = roundMoney(Math.min(...prices));
+  const maxPrice = roundMoney(Math.max(...prices));
   return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
 };
 
@@ -152,13 +154,13 @@ export const CustomerOrderService = {
       ...product,
       quantity: count,
       unitPrice,
-      lineTotal: count * unitPrice,
-      selectedRuleText: rule ? `按 ${rule.description || `${rule.minQuantity} 件起`}，单价 ¥${unitPrice}` : '未设置有效价格',
+      lineTotal: roundMoney(count * unitPrice),
+      selectedRuleText: rule ? `按 ${rule.description || `${rule.minQuantity} 件起`}，单价 ¥${roundMoney(unitPrice)}` : '未设置有效价格',
     };
   },
 
   calculateTotal(products) {
-    return (products || []).reduce((sum, product) => sum + normalizeNumber(product.lineTotal), 0);
+    return roundMoney((products || []).reduce((sum, product) => sum + normalizeNumber(product.lineTotal), 0));
   },
 
   validateCreatePayload(payload) {
