@@ -60,6 +60,8 @@ Component({
     getVisibleTabs() {
       const profile = AuthService.getCurrentProfile();
       const tabs = BOTTOM_BAR_LIST.filter((item) => {
+        // #8：商品库入口暂隐藏（改为开团时内嵌新增商品）。页面/数据结构保留，日后拆回只需删此行。
+        if (item.value === 'productManagement') return false;
         if (item.value === 'my') return true;
         const featureKey = TAB_FEATURE_MAP[item.value];
         return featureKey ? canUseFeature(profile, featureKey) : AuthService.canUseBusiness(profile);
