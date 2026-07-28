@@ -111,10 +111,7 @@ export const GroupOrderService = {
     if (!String(groupOrder.endAt || '').trim()) return '请输入收单截止时间';
     const dateWindowError = validateDateWindow(groupOrder.startAt, groupOrder.endAt);
     if (dateWindowError) return dateWindowError;
-    if (!String(groupOrder.pickupNote || '').trim()) return '请输入取货/交付/集合说明';
-    if (!String(groupOrder.paymentNote || '').trim()) return '请输入付款方式或付款备注';
-    if (!String(groupOrder.contactName || '').trim()) return '请输入团主联系人';
-    if (!String(groupOrder.contactPhone || '').trim()) return '请输入联系电话';
+    // 取货/付款/联系人/联系电话 4 栏位已按需求移除（不再必填）。
     return '';
   },
 

@@ -32,48 +32,12 @@
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*出团时间</view>
-      <picker
-        mode="datetime"
-        class="native-textarea"
-        data-field="startAt"
-        bindchange="onDateTimeChange"
-      >
-        <view class="picker-display">{{formData.startAt || '请选择出团时间（如 2026-07-10 09:00）'}}</view>
-      </picker>
+      <view class="picker-display" bindtap="openDatePicker" data-field="startAt">{{formData.startAt || '请选择出团时间（如 2026-07-10 09:00）'}}</view>
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*收单截止</view>
-      <picker
-        mode="datetime"
-        class="native-textarea"
-        data-field="endAt"
-        bindchange="onDateTimeChange"
-      >
-        <view class="picker-display">{{formData.endAt || '请选择收单截止时间（如 2026-07-09 20:00）'}}</view>
-      </picker>
+      <view class="picker-display" bindtap="openDatePicker" data-field="endAt">{{formData.endAt || '请选择收单截止时间（如 2026-07-09 20:00）'}}</view>
     </view>
-    <view class="native-textarea-field">
-      <view class="native-textarea-label">*取货/集合</view>
-      <textarea
-        class="native-textarea"
-        value="{{formData.pickupNote}}"
-        placeholder="说明集合点、取货方式或交付安排"
-        data-field="pickupNote"
-        bindinput="onInput"
-      />
-    </view>
-    <view class="native-textarea-field">
-      <view class="native-textarea-label">*付款说明</view>
-      <textarea
-        class="native-textarea"
-        value="{{formData.paymentNote}}"
-        placeholder="说明付款方式、收款账号、付款后如何备注"
-        data-field="paymentNote"
-        bindinput="onInput"
-      />
-    </view>
-    <t-input label="*联系人" placeholder="团主姓名" value="{{formData.contactName}}" bindchange="onInput" data-field="contactName" />
-    <t-input label="*联系电话" placeholder="团主手机号" value="{{formData.contactPhone}}" bindchange="onInput" data-field="contactPhone" />
     <view class="native-textarea-field">
       <view class="native-textarea-label">客户提示</view>
       <textarea
@@ -107,6 +71,15 @@
 
     <view class="add-goods-btn-wrap" wx:if="{{selectedGoods.length === 0}}">请使用底部按钮添加团单商品</view>
   </view>
+
+  <t-date-time-picker
+    visible="{{datePickerVisible}}"
+    value="{{pickerValue}}"
+    mode="{{['date', 'minute']}}"
+    format="YYYY-MM-DD HH:mm"
+    bindconfirm="onDatePickerConfirm"
+    bindcancel="onDatePickerCancel"
+  />
 
   <view class="footer">
     <t-button class="footer-action" theme="primary" variant="outline" size="large" block bindtap="onSelectGoods">+ 添加团单商品</t-button>

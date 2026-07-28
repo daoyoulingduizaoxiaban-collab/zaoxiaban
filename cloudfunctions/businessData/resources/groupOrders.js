@@ -56,10 +56,7 @@ const validateGroupOrderPayload = (groupOrder) => {
   if (trimText(groupOrder.description).length > 200) return '团单描述最多 200 个字';
   if (!trimText(groupOrder.startAt)) return '请输入出团或活动时间';
   if (!trimText(groupOrder.endAt)) return '请输入收单截止时间';
-  if (!trimText(groupOrder.pickupNote)) return '请输入取货/交付/集合说明';
-  if (!trimText(groupOrder.paymentNote)) return '请输入付款方式或付款备注';
-  if (!trimText(groupOrder.contactName)) return '请输入团主联系人';
-  if (!trimText(groupOrder.contactPhone)) return '请输入联系电话';
+  // 取货/付款/联系人/联系电话 4 栏位已按需求移除（不再必填）。
   return '';
 };
 

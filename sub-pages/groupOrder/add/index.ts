@@ -22,15 +22,14 @@ Page({
     pageErrorText: '',
     isPageLoading: true,
     sourceUrl: '/pages/groupOrder/index',
+    datePickerVisible: false,
+    pickerField: '',
+    pickerValue: '',
     formData: {
       title: '',
       description: '',
       startAt: '',
       endAt: '',
-      pickupNote: '',
-      paymentNote: '',
-      contactName: '',
-      contactPhone: '',
       customerNotice: '',
       status: GroupOrderStatus.OPEN,
     }
@@ -72,11 +71,6 @@ Page({
         description: '',
         startAt: '',
         endAt: '',
-        pickupNote: '',
-        paymentNote: '',
-        // 联系人/电话默认预填团主自己的资料，可再修改
-        contactName: profile && profile.displayName ? profile.displayName : '',
-        contactPhone: profile && profile.phone ? profile.phone : '',
         customerNotice: '',
         status: GroupOrderStatus.OPEN,
       },
@@ -161,13 +155,26 @@ Page({
       [`formData.${field}`]: value
     });
   },
-  onDateTimeChange(e: any) {
+  // 微信原生 picker 无 datetime 合一模式，改用 tdesign date-time-picker（弹层）。
+  openDatePicker(e: any) {
     const { field } = e.currentTarget.dataset;
-    const value = e.detail.value;
     if (!field) return;
     this.setData({
-      [`formData.${field}`]: String(value || '').trim(),
+      pickerField: field,
+      pickerValue: (this.data.formData as any)[field] || '',
+      datePickerVisible: true,
     });
+  },
+  onDatePickerConfirm(e: any) {
+    const field = this.data.pickerField;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : '';
+    if (field) {
+      this.setData({ [`formData.${field}`]: String(value || '').trim() });
+    }
+    this.setData({ datePickerVisible: false });
+  },
+  onDatePickerCancel() {
+    this.setData({ datePickerVisible: false });
   },
 
   onRemoveGoods(e: any) {
@@ -223,10 +230,6 @@ Page({
     if (!String(formData.title || '').trim()) return '请输入团单名称';
     if (!String(formData.startAt || '').trim()) return '请选择出团时间';
     if (!String(formData.endAt || '').trim()) return '请选择收单截止时间';
-    if (!String(formData.pickupNote || '').trim()) return '请输入取货/集合说明';
-    if (!String(formData.paymentNote || '').trim()) return '请输入付款方式或备注';
-    if (!String(formData.contactName || '').trim()) return '请输入团主联系人';
-    if (!String(formData.contactPhone || '').trim()) return '请输入联系电话';
     if (!selectedGoods.length) return '请至少添加一件团单商品';
     return '';
   },
