@@ -9,6 +9,13 @@ import { normalizeProductImageFields } from '~/utils/productImage';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
+// 出团时间/收单截止预设「此时此刻」，格式与 date-time-picker 的 format 一致（YYYY-MM-DD HH:mm）。
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const formatNow = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+
 Page({
   data: {
     pageTitle: '开团',
@@ -69,8 +76,9 @@ Page({
       formData: {
         title: '',
         description: '',
-        startAt: '',
-        endAt: '',
+        // 预设此时此刻，避免必填日期空着挡住新建；可再点选修改。
+        startAt: formatNow(),
+        endAt: formatNow(),
         customerNotice: '',
         status: GroupOrderStatus.OPEN,
       },
@@ -129,10 +137,6 @@ Page({
         description: res.data.description || '',
         startAt: res.data.startAt || '',
         endAt: res.data.endAt || '',
-        pickupNote: res.data.pickupNote || '',
-        paymentNote: res.data.paymentNote || '',
-        contactName: res.data.contactName || '',
-        contactPhone: res.data.contactPhone || '',
         customerNotice: res.data.customerNotice || '',
         status: Number(res.data.status || GroupOrderStatus.OPEN),
       },
