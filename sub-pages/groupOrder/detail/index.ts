@@ -223,13 +223,46 @@ Page({
           action: 'update',
           data: { id: this.data.groupOrderId, data: { qrCodeUrl: res.data.fileID } },
         });
+      } else {
+        // 生成失败要让团主看到原因（如云函数未部署/权限问题）；本地后端不支持则静默。
+        const errorText = (res && res.error) || '二维码生成失败';
+        if (errorText.indexOf('本地后端') !== 0) {
+          wx.showToast({ title: `二维码生成失败：${errorText}`, icon: 'none', duration: 3000 });
+        }
       }
-      // 失败静默（本地后端/未部署云函数时不打扰用户，页面保持「暂无团单二维码」）。
     } catch (err) {
-      // 静默同上
+      wx.showToast({ title: '二维码生成失败', icon: 'none' });
     } finally {
       this._qrGenerating = false;
     }
+  },
+
+  // #4 收单状态切换：开放收单(1) ⇄ 停止收单(2)，二次确认后走 groupOrders.update。
+  onToggleStatus() {
+    if (!this.data.canManageGroupOrder) return;
+    const groupOrder = this.data.groupOrder || {};
+    const isOpen = Number(groupOrder.status) === 1;
+    const nextStatus = isOpen ? 2 : 1;
+    const actionText = isOpen ? '停止收单' : '恢复收单';
+    wx.showModal({
+      title: `确认${actionText}？`,
+      content: isOpen ? '停止后客户将不能再对本团下单。' : '恢复后客户可继续对本团下单。',
+      confirmText: actionText,
+      success: async (res) => {
+        if (!res.confirm) return;
+        const result = await callBusinessData({
+          resource: 'groupOrders',
+          action: 'update',
+          data: { id: this.data.groupOrderId, data: { status: nextStatus } },
+        });
+        if (!result.success) {
+          wx.showToast({ title: result.error || '操作失败', icon: 'none' });
+          return;
+        }
+        toastSuccess(RESULT_TEXT.update);
+        this.fetchGroupOrderDetail(this.data.groupOrderId);
+      },
+    });
   },
 
   previewQR() {

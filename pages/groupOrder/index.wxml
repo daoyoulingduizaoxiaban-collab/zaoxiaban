@@ -51,6 +51,10 @@
           <text class="group-card__stat">已收 ¥{{ item.totalReceived || 0 }} / 应收 ¥{{ item.totalReceivable || 0 }}</text>
         </view>
       </view>
+      <view class="group-card__actions" wx:if="{{ item.canManage }}">
+        <text class="group-card__action" data-id="{{ item.id }}" catchtap="onCopyItinerary">复制</text>
+        <text class="group-card__action group-card__action--danger" data-id="{{ item.id }}" catchtap="onDeleteItinerary">删除</text>
+      </view>
     </view>
   </page-state>
 

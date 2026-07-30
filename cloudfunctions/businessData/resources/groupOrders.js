@@ -142,6 +142,17 @@ const groupOrderActions = {
     return success(toId({ ...updated, _id: target._id || target.id }));
   },
 
+  // 删除团单（软删）：仅本团管理者；前端负责双重确认与「未收款订单」提醒。
+  async remove({ id }, profile) {
+    assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
+    const target = await getById('groupOrders', id);
+    if (!target) return failure('未找到团单');
+    if (!canManageGroupOrder(target, profile)) return failure('当前角色不能删除此团单');
+    const deletedAt = nowIso();
+    await getCollection('groupOrders').doc(String(target._id || target.id)).update({ data: { deletedAt, updatedAt: deletedAt } });
+    return success({ id: target._id || target.id });
+  },
+
   async addProducts({ groupOrderId, products = [] }, profile) {
     assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     const target = await getById('groupOrders', groupOrderId);

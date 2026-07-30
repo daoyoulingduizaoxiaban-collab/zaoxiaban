@@ -53,17 +53,11 @@
 
     <view wx:else class="empty-state">
       <text>本团当前没有商品</text>
-      <text wx:if="{{canManageGroupOrder}}" class="sub-text">点击下方按钮从商品库加入</text>
+      <text wx:if="{{canManageGroupOrder}}" class="sub-text">到「编辑团单」里新增商品</text>
     </view>
-    
+
     <view class="list-spacer"></view>
   </scroll-view>
-
-  <view wx:if="{{!pageErrorText && canManageGroupOrder}}" class="footer-bar">
-    <button class="btn-add-new" bindtap="goToLibrary" disabled="{{isLoading}}">
-      <text class="plus">+</text> 从商品库加入
-    </button>
-  </view>
 
   <view wx:if="{{detailVisible}}" class="detail-mask" catchtap="closeProductDetail">
     <view class="detail-panel" catchtap="noop">

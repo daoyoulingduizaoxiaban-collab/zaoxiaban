@@ -2,7 +2,6 @@ import { Product } from "~/models/Product";
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services/auth/roleScope';
-import { navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
@@ -282,60 +281,6 @@ Page({
         }
       }
     });
-  },
-
-  goToLibrary() {
-    if (!this.data.canManageGroupOrder) {
-      wx.showToast({ title: '当前账号不能管理本团商品', icon: 'none' });
-      return;
-    }
-    if (!this.data.groupOrderId) {
-      this.resetDetailState({
-        pageErrorText: '缺少团单 ID，请返回团单详情重新进入。',
-        pendingProductId: '',
-      });
-      return;
-    }
-
-    const existingIds = this.data.rawList.map(item => item.id);
-
-    this.setData({
-      skipNextReload: true
-    });
-
-    navigateByUrl(
-      `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}`,
-      {
-        events: {
-          selectedProducts: (data) => {
-            const selectedProducts = this.normalizeProducts((data.products || []).map(item => new Product(item)));
-            if (selectedProducts.length === 0) return;
-
-            GroupOrderService.addProducts(this.data.groupOrderId, selectedProducts).then((res) => {
-              if (!res.success) {
-                wx.showToast({ title: res.error || '加入商品失败', icon: 'none' });
-                return;
-              }
-              const rawList = this.normalizeProducts(res.data.productList || []);
-              this.setData({
-                rawList,
-                displayList: this.filterList(rawList, this.data.searchQuery)
-              });
-              toastSuccess(RESULT_TEXT.save);
-            });
-          }
-        },
-        fail: () => {
-          this.setData({
-            skipNextReload: false
-          });
-          wx.showToast({
-            title: '打开商品库失败',
-            icon: 'none'
-          });
-        }
-      }
-    );
   },
 
   canManageGroupOrder(groupOrder) {

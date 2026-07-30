@@ -15,7 +15,10 @@
       </view>
       <view class="detail-info-row">
         <text class="detail-info-label">收单状态</text>
-        <text class="detail-info-value">{{groupOrder.statusText || '未填写'}}</text>
+        <view class="detail-info-value detail-status-line">
+          <text>{{groupOrder.statusText || '未填写'}}</text>
+          <text wx:if="{{canManageGroupOrder}}" class="status-toggle" catchtap="onToggleStatus">{{groupOrder.status === 1 ? '停止收单' : '恢复收单'}}</text>
+        </view>
       </view>
       <view class="detail-info-row">
         <text class="detail-info-label">描述</text>

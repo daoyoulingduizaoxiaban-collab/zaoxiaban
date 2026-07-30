@@ -7,6 +7,8 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText, canManageGroupOrder } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { callBusinessData } from '~/repositories/cloudBusinessRepository';
+import { RESULT_TEXT, toastSuccess, toastError } from '~/utils/feedback';
 
 Page({
   // access-state + 三态字段与 helper（buildAccessState/loadingState/threeState）来自 behavior（R1）
@@ -59,7 +61,79 @@ Page({
       statusText: getGroupOrderStatusTextByValue(item.status),
       // 团主/管理层卡显示人数+金额；客户卡因隐私不显（A6）
       canManage: canManageGroupOrder(item, profile),
-    }));
+    }))
+      // 按建立时间新→旧排序
+      .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+  },
+
+  // 复制团单：完整复制（含商品价格档与图片快照），新团单标题加「（副本）」、状态重置为开放收单，
+  // shareToken/二维码由后端与详情页自动重建。
+  async onCopyItinerary(e) {
+    const { id } = e.currentTarget.dataset;
+    if (!id) return;
+    wx.showLoading({ title: '复制中...', mask: true });
+    const detailRes = await callBusinessData({ resource: 'groupOrders', action: 'getById', data: { id } });
+    if (!detailRes.success || !detailRes.data) {
+      wx.hideLoading();
+      toastError(detailRes.error || '读取团单失败');
+      return;
+    }
+    const source = detailRes.data;
+    const createRes = await callBusinessData({
+      resource: 'groupOrders',
+      action: 'create',
+      data: {
+        title: `${String(source.title || '').slice(0, 16)}（副本）`,
+        description: source.description || '',
+        startAt: source.startAt || '',
+        endAt: source.endAt || '',
+        customerNotice: source.customerNotice || '',
+        status: 1,
+        productList: (source.productList || []).map(product => ({ ...product })),
+      },
+    });
+    wx.hideLoading();
+    if (!createRes.success) {
+      toastError(createRes.error || '复制团单失败');
+      return;
+    }
+    toastSuccess(RESULT_TEXT.create);
+    await this.fetchItineraryList();
+  },
+
+  // 删除团单：双重确认；有未收款（已收<应收）时在第二次确认里加醒目提醒（#F1）。软删。
+  onDeleteItinerary(e) {
+    const { id } = e.currentTarget.dataset;
+    const item = (this.data.itineraryList || []).find(entry => String(entry.id) === String(id));
+    if (!id || !item) return;
+    wx.showModal({
+      title: '删除团单',
+      content: `确定要删除「${item.title}」吗？`,
+      confirmText: '删除',
+      confirmColor: '#e34d59',
+      success: (first) => {
+        if (!first.confirm) return;
+        const hasUnpaid = Number(item.totalReceived || 0) < Number(item.totalReceivable || 0);
+        wx.showModal({
+          title: '再次确认删除',
+          content: hasUnpaid
+            ? '⚠ 该团单尚有未收款的客户订单！删除后不可恢复，确定继续？'
+            : '删除后不可恢复，确定继续？',
+          confirmText: '确认删除',
+          confirmColor: '#e34d59',
+          success: async (second) => {
+            if (!second.confirm) return;
+            const res = await callBusinessData({ resource: 'groupOrders', action: 'remove', data: { id } });
+            if (!res.success) {
+              toastError(res.error || '删除团单失败');
+              return;
+            }
+            toastSuccess(RESULT_TEXT.remove);
+            await this.fetchItineraryList();
+          },
+        });
+      },
+    });
   },
 
   // 单一取数路径（合并原 fetchItineraryList 无筛选 与 applyFilters 带筛选）：
