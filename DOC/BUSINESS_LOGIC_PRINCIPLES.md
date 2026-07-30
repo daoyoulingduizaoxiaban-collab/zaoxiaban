@@ -333,7 +333,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 - **客户**：首页 / 团单(我的) / 客户订单(我的) / 我的
 - **团主**（含 customer+guide）：首页 / 团单 / 客户订单 / 我的（**商品库 tab 暂隐藏**，见下）
 - **管理层**：全部（商品库 tab 同样暂隐藏）
-- **⚠ 商品库入口暂隐藏（#8）**：改为「开团时内嵌新增商品」，`custom-tab-bar` 过滤掉 `productManagement`；页面与 `products` 数据结构**保留**，日后可拆回（删过滤行即恢复）。开团页填「商品名称 + 起订量 + 这一档总价」直接加入团单商品（不必先建商品库）。
+- **⚠ 商品库入口暂隐藏（#8），但页面必须保留（团主商品库基础）**：`custom-tab-bar` 过滤掉 `productManagement` tab；开团页填「商品名称 + 起订量 + 这一档总价」直接加入团单商品（不必先建商品库）。**商品库是团主自己的商品库（guide-only，非客户可见，不违反 A2）**，且**已部分在用**：开团页已能「从商品库选品进团单」（`product-picker`，见 `groupOrder/add` 的选品入口）。**规划**：再加「开团内嵌新增的商品可勾选『存入商品库』」，之后即可从 picker 复用、不必每次手打（见 C-PRODUCT-LIB-SAVE）。因此 `productManagement` / `product/list` / `product/add` **不是待删遗留，是保留待拆回/复用的功能基础**，任何「清理隐藏页」都不得删它们。
 - **定价填法（#1）**：商品价格档按「**起订量 + 该档总价（支援小数）**」录入（如买五送一 6 件总价 500）；存储换算 `unitPrice = 总价 / 起订量`（可为小数，如 83.33），客户下单计价仍按 unitPrice × 数量，逻辑不变；展示优先显示总价。
 - **停用/未登录**：仅安全状态页，无业务 tab
 
@@ -422,7 +422,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
   - 判定：以未登录身份逐一打开每个需登录页 → 全部落到登录页（白名单页仅浏览态且无管理操作）；登录后回原页；无权/停用/过期显示正式受限态而非空业务数据；无一页停在原页显示登录后才有的数据。
   - **落地范围（已完成）**：`ebd7037` 收口 `requireLogin()`（`getRealProfile` 判定避开 DEV 预览、1s 去抖防 onLoad+onShow 叠登录页）并覆盖 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 七页；`662e8af` 再补 `sub-pages/groupOrder/add`（开团）、`sub-pages/groupOrder/productList`（本团商品）、`sub-pages/groupOrder/product-picker`（选品）、`sub-pages/product/add`（商品表单）。
   - **不 gate 的例外**：`pages/feedback`（DEV-only 内部工具，`onLoad` 已挡 `!isDev`、不读业务数据）。
-  - **⚠ 隐藏遗留链，不在本项处理**：`pages/productManagement` + `sub-pages/product/list` + `sub-pages/product/add` 属 **#8 已隐藏的独立「商品库」**——`custom-tab-bar` 永久过滤 productManagement，且这两个子页**唯一入口就是那个隐藏的 productManagement 页**，正常 UI 进不去；团主新增商品改走**开团页内嵌**（`groupOrder/add` #8），**本产品没有在用的独立商品库**。其中 `product/list` 现存的「未登录也能浏览商品」分支与 A2「客户无独立商品库浏览入口」相悖，属隐藏遗留待清理（是否删页/删该分支见 B2 #8「日后可拆回」，本项不处理）。
+  - **商品库三页（`productManagement` / `product/list` / `product/add`）属团主商品库、须保留**：tab 虽隐藏，但开团页已用 `product-picker` 从商品库选品，且规划「内嵌新增可存入商品库复用」（B2 #8、C-PRODUCT-LIB-SAVE）。这三页是 **guide-only** 管理页，`product/add` 加 `requireLogin` 守卫正确保留。**唯一待清理**：`product/list` 现存的「未登录也能浏览商品」分支与 A2「客户无独立商品库浏览入口」相悖——商品库既是 guide-only，该分支应改为登录+guide 门控或删除（页面保留，随 C-PRODUCT-LIB-SAVE 一并收拾，本项不动）。
 
 - [ ] **C-DEV-IDENTITY 本地身份模拟便捷开关**
   - 改动：本地 server 支持 `GUIDE_OPENIDS` 便捷 allowlist（仅本地）；`config.localDevOpenId` 说明与默认；按 A8 表让本地可扮 owner/admin/customer/guide。
@@ -465,7 +465,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 ## C4. 团主开团、商品、供应商、团单闭环
 
 - [ ] **C-PRODUCT 团主商品管理**：`pages/productManagement/*`、`services/product/productService.js`、`sub-pages/product/*`。新增/编辑/上下架/软删除自己的商品，含供应商实体关联；上下架用可辨识 toggle（J9）；删除二次确认并提示"下架/软删除，不影响历史团单与订单"（J8）；两套列表明确"管理/浏览"定位（J7）。判定：保存后列表/详情/开团选品即时更新，重开仍在；团主不得改他人商品。
-- [ ] **C-PROVIDER-ENTITY 供应商实体维护**：团主可新增/编辑供应商实体并与商品关联；客户下单页/订单详情展示必要供应商对外信息，不展示内部字段。判定：商品能带出关联供应商信息；停用/删除供应商实体不破坏历史订单追溯。
+- [ ] **C-PRODUCT-LIB-SAVE 团单商品⇄商品库复用（规划·未排期）**：现状——开团页可「从商品库选品进团单」（`product-picker` 已接）+ 内嵌手打新增（#8）。缺反向：团主在开团页内嵌新增商品时，可**勾选「存入商品库」**，把该商品持久化到 `products`（归属该 guide、guide-only），下次开团直接从 `product-picker` 选用、不必每次手打。改动：`sub-pages/groupOrder/add`（内嵌新增区加「存入商品库」开关）、`services/product/productService`（复用商品创建）、按需 `product-picker` 展示。顺带把 `sub-pages/product/list` 的「未登录公开浏览」分支改为登录+guide 门控（商品库是 guide-only，不对客户/游客开放，见 A2）。判定：勾选后商品进商品库、下次可选用、重开仍在；不勾选则仅进本团单不入库；客户/游客无任何商品库浏览入口。
 - [ ] **C-GROUP 开团流程**：`sub-pages/groupOrder/add/*`。出团时间/收单截止用微信日期时间 picker（禁自由文本）、付款说明/取货集合用可编辑模板、必填与格式校验（时间顺序、金额、数量边界）（J5）。判定：空数据有校验提示，picker 保存后可回填。
 - [ ] **C-GROUP-PRODUCT 本团商品**：保存商品/价格/供应商/可售状态快照；下架或供应商停用后新团单不得选用，既有团单保留历史状态。
 - [ ] **C-GUIDE-ORDERVIEW 团主客户订单视图**：`pages/customerOrders/*`。团主查看自己团单下订单与付款状态，可更新订单/团单状态与确认收款；不得看他人团单订单。
@@ -529,6 +529,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 - [ ] **D-PRODUCT**：新增/编辑/上下架(toggle)/软删除(二次确认+风险提示)商品，重开仍在；管理/浏览列表定位清晰。
 - [ ] **D-PROVIDER-ENTITY**：团主新增/编辑供应商实体并与商品关联；下单页/订单详情展示对外供应商信息、不露内部字段；停用/删除供应商实体不破坏历史订单追溯。
+- [ ] **D-PRODUCT-LIB-SAVE（规划）**：开团内嵌新增商品勾「存入商品库」→ 该商品入 `products`（归属本 guide）→ 下次开团从 picker 可选用、重开仍在；不勾选只进本团单不入库；以客户/游客身份确认无任何商品库浏览入口。
 - [ ] **D-GROUP**：开团表单 picker 校验与回填；本团商品快照；下架/停用商品不被新团单选用，历史保留。
 - [ ] **D-GUIDE-ORDERVIEW**：团主看自己团单订单、改状态、确认收款；不得见他人团单订单。
 
