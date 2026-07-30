@@ -267,6 +267,32 @@ profile 增加/使用团主申请子结构，至少包含：
 
 **一致性要求**：以上四类去向与白名单，全站页面必须走**同一套判定与跳转约定**（收口到共享脚手架，见 `behaviors/useAccessPage` 与 C-AUTH-GATE），不得各页各写、有的导登录页有的却停在原页显示空数据。
 
+## A14. 用户目录与用户管理（owner/admin）
+
+owner/admin 必须有一个正式的**用户目录（管理面）**，能**看到全部用户并管理任意一个**，而不是只能处理「待审核团主申请」队列。这是 B1 `userReview` / B5「用户目录 · 改他人资料·角色」的落地要求，与「团主申请审核」是**同一管理域的两个视图**，不得只做申请队列而缺全量目录。
+
+### 目录必须能看到（每位用户）
+
+- 显示名 / 头像、脱敏必要联系资料。
+- **真实 `roles[]`**（不是单一 `displayRole` 文字标签）与 primary role、UI 角色文案。
+- 账户状态 `reviewStatus`（approved / disabled / rejected）。
+- 团主角色期限 `roleExpiresAt`（未设=不限期）、是否已过期。
+- 团主申请状态 `guideApplication.status`（none/pending/approved/rejected）。
+
+### 目录必须能管理（对任意非 owner 用户，不限于 pending）
+
+- **改角色**：按 A2「追加不覆盖」调整 `roles[]`（如授予/收回 guide），保留客户基线，绝不把 `[customer,guide]` 冲成 `[guide]`。
+- **停用 / 恢复**：把 `reviewStatus` 在 approved ⇄ disabled 间切换。
+- **设 / 续 / 清角色期限**：用日期选择器设 `roleExpiresAt`。
+- **审核团主申请**：通过 / 拒绝 pending 申请（并入本域，复用 C-REVIEW 的防误操作）。
+
+### 边界与安全（强制）
+
+- **owner 安全边界**：owner 账户不在可管理列表里被降级/停用；admin 不得改 / 停用 / 指派 owner，也不得把自己或他人升为 owner（沿用 C-REVIEW）。首位 owner 仅来自 allowlist。
+- **真实角色 vs 显示文字分离**：管理面改的是真实 `roles[]`/`reviewStatus`/`roleExpiresAt`，**不得**用 `profile/edit` 的 `displayRole` 自由文字来「改角色」——显示标签必须由真实 `roles[]` 推导，不可手填覆盖。
+- **地端/云端范围一致**：目录列表与「待审核」列表须在 local 与 cloud 后端返回**同一口径**（现状 `directoryRepository.listPendingUsers` 本地返回全部非 owner、云端 `listPending` 只返回待审核，属待修不一致，见 C-USER-DIRECTORY）。
+- 前端隐藏不替代后端：所有改角色/停用/续期/审核写入，后端按 A4 以云端 profile 最终判权并写操作记录（A7）。
+
 ---
 
 # Part B — 角色能力矩阵
@@ -453,6 +479,11 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 - [ ] **C-REVIEW 审核与停用防误操作（J11）**：`pages/userReview/*`、`services/auth/authService.js`、审核 API。拒绝/停用二次确认 + 必填原因；`roleExpiresAt` 用日期选择器；记录 `reviewedAt/reviewedBy/reviewResult/reviewNote`。owner 安全边界：首位 owner 来自 allowlist；admin 不能升自己为 owner、不能改/停用/指派 owner。
 - [ ] **C-LOG 操作记录**：`pages/operationLogs/*`、`repositories/operationLogRepository.js`、写入点。按 A7 记录关键操作，幂等去重，脱敏；owner/admin 看自己管理记录、团主看自己相关记录；查询 API 校验身份/归属；列表支持时间/类型/状态筛选、分页、空/错/载状态。
 
+- [ ] **C-USER-DIRECTORY 用户目录管理面（落地 A14）**
+  - 背景：现状只有「审核申请」队列（`pages/userReview` 走 `listPendingUsers`，UI 框成「申请身份」）+ `pages/profile` 只读列表、`profile/edit` 只改 `displayRole` 文字；**缺**一个能看全部用户真实 `roles[]`/状态/期限并管理任意用户的正式目录。且 `directoryRepository.listPendingUsers` **本地返回全部非 owner、云端只返回待审核**，口径不一致。
+  - 改动：`pages/userReview/*`（或并入的用户管理面）扩为**用户目录**——列全部非 owner 用户，显示真实 `roles[]`/状态/`roleExpiresAt`/申请状态；支持改角色（A2 追加不覆盖）、停用⇄恢复、设/续/清期限、审核 pending，均走日期选择器 + 二次确认（复用 C-REVIEW）；`repositories/directoryRepository.js` + `cloudfunctions/businessData`（users）统一 local/cloud 列表口径（目录=全量、待审核=pending 各一个明确 action）；`pages/profile/edit` 去掉用 `displayRole` 文字「改角色」，角色文案改由真实 `roles[]` 推导。
+  - 判定：owner/admin 能在一个入口看到所有用户及其真实角色/状态/期限，并对任意非 owner 用户改角色·停用·续期·审核；owner 不被降级/停用、admin 不能碰 owner；local 与 cloud 列表口径一致；所有写入后端判权 + 写操作记录，重开仍在。
+
 ## C7. 正式化与文案
 
 - [ ] **C-COPY 清测试字串 + 产品文案（J1/J2/J6）**：全站移除 `云端团单/测试/DEBUG/自动化/待串接/资料已同步/当前资料仅保存到本设备` 等；`config.js` 把 `dataBackend`、`appEnv` 可视化并在 UI 入口加 `isProd` 硬关。判定：PROD 路径看不到内部开关与测试字样；`isRolePreview` 不在 PROD 生效。
@@ -509,6 +540,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 - [ ] **D-REVIEW**：拒绝/停用二次确认+必填原因+日期 picker；owner 安全边界（admin 不能改/停用/升 owner）。
 - [ ] **D-LOG**：关键操作写入记录且幂等脱敏；owner/admin 与团主各自可见范围正确；筛选/分页/空错载状态可用；无权查询后端拒绝。
+- [ ] **D-USER-DIRECTORY**：以 owner/admin 进入用户目录 → 看到全部非 owner 用户及真实 `roles[]`/状态/期限/申请状态；对一个**已审核**用户改角色（追加不覆盖、客户功能不掉）、停用后该账户业务全关、恢复后正常、设期限到期后团主功能关客户仍在；owner 不出现在可停用/降级项、admin 改 owner 被后端拒；local 与 cloud 目录/待审核口径一致；改完重开仍在且有操作记录。
 
 ## D7. 正式化
 
