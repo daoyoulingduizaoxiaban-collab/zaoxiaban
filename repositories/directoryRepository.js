@@ -173,7 +173,7 @@ export const DirectoryRepository = {
     const users = localUsers.map(normalizeUser);
     const target = users.find(user => sameId(user.id, payload.id));
     if (!target) return { success: false, error: '未找到用户' };
-    if (target.role === AUTH_ROLES.OWNER) return { success: false, error: '不能修改 owner 账号' };
+    if (target.role === AUTH_ROLES.OWNER || normalizeRoles(target.roles, target.role).includes(AUTH_ROLES.OWNER)) return { success: false, error: '不能修改 owner 账号' };
     const requestedRoles = normalizeRoles(payload.roles, payload.role || target.requestedRole || target.role || AUTH_ROLES.CUSTOMER);
     if (hasRole(profile, AUTH_ROLES.ADMIN) && (requestedRoles.includes(AUTH_ROLES.OWNER) || normalizeRoles(target.roles, target.role).includes(AUTH_ROLES.ADMIN))) {
       return { success: false, error: '管理员不能指派 owner 或修改管理员账号' };

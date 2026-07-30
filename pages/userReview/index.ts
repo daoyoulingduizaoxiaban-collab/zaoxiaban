@@ -28,8 +28,12 @@ const buildReviewRoleOptions = selectedRoles => REVIEW_ROLE_OPTIONS.map(item => 
 Page({
   behaviors: [useAccessPage],
   data: {
-    titleText: '用户审核',
+    titleText: '用户目录',
     users: [],
+    allUsers: [],
+    // 视图：all=全部用户 / pending=仅待审核
+    filterMode: 'all',
+    pendingCount: 0,
     roleOptions: REVIEW_ROLE_OPTIONS,
     canReview: false,
     selectedRolesById: {},
@@ -100,13 +104,29 @@ Page({
         roleExpiresAt: roleExpiresAtById[id],
       };
     });
+    const pendingCount = users.filter(user => String(user.reviewStatus || user.status) === REVIEW_STATUS.PENDING).length;
+    this.setData({ allUsers: users, selectedRolesById, roleExpiresAtById, pendingCount });
+    this.applyFilter();
+  },
+
+  // 按当前视图（全部 / 待审核）从 allUsers 过滤出要展示的列表；两个视图同一份数据源，保证地端云端口径一致。
+  applyFilter() {
+    const { filterMode, allUsers } = this.data;
+    const users = filterMode === 'pending'
+      ? allUsers.filter(user => String(user.reviewStatus || user.status) === REVIEW_STATUS.PENDING)
+      : allUsers;
     this.setData({
       users,
-      selectedRolesById,
-      roleExpiresAtById,
       pageState: users.length ? 'ready' : 'empty',
-      stateText: users.length ? '' : '暂无可审核用户',
+      stateText: users.length ? '' : (filterMode === 'pending' ? '暂无待审核用户' : '暂无用户'),
     });
+  },
+
+  onFilterChange(e) {
+    const { mode } = e.currentTarget.dataset;
+    if (!mode || mode === this.data.filterMode) return;
+    this.setData({ filterMode: mode });
+    this.applyFilter();
   },
 
   onRoleToggle(e) {
@@ -150,7 +170,9 @@ Page({
       wx.showToast({ title: '当前账号没有用户审核权限', icon: 'none' });
       return false;
     }
-    const roles = normalizeSelectedRoles(this.data.selectedRolesById[id] || [], AUTH_ROLES.CUSTOMER);
+    // A14/A2：追加不覆盖——始终保留客户基线，绝不把 [customer,guide] 冲成 [guide]。
+    const selected = normalizeSelectedRoles(this.data.selectedRolesById[id] || [], AUTH_ROLES.CUSTOMER);
+    const roles = Array.from(new Set([AUTH_ROLES.CUSTOMER, ...selected]));
     const res = await DirectoryRepository.reviewUser({
       id,
       reviewStatus: status,
