@@ -130,6 +130,10 @@ const PUBLIC_THROW_MESSAGES = new Set([
   '当前账号尚未通过管理员审核',
   '当前账号使用期限已过',
   '当前账号没有此操作权限',
+  // 角色预览被云端拒绝时把真实原因透出（否则显示笼统「资料服务暂时不可用」害人误判）
+  '当前环境不允许角色预览',
+  '当前账号不支持角色预览',
+  '预览身份参数无效',
 ]);
 const toPublicError = (err) => {
   const message = err && err.message ? err.message : '';
