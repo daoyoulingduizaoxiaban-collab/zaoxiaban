@@ -16,7 +16,7 @@
 </view>
 
 <view class="add-container" wx:else>
-  <view class="mode-tip">{{saveModeText}}</view>
+  <view wx:if="{{saveModeText}}" class="mode-tip">{{saveModeText}}</view>
   <t-cell-group theme="card" title="基本信息">
     <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" bindchange="onInput" data-field="title" />
     <view class="native-textarea-field">

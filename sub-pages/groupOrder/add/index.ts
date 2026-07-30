@@ -1,7 +1,7 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
-import { CLOUD_SAVE_MODE_TEXT, getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl, normalizeRouteUrl } from '~/utils/navigation';
@@ -25,7 +25,7 @@ Page({
     groupOrderId: '',
     selectedGoods: [] as Product[],
     isSubmitting: false,
-    saveModeText: CLOUD_SAVE_MODE_TEXT,
+    saveModeText: '',
     accessDenied: false,
     accessStateText: '',
     pageErrorText: '',
