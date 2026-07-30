@@ -89,8 +89,13 @@ export const useAccessPage = Behavior({
     // A13 统一登录闸门：未登录 → 导登录页(带 redirectTo 回原页)并返回 true，调用方应中止取数。
     // 已登录（含无权/停用/过期，交由各页受限态处理）→ 返回 false 放行。
     // 用 getRealProfile 判定，避开 DEV 角色预览可能造出的临时身份。
+    // 去抖：onLoad 与 onShow 首屏会各调一次 loadX→requireLogin，1s 内只导一次，
+    // 避免连发两次 navigateTo 叠出两个登录页；窗口过后再进本页仍会重新导向。
     requireLogin(profile = AuthService.getRealProfile()) {
       if (profile) return false;
+      const now = Date.now();
+      if (this.__loginRedirectAt && now - this.__loginRedirectAt < 1000) return true;
+      this.__loginRedirectAt = now;
       const redirectTo = buildRedirectTo(this);
       navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent(redirectTo)}`, {
         fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
