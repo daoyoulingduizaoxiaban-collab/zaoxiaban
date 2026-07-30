@@ -420,7 +420,9 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
   - 背景：现状各页各写——`groupOrder`/`productManagement`/`my`/`my/info-edit`/`customerOrders`/`customerOrders/edit`/`setting` 未登录会导向 `pages/login/login`；而 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 等未登录**只把列表清空 + 显示一句受限文案，停在原页**，不导登录页（用户实测到的漏洞）；`sub-pages/groupOrder/detail` 则完全不判登录、仅凭 id 取数（属公开白名单，须保留但显式确认）。
   - 改动：把 A13 四类去向 + 公开白名单收口到 `behaviors/useAccessPage`（新增统一 gate helper，如 `requireLogin()` / `resolveAccessRedirect()`）；各需登录页在取数前统一调用，未登录 → 导 `login?redirectTo=`，无权/停用/过期 → 正式受限态，不再停在原页显示空/异常数据；公开白名单（团单详情客户视图 / 下单页）显式登记、仅浏览、写操作仍隐藏 + 后端拒绝。
   - 判定：以未登录身份逐一打开每个需登录页 → 全部落到登录页（白名单页仅浏览态且无管理操作）；登录后回原页；无权/停用/过期显示正式受限态而非空业务数据；无一页停在原页显示登录后才有的数据。
-  - **落地范围（已完成）**：`ebd7037` 收口 `requireLogin()`（`getRealProfile` 判定避开 DEV 预览、1s 去抖防 onLoad+onShow 叠登录页）并覆盖 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 七页；后续补齐管理写入子页 `sub-pages/product/add`、`sub-pages/groupOrder/add`、`sub-pages/groupOrder/productList`、`sub-pages/groupOrder/product-picker`。**刻意不 gate 的两页**：`sub-pages/product/list`（公开「商品浏览」含未登录分支，导登录会切断游客浏览）、`pages/feedback`（DEV-only 内部工具，`onLoad` 已挡 `!isDev`、不读业务数据）。
+  - **落地范围（已完成）**：`ebd7037` 收口 `requireLogin()`（`getRealProfile` 判定避开 DEV 预览、1s 去抖防 onLoad+onShow 叠登录页）并覆盖 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 七页；`662e8af` 再补 `sub-pages/groupOrder/add`（开团）、`sub-pages/groupOrder/productList`（本团商品）、`sub-pages/groupOrder/product-picker`（选品）、`sub-pages/product/add`（商品表单）。
+  - **不 gate 的例外**：`pages/feedback`（DEV-only 内部工具，`onLoad` 已挡 `!isDev`、不读业务数据）。
+  - **⚠ 隐藏遗留链，不在本项处理**：`pages/productManagement` + `sub-pages/product/list` + `sub-pages/product/add` 属 **#8 已隐藏的独立「商品库」**——`custom-tab-bar` 永久过滤 productManagement，且这两个子页**唯一入口就是那个隐藏的 productManagement 页**，正常 UI 进不去；团主新增商品改走**开团页内嵌**（`groupOrder/add` #8），**本产品没有在用的独立商品库**。其中 `product/list` 现存的「未登录也能浏览商品」分支与 A2「客户无独立商品库浏览入口」相悖，属隐藏遗留待清理（是否删页/删该分支见 B2 #8「日后可拆回」，本项不处理）。
 
 - [ ] **C-DEV-IDENTITY 本地身份模拟便捷开关**
   - 改动：本地 server 支持 `GUIDE_OPENIDS` 便捷 allowlist（仅本地）；`config.localDevOpenId` 说明与默认；按 A8 表让本地可扮 owner/admin/customer/guide。
