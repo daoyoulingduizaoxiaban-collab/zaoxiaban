@@ -42,6 +42,7 @@
         <view class="share-actions">
           <t-button size="small" theme="primary" open-type="share" disabled="{{!groupOrderId}}">分享给客户</t-button>
           <t-button size="small" theme="default" bindtap="onCopyCustomerEntry" disabled="{{!groupOrderId}}">复制入口</t-button>
+          <t-button size="small" theme="light" bindtap="ensureShareQr" loading="{{qrLoading}}" disabled="{{!groupOrderId}}">{{groupOrder.qrCodeUrl ? '重新生成二维码' : '生成二维码'}}</t-button>
         </view>
       </view>
     </view>

@@ -3,7 +3,7 @@ import {
 } from '~/models/GroupOrder';
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
-import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { getSaveModeText, generateGroupOrderQr } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
 
@@ -67,6 +67,7 @@ Page({
     canManageGroupOrder: false,
     onSaleProducts: [],
     showOnSaleProducts: false,
+    qrLoading: false,
   },
 
   async onLoad(options) {
@@ -204,6 +205,37 @@ Page({
       showDetails: false
     });
   },
+  // 团主生成客户下单入口的小程序码：scene=shareToken（唯一、够短），客户扫码后由后端凭 token 反查团单。
+  async ensureShareQr() {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能生成二维码', icon: 'none' });
+      return;
+    }
+    const groupOrder = this.data.groupOrder || {};
+    const shareToken = String(groupOrder.shareToken || '').trim();
+    if (!shareToken) {
+      wx.showToast({ title: '团单缺少分享标识，无法生成二维码', icon: 'none' });
+      return;
+    }
+    if (this.data.qrLoading) return;
+    this.setData({ qrLoading: true });
+    wx.showLoading({ title: '生成二维码中', mask: true });
+    try {
+      const res = await generateGroupOrderQr({ scene: shareToken, page: 'pages/customerOrders/edit/index' });
+      if (res && res.success && res.data && res.data.fileID) {
+        this.setData({ 'groupOrder.qrCodeUrl': res.data.fileID });
+        wx.showToast({ title: '二维码已生成', icon: 'success' });
+      } else {
+        wx.showToast({ title: (res && res.error) || '二维码生成失败', icon: 'none' });
+      }
+    } catch (err) {
+      wx.showToast({ title: '二维码生成失败', icon: 'none' });
+    } finally {
+      this.setData({ qrLoading: false });
+      wx.hideLoading();
+    }
+  },
+
   previewQR() {
     const qrCodeUrl = (this.data.groupOrder.qrCodeUrl || '').trim();
     const canPreview = qrCodeUrl.indexOf('https://') === 0 || qrCodeUrl.indexOf('/') === 0 || qrCodeUrl.indexOf('wxfile://') === 0;

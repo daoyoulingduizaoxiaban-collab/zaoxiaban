@@ -303,7 +303,11 @@ export const CustomerOrderRepository = {
     }
 
     const profile = AuthService.getCurrentProfile();
-    const groupOrder = GroupOrderRepository.listAll().find(item => sameId(item.id, groupOrderId));
+    // 扫小程序码进团只带得动 scene(=shareToken)，无 groupOrderId 时按 token 反查（与云端一致）。
+    const token = normalizeShareToken(options.shareToken);
+    const groupOrder = groupOrderId
+      ? GroupOrderRepository.listAll().find(item => sameId(item.id, groupOrderId))
+      : GroupOrderRepository.listAll().find(item => token && normalizeShareToken(item.shareToken) === token);
     if (!groupOrder) return { success: false, error: '未找到团单' };
     const shareAccessError = getShareAccessError(groupOrder, profile, options.shareToken);
     if (shareAccessError) return { success: false, error: shareAccessError };

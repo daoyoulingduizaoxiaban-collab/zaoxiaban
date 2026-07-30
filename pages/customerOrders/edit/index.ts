@@ -10,6 +10,17 @@ const buildCustomerEntryPath = (groupOrderId, shareToken = '') => {
   return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
 };
 
+// 扫小程序码进入时，微信只透传一个 scene（我们放的是 shareToken，且经过 URL 编码）。
+const decodeSceneToken = (scene) => {
+  const raw = String(scene || '').trim();
+  if (!raw) return '';
+  try {
+    return decodeURIComponent(raw).trim();
+  } catch (err) {
+    return raw;
+  }
+};
+
 Page({
   data: {
     pageTitle: '客户下单',
@@ -40,15 +51,19 @@ Page({
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
     const groupOrderId = options.groupOrderId || options.id || '';
-    let shareToken = String((options && options.shareToken) || '').trim();
-    if (shareToken) {
+    // 扫小程序码进入时只有 scene（=shareToken）；普通分享链接则带 shareToken 参数。scene 优先。
+    const scannedToken = decodeSceneToken(options.scene);
+    let shareToken = scannedToken || String((options && options.shareToken) || '').trim();
+    if (!scannedToken && shareToken) {
       try {
         shareToken = decodeURIComponent(shareToken);
       } catch (err) {
         shareToken = String(shareToken || '').trim();
       }
     }
-    const loginRedirectTo = groupOrderId ? buildCustomerEntryPath(groupOrderId, shareToken) : '/pages/customerOrders/index';
+    // 扫码进来没有 groupOrderId，靠 shareToken 也算有效入口（后端凭 token 反查团单）。
+    const hasEntry = Boolean(groupOrderId || shareToken);
+    const loginRedirectTo = hasEntry ? buildCustomerEntryPath(groupOrderId, shareToken) : '/pages/customerOrders/index';
     const canCreate = canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDER_CREATE);
     if (!canCreate) {
       this.setData({
@@ -69,11 +84,11 @@ Page({
       accessStateText: '',
       isLoggedIn: Boolean(profile),
       loginRedirectTo,
-      pageErrorText: groupOrderId ? '' : '缺少团单入口，请从有效团单进入。',
+      pageErrorText: hasEntry ? '' : '缺少团单入口，请从有效团单进入。',
       'formData.customerName': profile && profile.displayName ? profile.displayName : '',
       'formData.customerPhone': profile && profile.phone ? profile.phone : '',
     });
-    if (!groupOrderId) return;
+    if (!hasEntry) return;
     await this.loadOrderEntry(groupOrderId);
   },
 
@@ -102,7 +117,10 @@ Page({
       return;
     }
 
+    // 扫码进来时 groupOrderId 原本为空，用后端反查回来的团单 id 回填（提交订单要用）。
+    const resolvedId = res.data.id || res.data._id || groupOrderId;
     this.setData({
+      groupOrderId: resolvedId,
       groupOrder: res.data,
       pageTitle: res.data.title || '客户下单',
       productRows: res.data.productList || [],

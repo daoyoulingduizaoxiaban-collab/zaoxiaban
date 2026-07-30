@@ -130,7 +130,13 @@ const customerOrderActions = {
 
   async getGroupOrderEntry({ groupOrderId, shareToken = '' }, profile) {
     assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
-    const groupOrder = await getById('groupOrders', groupOrderId);
+    let groupOrder = groupOrderId ? await getById('groupOrders', groupOrderId) : null;
+    if (!groupOrder && trimText(shareToken)) {
+      // 扫小程序码进团只带得动一个 scene(=shareToken)，无 groupOrderId 时按 token 反查（token 唯一）。
+      const result = await getCollection('groupOrders').where({ shareToken: trimText(shareToken) }).limit(1).get();
+      const doc = (result.data || []).find(item => !item.deletedAt);
+      groupOrder = doc ? toId(doc) : null;
+    }
     if (!await canViewGroupOrder(groupOrder, profile)) return failure('当前角色不能进入此团单');
     if (hasRole(profile, 'customer')) {
       const shareAccessError = getShareAccessError(groupOrder, profile, shareToken);

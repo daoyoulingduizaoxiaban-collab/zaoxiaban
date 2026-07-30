@@ -50,6 +50,13 @@ export const callBusinessData = ({ resource, action, data = {} }) => {
   });
 };
 
+// 生成团单分享小程序码（wxacode 仅云开发可用；本地后端无此能力，优雅返回不可用）。
+export const generateGroupOrderQr = ({ scene, page } = {}) => {
+  if (isLocalBackend()) return Promise.resolve({ success: false, error: '本地后端不支持生成二维码' });
+  if (!isCloudBusinessEnabled()) return Promise.resolve({ success: false, error: '资料服务暂时不可用' });
+  return callBackendFunction({ name: 'groupOrderQr', event: { scene, page }, openId: getCallerOpenId() });
+};
+
 export const callPublicBusinessData = ({ resource, action, data = {} }) => {
   if (!isCloudBusinessConfigured()) return Promise.resolve({ success: false, error: '资料服务暂时不可用' });
   return callBackendFunction({
