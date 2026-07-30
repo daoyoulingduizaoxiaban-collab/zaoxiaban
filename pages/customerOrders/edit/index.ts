@@ -30,6 +30,8 @@ Page({
     productRows: [],
     totalPrice: 0,
     isSubmitting: false,
+    // 团单已停止收单：可浏览、不可提交
+    isStopped: false,
     isLoading: false,
     pageErrorText: '',
     accessDenied: false,
@@ -117,21 +119,14 @@ Page({
       return;
     }
 
-    // 团单已停止收单：进页即拦截（后端 create 仍有最终防线）。
-    if (Number(res.data.status) !== 1) {
-      this.setData({
-        groupOrder: null,
-        productRows: [],
-        isLoading: false,
-        pageErrorText: '当前团单已停止收单，暂不能下单。',
-      });
-      return;
-    }
+    // 团单已停止收单：客户仍可查看商品与资讯，但不能提交下单（后端 create 仍有最终防线）。
+    const isStopped = Number(res.data.status) !== 1;
     // 扫码进来时 groupOrderId 原本为空，用后端反查回来的团单 id 回填（提交订单要用）。
     const resolvedId = res.data.id || res.data._id || groupOrderId;
     this.setData({
       groupOrderId: resolvedId,
       groupOrder: res.data,
+      isStopped,
       pageTitle: res.data.title || '客户下单',
       productRows: res.data.productList || [],
       totalPrice: 0,
@@ -180,6 +175,10 @@ Page({
 
   async onSave() {
     if (this.data.isSubmitting) return;
+    if (this.data.isStopped) {
+      wx.showToast({ title: '当前团单已停止收单', icon: 'none' });
+      return;
+    }
     if (this.data.pageErrorText || !this.data.groupOrder) {
       wx.showToast({ title: this.data.pageErrorText || '未找到可下单团单', icon: 'none' });
       return;

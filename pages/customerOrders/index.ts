@@ -108,6 +108,8 @@ Page({
     if ((this as any)._loadOrdersInFlight) return (this as any)._loadOrdersInFlight;
     (this as any)._loadOrdersInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
+    // 纯客户视角标题叫「我的订单」（与 NAV 文案一致）；团主/管理层仍叫「客户订单」。
+    this.setData({ titleText: canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE) ? '客户订单' : '我的订单' });
     if (!canUseFeature(profile, FEATURE_KEYS.CUSTOMER_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.CUSTOMER_ORDERS);
       this.resetActionState({
