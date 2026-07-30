@@ -12,15 +12,24 @@
       <view class="login__local-identity-tip">不同人填不同身份＝各自独立账号（默认客户，可在用户审核升级团主）。</view>
     </view>
 
-    <view class="login__nickname">
-      <input class="login__nickname-input" type="nickname" value="{{nickname}}" placeholder="显示名称（必填，点此可带出微信昵称）" bindinput="onNicknameInput" bindblur="onNicknameInput" />
-      <view class="login__nickname-tip">微信不允许自动读取昵称，首次登录请填一次；之后首页即显示该名称。</view>
-    </view>
-
-    <view class="login__button">
+    <!-- 第一步：登录（老用户点完直接进，看不到名字栏） -->
+    <view wx:if="{{!needName}}" class="login__button">
       <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="login">
         微信登录
       </button>
     </view>
+
+    <!-- 第二步：仅新用户登录后填一次显示名称 -->
+    <block wx:if="{{needName}}">
+      <view class="login__nickname">
+        <input class="login__nickname-input" type="nickname" value="{{nickname}}" placeholder="显示名称（点此可带出微信昵称）" bindinput="onNicknameInput" bindblur="onNicknameInput" />
+        <view class="login__nickname-tip">微信不允许自动读取昵称，首次登录请填一次；之后首页即显示该名称。</view>
+      </view>
+      <view class="login__button">
+        <button class="login__native-button" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="confirmName">
+          确认，进入
+        </button>
+      </view>
+    </block>
   </view>
 </view>

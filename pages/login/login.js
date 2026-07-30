@@ -10,7 +10,10 @@ Page({
     redirectTo: '/pages/my/index',
     // gate=1（未登录被 reLaunch 进来）：隐藏返回，作为唯一入口，只有登录一步。
     isGate: false,
-    // 显示名称：微信已停用自动取昵称，只能用 type=nickname 让用户点一次填；登录时一并存进 displayName。
+    // 登录后才判断：仅「新用户（无名字）」才进入填名字这步，老用户直接进，看不到名字栏。
+    needName: false,
+    pendingUserId: '',
+    // 显示名称：微信已停用自动取昵称，只能用 type=nickname 让新用户点一次填。
     nickname: '',
     // 本地测试多人身份（仅 DEV+local 显示；留空＝owner，填名字/扫码带 ?tester= ＝独立账号）
     showLocalIdentity: false,
@@ -61,29 +64,52 @@ Page({
         icon: 'none',
       });
 
-      // 微信无法自动取昵称 → 首次登录强制填显示名称（#F5 决策），保证人人有名、永不显示「微信用户」。
-      const nickname = String(this.data.nickname || '').trim();
+      // 老用户已有名字 → 直接进；只有新用户（无名字）才进入下一步填名字（#F5：保证人人有名）。
       const hasRealName = profile.displayName && profile.displayName !== '微信用户';
-      if (!hasRealName && !nickname) {
-        wx.showToast({ title: '首次登录请先填写显示名称', icon: 'none' });
-        return; // 停在登录页强制填名（finally 会复位提交态）
+      if (hasRealName) {
+        getApp().globalData.userInfo = profile;
+        this.navigateAfterLogin();
+        return;
       }
-      if (nickname && nickname !== profile.displayName) {
-        const saved = await DirectoryRepository.saveUser({ id: profile.id, name: nickname, displayName: nickname });
-        if (saved && saved.success && saved.data) {
-          AuthService.updateCurrentProfile(saved.data);
-          getApp().globalData.userInfo = saved.data;
-          this.navigateAfterLogin();
-          return;
-        }
-      }
-      getApp().globalData.userInfo = profile;
-      this.navigateAfterLogin();
+      this.setData({ needName: true, pendingUserId: profile.id });
     } catch (err) {
       wx.showToast({
         title: '登录失败，请稍后重试',
         icon: 'none',
       });
+    } finally {
+      wx.hideLoading();
+      this.setData({ isSubmitting: false });
+    }
+  },
+
+  // 新用户填完显示名称后才保存并进入（老用户走不到这步）。
+  async confirmName() {
+    if (this.data.isSubmitting) return;
+    const nickname = String(this.data.nickname || '').trim();
+    if (!nickname) {
+      wx.showToast({ title: '请先填写显示名称', icon: 'none' });
+      return;
+    }
+    const userId = this.data.pendingUserId;
+    if (!userId) {
+      wx.showToast({ title: '登录状态已失效，请重新登录', icon: 'none' });
+      this.setData({ needName: false });
+      return;
+    }
+    this.setData({ isSubmitting: true });
+    wx.showLoading({ title: '保存中...' });
+    try {
+      const saved = await DirectoryRepository.saveUser({ id: userId, name: nickname, displayName: nickname });
+      if (saved && saved.success && saved.data) {
+        AuthService.updateCurrentProfile(saved.data);
+        getApp().globalData.userInfo = saved.data;
+        this.navigateAfterLogin();
+      } else {
+        wx.showToast({ title: (saved && saved.error) || '保存失败，请重试', icon: 'none' });
+      }
+    } catch (err) {
+      wx.showToast({ title: '保存失败，请重试', icon: 'none' });
     } finally {
       wx.hideLoading();
       this.setData({ isSubmitting: false });
