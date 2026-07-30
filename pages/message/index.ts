@@ -1,5 +1,6 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
@@ -43,6 +44,7 @@ const getReminderDesc = (order) => {
 };
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     messages: [],
     // 'loading' | 'ready' | 'error' | 'empty'
@@ -61,6 +63,7 @@ Page({
   },
 
   async loadMessages() {
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.MESSAGE)) {
       this.setData({

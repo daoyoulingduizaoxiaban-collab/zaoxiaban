@@ -2,8 +2,10 @@ import { AuthService } from '~/services/auth/authService';
 import { canUseProviderPortal, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateByUrl } from '~/utils/navigation';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     titleText: '供应商',
     providersList: [],
@@ -19,6 +21,7 @@ Page({
   },
 
   async loadProviders() {
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     if (!canUseProviderPortal(profile)) {
       this.setData({

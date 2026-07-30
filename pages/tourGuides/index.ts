@@ -1,9 +1,11 @@
 import { AuthService } from '~/services/auth/authService';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 import { AUTH_ROLES, FEATURE_KEYS, canUseFeature, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateByUrl } from '~/utils/navigation';
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     titleText: '团主',
     tourGuidesList: [],
@@ -31,6 +33,7 @@ Page({
     if (this.isLoadingTourGuides) return;
     this.isLoadingTourGuides = true;
     await AuthService.refreshSession();
+    if ((this as any).requireLogin()) { this.isLoadingTourGuides = false; return; }
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.TOUR_GUIDES)) {
       this.setData({

@@ -1,10 +1,12 @@
 import { AuthService } from '~/services/auth/authService';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 import { OperationLogService, OPERATION_LOG_FILTERS } from '~/services/operationLog/operationLogService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 
 const PAGE_SIZE = 20;
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     filters: OPERATION_LOG_FILTERS,
     currentType: 'all',
@@ -31,6 +33,7 @@ Page({
   // append=false：筛选/首屏，重置到第 1 页并替换；append=true：加载更多，页码 +1 并追加。
   async loadLogs({ append = false } = {}) {
     await AuthService.refreshSession();
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.OPERATION_LOGS)) {
       this.setData({

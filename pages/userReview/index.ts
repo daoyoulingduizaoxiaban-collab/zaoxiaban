@@ -1,5 +1,6 @@
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { AuthService } from '~/services/auth/authService';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 import { AUTH_ROLES, REVIEW_ROLE_OPTIONS, REVIEW_STATUS, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
 const roleLabelByValue = REVIEW_ROLE_OPTIONS.reduce((map, item) => ({
@@ -25,6 +26,7 @@ const buildReviewRoleOptions = selectedRoles => REVIEW_ROLE_OPTIONS.map(item => 
 }));
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     titleText: '用户审核',
     users: [],
@@ -53,6 +55,7 @@ Page({
   },
 
   async refresh() {
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     const canReview = isOwnerOrAdmin(profile);
     this.setData({ canReview });

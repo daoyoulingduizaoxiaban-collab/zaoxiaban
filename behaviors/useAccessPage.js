@@ -1,6 +1,17 @@
 import { AuthService } from '~/services/auth/authService';
 import { canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { debugLog } from '~/utils/debugLog';
+import { navigateByUrl } from '~/utils/navigation';
+
+// 由页面实例还原「/路径?query」，登录后据此回原页（A13 未登录去向）。
+const buildRedirectTo = (page) => {
+  const route = String((page && page.route) || '').replace(/^\/+/, '');
+  const query = (page && page.options) || {};
+  const search = Object.keys(query)
+    .map(key => `${key}=${encodeURIComponent(query[key])}`)
+    .join('&');
+  return `/${route}${search ? `?${search}` : ''}`;
+};
 
 /**
  * 共享「鉴权 + 加载三态」脚手架（R1）。
@@ -73,6 +84,18 @@ export const useAccessPage = Behavior({
 
     hasFeature(featureKey, profile = AuthService.getCurrentProfile()) {
       return canUseFeature(profile, featureKey);
+    },
+
+    // A13 统一登录闸门：未登录 → 导登录页(带 redirectTo 回原页)并返回 true，调用方应中止取数。
+    // 已登录（含无权/停用/过期，交由各页受限态处理）→ 返回 false 放行。
+    // 用 getRealProfile 判定，避开 DEV 角色预览可能造出的临时身份。
+    requireLogin(profile = AuthService.getRealProfile()) {
+      if (profile) return false;
+      const redirectTo = buildRedirectTo(this);
+      navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent(redirectTo)}`, {
+        fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
+      });
+      return true;
     },
   },
 });

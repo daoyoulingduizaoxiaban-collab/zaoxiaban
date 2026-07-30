@@ -3,6 +3,7 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 // 清零态：每次返回新对象，避免共享引用被意外改写。
 const emptySummaryList = () => [
@@ -14,6 +15,7 @@ const emptySummaryList = () => [
 const emptyFinanceSummary = () => ({ receivable: 0, received: 0 });
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     summaryList: emptySummaryList(),
     financeSummary: emptyFinanceSummary(),
@@ -29,6 +31,7 @@ Page({
   },
 
   async loadSummary() {
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.DATA_CENTER)) {
       this.setData({

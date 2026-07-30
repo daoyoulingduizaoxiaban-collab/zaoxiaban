@@ -1,9 +1,11 @@
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 import { navigateByUrl } from '~/utils/navigation';
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     titleText: '个人资料',
     profileList: [],
@@ -28,6 +30,7 @@ Page({
   },
 
   async loadProfiles() {
+    if ((this as any).requireLogin()) return;
     const currentProfile = AuthService.getCurrentProfile();
     if (!canUseFeature(currentProfile, FEATURE_KEYS.PROFILE)) {
       this.setData({
