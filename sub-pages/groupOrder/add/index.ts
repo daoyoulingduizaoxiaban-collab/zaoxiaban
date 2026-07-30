@@ -80,6 +80,18 @@ Page({
       this.setData({ isPageLoading: false });
       return;
     }
+    // 复制团单：带入源团单内容（含商品价格档与图片）到「开团」表单，保存时按新团单 create。
+    const copyFrom = options.copyFrom ? String(options.copyFrom) : '';
+    if (copyFrom) {
+      this.setData({
+        pageTitle: '开团（复制）',
+        isEdit: false,
+        groupOrderId: '',
+      });
+      await this.loadGroupOrder(copyFrom, { asCopy: true });
+      this.setData({ isPageLoading: false });
+      return;
+    }
     this.setData({
       pageTitle: '开团',
       isEdit: false,
@@ -131,7 +143,7 @@ Page({
     this.appendSelectedProducts(result.products);
   },
 
-  async loadGroupOrder(groupOrderId) {
+  async loadGroupOrder(groupOrderId, { asCopy = false } = {}) {
     const res = await GroupOrderService.getById(groupOrderId);
     if (!res.success) {
       const errorText = res.error || '加载团单失败';
@@ -143,15 +155,17 @@ Page({
       return;
     }
 
+    // 复制模式：标题加「（副本）」（顾及 20 字上限）、状态重置为开放收单，其余内容原样带入。
+    const sourceTitle = res.data.title || '';
     this.setData({
       pageErrorText: '',
       formData: {
-        title: res.data.title || '',
+        title: asCopy ? `${sourceTitle.slice(0, 16)}（副本）` : sourceTitle,
         description: res.data.description || '',
         startAt: res.data.startAt || '',
         endAt: res.data.endAt || '',
         customerNotice: res.data.customerNotice || '',
-        status: Number(res.data.status || GroupOrderStatus.OPEN),
+        status: asCopy ? GroupOrderStatus.OPEN : Number(res.data.status || GroupOrderStatus.OPEN),
       },
       selectedGoods: this.normalizeGoods(res.data.productList || []),
     });

@@ -66,39 +66,17 @@ Page({
       .sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
   },
 
-  // 复制团单：完整复制（含商品价格档与图片快照），新团单标题加「（副本）」、状态重置为开放收单，
-  // shareToken/二维码由后端与详情页自动重建。
-  async onCopyItinerary(e) {
+  // 复制团单：跳到「开团」页并带入源团单内容（含商品价格档与图片），确认后才建立新团单。
+  onCopyItinerary(e) {
     const { id } = e.currentTarget.dataset;
     if (!id) return;
-    wx.showLoading({ title: '复制中...', mask: true });
-    const detailRes = await callBusinessData({ resource: 'groupOrders', action: 'getById', data: { id } });
-    if (!detailRes.success || !detailRes.data) {
-      wx.hideLoading();
-      toastError(detailRes.error || '读取团单失败');
-      return;
-    }
-    const source = detailRes.data;
-    const createRes = await callBusinessData({
-      resource: 'groupOrders',
-      action: 'create',
-      data: {
-        title: `${String(source.title || '').slice(0, 16)}（副本）`,
-        description: source.description || '',
-        startAt: source.startAt || '',
-        endAt: source.endAt || '',
-        customerNotice: source.customerNotice || '',
-        status: 1,
-        productList: (source.productList || []).map(product => ({ ...product })),
+    this.setData({ isNavigatingCreate: true });
+    navigateByUrl(`/sub-pages/groupOrder/add/index?copyFrom=${encodeURIComponent(String(id))}&from=${encodeURIComponent('/pages/groupOrder/index')}`, {
+      fail: () => {
+        this.setData({ isNavigatingCreate: false });
+        wx.showToast({ title: '打开开团页失败', icon: 'none' });
       },
     });
-    wx.hideLoading();
-    if (!createRes.success) {
-      toastError(createRes.error || '复制团单失败');
-      return;
-    }
-    toastSuccess(RESULT_TEXT.create);
-    await this.fetchItineraryList();
   },
 
   // 删除团单：双重确认；有未收款（已收<应收）时在第二次确认里加醒目提醒（#F1）。软删。
