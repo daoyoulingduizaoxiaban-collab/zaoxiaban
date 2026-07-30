@@ -8,7 +8,6 @@ Page({
     pageTitle: '编辑个人资料',
     isEdit: false,
     canSave: false,
-    canEditStatus: false,
     disabledReason: '',
     pageErrorText: '',
     targetId: '',
@@ -19,7 +18,6 @@ Page({
       date: '',
       city: '',
       phone: '',
-      statusText: '可显示资料'
     }
   },
 
@@ -29,7 +27,6 @@ Page({
       date: '',
       city: '',
       phone: '',
-      statusText: '可显示资料'
     };
   },
 
@@ -52,7 +49,6 @@ Page({
     );
     this.setData({
       canSave,
-      canEditStatus: isOwnerOrAdmin(profile),
       disabledReason: canSave ? '' : '当前账号没有个人资料维护权限。',
       pageErrorText: canSave ? '' : '当前账号没有个人资料维护权限。',
       targetId,
@@ -86,7 +82,6 @@ Page({
       'formData.date': (user.updatedAt || '').slice(0, 10),
       'formData.city': user.city || '',
       'formData.phone': user.phone || '',
-      'formData.statusText': user.displayRole || user.roleLabel || user.role || '可显示资料',
     });
   },
 
@@ -129,9 +124,6 @@ Page({
       city: this.data.formData.city,
       phone,
     };
-    if (this.data.canEditStatus) {
-      payload.displayRole = this.data.formData.statusText;
-    }
     const res = await DirectoryRepository.saveUser(payload);
     this.setData({ isSubmitting: false });
     if (!res.success) {
