@@ -117,6 +117,16 @@ Page({
       return;
     }
 
+    // 团单已停止收单：进页即拦截（后端 create 仍有最终防线）。
+    if (Number(res.data.status) !== 1) {
+      this.setData({
+        groupOrder: null,
+        productRows: [],
+        isLoading: false,
+        pageErrorText: '当前团单已停止收单，暂不能下单。',
+      });
+      return;
+    }
     // 扫码进来时 groupOrderId 原本为空，用后端反查回来的团单 id 回填（提交订单要用）。
     const resolvedId = res.data.id || res.data._id || groupOrderId;
     this.setData({

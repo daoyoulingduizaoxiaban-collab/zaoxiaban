@@ -8,12 +8,15 @@ const TAB_FEATURE_MAP = {
   groupOrder: FEATURE_KEYS.GROUP_ORDERS,
   customerOrders: FEATURE_KEYS.CUSTOMER_ORDERS,
   productManagement: FEATURE_KEYS.PRODUCTS,
+  // 用户审核：仅 owner/admin 可见（FEATURE_ALLOWED_ROLES 已限定）
+  userReview: FEATURE_KEYS.USER_REVIEW,
 };
 
 const TAB_ROUTE_VALUE_MAP = {
   'pages/groupOrder/index': 'groupOrder',
   'pages/customerOrders/index': 'customerOrders',
   'pages/productManagement/index': 'productManagement',
+  'pages/userReview/index': 'userReview',
   'pages/my/index': 'my',
 };
 

@@ -7,6 +7,7 @@ import { generateGroupOrderQr, callBusinessData } from '~/repositories/cloudBusi
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
+import { getGroupOrderStatusTextByValue } from '~/enum/GroupOrderStatus';
 
 const buildCustomerEntryPath = (id, shareToken = '') => {
   const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(id || ''))}`;
@@ -105,6 +106,9 @@ Page({
       if (res.success) {
         const groupOrder = {
           ...res.data,
+          // 状态文字一律由 status 推导（库里不存 statusText，存了也可能过期）。
+          status: Number(res.data.status),
+          statusText: getGroupOrderStatusTextByValue(Number(res.data.status)),
           sharePath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
         };
         // 门控改用数据层返回的 canManageGroupOrder 标记；readonly=1 强制走客户视图（E-4）。

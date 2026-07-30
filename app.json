@@ -84,6 +84,9 @@
         "pagePath": "pages/productManagement/index"
       },
       {
+        "pagePath": "pages/userReview/index"
+      },
+      {
         "pagePath": "pages/my/index"
       }
     ]

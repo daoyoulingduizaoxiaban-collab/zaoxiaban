@@ -77,6 +77,12 @@ export const BOTTOM_BAR_LIST = [
     path: '/pages/productManagement/index'
   },
   {
+    icon: 'user-setting',
+    value: 'userReview',
+    label: '用户审核',
+    path: '/pages/userReview/index'
+  },
+  {
     icon: 'user',
     value: 'my',
     label: '我的',

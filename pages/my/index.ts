@@ -166,7 +166,6 @@ Page({
       // FEATURE_KEYS.PROFILE 含客户/团主 → 普通用户可点入=隐私泄露。自我编辑统一走「账号资料」(info-edit)。
       // 用户目录的管理层入口另在 W4/D-1 按管理层门控重建。
       // #F6：「账号资料」列表入口已删——与头像卡「编辑」笔(onNavigateTo→info-edit)重复，保留笔为唯一入口。
-      { name: '用户审核', icon: 'user-setting', type: 'userReview', url: '/pages/userReview/index', feature: FEATURE_KEYS.USER_REVIEW },
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
       // 「供应商资料」入口已移进「商品库」页（D-4/B5：供应商是团主管理商品的上游，归商品域）。
       { name: '操作记录', icon: 'time', type: 'operationLogs', url: '/pages/operationLogs/index', feature: FEATURE_KEYS.OPERATION_LOGS },
