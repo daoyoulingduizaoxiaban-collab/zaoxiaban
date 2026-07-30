@@ -1,5 +1,6 @@
 import config from '~/config';
 import { FeedbackRepository } from '~/repositories/feedbackRepository';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 Page({
   data: {
@@ -47,7 +48,7 @@ Page({
       wx.showToast({ title: res.error || '提交失败，请稍后再试', icon: 'none' });
       return;
     }
-    wx.showToast({ title: '已收到，谢谢反馈', icon: 'success' });
+    toastSuccess(RESULT_TEXT.submit);
     setTimeout(() => wx.navigateBack({ fail: () => {} }), 800);
   },
 });

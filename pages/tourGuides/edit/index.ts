@@ -10,6 +10,7 @@ import {
 } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 Page({
   data: {
@@ -166,7 +167,7 @@ Page({
     this.setData({ isDirty: false });
     const wasApplication = this.data.isApplicationMode;
     AuthService.updateCurrentProfile(res.data);
-    wx.showToast({ title: wasApplication ? '申请已提交' : '团主资料已保存', icon: 'success' });
+    toastSuccess(wasApplication ? RESULT_TEXT.submit : RESULT_TEXT.save);
     // 申请模式：重渲染成 pending 态、当场显示管理员 QR（引导加好友），不跳走；其它情况按原逻辑返回。
     setTimeout(() => {
       if (wasApplication) {

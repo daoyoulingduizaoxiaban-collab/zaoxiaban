@@ -2,6 +2,7 @@ import { AuthService } from '~/services/auth/authService';
 import { canUseProviderPortal } from '~/services/auth/roleScope';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 Page({
   data: {
@@ -137,7 +138,7 @@ Page({
       return;
     }
     this.setData({ isDirty: false });
-    wx.showToast({ title: '供应商资料已保存', icon: 'success' });
+    toastSuccess(RESULT_TEXT.save);
     setTimeout(() => navigateBackOrTab('/pages/providers/index'), 300);
   },
 

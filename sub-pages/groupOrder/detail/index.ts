@@ -6,6 +6,7 @@ import { CustomerOrderService } from '~/services/customerOrder/customerOrderServ
 import { getSaveModeText, generateGroupOrderQr } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 const buildCustomerEntryPath = (id, shareToken = '') => {
   const basePath = `/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(String(id || ''))}`;
@@ -368,10 +369,7 @@ Page({
       return;
     }
 
-    wx.showToast({
-      title: getSaveModeText(res.meta),
-      icon: 'none'
-    });
+    toastSuccess(RESULT_TEXT.update);
     this.fetchGroupOrderDetail(this.data.groupOrderId);
   },
 
@@ -415,10 +413,7 @@ Page({
       return;
     }
 
-    wx.showToast({
-      title: getSaveModeText(res.meta),
-      icon: 'none'
-    });
+    toastSuccess(RESULT_TEXT.update);
     this.fetchGroupOrderDetail(this.data.groupOrderId);
   },
 

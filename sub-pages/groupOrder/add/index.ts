@@ -1,7 +1,7 @@
 import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { Product } from '~/models/Product';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
-import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
+import { RESULT_TEXT } from '~/utils/feedback';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl, normalizeRouteUrl } from '~/utils/navigation';
@@ -25,7 +25,6 @@ Page({
     groupOrderId: '',
     selectedGoods: [] as Product[],
     isSubmitting: false,
-    saveModeText: '',
     accessDenied: false,
     accessStateText: '',
     pageErrorText: '',
@@ -340,11 +339,9 @@ Page({
       return;
     }
 
-    const saveModeText = getSaveModeText(res.meta);
-    this.setData({ saveModeText });
     wx.showToast({
-      title: saveModeText,
-      icon: 'none',
+      title: this.data.isEdit ? RESULT_TEXT.save : RESULT_TEXT.create,
+      icon: 'success',
       success: () => {
         setTimeout(() => navigateBackOrTab('/pages/groupOrder/index'), 800);
       }

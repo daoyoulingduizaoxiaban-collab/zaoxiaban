@@ -5,6 +5,7 @@ import { FEATURE_KEYS, canUseFeature, getRoleScopeText, hasRole, isOwnerOrAdmin 
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
 import { consumeTabRouteQuery, navigateByUrl, parseRouteQuery } from '~/utils/navigation';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { RESULT_TEXT, toastSuccess, toastError } from '~/utils/feedback';
 
 const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
   .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
@@ -357,13 +358,13 @@ Page({
     const res = await runner(id, actionPayload);
     if (!res.success) {
       this.setData({ isSubmittingAction: false });
-      wx.showToast({ title: res.error || '操作失败', icon: 'none' });
+      toastError(res.error);
       return;
     }
 
     await this.loadOrders();
     this.resetActionState();
-    wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+    toastSuccess(RESULT_TEXT.update);
   },
 
   async onShow() {

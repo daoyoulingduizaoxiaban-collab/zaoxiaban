@@ -1,11 +1,11 @@
 import { Product } from "~/models/Product";
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
-import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
@@ -88,7 +88,7 @@ Page({
         displayList: this.filterList(rawList, this.data.searchQuery),
         skipNextReload: false,
       });
-      wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+      toastSuccess(RESULT_TEXT.save);
     });
     return true;
   },
@@ -278,7 +278,7 @@ Page({
             displayList: this.filterList(rawList, this.data.searchQuery)
           });
 
-          wx.showToast({ title: getSaveModeText(removeRes.meta), icon: 'none' });
+          toastSuccess(RESULT_TEXT.remove);
         }
       }
     });
@@ -321,7 +321,7 @@ Page({
                 rawList,
                 displayList: this.filterList(rawList, this.data.searchQuery)
               });
-              wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+              toastSuccess(RESULT_TEXT.save);
             });
           }
         },

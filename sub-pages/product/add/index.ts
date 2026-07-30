@@ -4,12 +4,12 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import {
   CLOUD_SAVE_MODE,
-  CLOUD_SAVE_MODE_TEXT,
   getSaveModeText,
   isCloudBusinessEnabled,
 } from '~/repositories/cloudBusinessRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 Page({
   behaviors: [useAccessPage],
@@ -22,7 +22,7 @@ Page({
     accessDenied: false,
     accessStateText: '',
     pageErrorText: '',
-    saveModeText: CLOUD_SAVE_MODE_TEXT,
+    saveModeText: '',
     imageModeTip: '图片会随商品资料一起保存，便于客户查看实物。',
 
     currentProduct: {
@@ -266,9 +266,8 @@ Page({
       }
     }
 
-    const saveModeText = getSaveModeText(res.meta);
-    this.setData({ saveModeText });
-    wx.showToast({ title: saveModeText, icon: 'none' });
+    this.setData({ saveModeText: getSaveModeText(res.meta) });
+    toastSuccess(this.data.isEdit ? RESULT_TEXT.save : RESULT_TEXT.create);
     navigateBackOrTab('/pages/productManagement/index');
   },
 });

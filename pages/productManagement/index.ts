@@ -10,6 +10,7 @@ import {
   getProductStatusTextByValue
 } from '~/enum/ProductStatus'
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 Page({
   // access-state + 三态字段与 helper 来自 behavior（R1）
@@ -339,10 +340,7 @@ Page({
     }
 
     await this.fetchData();
-    wx.showToast({
-      title: `${getSaveModeText(res.meta)}：${getProductStatusTextByValue(res.data.status)}`,
-      icon: 'none'
-    });
+    toastSuccess(RESULT_TEXT.update);
   },
 
   onDelete(e: any) {
@@ -363,7 +361,7 @@ Page({
             return;
           }
           await this.fetchData();
-          wx.showToast({ title: getSaveModeText(res.meta), icon: 'none' });
+          toastSuccess(RESULT_TEXT.remove);
         }
       }
     });

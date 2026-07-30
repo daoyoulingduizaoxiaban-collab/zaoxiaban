@@ -3,6 +3,7 @@ import { canUseProviderPortal, isOwnerOrAdmin } from '~/services/auth/roleScope'
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { navigateByUrl } from '~/utils/navigation';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 Page({
   behaviors: [useAccessPage],
@@ -108,7 +109,7 @@ Page({
           wx.showToast({ title: result.error || `${actionText}失败`, icon: 'none' });
           return;
         }
-        wx.showToast({ title: `已${actionText}`, icon: 'success' });
+        toastSuccess(RESULT_TEXT.update);
         await this.loadProviders();
       },
     });
@@ -127,7 +128,7 @@ Page({
           wx.showToast({ title: result.error || '删除失败', icon: 'none' });
           return;
         }
-        wx.showToast({ title: '已删除', icon: 'success' });
+        toastSuccess(RESULT_TEXT.remove);
         await this.loadProviders();
       },
     });

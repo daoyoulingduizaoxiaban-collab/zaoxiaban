@@ -4,6 +4,7 @@ import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { isCloudBusinessEnabled, uploadCloudFiles } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateByUrl, navigateBackOrTab } from '~/utils/navigation';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 
 const getPhotoSource = photo => (photo ? (photo.url || photo.path || '') : '');
 const needsCloudUpload = path => Boolean(
@@ -268,7 +269,7 @@ Page({
       return;
     }
     AuthService.updateCurrentProfile(res.data);
-    wx.showToast({ title: '个人信息已保存', icon: 'success' });
+    toastSuccess(RESULT_TEXT.save);
     // 保存后返回上一页（#F2）。
     setTimeout(() => navigateBackOrTab('/pages/my/index'), 600);
   },

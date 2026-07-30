@@ -1,6 +1,7 @@
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { AuthService } from '~/services/auth/authService';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 import { AUTH_ROLES, REVIEW_ROLE_OPTIONS, REVIEW_STATUS, isOwnerOrAdmin } from '~/services/auth/roleScope';
 
 const roleLabelByValue = REVIEW_ROLE_OPTIONS.reduce((map, item) => ({
@@ -185,7 +186,7 @@ Page({
       wx.showToast({ title: res.error || '审核操作失败', icon: 'none' });
       return false;
     }
-    wx.showToast({ title: '审核已更新', icon: 'success' });
+    toastSuccess(RESULT_TEXT.update);
     this.refresh();
     return true;
   },
