@@ -3,10 +3,12 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     excludeIds: [],
     allProducts: [],
@@ -60,6 +62,7 @@ Page({
   },
 
   async loadProductLibrary() {
+    if ((this as any).requireLogin()) return;
     if ((this as any)._loadProductsInFlight) return (this as any)._loadProductsInFlight;
     if ((this as any)._hasLoadedProductLibrary) return;
     (this as any)._hasLoadedProductLibrary = true;

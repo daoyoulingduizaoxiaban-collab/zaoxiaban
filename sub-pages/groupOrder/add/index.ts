@@ -6,6 +6,7 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl, normalizeRouteUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
@@ -17,6 +18,7 @@ const formatNow = () => {
 };
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     pageTitle: '开团',
     isEdit: false,
@@ -55,6 +57,7 @@ Page({
     const sourceUrl = normalizeRouteUrl(options.from || '/pages/groupOrder/index', '/pages/groupOrder/index');
     this.setData({ isPageLoading: true, sourceUrl });
     await AuthService.refreshSession();
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     const canCreate = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
     if (!canCreate) {

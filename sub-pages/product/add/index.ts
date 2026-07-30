@@ -9,8 +9,10 @@ import {
   isCloudBusinessEnabled,
 } from '~/repositories/cloudBusinessRepository';
 import { navigateBackOrTab } from '~/utils/navigation';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     pageTitle: '商品表单',
     isEdit: false,
@@ -43,6 +45,7 @@ Page({
 
   async onLoad(options) {
     await AuthService.refreshSession();
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     const canCreate = canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE);
     if (!canCreate) {

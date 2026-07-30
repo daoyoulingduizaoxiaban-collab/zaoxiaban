@@ -5,10 +5,12 @@ import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { useAccessPage } from '~/behaviors/useAccessPage';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
 Page({
+  behaviors: [useAccessPage],
   data: {
     groupOrderId: '',
     searchQuery: '',
@@ -92,6 +94,7 @@ Page({
   },
 
   async loadGroupProducts() {
+    if ((this as any).requireLogin()) return;
     const { groupOrderId } = this.data;
     if (!groupOrderId) {
       this.resetDetailState({
