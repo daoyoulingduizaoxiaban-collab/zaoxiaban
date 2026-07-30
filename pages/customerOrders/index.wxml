@@ -1,7 +1,6 @@
 <nav nav-type="customerOrders" titleText="{{titleText}}" />
 
 <view class="role-scope">{{roleScopeText}}</view>
-<view class="save-mode" wx:if="{{saveModeText}}">{{saveModeText}}</view>
 
 <view class="customerOrders-container">
   <view class="access-card" wx:if="{{authReady && !isLoading && !canUseBusiness}}">

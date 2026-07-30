@@ -2,8 +2,6 @@
 <sub-nav title="{{ pageTitle }}" />
 
 <view class="edit-container">
-  <view class="mode-tip">{{saveModeText}}</view>
-
   <page-state
     state="{{pageState}}"
     loading-text="正在加载团单资料"
@@ -38,11 +36,8 @@
         <view class="qr-label">点一下放大，长按分享</view>
       </view>
       <view class="share-entry" wx:if="{{canManageGroupOrder}}">
-        <view class="share-path">{{customerEntryPath || '客户入口加载中'}}</view>
         <view class="share-actions">
           <t-button size="small" theme="primary" open-type="share" disabled="{{!groupOrderId}}">分享给客户</t-button>
-          <t-button size="small" theme="default" bindtap="onCopyCustomerEntry" disabled="{{!groupOrderId}}">复制入口</t-button>
-          <t-button size="small" theme="light" bindtap="ensureShareQr" loading="{{qrLoading}}" disabled="{{!groupOrderId}}">{{groupOrder.qrCodeUrl ? '重新生成二维码' : '生成二维码'}}</t-button>
         </view>
       </view>
     </view>
@@ -148,22 +143,19 @@
       </view>
     </block>
 
+    <!-- #E4 紧凑操作条：单行三个小按钮，不再占半屏 -->
     <view wx:if="{{canManageGroupOrder}}" class="footer-action-bar">
-      <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onEditGroupOrder"
+      <t-button theme="default" class="btn-secondary" size="small" bind:tap="onEditGroupOrder"
         disabled="{{!groupOrderId}}">
         编辑团单
       </t-button>
-      <t-button theme="primary" class="btn-primary" size="large" block bind:tap="onExportReport"
-        disabled="{{groupOrder.memberOrderList.length === 0 }}">
-        导出报表
-      </t-button>
-      <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onManageProducts"
+      <t-button theme="default" class="btn-secondary" size="small" bind:tap="onManageProducts"
         disabled="{{!groupOrderId}}">
         本团商品
       </t-button>
-      <t-button theme="default" class="btn-secondary" size="large" block bind:tap="onCustomerOrderEntry"
-        disabled="{{!groupOrderId}}">
-        客户下单入口
+      <t-button theme="primary" class="btn-primary" size="small" bind:tap="onExportReport"
+        disabled="{{groupOrder.memberOrderList.length === 0 }}">
+        导出报表
       </t-button>
     </view>
   </page-state>

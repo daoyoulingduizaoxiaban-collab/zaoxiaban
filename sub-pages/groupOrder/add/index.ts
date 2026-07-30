@@ -5,6 +5,7 @@ import { RESULT_TEXT } from '~/utils/feedback';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl, normalizeRouteUrl } from '~/utils/navigation';
+import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
 
@@ -33,10 +34,11 @@ Page({
     datePickerVisible: false,
     pickerField: '',
     pickerValue: '',
-    // #8 开团内嵌新增商品：填名称 + 多档「数量+总价(支援小数)」价格区间，加入 selectedGoods（不必先去商品库）。
+    // #8 开团内嵌新增商品：填名称 + 多档「数量+总价(支援小数)」价格区间 + 商品图(选填)，加入 selectedGoods（不必先去商品库）。
     newProduct: {
       title: '',
       tiers: [] as Array<{ minQuantity: number; totalPrice: number }>,
+      pictureUrls: [] as string[],
     },
     tempTier: {
       minQuantity: '',
@@ -227,16 +229,47 @@ Page({
     this.setData({ 'newProduct.tiers': this.data.newProduct.tiers.filter((_, i) => i !== index) });
   },
 
+  // 内嵌商品图（选填，最多 3 张）：cloud 后端保存时上传云存储；local 后端直接用临时路径（仅本地测试）。
+  chooseInlineImage() {
+    const current = this.data.newProduct.pictureUrls || [];
+    const remain = 3 - current.length;
+    if (remain <= 0) return wx.showToast({ title: '最多上传 3 张商品图', icon: 'none' });
+    wx.chooseMedia({
+      count: remain,
+      mediaType: ['image'],
+      success: (res) => {
+        const paths = (res.tempFiles || []).map(f => f.tempFilePath).filter(Boolean);
+        if (!paths.length) return;
+        this.setData({ 'newProduct.pictureUrls': [...current, ...paths].slice(0, 3) });
+      },
+    });
+  },
+
+  removeInlineImage(e: any) {
+    const index = Number(e.currentTarget.dataset.index);
+    this.setData({ 'newProduct.pictureUrls': (this.data.newProduct.pictureUrls || []).filter((_, i) => i !== index) });
+  },
+
   // #8/#1 加入商品：各档「数量+总价(支援小数)」→ 换算 unitPrice=总价/数量 存，下单计价逻辑不变。
-  addProductInline() {
+  async addProductInline() {
     const name = String(this.data.newProduct.title || '').trim();
     const tiers = this.data.newProduct.tiers;
     if (!name) return wx.showToast({ title: '请输入商品名称', icon: 'none' });
     if (!tiers.length) return wx.showToast({ title: '请至少添加一档价格', icon: 'none' });
+    // 商品图：cloud 后端先上传云存储换 durable URL；local 后端直接用临时路径（仅本地测试可见）。
+    let pictureUrls = this.data.newProduct.pictureUrls || [];
+    if (pictureUrls.length && isCloudBusinessEnabled()) {
+      wx.showLoading({ title: '上传商品图...', mask: true });
+      const uploadRes = await uploadProductImages(pictureUrls);
+      wx.hideLoading();
+      if (!uploadRes.success) return wx.showToast({ title: uploadRes.error || '商品图上传失败', icon: 'none' });
+      pictureUrls = uploadRes.data || [];
+    }
     const product = {
       id: `inline-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       title: name,
-      coverUrl: '',
+      coverUrl: pictureUrls[0] || '',
+      pictureUrls,
       // 必须 status=2(上架)，否则客户下单页按 status===2 过滤会看不到本商品。
       status: 2,
       priceSetting: tiers.map(t => ({
@@ -248,7 +281,7 @@ Page({
     };
     this.setData({
       selectedGoods: [...this.data.selectedGoods, product],
-      newProduct: { title: '', tiers: [] },
+      newProduct: { title: '', tiers: [], pictureUrls: [] },
       tempTier: { minQuantity: '', totalPrice: '' },
     });
     wx.showToast({ title: '已加入商品', icon: 'none' });

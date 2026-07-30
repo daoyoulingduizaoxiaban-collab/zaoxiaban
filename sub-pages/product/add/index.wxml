@@ -17,8 +17,6 @@
 
 <view class="page-container" wx:else>
   <view class="content-scroll">
-    <view class="mode-banner">{{saveModeText}}</view>
-
     <view class="card">
       <view class="form-group">
         <text class="label">商品名称 <text class="required">*</text></text>

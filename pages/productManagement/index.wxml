@@ -12,7 +12,6 @@
 
   <view class="mode-banner">
     <text>{{roleScopeText}}</text>
-    <text wx:if="{{saveModeText}}">{{saveModeText}}</text>
   </view>
 
   <view class="access-card" wx:if="{{authReady && !isLoading && !canUseBusiness}}">

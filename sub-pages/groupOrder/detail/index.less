@@ -364,24 +364,22 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+  padding: 12rpx 24rpx calc(12rpx + env(safe-area-inset-bottom));
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   border-top: 1rpx solid #f0f0f0;
   z-index: 100;
   display: flex;
-  gap: 20rpx;
-  flex-wrap: wrap;
+  gap: 16rpx;
+  flex-wrap: nowrap;
 
 }
 
 .footer-action-bar t-button {
-  width: calc(50% - 10rpx) !important;
-  --td-button-border-radius: 16rpx;
+  flex: 1;
+  --td-button-border-radius: 12rpx;
   --td-button-font-weight: 600;
-  height: 96rpx;
   display: flex;
-
 }
 
 .btn-secondary {

@@ -179,6 +179,52 @@
     gap: 16rpx;
   }
 
+  .inline-images {
+    display: flex;
+    gap: 16rpx;
+    margin-bottom: 16rpx;
+    flex-wrap: wrap;
+
+    &__item {
+      position: relative;
+      width: 120rpx;
+      height: 120rpx;
+    }
+
+    &__img {
+      width: 100%;
+      height: 100%;
+      border-radius: 8rpx;
+    }
+
+    &__remove {
+      position: absolute;
+      top: -12rpx;
+      right: -12rpx;
+      width: 36rpx;
+      height: 36rpx;
+      line-height: 32rpx;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.55);
+      color: #fff;
+      border-radius: 50%;
+      font-size: 24rpx;
+    }
+
+    &__add {
+      width: 120rpx;
+      height: 120rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border: 1rpx dashed #c5cad1;
+      border-radius: 8rpx;
+      color: #5a6b7b;
+      font-size: 24rpx;
+    }
+  }
+
   &__input--half {
     flex: 1;
     min-width: 0;

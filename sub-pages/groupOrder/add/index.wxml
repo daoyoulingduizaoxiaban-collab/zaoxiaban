@@ -75,6 +75,15 @@
       <view class="inline-product__label">新增商品</view>
       <input class="inline-product__input" placeholder="商品名称" value="{{newProduct.title}}" bindinput="onNewProductInput" />
 
+      <!-- 商品图（选填，最多 3 张） -->
+      <view class="inline-images">
+        <view class="inline-images__item" wx:for="{{newProduct.pictureUrls}}" wx:key="*this">
+          <image class="inline-images__img" src="{{item}}" mode="aspectFill" />
+          <text class="inline-images__remove" data-index="{{index}}" catchtap="removeInlineImage">×</text>
+        </view>
+        <view wx:if="{{newProduct.pictureUrls.length < 3}}" class="inline-images__add" bindtap="chooseInlineImage">＋ 商品图</view>
+      </view>
+
       <!-- 已添加的价格档（如 3 件 ¥30、5 件 ¥45） -->
       <view class="inline-tier" wx:for="{{newProduct.tiers}}" wx:key="minQuantity">
         <text class="inline-tier__text">{{item.minQuantity}} 件　总价 ¥{{item.totalPrice}}</text>

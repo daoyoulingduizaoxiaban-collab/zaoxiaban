@@ -3,7 +3,7 @@ import {
 } from '~/models/GroupOrder';
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
-import { getSaveModeText, generateGroupOrderQr } from '~/repositories/cloudBusinessRepository';
+import { generateGroupOrderQr, callBusinessData } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
@@ -60,7 +60,6 @@ Page({
     cancelForm: {
       cancelRemark: '',
     },
-    saveModeText: '读取团单资料中',
     customerEntryPath: '',
     pageState: 'loading',
     loadErrorText: '',
@@ -68,7 +67,6 @@ Page({
     canManageGroupOrder: false,
     onSaleProducts: [],
     showOnSaleProducts: false,
-    qrLoading: false,
   },
 
   async onLoad(options) {
@@ -87,7 +85,6 @@ Page({
         pageTitle: '团单详情',
         pageState: 'error',
         loadErrorText: '缺少团单 ID，请返回团单列表重新进入。',
-        saveModeText: '无法读取团单资料',
       });
     }
   },
@@ -116,15 +113,16 @@ Page({
           groupOrder,
           customerEntryPath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
           pageTitle: res.data.title ? '团单详情' : '团单未找到',
-          saveModeText: getSaveModeText(res.meta),
           canManageGroupOrder,
           onSaleProducts: canManageGroupOrder ? [] : buildOnSaleProducts(res.data.productList),
           pageState: 'ready',
           loadErrorText: '',
         });
+        // 二维码缺失时自动补生成（团单建立后即有码，无需手动点）
+        this.ensureShareQr();
       } else {
         const errorText = res.error || '加载团单失败';
-        this.setData({ pageState: 'error', saveModeText: errorText, loadErrorText: errorText });
+        this.setData({ pageState: 'error', loadErrorText: errorText });
         wx.showToast({
           title: errorText,
           icon: 'none'
@@ -132,7 +130,7 @@ Page({
       }
 
     } catch (err) {
-      this.setData({ pageState: 'error', saveModeText: '加载团单失败', loadErrorText: '加载团单失败' });
+      this.setData({ pageState: 'error', loadErrorText: '加载团单失败' });
       wx.showToast({
         title: '加载团单失败',
         icon: 'none'
@@ -206,40 +204,37 @@ Page({
       showDetails: false
     });
   },
-  // 团主生成客户下单入口的小程序码：scene=shareToken（唯一、够短），客户扫码后由后端凭 token 反查团单。
+  // 自动补生成团单二维码（无 qrCodeUrl 时静默执行，不打扰用户）：
+  // scene=shareToken（唯一、够短），客户扫码后由后端凭 token 反查团单。
+  // 生成后写回团单（groupOrders.update）持久化，下次进来直接显示。
   async ensureShareQr() {
-    if (!this.data.canManageGroupOrder) {
-      wx.showToast({ title: '当前账号不能生成二维码', icon: 'none' });
-      return;
-    }
+    if (this._qrGenerating) return;
     const groupOrder = this.data.groupOrder || {};
     const shareToken = String(groupOrder.shareToken || '').trim();
-    if (!shareToken) {
-      wx.showToast({ title: '团单缺少分享标识，无法生成二维码', icon: 'none' });
-      return;
-    }
-    if (this.data.qrLoading) return;
-    this.setData({ qrLoading: true });
-    wx.showLoading({ title: '生成二维码中', mask: true });
+    if (!this.data.canManageGroupOrder || !shareToken || (groupOrder.qrCodeUrl || '').trim()) return;
+    this._qrGenerating = true;
     try {
       const res = await generateGroupOrderQr({ scene: shareToken, page: 'pages/customerOrders/edit/index' });
       if (res && res.success && res.data && res.data.fileID) {
         this.setData({ 'groupOrder.qrCodeUrl': res.data.fileID });
-        wx.showToast({ title: '二维码已生成', icon: 'success' });
-      } else {
-        wx.showToast({ title: (res && res.error) || '二维码生成失败', icon: 'none' });
+        // 持久化（失败不阻塞显示，下次进来会再自动补生成）
+        callBusinessData({
+          resource: 'groupOrders',
+          action: 'update',
+          data: { id: this.data.groupOrderId, data: { qrCodeUrl: res.data.fileID } },
+        });
       }
+      // 失败静默（本地后端/未部署云函数时不打扰用户，页面保持「暂无团单二维码」）。
     } catch (err) {
-      wx.showToast({ title: '二维码生成失败', icon: 'none' });
+      // 静默同上
     } finally {
-      this.setData({ qrLoading: false });
-      wx.hideLoading();
+      this._qrGenerating = false;
     }
   },
 
   previewQR() {
     const qrCodeUrl = (this.data.groupOrder.qrCodeUrl || '').trim();
-    const canPreview = qrCodeUrl.indexOf('https://') === 0 || qrCodeUrl.indexOf('/') === 0 || qrCodeUrl.indexOf('wxfile://') === 0;
+    const canPreview = qrCodeUrl.indexOf('https://') === 0 || qrCodeUrl.indexOf('cloud://') === 0 || qrCodeUrl.indexOf('/') === 0 || qrCodeUrl.indexOf('wxfile://') === 0;
 
     if (!qrCodeUrl) {
       wx.showToast({
@@ -415,44 +410,6 @@ Page({
 
     toastSuccess(RESULT_TEXT.update);
     this.fetchGroupOrderDetail(this.data.groupOrderId);
-  },
-
-  onCustomerOrderEntry() {
-    if (!this.data.canManageGroupOrder) {
-      wx.showToast({ title: '当前账号不能生成客户下单入口', icon: 'none' });
-      return;
-    }
-    const id = this.data.groupOrderId;
-    if (!id) {
-      wx.showToast({
-        title: '缺少团单 ID',
-        icon: 'none'
-      });
-      return;
-    }
-
-    navigateByUrl(this.data.customerEntryPath || buildCustomerEntryPath(id, this.data.groupOrder && this.data.groupOrder.shareToken), {
-      fail: () => {
-        wx.showToast({
-          title: '打开客户下单页失败',
-          icon: 'none'
-        });
-      }
-    });
-  },
-
-  onCopyCustomerEntry() {
-    if (!this.data.canManageGroupOrder) {
-      wx.showToast({ title: '当前账号不能复制客户下单入口', icon: 'none' });
-      return;
-    }
-    const groupOrder = this.data.groupOrder || {};
-    const path = groupOrder.sharePath || buildCustomerEntryPath(this.data.groupOrderId, groupOrder.shareToken);
-    wx.setClipboardData({
-      data: path,
-      success: () => wx.showToast({ title: '客户入口已复制', icon: 'none' }),
-      fail: () => wx.showToast({ title: '复制客户入口失败', icon: 'none' }),
-    });
   },
 
   onEditGroupOrder() {
