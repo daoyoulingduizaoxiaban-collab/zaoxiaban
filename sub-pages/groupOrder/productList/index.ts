@@ -148,20 +148,18 @@ Page({
     this.openPendingProductDetail();
   },
 
+  // 价格显示跟开团设定时一样：按档次显示「数量件 总价¥X」，不算单价（同 detail 页 #C1 口径）。
   normalizeProducts(products) {
     return products.map(item => {
       const priceSetting = item.priceSetting || [];
-      const prices = priceSetting.map(setting => setting.unitPrice);
-      const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-      const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+      const tierLabels = priceSetting
+        .filter(setting => Number(setting.minQuantity) > 0)
+        .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
+        .map(setting => `${Number(setting.minQuantity)}件 ￥${setting.totalPrice}`);
 
       return {
         ...normalizeProductImageFields(item),
-        priceDisplay: prices.length === 0
-          ? '未设置价格'
-          : minPrice === maxPrice
-            ? `￥${minPrice}`
-            : `￥${minPrice} ~ ￥${maxPrice}`,
+        priceDisplay: tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / '),
       };
     });
   },
