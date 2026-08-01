@@ -165,7 +165,7 @@ Page({
       // 「个人资料」入口已移除(P0-2)：它指向 pages/profile 用户目录页(列出他人姓名/手机),
       // FEATURE_KEYS.PROFILE 含客户/团主 → 普通用户可点入=隐私泄露。自我编辑统一走「账号资料」(info-edit)。
       // 用户目录的管理层入口另在 W4/D-1 按管理层门控重建。
-      // #F6：「账号资料」列表入口已删——与头像卡「编辑」笔(onNavigateTo→info-edit)重复，保留笔为唯一入口。
+      // 自我编辑入口在「设置」页的「账号资料」，「我的」头像卡不再放编辑笔。
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
       // 「供应商资料」入口已移进「商品库」页（D-4/B5：供应商是团主管理商品的上游，归商品域）。
       { name: '操作记录', icon: 'time', type: 'operationLogs', url: '/pages/operationLogs/index', feature: FEATURE_KEYS.OPERATION_LOGS },
@@ -265,12 +265,6 @@ Page({
         confirmText: '知道了',
       }),
     });
-  },
-
-  onNavigateTo() {
-    // 头像卡「编辑」图标 → 统一走「账号资料」(info-edit) 唯一自我编辑入口(归并决策·已定)。
-    // 原先导向 pages/profile/edit(#17,归管理端)/pages/profile 用户目录(泄露),均已弃用。
-    this.openUrl('/pages/my/info-edit/index');
   },
 
   onLogout() {

@@ -1,6 +1,7 @@
 import useToastBehavior from '~/behaviors/useToast';
 import { AuthService } from '~/services/auth/authService';
 import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
+import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 
 Page({
@@ -63,7 +64,18 @@ Page({
       ],
     ];
 
-    // 「账号资料」入口不放这里——「我的」头像卡编辑笔是唯一自我编辑入口（#F6 归并决策）。
+    const canEditInfo = canUseFeature(profile, FEATURE_KEYS.INFO_EDIT);
+    if (canEditInfo) {
+      menuData.push([
+        {
+          title: '账号资料',
+          note: '查看与修改名称、电话和头像',
+          icon: 'edit',
+          url: '/pages/my/info-edit/index',
+        },
+      ]);
+    }
+
     menuData.push([
       {
         title: '微信账号',

@@ -16,7 +16,6 @@
             <t-tag class="tag" variant="light">{{personalInfo.authSourceText}}</t-tag>
           </view>
         </view>
-        <t-icon slot="right-icon" name="edit" size="40rpx" color="#000000e6" bindtap="onNavigateTo" />
       </t-cell>
       <view wx:if="{{!isLoggedIn}}" class="login-card-entry" catchtap="onLogin" bindtouchend="onLoginTouchEnd">
         <t-avatar image="/static/avatar1.png" size="128rpx" />

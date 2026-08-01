@@ -11,26 +11,26 @@
     <view class="detail-info-card">
       <view class="detail-info-row">
         <text class="detail-info-label">团单名称</text>
-        <text class="detail-info-value">{{groupOrder.title || '未填写'}}</text>
+        <text class="detail-info-value">{{groupOrder.title || '(未填写)'}}</text>
       </view>
       <view class="detail-info-row">
         <text class="detail-info-label">收单状态</text>
         <view class="detail-info-value detail-status-line">
-          <text>{{groupOrder.statusText || '未填写'}}</text>
+          <text>{{groupOrder.statusText || '(未填写)'}}</text>
           <text wx:if="{{canManageGroupOrder}}" class="status-toggle" catchtap="onToggleStatus">{{groupOrder.status === 1 ? '停止收单' : '恢复收单'}}</text>
         </view>
       </view>
       <view class="detail-info-row">
         <text class="detail-info-label">描述</text>
-        <text class="detail-info-value">{{groupOrder.description || '未填写'}}</text>
+        <text class="detail-info-value">{{groupOrder.description || '(未填写)'}}</text>
       </view>
       <view class="detail-info-row">
         <text class="detail-info-label">出团时间</text>
-        <text class="detail-info-value">{{groupOrder.startAt || '未填写'}}</text>
+        <text class="detail-info-value">{{groupOrder.startAt || '(未填写)'}}</text>
       </view>
       <view class="detail-info-row">
         <text class="detail-info-label">收单截止</text>
-        <text class="detail-info-value">{{groupOrder.endAt || '未填写'}}</text>
+        <text class="detail-info-value">{{groupOrder.endAt || '(未填写)'}}</text>
       </view>
       <view class="qr-container" bindtap="previewQR">
         <image wx:if="{{groupOrder.qrCodeUrl}}" class="qr-image" src="{{ groupOrder.qrCodeUrl }}" mode="aspectFit" binderror="onImageError"

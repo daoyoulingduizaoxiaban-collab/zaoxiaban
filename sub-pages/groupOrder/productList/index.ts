@@ -212,15 +212,12 @@ Page({
 
     const selectedPriceRules = (product.priceSetting || []).map(rule => ({
       minQuantity: rule.minQuantity,
-      unitPrice: rule.unitPrice,
+      totalPrice: rule.totalPrice,
       description: rule.description || '',
     }));
 
     this.setData({
-      selectedProduct: {
-        ...normalizeProductImageFields(product),
-        statusText: Number(product.status) === 2 ? '已上架' : '已下架',
-      },
+      selectedProduct: normalizeProductImageFields(product),
       selectedPriceRules,
       detailVisible: true,
     });
