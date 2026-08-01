@@ -7,10 +7,13 @@
  *          / db.command.in 等 / db.serverDate / db.createCollection。
  */
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
+// 默认路径故意放在项目目录外：dev.json 放项目内会被微信开发者工具的文件监听当成源码变更，
+// 每次写库（每个业务动作成功后）都触发自动编译，把导航栈重置回首页 pages/my/index（#F 删/建/复团单后跳回「我的」根因）。
 const DB_FILE = process.env.LOCAL_DB_FILE
-  || path.join(__dirname, '.data', 'dev.json');
+  || path.join(os.homedir(), '.dao-you-ling-local-server', 'dev.json');
 
 const ensureDir = (file) => {
   const dir = path.dirname(file);

@@ -6,7 +6,7 @@
  * 环境变量：
  *   PORT              监听端口，默认 3000
  *   OWNER_OPENIDS     owner 白名单（逗号分隔），默认 dev-owner-openid
- *   LOCAL_DB_FILE     数据库 JSON 路径，默认 local-server/.data/dev.json
+ *   LOCAL_DB_FILE     数据库 JSON 路径，默认 ~/.dao-you-ling-local-server/dev.json（故意放项目目录外，避免触发开发者工具自动编译）
  */
 const http = require('http');
 const path = require('path');
@@ -103,5 +103,5 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`[local-server] 已启动 http://localhost:${PORT}`);
   console.log(`[local-server] owner 白名单: ${process.env.OWNER_OPENIDS}`);
-  console.log(`[local-server] 数据库: ${process.env.LOCAL_DB_FILE || path.join(__dirname, '.data', 'dev.json')}`);
+  console.log(`[local-server] 数据库: ${process.env.LOCAL_DB_FILE || path.join(require('os').homedir(), '.dao-you-ling-local-server', 'dev.json')}`);
 });
