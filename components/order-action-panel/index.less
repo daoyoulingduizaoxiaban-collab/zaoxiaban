@@ -124,8 +124,14 @@
 }
 
 .action-panel__footer {
+  // 键盘弹起时 fixed 弹层不会自动让开键盘，footer 又在可滚动区块最底部，
+  // 打完字常常连保存按钮都看不到；改成吸底常驻，滚多远都摸得到。
+  position: sticky;
+  bottom: 0;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 20rpx;
-  padding-top: 32rpx;
+  margin: 0 -32rpx -32rpx;
+  padding: 20rpx 32rpx calc(20rpx + env(safe-area-inset-bottom));
+  background: #ffffff;
 }

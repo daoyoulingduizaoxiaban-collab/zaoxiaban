@@ -27,6 +27,7 @@
         <view class="detail-row"><text>申报金额</text><text>{{detail.declaredAmount ? '￥' + detail.declaredAmount : '未填写'}}</text></view>
         <view class="detail-row"><text>实收金额</text><text>{{detail.confirmedAmount ? '￥' + detail.confirmedAmount : '未确认'}}</text></view>
         <view class="detail-row"><text>付款凭证</text><text>{{detail.proofText}}</text></view>
+        <view class="detail-row" wx:if="{{detail.cancelRemark}}"><text>取消原因</text><text>{{detail.cancelRemark}}</text></view>
         <view class="detail-note">{{detail.paymentRemark || detail.confirmRemark || '暂无付款备注'}}</view>
       </view>
       <view class="detail-section">
