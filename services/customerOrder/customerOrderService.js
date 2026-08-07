@@ -212,9 +212,7 @@ export const CustomerOrderService = {
     if (!Array.isArray(payload.items) || payload.items.length === 0) return '请至少选择一个商品';
     const invalidItem = payload.items.find(item => normalizeNumber(item.amount) <= 0 || normalizeNumber(item.totalPrice) <= 0);
     if (invalidItem) return '商品数量和金额必须大于 0';
-    const hasPaymentMethod = Boolean(trimText(payload.paymentMethod));
-    const hasPaymentProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
-    if (hasPaymentMethod !== hasPaymentProof) return '付款方式与付款凭证需同时填写';
+    // A6：付款凭证选填，不能因为没传图就挡住「已付款+填了付款方式」的声明。
     return '';
   },
 
@@ -255,9 +253,7 @@ export const CustomerOrderService = {
     if (!paymentMethod) {
       return { success: false, error: '请填写付款方式' };
     }
-    if (paymentProofUrls.length === 0) {
-      return { success: false, error: '请上传付款凭证' };
-    }
+    // A6：付款凭证选填，没图不得阻止声明（线下现金/转账常常没有截图）。
 
     if (isCloudBusinessEnabled() && paymentProofUrls.length) {
       const uploadResult = await uploadCloudFiles(paymentProofUrls, 'payment-proofs');

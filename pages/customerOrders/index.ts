@@ -50,6 +50,8 @@ Page({
 
     if (isCustomer && status === 0) actions.push({ label: '声明已付款', action: 'declarePaid' });
     if (isCustomer && status !== 2 && status !== 3) actions.push({ label: '取消订单', action: 'cancelOrder' });
+    // 团主/管理层能替客户登记付款（线下收款、客户没走 app 内声明），不必等客户先声明。
+    if (isGuideOrAdmin && status === 0) actions.push({ label: '登记付款', action: 'declarePaid' });
     if (isGuideOrAdmin && status === 1) actions.push({ label: '确认收款', action: 'confirmPayment' });
     if (isGuideOrAdmin && status !== 2 && status !== 3) actions.push({ label: '取消订单', action: 'cancelOrder' });
 

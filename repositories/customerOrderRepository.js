@@ -437,8 +437,8 @@ export const CustomerOrderRepository = {
     const nextStatusValue = Number(nextStatus);
     const isCustomerOwner = profile && hasRole(profile, 'customer') && sameId(target.customerUserId, profile.id);
     const isManager = canManageOrder(target, groupOrders, profile);
-    if (nextStatusValue === MemberOrderStatus.PAID && !isCustomerOwner && !isOwnerOrAdmin(profile)) {
-      return { success: false, error: '只有下单客户可以声明已付款' };
+    if (nextStatusValue === MemberOrderStatus.PAID && !isCustomerOwner && !isManager) {
+      return { success: false, error: '只有下单客户或团主可以登记付款' };
     }
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && !isManager) {
       return { success: false, error: '当前角色不能处理此订单' };
@@ -459,7 +459,6 @@ export const CustomerOrderRepository = {
       return { success: false, error: '只有客户已付款订单才能确认到账' };
     }
     if (nextStatusValue === MemberOrderStatus.PAID) {
-      const hasProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
       const declaredAmount = Number(payload.declaredAmount || 0);
       if (declaredAmount <= 0) {
         return { success: false, error: '请填写有效付款金额' };
@@ -470,9 +469,7 @@ export const CustomerOrderRepository = {
       if (!trimText(payload.paymentMethod)) {
         return { success: false, error: '请填写付款方式' };
       }
-      if (!hasProof) {
-        return { success: false, error: '请上传付款凭证' };
-      }
+      // A6：付款凭证选填，没图不得阻止声明。
     }
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) <= 0) {
       return { success: false, error: '请填写有效实收金额' };

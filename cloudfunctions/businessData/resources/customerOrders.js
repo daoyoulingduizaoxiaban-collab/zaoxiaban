@@ -99,9 +99,7 @@ const validateCustomerOrderPayload = (payload) => {
   const invalidItem = payload.items.find(item => Number(item.amount || item.quantity || 0) <= 0 || Number(item.totalPrice || 0) <= 0);
   if (invalidItem) return '商品数量和金额必须大于 0';
   if (Number(payload.totalPrice || 0) <= 0) return '订单金额必须大于 0';
-  const hasPaymentMethod = Boolean(trimText(payload.paymentMethod));
-  const hasPaymentProof = Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length > 0;
-  if (hasPaymentMethod !== hasPaymentProof) return '付款方式与付款凭证需同时填写';
+  // A6：付款凭证选填，不能因为没传图就挡住「已付款+填了付款方式」的声明。
   return '';
 };
 
@@ -199,9 +197,8 @@ const customerOrderActions = {
     if (recomputed.error) return failure(recomputed.error);
 
     const createdAt = nowIso();
-    const hasInitialPayment = Boolean(trimText(payload.paymentMethod))
-      && Array.isArray(payload.paymentProofUrls)
-      && payload.paymentProofUrls.length > 0;
+    // A6：付款凭证选填，判断"是否已付款声明"只看有没有填付款方式，不強制要求凭证图。
+    const hasInitialPayment = Boolean(trimText(payload.paymentMethod));
     const initialStatus = hasInitialPayment ? MEMBER_ORDER_STATUS.PAID : MEMBER_ORDER_STATUS.UNPAID;
     const order = normalizeOrder({
       groupOrderId: groupOrder.id || groupOrder._id,
@@ -268,8 +265,10 @@ const customerOrderActions = {
     const nextStatusValue = Number(nextStatus);
     const isCustomerOwner = hasRole(profile, 'customer') && sameId(target.customerOpenId, profile.openId);
     const isManager = await canManageOrder(target, profile);
-    if (nextStatusValue === MEMBER_ORDER_STATUS.PAID && !isCustomerOwner && !isOwnerOrAdmin(profile)) {
-      return failure('只有下单客户可以声明已付款');
+    // 允许团主/管理层替客户登记付款（比如客户是线下/微信转账给团主，没走 app 内声明）；
+    // 之前只放行 owner/admin，团主反而不行——团主才是真正天天在处理自己团单收款的人。
+    if (nextStatusValue === MEMBER_ORDER_STATUS.PAID && !isCustomerOwner && !isManager) {
+      return failure('只有下单客户或团主可以登记付款');
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && !isManager) return failure('当前角色不能处理此订单');
     if (nextStatusValue === MEMBER_ORDER_STATUS.CANCELLED && !isManager && !isCustomerOwner) {
@@ -291,8 +290,8 @@ const customerOrderActions = {
       if (declaredAmountValue <= 0) return failure('请填写有效付款金额');
       if (declaredAmountValue > Number(target.totalPrice || 0)) return failure('付款金额不能超过订单金额');
       if (!trimText(paymentMethod)) return failure('请填写付款方式');
-      if (!hasProof) return failure('请上传付款凭证');
-      if (!hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('请重新上传付款凭证后提交');
+      // A6：付款凭证选填，没图不得阻止声明（线下现金/转账常常没有截图）。
+      if (hasProof && !hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('请重新上传付款凭证后提交');
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {
       return failure('请填写有效实收金额');
