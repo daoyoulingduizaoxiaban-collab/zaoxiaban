@@ -31,6 +31,8 @@ Page({
     pageErrorText: '',
     isPageLoading: true,
     sourceUrl: '/pages/groupOrder/index',
+    // 已停止收单的团单进编辑页只能看，不能改（含新增商品/上传图）。
+    readOnly: false,
     datePickerVisible: false,
     pickerField: '',
     pickerValue: '',
@@ -157,6 +159,7 @@ Page({
 
     // 复制模式：标题加「（副本）」（顾及 20 字上限）、状态重置为开放收单，其余内容原样带入。
     const sourceTitle = res.data.title || '';
+    const status = asCopy ? GroupOrderStatus.OPEN : Number(res.data.status || GroupOrderStatus.OPEN);
     this.setData({
       pageErrorText: '',
       formData: {
@@ -165,10 +168,17 @@ Page({
         startAt: res.data.startAt || '',
         endAt: res.data.endAt || '',
         customerNotice: res.data.customerNotice || '',
-        status: asCopy ? GroupOrderStatus.OPEN : Number(res.data.status || GroupOrderStatus.OPEN),
+        status,
       },
       selectedGoods: this.normalizeGoods(res.data.productList || []),
+      readOnly: status === GroupOrderStatus.STOPPED,
     });
+  },
+
+  guardReadOnly() {
+    if (!this.data.readOnly) return false;
+    wx.showToast({ title: '团单已停止收单，不能编辑', icon: 'none' });
+    return true;
   },
 
   normalizeGoods(goods = []) {
@@ -179,6 +189,7 @@ Page({
   },
 
   onInput(e: any) {
+    if (this.guardReadOnly()) return;
     const { field } = e.currentTarget.dataset;
     const value = e.detail.value;
 
@@ -188,6 +199,7 @@ Page({
   },
   // 微信原生 picker 无 datetime 合一模式，改用 tdesign date-time-picker（弹层）。
   openDatePicker(e: any) {
+    if (this.guardReadOnly()) return;
     const { field } = e.currentTarget.dataset;
     if (!field) return;
     this.setData({
@@ -209,6 +221,7 @@ Page({
   },
 
   onRemoveGoods(e: any) {
+    if (this.guardReadOnly()) return;
     const { index } = e.currentTarget.dataset;
     const selectedGoods = this.data.selectedGoods.filter((_, itemIndex) => itemIndex !== Number(index));
     this.setData({ selectedGoods });
@@ -216,11 +229,13 @@ Page({
 
   // #8 内嵌新增商品：商品名称输入。
   onNewProductInput(e: any) {
+    if (this.guardReadOnly()) return;
     this.setData({ 'newProduct.title': e.detail.value });
   },
 
   // 待添加价格档的输入（数量 / 该档总价）。
   onTierInput(e: any) {
+    if (this.guardReadOnly()) return;
     const { field } = e.currentTarget.dataset;
     if (!field) return;
     this.setData({ [`tempTier.${field}`]: e.detail.value });
@@ -228,6 +243,7 @@ Page({
 
   // #B2 添加一档价格区间（如 3 件 30、5 件 45），按数量升序排。
   addTier() {
+    if (this.guardReadOnly()) return;
     const mq = Number(this.data.tempTier.minQuantity);
     const tp = Number(this.data.tempTier.totalPrice);
     if (!Number.isFinite(mq) || mq < 1) return wx.showToast({ title: '数量需 ≥ 1', icon: 'none' });
@@ -239,12 +255,14 @@ Page({
   },
 
   removeTier(e: any) {
+    if (this.guardReadOnly()) return;
     const index = Number(e.currentTarget.dataset.index);
     this.setData({ 'newProduct.tiers': this.data.newProduct.tiers.filter((_, i) => i !== index) });
   },
 
   // 内嵌商品图（选填，最多 3 张）：cloud 后端保存时上传云存储；local 后端直接用临时路径（仅本地测试）。
   chooseInlineImage() {
+    if (this.guardReadOnly()) return;
     const current = this.data.newProduct.pictureUrls || [];
     const remain = 3 - current.length;
     if (remain <= 0) return wx.showToast({ title: '最多上传 3 张商品图', icon: 'none' });
@@ -260,12 +278,14 @@ Page({
   },
 
   removeInlineImage(e: any) {
+    if (this.guardReadOnly()) return;
     const index = Number(e.currentTarget.dataset.index);
     this.setData({ 'newProduct.pictureUrls': (this.data.newProduct.pictureUrls || []).filter((_, i) => i !== index) });
   },
 
   // #8/#1 加入商品：各档「数量+总价(支援小数)」→ 换算 unitPrice=总价/数量 存，下单计价逻辑不变。
   async addProductInline() {
+    if (this.guardReadOnly()) return;
     const name = String(this.data.newProduct.title || '').trim();
     const tiers = this.data.newProduct.tiers;
     if (!name) return wx.showToast({ title: '请输入商品名称', icon: 'none' });
@@ -317,6 +337,7 @@ Page({
   },
 
   onSelectGoods() {
+    if (this.guardReadOnly()) return;
     if ((this as any)._isOpeningProductPicker) return;
     if (this.data.pageErrorText) {
       wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
@@ -355,6 +376,7 @@ Page({
   async onSave() {
     const { formData, selectedGoods, groupOrderId, isEdit } = this.data;
 
+    if (this.guardReadOnly()) return;
     if (this.data.isSubmitting) return;
     if (this.data.pageErrorText) {
       wx.showToast({ title: this.data.pageErrorText, icon: 'none' });

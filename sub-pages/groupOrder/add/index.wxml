@@ -16,8 +16,10 @@
 </view>
 
 <view class="add-container" wx:else>
+  <view wx:if="{{readOnly}}" class="readonly-banner">团单已停止收单，仅供查看，不能编辑</view>
+
   <t-cell-group theme="card" title="基本信息">
-    <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" bindchange="onInput" data-field="title" />
+    <t-input label="*名称" placeholder="最多20个字" maxlength="20" value="{{formData.title}}" disabled="{{readOnly}}" bindchange="onInput" data-field="title" />
     <view class="native-textarea-field">
       <view class="native-textarea-label">团单描述</view>
       <textarea
@@ -26,16 +28,17 @@
         placeholder="最多200个字"
         maxlength="200"
         data-field="description"
+        disabled="{{readOnly}}"
         bindinput="onInput"
       />
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*出团时间</view>
-      <view class="picker-display" bindtap="openDatePicker" data-field="startAt">{{formData.startAt || '请选择出团时间（如 2026-07-10 09:00）'}}</view>
+      <view class="picker-display {{readOnly ? 'is-readonly' : ''}}" bindtap="openDatePicker" data-field="startAt">{{formData.startAt || '请选择出团时间（如 2026-07-10 09:00）'}}</view>
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*收单截止</view>
-      <view class="picker-display" bindtap="openDatePicker" data-field="endAt">{{formData.endAt || '请选择收单截止时间（如 2026-07-09 20:00）'}}</view>
+      <view class="picker-display {{readOnly ? 'is-readonly' : ''}}" bindtap="openDatePicker" data-field="endAt">{{formData.endAt || '请选择收单截止时间（如 2026-07-09 20:00）'}}</view>
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">客户提示</view>
@@ -44,6 +47,7 @@
         value="{{formData.customerNotice}}"
         placeholder="下单前给客户看的补充说明"
         data-field="customerNotice"
+        disabled="{{readOnly}}"
         bindinput="onInput"
       />
     </view>
@@ -64,14 +68,14 @@
             </view>
           </view>
         </view>
-        <button class="remove-btn" bindtap="onRemoveGoods" data-index="{{index}}">移除</button>
+        <button class="remove-btn" disabled="{{readOnly}}" bindtap="onRemoveGoods" data-index="{{index}}">移除</button>
       </view>
     </view>
 
     <view class="add-goods-btn-wrap" wx:if="{{selectedGoods.length === 0}}">还没有商品，用下方表单直接新增</view>
 
     <!-- #8 内嵌新增商品：不必先去商品库，填名称 + 多档「数量+总价(支援小数)」直接加入。 -->
-    <view class="inline-product">
+    <view class="inline-product" wx:if="{{!readOnly}}">
       <view class="inline-product__label">新增商品</view>
       <input class="inline-product__input" placeholder="商品名称" value="{{newProduct.title}}" bindinput="onNewProductInput" />
 
@@ -108,7 +112,7 @@
     bindcancel="onDatePickerCancel"
   />
 
-  <view class="footer">
+  <view class="footer" wx:if="{{!readOnly}}">
     <t-button theme="primary" size="large" block loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="onSave">{{isEdit ? '保存团单' : '新建团单'}}</t-button>
   </view>
 </view>

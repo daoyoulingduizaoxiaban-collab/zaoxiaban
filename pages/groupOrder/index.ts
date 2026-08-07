@@ -79,37 +79,28 @@ Page({
     });
   },
 
-  // 删除团单：双重确认；有未收款（已收<应收）时在第二次确认里加醒目提醒（#F1）。软删。
+  // 删除团单：单次确认；有未收款（已收<应收）时把提醒并进同一个弹窗里。软删。
   onDeleteItinerary(e) {
     const { id } = e.currentTarget.dataset;
     const item = (this.data.itineraryList || []).find(entry => String(entry.id) === String(id));
     if (!id || !item) return;
+    const hasUnpaid = Number(item.totalReceived || 0) < Number(item.totalReceivable || 0);
     wx.showModal({
       title: '删除团单',
-      content: `确定要删除「${item.title}」吗？`,
+      content: hasUnpaid
+        ? `确定要删除「${item.title}」吗？⚠ 该团单尚有未收款的客户订单，删除后不可恢复。`
+        : `确定要删除「${item.title}」吗？删除后不可恢复。`,
       confirmText: '删除',
       confirmColor: '#e34d59',
-      success: (first) => {
-        if (!first.confirm) return;
-        const hasUnpaid = Number(item.totalReceived || 0) < Number(item.totalReceivable || 0);
-        wx.showModal({
-          title: '再次确认删除',
-          content: hasUnpaid
-            ? '⚠ 该团单尚有未收款的客户订单！删除后不可恢复，确定继续？'
-            : '删除后不可恢复，确定继续？',
-          confirmText: '确认删除',
-          confirmColor: '#e34d59',
-          success: async (second) => {
-            if (!second.confirm) return;
-            const res = await callBusinessData({ resource: 'groupOrders', action: 'remove', data: { id } });
-            if (!res.success) {
-              toastError(res.error || '删除团单失败');
-              return;
-            }
-            toastSuccess(RESULT_TEXT.remove);
-            await this.fetchItineraryList();
-          },
-        });
+      success: async (res) => {
+        if (!res.confirm) return;
+        const removeRes = await callBusinessData({ resource: 'groupOrders', action: 'remove', data: { id } });
+        if (!removeRes.success) {
+          toastError(removeRes.error || '删除团单失败');
+          return;
+        }
+        toastSuccess(RESULT_TEXT.remove);
+        await this.fetchItineraryList();
       },
     });
   },
