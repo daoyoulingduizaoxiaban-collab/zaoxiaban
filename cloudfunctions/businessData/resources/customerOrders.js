@@ -21,6 +21,7 @@ const {
   getById,
   buildChanges,
   logOperation,
+  getOptimalComboPrice,
   hasOnlyDurableAssetUrls,
 } = require("../lib/core");
 
@@ -104,6 +105,33 @@ const validateCustomerOrderPayload = (payload) => {
   return '';
 };
 
+// 下单金额绝对不能只信任客户端算出来的数字：拿团单快照里的 priceSetting 重新用最优组合算一遍，
+// 客户端传的 totalPrice/unitPrice 全部丢弃改用这里算出来的。
+const recomputeOrderItems = (items, productList) => {
+  const products = productList || [];
+  const results = (items || []).map((item) => {
+    const product = products.find(p => sameId(p.id || p._id, item.productId));
+    if (!product) return { error: `未找到商品「${item.title || item.productId}」，请刷新后重新下单` };
+    const amount = Number(item.amount || 0);
+    if (amount <= 0) return { error: '商品数量必须大于 0' };
+    const totalPrice = getOptimalComboPrice(product.priceSetting || product.priceSettings, amount);
+    if (totalPrice == null) return { error: `商品「${product.title}」价格设置无效，请联系团主检查` };
+    return {
+      item: {
+        ...item,
+        title: product.title,
+        unitPrice: Math.round((totalPrice / amount) * 100) / 100,
+        totalPrice,
+        originalTotalPrice: totalPrice,
+      },
+    };
+  });
+  const failed = results.find(result => result.error);
+  if (failed) return { error: failed.error };
+  const recomputedItems = results.map(result => result.item);
+  return { items: recomputedItems, totalPrice: recomputedItems.reduce((sum, item) => sum + item.totalPrice, 0) };
+};
+
 const customerOrderActions = {
   async listVisible(payload, profile) {
     assertApprovedProfile(profile, ['guide', 'customer', 'owner', 'admin']);
@@ -167,6 +195,9 @@ const customerOrderActions = {
     if (shareAccessError) return failure(shareAccessError);
     if (Number(groupOrder.status) !== GROUP_ORDER_STATUS.OPEN) return failure('当前团单已停止收单');
 
+    const recomputed = recomputeOrderItems(payload.items, groupOrder.productList);
+    if (recomputed.error) return failure(recomputed.error);
+
     const createdAt = nowIso();
     const hasInitialPayment = Boolean(trimText(payload.paymentMethod))
       && Array.isArray(payload.paymentProofUrls)
@@ -183,15 +214,15 @@ const customerOrderActions = {
       title: `${groupOrder.title} - ${payload.customerName || profile.displayName || '客户'}`,
       status: initialStatus,
       paymentStatus: initialStatus,
-      totalPrice: Number(payload.totalPrice || 0),
-      originalTotalPrice: Number(payload.totalPrice || 0),
-      items: payload.items || [],
-      productList: payload.items || [],
+      totalPrice: recomputed.totalPrice,
+      originalTotalPrice: recomputed.totalPrice,
+      items: recomputed.items,
+      productList: recomputed.items,
       memberRemark: payload.memberRemark || '',
       paymentMethod: payload.paymentMethod || '',
       paymentRemark: payload.paymentRemark || '',
       paymentProofUrls: payload.paymentProofUrls || [],
-      declaredAmount: hasInitialPayment ? Number(payload.declaredAmount || payload.totalPrice || 0) : '',
+      declaredAmount: hasInitialPayment ? Number(payload.declaredAmount || recomputed.totalPrice || 0) : '',
       hostRemark: '',
       createdAt,
       updatedAt: createdAt,

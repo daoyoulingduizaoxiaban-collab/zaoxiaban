@@ -382,6 +382,30 @@ const getById = async (collectionName, id) => {
   }
 };
 
+// 最优组合计价（无限背包 DP）：价格档可任意次数混搭凑目标数量，取总价最低的组合。
+// 跟客户端 services/customerOrder/customerOrderService.js 的 getOptimalCombo 同一套算法，
+// 这里是服务端权威计算——下单金额绝对不能只信任客户端传来的数字。
+const getOptimalComboPrice = (priceSetting, quantity) => {
+  const count = Number(quantity || 0);
+  const tiers = (priceSetting || [])
+    .map(rule => ({
+      minQuantity: Number(rule.minQuantity || 0),
+      totalPrice: rule.totalPrice != null ? Number(rule.totalPrice) : Number(rule.minQuantity || 0) * Number(rule.unitPrice || 0),
+    }))
+    .filter(rule => rule.minQuantity > 0 && rule.totalPrice > 0);
+  if (count <= 0 || !tiers.length) return null;
+  const dp = new Array(count + 1).fill(Infinity);
+  dp[0] = 0;
+  for (let q = 1; q <= count; q += 1) {
+    dp[q] = tiers.reduce((best, tier) => {
+      if (tier.minQuantity > q) return best;
+      const candidate = dp[q - tier.minQuantity] + tier.totalPrice;
+      return candidate < best ? candidate : best;
+    }, Infinity);
+  }
+  return Number.isFinite(dp[count]) ? Math.round(dp[count] * 100) / 100 : null;
+};
+
 // 操作记录：真正落库的事件表（不是从当前资料现算），删除后记录仍在。
 // fieldMap: { 字段名: '显示名' | { label, format(value) } }，只收录真的变了的字段。
 const buildChanges = (before = {}, after = {}, fieldMap = {}) => Object.entries(fieldMap)
@@ -505,6 +529,7 @@ module.exports = {
   getById,
   buildChanges,
   logOperation,
+  getOptimalComboPrice,
   filterKeyword,
   isDurableAssetUrl,
   hasOnlyDurableAssetUrls,
