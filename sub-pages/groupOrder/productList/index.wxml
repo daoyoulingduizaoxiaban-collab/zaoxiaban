@@ -1,6 +1,7 @@
 <sub-nav title="本团商品" />
 
 <view class="container">
+  <view wx:if="{{readOnly}}" class="readonly-banner">团单已停止收单，仅供查看，不能移除商品</view>
   <view class="search-section">
     <view class="search-bar">
       <t-icon name="search" size="32rpx" color="#999" />
@@ -41,7 +42,7 @@
           <view class="detail-entry">查看详情</view>
         </view>
 
-        <view wx:if="{{canManageGroupOrder}}" class="p-action" catchtap="onDelete" data-id="{{item.id}}">
+        <view wx:if="{{canManageGroupOrder && !readOnly}}" class="p-action" catchtap="onDelete" data-id="{{item.id}}">
           <view class="btn-delete-icon">
             <t-icon name="delete" size="36rpx" color="#ff4d4f" />
           </view>

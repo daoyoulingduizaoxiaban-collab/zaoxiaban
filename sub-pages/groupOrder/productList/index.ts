@@ -1,4 +1,5 @@
 import { Product } from "~/models/Product";
+import { GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services/auth/roleScope';
@@ -23,6 +24,8 @@ Page({
     isLoading: true,
     canManageGroupOrder: false,
     pendingProductId: '',
+    // 团单已停止收单：本团商品也不能再移除。
+    readOnly: false,
   },
 
   async onLoad(options) {
@@ -143,6 +146,7 @@ Page({
       isLoading: false,
       pageErrorText: '',
       canManageGroupOrder,
+      readOnly: Number(res.data.status) === GroupOrderStatus.STOPPED,
       displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
     this.openPendingProductDetail();
@@ -250,6 +254,10 @@ Page({
   onDelete(e) {
     if (!this.data.canManageGroupOrder) {
       wx.showToast({ title: '当前账号不能移除本团商品', icon: 'none' });
+      return;
+    }
+    if (this.data.readOnly) {
+      wx.showToast({ title: '团单已停止收单，不能移除商品', icon: 'none' });
       return;
     }
     const { id } = e.currentTarget.dataset;
