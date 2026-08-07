@@ -71,7 +71,7 @@ Page({
       [
         {
           title: '当前角色',
-          note: `${profile.displayName}｜${profile.roleLabel}`,
+          note: profile.roleLabel,
           icon: 'user',
         },
         {
@@ -97,12 +97,16 @@ Page({
       },
     ]);
 
+    // 只在本页第一次可编辑时灌入表单，onShow 每次重刷不重灌——
+    // 不然填到一半切走再切回来（比如挑头像/切后台），没保存的输入会被冲掉。
+    const shouldFillForm = canEditInfo && !(this as any)._infoFilled;
+    if (shouldFillForm) (this as any)._infoFilled = true;
     this.setData({
       isLoggedIn: true,
       menuData,
       canEditInfo,
       infoDisabledReason: canEditInfo ? '' : AuthService.getAccessStateText(profile),
-      personInfo: canEditInfo ? {
+      personInfo: shouldFillForm ? {
         name: profile.displayName || '',
         phone: profile.phone || '',
         gender: Number(profile.gender || 0),
@@ -124,7 +128,9 @@ Page({
   },
 
   onGenderChange(e) {
-    this.personInfoFieldChange('gender', e);
+    // radio-group 的 e.detail.value 是字串，personInfo.gender 是数字，
+    // 不转型会导致 checked="{{personInfo.gender === item.value}}" 永远比不中，选了跟没选一样。
+    this.setData({ 'personInfo.gender': Number(e.detail.value) });
   },
 
   onIntroductionChange(e) {
