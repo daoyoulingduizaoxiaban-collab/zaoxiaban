@@ -58,6 +58,12 @@ Page({
       confirmedAmount: '',
       confirmRemark: '',
     },
+    // 团主替客户登记付款（线下收款、客户没走 app 内声明）。
+    showDeclareDialog: false,
+    declareForm: {
+      paymentMethod: '',
+      declaredAmount: '',
+    },
     cancelForm: {
       cancelRemark: '',
     },
@@ -514,5 +520,65 @@ Page({
     const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
     if (!field) return;
     this.setData({ [`cancelForm.${field}`]: value });
+  },
+
+  onDeclarePayment(e) {
+    if (!this.data.canManageGroupOrder) {
+      wx.showToast({ title: '当前账号不能登记付款', icon: 'none' });
+      return;
+    }
+    const { id } = e.currentTarget.dataset;
+    const selectedOrder = (this.data.groupOrder.memberOrderList || [])
+      .find(order => String(order.id) === String(id));
+    this.setData({
+      showDeclareDialog: true,
+      selectedMemberOrderId: id,
+      declareForm: {
+        paymentMethod: '',
+        declaredAmount: selectedOrder ? String(selectedOrder.totalPrice || '') : '',
+      },
+    });
+  },
+
+  handleDeclareDialogClose() {
+    this.setData({ showDeclareDialog: false });
+  },
+
+  onDeclareInput(e) {
+    const { field } = e.currentTarget.dataset;
+    const value = e.detail && e.detail.value !== undefined ? e.detail.value : e.detail;
+    if (!field) return;
+    this.setData({ [`declareForm.${field}`]: value });
+  },
+
+  async handleDeclareDialogConfirm() {
+    const paymentMethod = String(this.data.declareForm.paymentMethod || '').trim();
+    const declaredAmountText = String(this.data.declareForm.declaredAmount || '').trim();
+    const declaredAmount = Number(declaredAmountText);
+    if (!declaredAmountText || Number.isNaN(declaredAmount) || declaredAmount <= 0) {
+      wx.showToast({ title: '请填写有效付款金额', icon: 'none' });
+      return;
+    }
+    if (!paymentMethod) {
+      wx.showToast({ title: '请填写付款方式', icon: 'none' });
+      return;
+    }
+
+    wx.showLoading({ title: '处理中...' });
+    const res = await CustomerOrderService.declarePaid(this.data.selectedMemberOrderId, {
+      paymentMethod,
+      declaredAmount,
+      note: `团主登记付款：￥${declaredAmount}｜${paymentMethod}`,
+    });
+    wx.hideLoading();
+    this.setData({ showDeclareDialog: false });
+
+    if (!res.success) {
+      wx.showToast({ title: res.error || '登记付款失败', icon: 'none' });
+      return;
+    }
+
+    toastSuccess(RESULT_TEXT.update);
+    this.fetchGroupOrderDetail(this.data.groupOrderId);
   }
 });
