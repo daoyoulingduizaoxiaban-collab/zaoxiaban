@@ -18,6 +18,7 @@ const COLLECTIONS = [
   'payments',
   'paymentStatusHistory',
   'feedbacks',
+  'operationLogs',
 ];
 
 const PRODUCT_STATUS = {
@@ -381,6 +382,50 @@ const getById = async (collectionName, id) => {
   }
 };
 
+// 操作记录：真正落库的事件表（不是从当前资料现算），删除后记录仍在。
+// fieldMap: { 字段名: '显示名' | { label, format(value) } }，只收录真的变了的字段。
+const buildChanges = (before = {}, after = {}, fieldMap = {}) => Object.entries(fieldMap)
+  .map(([field, cfg]) => {
+    const label = typeof cfg === 'string' ? cfg : cfg.label;
+    const format = (typeof cfg === 'object' && cfg.format)
+      ? cfg.format
+      : value => (value === undefined || value === null || value === '' ? '（空）' : String(value));
+    const beforeText = format(before ? before[field] : undefined);
+    const afterText = format(after ? after[field] : undefined);
+    if (beforeText === afterText) return null;
+    return { field, label, before: beforeText, after: afterText };
+  })
+  .filter(Boolean);
+
+// 记录失败不阻断主流程：业务动作已经成功，不该因为写日志失败让用户看到"保存失败"。
+// visibleUserIds：非 owner/admin 时谁能看到这条记录（本团主、被授权协管团主…），
+// 查询时不用回头查（可能已被删除的）原资料判权限，直接读这个快照。
+const logOperation = async ({
+  profile, resourceType, resourceId, resourceTitle, action, actionText, changes = [],
+  visibleUserIds = [],
+}) => {
+  try {
+    await getCollection('operationLogs').add({
+      data: {
+        occurredAt: nowIso(),
+        actorUserId: profile.id,
+        actorOpenId: profile.openId,
+        actorName: profile.displayName || '当前账号',
+        actorRole: roleLabel(profile.role) || profile.role || '',
+        resourceType,
+        resourceId: String(resourceId || ''),
+        resourceTitle: resourceTitle || '',
+        action,
+        actionText,
+        changes,
+        visibleUserIds: [...new Set([profile.id, ...(visibleUserIds || [])].filter(Boolean).map(String))],
+      },
+    });
+  } catch (err) {
+    // 静默失败，不抛出。
+  }
+};
+
 const filterKeyword = (list, keyword, fields) => {
   const query = String(keyword || '').trim().toLowerCase();
   if (!query) return list;
@@ -458,6 +503,8 @@ module.exports = {
   getShareAccessError,
   getAllActive,
   getById,
+  buildChanges,
+  logOperation,
   filterKeyword,
   isDurableAssetUrl,
   hasOnlyDurableAssetUrls,

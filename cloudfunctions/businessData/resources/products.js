@@ -15,9 +15,23 @@ const {
   canViewProduct,
   getAllActive,
   getById,
+  buildChanges,
+  logOperation,
   filterKeyword,
   hasOnlyDurableAssetUrls,
 } = require("../lib/core");
+
+const formatPriceSetting = (rules) => (Array.isArray(rules) && rules.length
+  ? rules.map(rule => `${rule.minQuantity}件¥${rule.totalPrice != null ? rule.totalPrice : Number(rule.minQuantity || 0) * Number(rule.unitPrice || 0)}`).join('、')
+  : '未设置');
+
+const PRODUCT_FIELD_MAP = {
+  title: '名称',
+  description: '描述',
+  sourceNote: '供应来源',
+  status: { label: '状态', format: value => (Number(value) === PRODUCT_STATUS.PUBLISHED ? '已上架' : '已下架') },
+  priceSetting: { label: '价格', format: formatPriceSetting },
+};
 
 const normalizeProductPayload = (payload, profile, existing = {}) => ({
   ...existing,
@@ -88,6 +102,11 @@ const productActions = {
     const validationError = validateProductPayload(product);
     if (validationError) return failure(validationError);
     const result = await getCollection('products').add({ data: product });
+    await logOperation({
+      profile, resourceType: 'product', resourceId: result._id, resourceTitle: product.title,
+      action: 'create', actionText: '新增商品',
+      visibleUserIds: product.ownerUserId ? [product.ownerUserId] : [],
+    });
     return success(toId({ ...product, _id: result._id }));
   },
 
@@ -98,6 +117,12 @@ const productActions = {
     const updatedAt = nowIso();
     await getCollection('products').doc(String(product._id || product.id)).update({
       data: { status: Number(status), updatedAt },
+    });
+    await logOperation({
+      profile, resourceType: 'product', resourceId: product._id || product.id, resourceTitle: product.title,
+      action: 'update', actionText: '上下架商品',
+      changes: buildChanges(product, { status }, { status: PRODUCT_FIELD_MAP.status }),
+      visibleUserIds: product.ownerUserId ? [product.ownerUserId] : [],
     });
     return success({ ...product, status: Number(status), updatedAt });
   },
@@ -118,6 +143,12 @@ const productActions = {
     const validationError = validateProductPayload(updateData);
     if (validationError) return failure(validationError);
     await getCollection('products').doc(String(product._id || product.id)).update({ data: toUpdateData(updateData) });
+    await logOperation({
+      profile, resourceType: 'product', resourceId: product._id || product.id, resourceTitle: updateData.title,
+      action: 'update', actionText: '编辑商品',
+      changes: buildChanges(product, updateData, PRODUCT_FIELD_MAP),
+      visibleUserIds: product.ownerUserId ? [product.ownerUserId] : [],
+    });
     return success(toId({ ...product, ...updateData }));
   },
 
@@ -128,6 +159,11 @@ const productActions = {
     const deletedAt = nowIso();
     await getCollection('products').doc(String(product._id || product.id)).update({
       data: { status: PRODUCT_STATUS.UNPUBLISHED, updatedAt: deletedAt, deletedAt },
+    });
+    await logOperation({
+      profile, resourceType: 'product', resourceId: product._id || product.id, resourceTitle: product.title,
+      action: 'remove', actionText: '删除商品',
+      visibleUserIds: product.ownerUserId ? [product.ownerUserId] : [],
     });
     return success({ ...product, status: PRODUCT_STATUS.UNPUBLISHED, updatedAt: deletedAt, deletedAt });
   },

@@ -19,8 +19,24 @@ const {
   canViewGroupOrder,
   getAllActive,
   getById,
+  buildChanges,
+  logOperation,
   filterKeyword,
 } = require("../lib/core");
+
+const GROUP_ORDER_FIELD_MAP = {
+  title: '名称',
+  description: '描述',
+  startAt: '出团时间',
+  endAt: '收单截止',
+  customerNotice: '客户提示',
+  status: { label: '收单状态', format: value => (Number(value) === GROUP_ORDER_STATUS.STOPPED ? '停止收单' : '开放收单') },
+};
+
+const getVisibleUserIds = groupOrder => [
+  groupOrder.guideUserId,
+  ...(groupOrder.authorizedGuideIds || []),
+];
 
 const normalizeGroupOrderPayload = (payload, profile, existing = {}) => ({
   ...existing,
@@ -119,6 +135,11 @@ const groupOrderActions = {
     await getCollection('groupOrders').doc(result._id).update({ data: { sharePath } });
     const created = toId({ ...groupOrder, _id: result._id, sharePath });
     await syncGroupOrderProducts(created, created.productList, profile);
+    await logOperation({
+      profile, resourceType: 'groupOrder', resourceId: created.id, resourceTitle: created.title,
+      action: 'create', actionText: '开团',
+      visibleUserIds: getVisibleUserIds(created),
+    });
     return success(created);
   },
 
@@ -139,6 +160,12 @@ const groupOrderActions = {
     const validationError = validateGroupOrderPayload(updated);
     if (validationError) return failure(validationError);
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({ data: toUpdateData(updated) });
+    await logOperation({
+      profile, resourceType: 'groupOrder', resourceId: target._id || target.id, resourceTitle: updated.title,
+      action: 'update', actionText: '编辑团单',
+      changes: buildChanges(target, updated, GROUP_ORDER_FIELD_MAP),
+      visibleUserIds: getVisibleUserIds(target),
+    });
     return success(toId({ ...updated, _id: target._id || target.id }));
   },
 
@@ -150,6 +177,11 @@ const groupOrderActions = {
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能删除此团单');
     const deletedAt = nowIso();
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({ data: { deletedAt, updatedAt: deletedAt } });
+    await logOperation({
+      profile, resourceType: 'groupOrder', resourceId: target._id || target.id, resourceTitle: target.title,
+      action: 'remove', actionText: '删除团单',
+      visibleUserIds: getVisibleUserIds(target),
+    });
     return success({ id: target._id || target.id });
   },
 
@@ -158,15 +190,21 @@ const groupOrderActions = {
     const target = await getById('groupOrders', groupOrderId);
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能管理本团商品');
     const existingIds = (target.productList || []).map(product => String(product.id || product._id));
-    const nextProducts = [
-      ...(target.productList || []),
-      ...products.filter(product => !existingIds.includes(String(product.id || product._id))),
-    ];
+    const newlyAdded = products.filter(product => !existingIds.includes(String(product.id || product._id)));
+    const nextProducts = [...(target.productList || []), ...newlyAdded];
     const updatedAt = nowIso();
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({
       data: { productList: nextProducts, updatedAt },
     });
     await syncGroupOrderProducts(target, products, profile);
+    if (newlyAdded.length) {
+      await logOperation({
+        profile, resourceType: 'groupOrder', resourceId: target._id || target.id, resourceTitle: target.title,
+        action: 'update', actionText: '本团新增商品',
+        changes: [{ field: 'productList', label: '商品', before: '', after: newlyAdded.map(p => p.title).join('、') }],
+        visibleUserIds: getVisibleUserIds(target),
+      });
+    }
     return success(toId({ ...target, productList: nextProducts, updatedAt }));
   },
 
@@ -174,6 +212,7 @@ const groupOrderActions = {
     assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
     const target = await getById('groupOrders', groupOrderId);
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能移除本团商品');
+    const removedProduct = (target.productList || []).find(product => sameId(product.id || product._id, productId));
     const nextProducts = (target.productList || []).filter(product => !sameId(product.id || product._id, productId));
     const updatedAt = nowIso();
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({
@@ -186,6 +225,12 @@ const groupOrderActions = {
     await Promise.all((relations.data || []).map(item => getCollection('groupOrderProducts').doc(item._id).update({
       data: { deletedAt: updatedAt, updatedAt },
     })));
+    await logOperation({
+      profile, resourceType: 'groupOrder', resourceId: target._id || target.id, resourceTitle: target.title,
+      action: 'update', actionText: '本团移除商品',
+      changes: [{ field: 'productList', label: '商品', before: (removedProduct && removedProduct.title) || '', after: '' }],
+      visibleUserIds: getVisibleUserIds(target),
+    });
     return success(toId({ ...target, productList: nextProducts, updatedAt }));
   },
 };

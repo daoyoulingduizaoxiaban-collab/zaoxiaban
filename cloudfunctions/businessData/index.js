@@ -8,6 +8,7 @@ const productActions = require('./resources/products');
 const groupOrderActions = require('./resources/groupOrders');
 const customerOrderActions = require('./resources/customerOrders');
 const feedbackActions = require('./resources/feedbacks');
+const operationLogActions = require('./resources/operationLogs');
 
 const handlers = {
   users: userActions,
@@ -16,6 +17,7 @@ const handlers = {
   groupOrders: groupOrderActions,
   customerOrders: customerOrderActions,
   feedbacks: feedbackActions,
+  operationLogs: operationLogActions,
 };
 
 exports.main = async (event = {}) => {

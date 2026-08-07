@@ -32,7 +32,14 @@
           <text class="log-card__time">{{item.occurredAt || '最近'}}</text>
         </view>
         <view class="log-card__title">{{item.actionText}}｜{{item.resourceText}}</view>
-        <view class="log-card__summary">{{item.summary}}</view>
+        <view class="log-card__changes" wx:if="{{item.changes.length > 0}}">
+          <view class="log-card__change" wx:for="{{item.changes}}" wx:for-item="change" wx:key="field">
+            <text class="log-card__change-label">{{change.label}}</text>
+            <text class="log-card__change-before">{{change.before}}</text>
+            <text class="log-card__change-arrow">→</text>
+            <text class="log-card__change-after">{{change.after}}</text>
+          </view>
+        </view>
         <view class="log-card__meta">{{item.actorName}}｜{{item.actorRole}}｜{{item.result}}</view>
       </view>
     </view>

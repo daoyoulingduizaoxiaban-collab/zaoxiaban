@@ -49,11 +49,38 @@
   font-weight: 600;
 }
 
-.log-card__summary {
+.log-card__changes {
   margin: 10rpx 0;
-  color: #344054;
+  display: flex;
+  flex-direction: column;
+  gap: 6rpx;
+}
+
+.log-card__change {
+  display: flex;
+  align-items: baseline;
+  gap: 10rpx;
   font-size: 26rpx;
   line-height: 1.5;
+}
+
+.log-card__change-label {
+  flex: none;
+  color: #667085;
+}
+
+.log-card__change-before {
+  color: #98a2b3;
+  text-decoration: line-through;
+}
+
+.log-card__change-arrow {
+  color: #98a2b3;
+}
+
+.log-card__change-after {
+  color: #101828;
+  font-weight: 600;
 }
 
 .date-bar {

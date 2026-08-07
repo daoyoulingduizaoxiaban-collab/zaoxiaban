@@ -19,8 +19,16 @@ const {
   getShareAccessError,
   getAllActive,
   getById,
+  buildChanges,
+  logOperation,
   hasOnlyDurableAssetUrls,
 } = require("../lib/core");
+
+const ORDER_ACTION_TEXT = {
+  [MEMBER_ORDER_STATUS.PAID]: '客户声明付款',
+  [MEMBER_ORDER_STATUS.CONFIRMED]: '确认收款',
+  [MEMBER_ORDER_STATUS.CANCELLED]: '取消订单',
+};
 
 const normalizeOrder = order => ({
   ...order,
@@ -201,6 +209,11 @@ const customerOrderActions = {
     );
     orderWithId.paymentHistory = [history];
     await getCollection('customerOrders').doc(created._id).update({ data: { paymentHistory: [history] } });
+    await logOperation({
+      profile, resourceType: 'customerOrder', resourceId: created._id, resourceTitle: orderWithId.title,
+      action: 'create', actionText: '客户下单',
+      visibleUserIds: orderWithId.guideUserId ? [orderWithId.guideUserId] : [],
+    });
     return success(orderWithId);
   },
 
@@ -307,6 +320,12 @@ const customerOrderActions = {
       });
     }
 
+    await logOperation({
+      profile, resourceType: 'customerOrder', resourceId: target._id || target.id, resourceTitle: updated.title,
+      action: 'update', actionText: ORDER_ACTION_TEXT[nextStatusValue] || '处理客户订单',
+      changes: buildChanges(target, updated, { status: { label: '状态', format: value => STATUS_TEXT[Number(value)] || '未知状态' } }),
+      visibleUserIds: updated.guideUserId ? [updated.guideUserId] : [],
+    });
     return success(updated);
   },
 };
