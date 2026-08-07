@@ -9,12 +9,13 @@ import { filterFormalProducts } from '~/utils/productContent';
 const normalizeNumber = value => Number(value || 0);
 
 const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
+// 完整列出每一档「数量+总价」，跟设置商品时的填写口径一致（不算单价区间），同 #C1 口径。
 const getProductPriceDisplay = (product) => {
-  const prices = (product.priceSetting || []).map(rule => normalizeNumber(rule.unitPrice)).filter(price => price > 0);
-  if (prices.length === 0) return '未设置价格';
-  const minPrice = roundMoney(Math.min(...prices));
-  const maxPrice = roundMoney(Math.max(...prices));
-  return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
+  const tierLabels = (product.priceSetting || [])
+    .filter(rule => normalizeNumber(rule.minQuantity) > 0)
+    .sort((a, b) => normalizeNumber(a.minQuantity) - normalizeNumber(b.minQuantity))
+    .map(rule => `${normalizeNumber(rule.minQuantity)}件 ¥${roundMoney(rule.totalPrice)}`);
+  return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
 };
 const parseDateTime = value => {
   if (!value) return 0;

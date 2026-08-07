@@ -15,12 +15,13 @@ export const calculatePriceRule = rule => ({
   description: rule.description || '',
 });
 
+// 完整列出每一档「数量+总价」，跟设置商品时的填写口径一致（不算单价区间），同 #C1 口径。
 export const getProductPriceDisplay = (priceSetting = []) => {
-  const prices = priceSetting.map(rule => Number(rule.unitPrice)).filter(price => price > 0);
-  if (prices.length === 0) return '未设置价格';
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
-  return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
+  const tierLabels = (priceSetting || [])
+    .filter(rule => Number(rule.minQuantity) > 0)
+    .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
+    .map(rule => `${Number(rule.minQuantity)}件 ¥${rule.totalPrice != null ? rule.totalPrice : Number(rule.minQuantity) * Number(rule.unitPrice || 0)}`);
+  return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
 };
 
 const normalizeProduct = (product) => {

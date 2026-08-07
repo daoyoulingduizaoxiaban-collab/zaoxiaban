@@ -16,11 +16,11 @@ const buildCustomerEntryPath = (id, shareToken = '') => {
 };
 
 const buildPriceDisplay = (priceSetting = []) => {
-  const prices = (priceSetting || []).map(rule => Number(rule.unitPrice || 0)).filter(price => price > 0);
-  if (!prices.length) return '未设置价格';
-  const min = Math.min(...prices);
-  const max = Math.max(...prices);
-  return min === max ? `￥${min}` : `￥${min} ~ ￥${max}`;
+  const tierLabels = (priceSetting || [])
+    .filter(rule => Number(rule.minQuantity) > 0)
+    .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
+    .map(rule => `${Number(rule.minQuantity)}件 ￥${rule.totalPrice}`);
+  return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
 };
 
 const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;

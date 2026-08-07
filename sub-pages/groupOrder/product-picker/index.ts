@@ -176,11 +176,11 @@ Page({
   },
 
   getPriceDisplay(priceSetting = []) {
-    const prices = (priceSetting || []).map(rule => Number(rule.unitPrice || 0)).filter(price => price > 0);
-    if (!prices.length) return '未设置价格';
-    const minPrice = Math.min(...prices);
-    const maxPrice = Math.max(...prices);
-    return minPrice === maxPrice ? `¥${minPrice}` : `¥${minPrice} ~ ¥${maxPrice}`;
+    const tierLabels = (priceSetting || [])
+      .filter(rule => Number(rule.minQuantity) > 0)
+      .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
+      .map(rule => `${Number(rule.minQuantity)}件 ¥${rule.totalPrice != null ? rule.totalPrice : Number(rule.minQuantity) * Number(rule.unitPrice || 0)}`);
+    return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
   },
 
   syncProducts() {
