@@ -136,9 +136,13 @@ Page({
     });
   },
 
+  // 第一档强制是「1 件」基准价；之后每加一档，数量、总价都必须比上一档大
+  // （不然「买多变更贵/一样贵」不合理，也没办法算最优组合）。
   addPriceRule() {
-    const { minQuantity, unitPrice, description } = this.data.tempPriceSetting;
-    const normalizedMinQuantity = Number(minQuantity);
+    const existing = this.data.currentProduct.priceSetting;
+    const isFirstTier = existing.length === 0;
+    const { unitPrice, description } = this.data.tempPriceSetting;
+    const normalizedMinQuantity = isFirstTier ? 1 : Number(this.data.tempPriceSetting.minQuantity);
     const normalizedUnitPrice = Number(unitPrice);
 
     if (!normalizedMinQuantity || normalizedMinQuantity < 1) {
@@ -155,12 +159,18 @@ Page({
       totalPrice: normalizedMinQuantity * normalizedUnitPrice
     };
 
-    const updatedPriceSettings = [...this.data.currentProduct.priceSetting, newRule];
-
-    updatedPriceSettings.sort((a, b) => a.minQuantity - b.minQuantity);
+    const lastRule = existing[existing.length - 1];
+    if (lastRule) {
+      if (newRule.minQuantity <= lastRule.minQuantity) {
+        return wx.showToast({ title: `起订量需大于上一档（${lastRule.minQuantity} 件）`, icon: 'none' });
+      }
+      if (newRule.totalPrice <= lastRule.totalPrice) {
+        return wx.showToast({ title: `总价需大于上一档（¥${lastRule.totalPrice}）`, icon: 'none' });
+      }
+    }
 
     this.setData({
-      'currentProduct.priceSetting': updatedPriceSettings,
+      'currentProduct.priceSetting': [...existing, newRule],
       tempPriceSetting: { minQuantity: 1, unitPrice: '', description: '' }
     });
   },
@@ -175,9 +185,9 @@ Page({
   },
 
   removePriceRule(e) {
-    const index = e.currentTarget.dataset.index;
-    const settings = [...this.data.currentProduct.priceSetting];
-    settings.splice(Number(index), 1);
+    const index = Number(e.currentTarget.dataset.index);
+    // 第一档（1 件）是后面所有档次的比较基准，删掉它等于整组价格档都要重填，一起清空。
+    const settings = index === 0 ? [] : this.data.currentProduct.priceSetting.filter((_, i) => i !== index);
     this.setData({ 'currentProduct.priceSetting': settings });
   },
 

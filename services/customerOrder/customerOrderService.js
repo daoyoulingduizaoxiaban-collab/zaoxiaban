@@ -12,18 +12,48 @@ const trimText = value => String(value || '').trim();
 // 金额按「分」四舍五入，避免小数单价（如总价500/6件=83.333…）算出 499.9999… 的浮点垃圾。
 const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
 
-const getBestPriceRule = (priceSetting = [], quantity = 0) => {
+// 最优组合计价：价格档可以任意次数混搭凑出目标数量（第一档固定 1 件，任何数量都凑得出来），
+// 取总价最低的组合——例如 1件10、2件18、3件16，买 5 件是 3件+2件=34，不是硬套单一档。
+// 标准的「无限背包/凑数最低成本」DP：dp[q] = 凑出 q 件的最低总价，choice[q] 记录最后一步用了哪一档，
+// 算完往回推，还原出组合里每一档各用了几次。
+const getOptimalCombo = (priceSetting = [], quantity = 0) => {
   const count = normalizeNumber(quantity);
-  const sortedRules = [...priceSetting]
+  const tiers = (priceSetting || [])
     .map(rule => ({
       minQuantity: normalizeNumber(rule.minQuantity),
-      unitPrice: normalizeNumber(rule.unitPrice),
-      description: rule.description || '',
+      totalPrice: rule.totalPrice != null ? normalizeNumber(rule.totalPrice) : normalizeNumber(rule.minQuantity) * normalizeNumber(rule.unitPrice),
     }))
-    .filter(rule => rule.minQuantity > 0 && rule.unitPrice > 0)
+    .filter(rule => rule.minQuantity > 0 && rule.totalPrice > 0);
+  if (count <= 0 || !tiers.length) return null;
+
+  const dp = new Array(count + 1).fill(Infinity);
+  const choice = new Array(count + 1).fill(-1);
+  dp[0] = 0;
+  for (let q = 1; q <= count; q += 1) {
+    tiers.forEach((tier, tierIndex) => {
+      if (tier.minQuantity > q) return;
+      const candidate = dp[q - tier.minQuantity] + tier.totalPrice;
+      if (candidate < dp[q]) {
+        dp[q] = candidate;
+        choice[q] = tierIndex;
+      }
+    });
+  }
+  if (!Number.isFinite(dp[count])) return null;
+
+  const usage = new Map();
+  let remaining = count;
+  while (remaining > 0) {
+    const tierIndex = choice[remaining];
+    if (tierIndex === -1) break;
+    usage.set(tierIndex, (usage.get(tierIndex) || 0) + 1);
+    remaining -= tiers[tierIndex].minQuantity;
+  }
+  const parts = [...usage.entries()]
+    .map(([tierIndex, times]) => ({ minQuantity: tiers[tierIndex].minQuantity, totalPrice: tiers[tierIndex].totalPrice, times }))
     .sort((a, b) => b.minQuantity - a.minQuantity);
 
-  return sortedRules.find(rule => count >= rule.minQuantity) || sortedRules[sortedRules.length - 1] || null;
+  return { totalPrice: roundMoney(dp[count]), parts };
 };
 
 // 完整列出每一档「数量+总价」，跟开团/设置商品时的填写口径一致（不算单价），
@@ -150,14 +180,23 @@ export const CustomerOrderService = {
       };
     }
 
-    const rule = getBestPriceRule(product.priceSetting || [], count);
-    const unitPrice = rule ? rule.unitPrice : 0;
+    const combo = getOptimalCombo(product.priceSetting || [], count);
+    if (!combo) {
+      return {
+        ...product,
+        quantity: count,
+        unitPrice: 0,
+        lineTotal: 0,
+        selectedRuleText: '未设置有效价格',
+      };
+    }
+    const comboText = combo.parts.map(part => `${part.times}×(${part.minQuantity}件¥${part.totalPrice})`).join(' + ');
     return {
       ...product,
       quantity: count,
-      unitPrice,
-      lineTotal: roundMoney(count * unitPrice),
-      selectedRuleText: rule ? `按 ${rule.description || `${rule.minQuantity} 件起`}，单价 ¥${roundMoney(unitPrice)}` : '未设置有效价格',
+      unitPrice: roundMoney(combo.totalPrice / count),
+      lineTotal: combo.totalPrice,
+      selectedRuleText: combo.parts.length > 1 ? `最优组合：${comboText} = ¥${combo.totalPrice}` : `按 ${combo.parts[0].minQuantity} 件 ¥${combo.parts[0].totalPrice}${combo.parts[0].times > 1 ? ` ×${combo.parts[0].times}` : ''}`,
     };
   },
 

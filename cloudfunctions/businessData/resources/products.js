@@ -50,6 +50,23 @@ const normalizeProductPayload = (payload, profile, existing = {}) => ({
   deletedAt: existing.deletedAt || '',
 });
 
+// 价格档规则（UI 已按此强制录入，这里是服务端最后一道防线）：
+// 第一档必须是 1 件的基准价，之后每档数量、总价都要比上一档大——
+// 不然「买多变更贵/一样贵」不合理，也没办法在下单时算最优组合。
+const validatePriceTiers = (priceSetting) => {
+  if (!Array.isArray(priceSetting) || priceSetting.length === 0) return '请至少设置一组价格';
+  if (Number(priceSetting[0].minQuantity) !== 1) return '第一档价格必须是 1 件的基准价';
+  for (let i = 1; i < priceSetting.length; i += 1) {
+    const prev = priceSetting[i - 1];
+    const cur = priceSetting[i];
+    if (Number(cur.minQuantity) <= Number(prev.minQuantity)) return '价格档数量必须逐档递增';
+    const prevTotal = prev.totalPrice != null ? Number(prev.totalPrice) : Number(prev.minQuantity) * Number(prev.unitPrice || 0);
+    const curTotal = cur.totalPrice != null ? Number(cur.totalPrice) : Number(cur.minQuantity) * Number(cur.unitPrice || 0);
+    if (curTotal <= prevTotal) return '价格档总价必须逐档递增';
+  }
+  return '';
+};
+
 const validateProductPayload = (product) => {
   if (!trimText(product.title)) return '请输入商品名称';
   if (!trimText(product.description)) return '请输入商品描述';
@@ -58,8 +75,7 @@ const validateProductPayload = (product) => {
     return '商品资料包含不适合公开展示的文字，请调整后保存';
   }
   if (!Array.isArray(product.pictureUrls) || product.pictureUrls.length === 0) return '请至少上传一张商品图片';
-  if (!Array.isArray(product.priceSetting) || product.priceSetting.length === 0) return '请至少设置一组价格';
-  const invalidRule = product.priceSetting.find(rule => Number(rule.minQuantity) <= 0 || Number(rule.unitPrice) <= 0);
+  const invalidRule = (product.priceSetting || []).find(rule => Number(rule.minQuantity) <= 0 || Number(rule.unitPrice) <= 0);
   if (invalidRule) return '价格规则需包含有效起订量和单价';
   return '';
 };
@@ -101,6 +117,8 @@ const productActions = {
     }, profile);
     const validationError = validateProductPayload(product);
     if (validationError) return failure(validationError);
+    const tierError = validatePriceTiers(product.priceSetting);
+    if (tierError) return failure(tierError);
     const result = await getCollection('products').add({ data: product });
     await logOperation({
       profile, resourceType: 'product', resourceId: result._id, resourceTitle: product.title,
@@ -142,6 +160,13 @@ const productActions = {
     }, profile, product);
     const validationError = validateProductPayload(updateData);
     if (validationError) return failure(validationError);
+    // 只在价格档真的被改动时才拦新规则——不然老商品的历史价格档（这规则上线前存的）
+    // 会因为一次不相关的编辑（比如只改了描述）被卡住存不了。
+    const priceSettingChanged = JSON.stringify(product.priceSetting || []) !== JSON.stringify(updateData.priceSetting || []);
+    if (priceSettingChanged) {
+      const tierError = validatePriceTiers(updateData.priceSetting);
+      if (tierError) return failure(tierError);
+    }
     await getCollection('products').doc(String(product._id || product.id)).update({ data: toUpdateData(updateData) });
     await logOperation({
       profile, resourceType: 'product', resourceId: product._id || product.id, resourceTitle: updateData.title,

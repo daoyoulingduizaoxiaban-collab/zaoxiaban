@@ -63,18 +63,18 @@
       <view class="price-list" wx:if="{{currentProduct.priceSetting.length > 0}}">
         <view class="price-item" wx:for="{{currentProduct.priceSetting}}" wx:key="index">
           <view class="p-info">
-            <text class="p-qty">满 {{item.minQuantity}} 件</text>
+            <text class="p-qty">满 {{item.minQuantity}} 件{{index === 0 ? '（基准价）' : ''}}</text>
             <text class="p-val">¥{{item.unitPrice}}</text>
             <text class="p-desc" wx:if="{{item.description}}">({{item.description}})</text>
           </view>
-          <view class="p-del" bindtap="removePriceRule" data-index="{{index}}">删除</view>
+          <view class="p-del" bindtap="removePriceRule" data-index="{{index}}">{{index === 0 ? '重填' : '删除'}}</view>
         </view>
       </view>
 
       <view class="price-input-row">
         <view class="col-small">
           <text class="sub-label">起订量</text>
-          <input type="number" class="input-box small" placeholder="1" value="{{tempPriceSetting.minQuantity}}" data-field="minQuantity" bindinput="onPriceInput"/>
+          <input type="number" class="input-box small" placeholder="1" value="{{currentProduct.priceSetting.length === 0 ? 1 : tempPriceSetting.minQuantity}}" disabled="{{currentProduct.priceSetting.length === 0}}" data-field="minQuantity" bindinput="onPriceInput"/>
         </view>
         
         <view class="col-small">

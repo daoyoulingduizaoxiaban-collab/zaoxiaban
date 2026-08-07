@@ -38,6 +38,30 @@ const getVisibleUserIds = groupOrder => [
   ...(groupOrder.authorizedGuideIds || []),
 ];
 
+// 开团内嵌新增商品(#8)不经过 products.js，得在这里补同一道价格档防呆：
+// 第一档必须是 1 件基准价，之后每档数量、总价都要比上一档大。
+const validatePriceTiers = (priceSetting, productTitle) => {
+  const rules = Array.isArray(priceSetting) ? priceSetting : [];
+  if (!rules.length) return `请为「${productTitle || '商品'}」设置价格`;
+  if (Number(rules[0].minQuantity) !== 1) return `「${productTitle || '商品'}」第一档价格必须是 1 件的基准价`;
+  for (let i = 1; i < rules.length; i += 1) {
+    const prev = rules[i - 1];
+    const cur = rules[i];
+    if (Number(cur.minQuantity) <= Number(prev.minQuantity)) return `「${productTitle || '商品'}」价格档数量必须逐档递增`;
+    const prevTotal = prev.totalPrice != null ? Number(prev.totalPrice) : Number(prev.minQuantity) * Number(prev.unitPrice || 0);
+    const curTotal = cur.totalPrice != null ? Number(cur.totalPrice) : Number(cur.minQuantity) * Number(cur.unitPrice || 0);
+    if (curTotal <= prevTotal) return `「${productTitle || '商品'}」价格档总价必须逐档递增`;
+  }
+  return '';
+};
+
+const validateNewProducts = (products = []) => {
+  const invalid = products
+    .map(product => validatePriceTiers(product.priceSetting || product.priceSettings, product.title))
+    .find(error => error);
+  return invalid || '';
+};
+
 const normalizeGroupOrderPayload = (payload, profile, existing = {}) => ({
   ...existing,
   ...payload,
@@ -130,6 +154,8 @@ const groupOrderActions = {
     }, profile);
     const validationError = validateGroupOrderPayload(groupOrder);
     if (validationError) return failure(validationError);
+    const productsError = validateNewProducts(groupOrder.productList);
+    if (productsError) return failure(productsError);
     const result = await getCollection('groupOrders').add({ data: groupOrder });
     const sharePath = buildCustomerEntryPath(result._id, shareToken);
     await getCollection('groupOrders').doc(result._id).update({ data: { sharePath } });
@@ -191,6 +217,8 @@ const groupOrderActions = {
     if (!canManageGroupOrder(target, profile)) return failure('当前角色不能管理本团商品');
     const existingIds = (target.productList || []).map(product => String(product.id || product._id));
     const newlyAdded = products.filter(product => !existingIds.includes(String(product.id || product._id)));
+    const productsError = validateNewProducts(newlyAdded);
+    if (productsError) return failure(productsError);
     const nextProducts = [...(target.productList || []), ...newlyAdded];
     const updatedAt = nowIso();
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({

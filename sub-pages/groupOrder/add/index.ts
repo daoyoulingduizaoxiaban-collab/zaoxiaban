@@ -241,23 +241,30 @@ Page({
     this.setData({ [`tempTier.${field}`]: e.detail.value });
   },
 
-  // #B2 添加一档价格区间（如 3 件 30、5 件 45），按数量升序排。
+  // 第一档强制是「1 件」（客户单买的基准价，UI 上数量栏位锁死显示 1）；
+  // 之后每加一档，数量、总价都必须比上一档大——不然「买多变更贵/一样贵」不合理，也没办法算最优组合。
   addTier() {
     if (this.guardReadOnly()) return;
-    const mq = Number(this.data.tempTier.minQuantity);
+    const isFirstTier = this.data.newProduct.tiers.length === 0;
+    const mq = isFirstTier ? 1 : Number(this.data.tempTier.minQuantity);
     const tp = Number(this.data.tempTier.totalPrice);
     if (!Number.isFinite(mq) || mq < 1) return wx.showToast({ title: '数量需 ≥ 1', icon: 'none' });
     if (!Number.isFinite(tp) || tp <= 0) return wx.showToast({ title: '请输入有效总价', icon: 'none' });
-    if (this.data.newProduct.tiers.some(t => t.minQuantity === mq)) return wx.showToast({ title: '该数量档已存在', icon: 'none' });
-    const tiers = [...this.data.newProduct.tiers, { minQuantity: mq, totalPrice: tp }]
-      .sort((a, b) => a.minQuantity - b.minQuantity);
+    const lastTier = this.data.newProduct.tiers[this.data.newProduct.tiers.length - 1];
+    if (lastTier) {
+      if (mq <= lastTier.minQuantity) return wx.showToast({ title: `数量需大于上一档（${lastTier.minQuantity} 件）`, icon: 'none' });
+      if (tp <= lastTier.totalPrice) return wx.showToast({ title: `总价需大于上一档（¥${lastTier.totalPrice}）`, icon: 'none' });
+    }
+    const tiers = [...this.data.newProduct.tiers, { minQuantity: mq, totalPrice: tp }];
     this.setData({ 'newProduct.tiers': tiers, tempTier: { minQuantity: '', totalPrice: '' } });
   },
 
   removeTier(e: any) {
     if (this.guardReadOnly()) return;
     const index = Number(e.currentTarget.dataset.index);
-    this.setData({ 'newProduct.tiers': this.data.newProduct.tiers.filter((_, i) => i !== index) });
+    // 第一档（1 件）是后面所有档次的比较基准，删掉它等于整组价格档都要重填，一起清空。
+    const tiers = index === 0 ? [] : this.data.newProduct.tiers.filter((_, i) => i !== index);
+    this.setData({ 'newProduct.tiers': tiers });
   },
 
   // 内嵌商品图（选填，最多 3 张）：cloud 后端保存时上传云存储；local 后端直接用临时路径（仅本地测试）。

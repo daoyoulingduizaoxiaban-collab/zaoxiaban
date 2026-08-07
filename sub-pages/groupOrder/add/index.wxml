@@ -88,15 +88,23 @@
         <view wx:if="{{newProduct.pictureUrls.length < 3}}" class="inline-images__add" bindtap="chooseInlineImage">＋ 商品图</view>
       </view>
 
-      <!-- 已添加的价格档（如 3 件 ¥30、5 件 ¥45） -->
+      <!-- 已添加的价格档（如 3 件 ¥30、5 件 ¥45），第一档(1件)是基准价、不能删只能整组重来。 -->
       <view class="inline-tier" wx:for="{{newProduct.tiers}}" wx:key="minQuantity">
-        <text class="inline-tier__text">{{item.minQuantity}} 件　总价 ¥{{item.totalPrice}}</text>
-        <text class="inline-tier__remove" data-index="{{index}}" bindtap="removeTier">删除</text>
+        <text class="inline-tier__text">{{item.minQuantity}} 件　总价 ¥{{item.totalPrice}}{{index === 0 ? '（基准价）' : ''}}</text>
+        <text class="inline-tier__remove" data-index="{{index}}" bindtap="removeTier">{{index === 0 ? '重填' : '删除'}}</text>
       </view>
 
       <view class="inline-product__row">
-        <input class="inline-product__input inline-product__input--half" type="number" placeholder="数量(件)" value="{{tempTier.minQuantity}}" data-field="minQuantity" bindinput="onTierInput" />
-        <input class="inline-product__input inline-product__input--half" type="digit" placeholder="该档总价(元,可小数)" value="{{tempTier.totalPrice}}" data-field="totalPrice" bindinput="onTierInput" />
+        <input
+          class="inline-product__input inline-product__input--half"
+          type="number"
+          placeholder="数量(件)"
+          value="{{newProduct.tiers.length === 0 ? 1 : tempTier.minQuantity}}"
+          disabled="{{newProduct.tiers.length === 0}}"
+          data-field="minQuantity"
+          bindinput="onTierInput"
+        />
+        <input class="inline-product__input inline-product__input--half" type="digit" placeholder="{{newProduct.tiers.length === 0 ? '1件多少钱(元,可小数)' : '该档总价(元,可小数)'}}" value="{{tempTier.totalPrice}}" data-field="totalPrice" bindinput="onTierInput" />
       </view>
       <button class="inline-product__tier-add" bindtap="addTier">+ 添加价格档</button>
       <button class="inline-product__add" bindtap="addProductInline">加入此商品</button>
