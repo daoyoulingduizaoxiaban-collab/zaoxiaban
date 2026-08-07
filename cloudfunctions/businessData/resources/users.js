@@ -17,8 +17,23 @@ const {
   assertApprovedProfile,
   getAllActive,
   getById,
+  buildChanges,
+  logOperation,
   isDurableProfileAvatarUrl,
 } = require("../lib/core");
+
+const REVIEW_STATUS_TEXT = {
+  [REVIEW_STATUS.APPROVED]: '通过',
+  [REVIEW_STATUS.REJECTED]: '拒绝',
+  [REVIEW_STATUS.DISABLED]: '停用',
+  [REVIEW_STATUS.PENDING]: '待审核',
+};
+
+const USER_REVIEW_FIELD_MAP = {
+  roleLabel: '角色',
+  reviewStatus: { label: '状态', format: value => REVIEW_STATUS_TEXT[value] || value },
+  roleExpiresAt: { label: '角色期限', format: value => (value || '不限期') },
+};
 
 const normalizeDirectoryUser = (payload, existing = {}) => ({
   ...existing,
@@ -111,6 +126,12 @@ const userActions = {
       updatedAt,
     };
     await getCollection('users').doc(String(target._id || target.id)).update({ data: updateData });
+    await logOperation({
+      profile, resourceType: 'user', resourceId: target._id || target.id, resourceTitle: target.displayName || target.name || '用户',
+      action: 'update', actionText: `审核用户（${REVIEW_STATUS_TEXT[nextStatus] || nextStatus}）`,
+      changes: buildChanges(target, updateData, USER_REVIEW_FIELD_MAP),
+      visibleUserIds: [target._id || target.id],
+    });
     return success(toId({ ...target, ...updateData }));
   },
 
@@ -148,6 +169,11 @@ const userActions = {
     if (!isDurableProfileAvatarUrl(next.avatarUrl)) return failure('请重新上传头像后保存');
 
     await getCollection('users').doc(String(target._id || target.id)).update({ data: toUpdateData(next) });
+    await logOperation({
+      profile, resourceType: 'user', resourceId: target._id || target.id, resourceTitle: next.displayName || next.name || '用户',
+      action: 'create', actionText: '申请成为团主',
+      visibleUserIds: [target._id || target.id],
+    });
     return success(toId({ ...next, _id: target._id || target.id }));
   },
 

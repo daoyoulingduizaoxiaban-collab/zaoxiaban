@@ -12,7 +12,16 @@ const {
   assertApprovedProfile,
   getAllActive,
   getById,
+  buildChanges,
+  logOperation,
 } = require("../lib/core");
+
+const PROVIDER_FIELD_MAP = {
+  title: '名称',
+  contact: '联系人',
+  note: '备注',
+  status: { label: '状态', format: value => (value === 'disabled' ? '已停用' : '启用中') },
+};
 
 const normalizeProviderStatus = status => (status === 'disabled' ? 'disabled' : 'active');
 
@@ -75,6 +84,12 @@ const providerActions = {
     if (validationError) return failure(validationError);
     if (target) {
       await getCollection('providers').doc(String(target._id || target.id)).update({ data: toUpdateData(normalized) });
+      await logOperation({
+        profile, resourceType: 'provider', resourceId: target._id || target.id, resourceTitle: normalized.title,
+        action: 'update', actionText: '编辑供应商',
+        changes: buildChanges(target, normalized, PROVIDER_FIELD_MAP),
+        visibleUserIds: [profile.id],
+      });
       return success(toId({ ...normalized, _id: target._id || target.id }));
     }
     const result = await getCollection('providers').add({ data: normalized });
@@ -84,6 +99,11 @@ const providerActions = {
         data: { providerId: created.id, updatedAt: nowIso() },
       });
     }
+    await logOperation({
+      profile, resourceType: 'provider', resourceId: created.id, resourceTitle: created.title,
+      action: 'create', actionText: '新增供应商',
+      visibleUserIds: [profile.id],
+    });
     return success(created);
   },
 
@@ -100,6 +120,12 @@ const providerActions = {
     await getCollection('providers').doc(String(target._id || target.id)).update({
       data: { status: nextStatus, updatedAt: nowIso() },
     });
+    await logOperation({
+      profile, resourceType: 'provider', resourceId: target._id || target.id, resourceTitle: target.title,
+      action: 'update', actionText: '供应商上下架',
+      changes: buildChanges(target, { status: nextStatus }, { status: PROVIDER_FIELD_MAP.status }),
+      visibleUserIds: [profile.id],
+    });
     return success(toId({ ...target, status: nextStatus }));
   },
 
@@ -115,6 +141,11 @@ const providerActions = {
     const deletedAt = nowIso();
     await getCollection('providers').doc(String(target._id || target.id)).update({
       data: { deletedAt, updatedAt: deletedAt },
+    });
+    await logOperation({
+      profile, resourceType: 'provider', resourceId: target._id || target.id, resourceTitle: target.title,
+      action: 'remove', actionText: '删除供应商',
+      visibleUserIds: [profile.id],
     });
     return success(toId({ ...target, deletedAt }));
   },

@@ -421,6 +421,13 @@ const buildChanges = (before = {}, after = {}, fieldMap = {}) => Object.entries(
   })
   .filter(Boolean);
 
+// A7 要求「脱敏 OpenID」，不得写入完整明文——跟 maskOpenId（原客户端实现）同一口径。
+const maskOpenId = (openId) => {
+  const text = String(openId || '');
+  if (text.length <= 8) return text ? '已验证账号' : '';
+  return `${text.slice(0, 4)}****${text.slice(-4)}`;
+};
+
 // 记录失败不阻断主流程：业务动作已经成功，不该因为写日志失败让用户看到"保存失败"。
 // visibleUserIds：非 owner/admin 时谁能看到这条记录（本团主、被授权协管团主…），
 // 查询时不用回头查（可能已被删除的）原资料判权限，直接读这个快照。
@@ -433,9 +440,10 @@ const logOperation = async ({
       data: {
         occurredAt: nowIso(),
         actorUserId: profile.id,
-        actorOpenId: profile.openId,
+        actorOpenIdMasked: maskOpenId(profile.openId),
         actorName: profile.displayName || '当前账号',
-        actorRole: roleLabel(profile.role) || profile.role || '',
+        // A2：审计要记「当时的 effectiveRole」而非只记 primary role（DEV 角色预览下两者可能不同）。
+        actorRole: roleLabel(profile.effectiveRole || profile.role) || profile.effectiveRole || profile.role || '',
         resourceType,
         resourceId: String(resourceId || ''),
         resourceTitle: resourceTitle || '',

@@ -9,6 +9,8 @@ const TYPE_TEXT = {
   product: '商品',
   groupOrder: '团单',
   customerOrder: '客户订单',
+  provider: '供应商',
+  user: '用户',
 };
 
 const parseDayStart = (value) => {

@@ -106,7 +106,7 @@
         />
         <input class="inline-product__input inline-product__input--half" type="digit" placeholder="{{newProduct.tiers.length === 0 ? '1件多少钱(元,可小数)' : '该档总价(元,可小数)'}}" value="{{tempTier.totalPrice}}" data-field="totalPrice" bindinput="onTierInput" />
       </view>
-      <button class="inline-product__tier-add" bindtap="addTier">+ 添加价格档</button>
+      <button class="inline-product__tier-add" bindtap="addTier">{{newProduct.tiers.length === 0 ? '确定基准价' : '+ 添加价格档'}}</button>
       <button class="inline-product__add" bindtap="addProductInline">加入此商品</button>
     </view>
   </view>
