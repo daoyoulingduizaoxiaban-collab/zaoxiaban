@@ -12,6 +12,21 @@ var getOrderBadgeColor = function (status) {
   return '#52c41a'; // 已確認用綠色
 }
 
+// 订单编号：原始 _id 是数据库随机字串，看不出任何信息；改成「月日-时分-手机尾号」，
+// 一眼看得出是谁、什么时候下的单，不用记一串乱码去对照。
+var buildOrderNo = function (order) {
+  if (!order) return '';
+  var createdAt = order.createdAt || '';
+  var datePart = '';
+  if (createdAt.length >= 16) {
+    datePart = createdAt.slice(5, 7) + createdAt.slice(8, 10) + '-' + createdAt.slice(11, 13) + createdAt.slice(14, 16);
+  }
+  var phone = order.customerPhone || '';
+  var phoneTail = phone.length >= 4 ? phone.slice(phone.length - 4) : phone;
+  if (datePart && phoneTail) return datePart + '-' + phoneTail;
+  return order.id || '';
+}
+
 var customerOrderHelper = {
   getStatusText: function(status) {
     if (status === 0) return '未付款';
@@ -32,6 +47,7 @@ var customerOrderHelper = {
 module.exports = {
   formatNumber: formatNumber,
   getOrderBadgeColor: getOrderBadgeColor,
+  buildOrderNo: buildOrderNo,
   customerOrderHelper: customerOrderHelper,
   memberOrderHelper: customerOrderHelper
 };

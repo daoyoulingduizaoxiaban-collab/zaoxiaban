@@ -464,8 +464,12 @@ const filterKeyword = (list, keyword, fields) => {
   return list.filter(item => fields.some(field => String(item[field] || '').toLowerCase().includes(query)));
 };
 
+// 本地开发没有真的云存储，local-server 上传是直接沿用临时路径（见
+// repositories/cloudBusinessRepository.js 的 uploadOneFile），那种路径
+// 天生不是 cloud://|https://，正式环境才需要严格挡非持久化链接。
+const isLocalDevEnv = () => cloud.DYNAMIC_CURRENT_ENV === 'local-dev';
 const isDurableAssetUrl = url => (
-  !url || /^cloud:\/\//.test(String(url)) || /^https:\/\//.test(String(url))
+  !url || /^cloud:\/\//.test(String(url)) || /^https:\/\//.test(String(url)) || isLocalDevEnv()
 );
 
 const hasOnlyDurableAssetUrls = urls => (urls || []).every(isDurableAssetUrl);

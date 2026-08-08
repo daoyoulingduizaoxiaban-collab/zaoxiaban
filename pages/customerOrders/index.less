@@ -56,14 +56,22 @@
   border-radius: 0 0 8rpx 8rpx;
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 20rpx;
+  gap: 16rpx 20rpx;
+}
+
+.order-actions t-button {
+  // meta 文字长的时候(如"商品 3 件｜状态记录 2 条")会挤压按钮宽度，
+  // 按钮宽度不能被压缩，挤不下就换行，不能把字挤成一团。
+  flex-shrink: 0;
 }
 
 .order-meta {
   color: #5f6f89;
   font-size: 24rpx;
-  flex: 1;
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
 .t-cell-group--card {

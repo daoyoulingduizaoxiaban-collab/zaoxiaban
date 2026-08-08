@@ -69,7 +69,7 @@
         class="order-card" bindtap="onShowOrderDetails" data-index="{{index}}" hover-class="card-hover">
 
         <view class="order-header">
-          <text class="order-no">订单编号：#{{memberOrder.id}}</text>
+          <text class="order-no">订单编号：{{utils.buildOrderNo(memberOrder)}}</text>
           <text
             class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
         </view>
@@ -87,11 +87,7 @@
             <text class="label">应付总额：</text>
             <text class="value price">￥{{memberOrder.totalPrice}}</text>
           </view>
-          <view class="action-section" wx:if="{{memberOrder.status === 0}}">
-            <t-button theme="primary" size="small" block variant="outline" catchtap="onDeclarePayment"
-              data-id="{{memberOrder.id}}">登记付款</t-button>
-          </view>
-          <view class="action-section" wx:if="{{memberOrder.status === 1}}">
+          <view class="action-section" wx:if="{{memberOrder.status === 0 || memberOrder.status === 1}}">
             <t-button theme="primary" size="small" block variant="outline" catchtap="onConfirmPayment"
               data-id="{{memberOrder.id}}">确认已到账</t-button>
           </view>
@@ -130,7 +126,7 @@
       <view class="section-title">我的订单</view>
       <view wx:for="{{groupOrder.memberOrderList}}" wx:key="id" wx:for-item="memberOrder" class="order-card">
         <view class="order-header">
-          <text class="order-no">订单编号：#{{memberOrder.id}}</text>
+          <text class="order-no">订单编号：{{utils.buildOrderNo(memberOrder)}}</text>
           <text
             class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
         </view>
@@ -170,7 +166,7 @@
 
 <t-popup wx:if="{{canManageGroupOrder}}" visible="{{showDetails}}" bind:visible-change="onCloseDetails" placement="center">
   <view class="details-popup">
-    <view class="popup-header">订单明细 (#{{selectedMemberOrder.id}})</view>
+    <view class="popup-header">订单明细 ({{utils.buildOrderNo(selectedMemberOrder)}})</view>
 
     <scroll-view scroll-y class="details-content" wx:if="{{selectedMemberOrder && selectedMemberOrder.productList}}">
       <view class="item-row" wx:for="{{selectedMemberOrder.productList}}" wx:key="productId">
@@ -182,6 +178,15 @@
         <view class="item-price-info">
           <text class="item-subtotal">￥{{utils.formatNumber(item.totalPrice)}}</text>
         </view>
+      </view>
+
+      <view class="popup-payment-info">
+        <view class="item-row"><text class="item-name">状态</text><text class="item-subtotal">{{utils.memberOrderHelper.getStatusText(selectedMemberOrder.status)}}</text></view>
+        <view class="item-row" wx:if="{{selectedMemberOrder.paymentMethod}}"><text class="item-name">付款方式</text><text class="item-subtotal">{{selectedMemberOrder.paymentMethod}}</text></view>
+        <view class="item-row" wx:if="{{selectedMemberOrder.declaredAmount}}"><text class="item-name">申报金额</text><text class="item-subtotal">￥{{selectedMemberOrder.declaredAmount}}</text></view>
+        <view class="item-row" wx:if="{{selectedMemberOrder.confirmedAmount}}"><text class="item-name">实收金额</text><text class="item-subtotal">￥{{selectedMemberOrder.confirmedAmount}}</text></view>
+        <view class="item-row" wx:if="{{selectedMemberOrder.confirmRemark}}"><text class="item-name">确认备注</text><text class="item-subtotal">{{selectedMemberOrder.confirmRemark}}</text></view>
+        <view class="item-row" wx:if="{{selectedMemberOrder.cancelRemark}}"><text class="item-name">取消原因</text><text class="item-subtotal">{{selectedMemberOrder.cancelRemark}}</text></view>
       </view>
     </scroll-view>
 
@@ -195,37 +200,18 @@
   </view>
 </t-popup>
 
-<view wx:if="{{showDeclareDialog}}" class="action-mask" catchtap="handleDeclareDialogClose">
-  <view class="action-panel" catchtap="stopPanelTap">
-    <view class="action-panel__header">
-      <text class="action-panel__title">登记付款</text>
-      <text class="action-panel__close" bindtap="handleDeclareDialogClose">关闭</text>
-    </view>
-    <view class="action-form">
-      <view class="action-field">
-        <text class="action-label">付款金额</text>
-        <input class="action-input" type="digit" placeholder="请输入实际付款金额" value="{{declareForm.declaredAmount}}" data-field="declaredAmount" bindinput="onDeclareInput" />
-      </view>
-      <view class="action-field">
-        <text class="action-label">付款方式</text>
-        <input class="action-input" placeholder="微信/支付宝/现金/转账" value="{{declareForm.paymentMethod}}" data-field="paymentMethod" bindinput="onDeclareInput" />
-      </view>
-    </view>
-    <view class="action-hint">客户没走 app 内声明（比如线下转账/现金）时，团主可以直接替客户登记这笔付款。</view>
-    <view class="action-panel__footer">
-      <t-button size="large" variant="outline" bindtap="handleDeclareDialogClose">取消</t-button>
-      <t-button size="large" theme="primary" bindtap="handleDeclareDialogConfirm">登记付款</t-button>
-    </view>
-  </view>
-</view>
-
 <view wx:if="{{showConfirmDialog}}" class="action-mask" catchtap="handleDialogClose">
   <view class="action-panel" catchtap="stopPanelTap">
     <view class="action-panel__header">
       <text class="action-panel__title">确认收款</text>
       <text class="action-panel__close" bindtap="handleDialogClose">关闭</text>
     </view>
+    <view class="action-hint" wx:if="{{confirmOrderStatus === 0}}">客户没走 app 内声明付款，这里填了会一并帮客户登记付款+确认收款。</view>
     <view class="action-form">
+      <view class="action-field" wx:if="{{confirmOrderStatus === 0}}">
+        <text class="action-label">付款方式</text>
+        <input class="action-input" placeholder="微信/支付宝/现金/转账" value="{{confirmForm.paymentMethod}}" data-field="paymentMethod" bindinput="onConfirmInput" />
+      </view>
       <view class="action-field">
         <text class="action-label">实收金额</text>
         <input class="action-input" type="digit" placeholder="请输入实际到账金额" value="{{confirmForm.confirmedAmount}}" data-field="confirmedAmount" bindinput="onConfirmInput" />

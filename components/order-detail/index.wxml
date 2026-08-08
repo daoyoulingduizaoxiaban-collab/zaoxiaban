@@ -1,7 +1,11 @@
+<wxs src="../../utils/utils.wxs" module="utils" />
 <view wx:if="{{visible}}" class="detail-mask" catchtap="onClose">
   <view class="detail-panel" catchtap="stopTap">
     <view class="detail-panel__header">
-      <text class="detail-panel__title">{{detail.title || '客户订单'}}</text>
+      <view class="detail-panel__heading">
+        <text class="detail-panel__title">{{detail.title || '客户订单'}}</text>
+        <text class="detail-panel__orderno">订单编号：{{utils.buildOrderNo(detail)}}</text>
+      </view>
       <button class="detail-panel__close" catchtap="onClose">关闭</button>
     </view>
     <scroll-view scroll-y class="detail-panel__body">

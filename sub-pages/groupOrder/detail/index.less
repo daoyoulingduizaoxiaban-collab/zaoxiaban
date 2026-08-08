@@ -314,66 +314,8 @@
   font-size: 24rpx;
 }
 
-.details-popup {
-  width: 640rpx;
-  background: #fff;
-  border-radius: 24rpx;
-  padding: 40rpx;
-  box-sizing: border-box;
-}
-
-.popup-header {
-  font-size: 32rpx;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 32rpx;
-  padding-bottom: 24rpx;
-  border-bottom: 1rpx solid #eee;
-}
-
-.details-content {
-  max-height: 450rpx;
-  margin-bottom: 32rpx;
-}
-
-.item-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 20rpx 0;
-  border-bottom: 1rpx dashed #f0f0f0;
-}
-
-.item-name {
-  font-size: 28rpx;
-  color: #333;
-}
-
-.item-info {
-  text-align: right;
-}
-
-.item-price {
-  font-size: 24rpx;
-  color: #999;
-  display: block;
-}
-
-.item-subtotal {
-  font-size: 28rpx;
-  font-weight: bold;
-}
-
-.total-bar {
-  display: flex;
-  justify-content: space-between;
-  padding: 24rpx 0;
-  font-weight: bold;
-  font-size: 30rpx;
-}
-
-.total-price {
-  color: #ff4d4f;
-}
+// 订单明细弹窗的 .details-popup/.item-row 等样式，完整版在下面（含 .popup-footer），
+// 这里原本还有一份没被用到的旧版重复定义(被下面同名规则覆盖，纯死代码)，删掉了。
 
 .footer-action-bar {
   position: fixed;
@@ -438,9 +380,15 @@
 }
 
 .details-content {
-  max-height: 500rpx;
-
+  // 500rpx 装不下商品明细+付款资料一起显示的内容，弹窗本来是 placement=center，
+  // 屏幕空间够，放宽让使用者少滚一点。
+  max-height: 60vh;
   margin-bottom: 32rpx;
+}
+
+.popup-payment-info {
+  margin-top: 12rpx;
+  border-top: 1rpx dashed #eeeeee;
 }
 
 .item-row {
