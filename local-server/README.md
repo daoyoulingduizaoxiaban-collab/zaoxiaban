@@ -18,11 +18,10 @@ node local-server/server.js
 
 ## 小程序端接入
 
-在 `config.js` 把 `dataBackend` 设为 `'local'`，`localBaseUrl` 指向本服务，`localDevOpenId` 设为你要模拟的身份
-（要以 owner 测就填 `dev-owner-openid`，要以普通客户测就填别的字符串）。
+在 App 的设置页底部切换数据后端，或运行 `node local-server/set-backend.js local`。
 微信开发者工具需勾选「详情 → 本地设置 → 不校验合法域名」。
 
-切回云开发：把 `dataBackend` 改回 `'cloud'`，无需改业务代码。
+切回云开发：运行 `node local-server/set-backend.js cloud`，无需改业务代码。
 
 ## 冒烟测试
 
@@ -31,6 +30,8 @@ node local-server/smoke-test.js
 ```
 
 自起服务、跑登录→建商品→读回→持久化→鉴权拒绝的真实闭环并断言。
+
+小程序 UI 流程测试需要开发者工具已打开本专案，直接运行对应 `local-server/flow-*.js` 或 `npm run smoke`；新版 `wechatide` 自动化不需要 `cli auto --auto-port`。
 
 ## 原理
 

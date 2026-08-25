@@ -32,7 +32,6 @@
     "eslint-plugin-prettier": "^5.0.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
-    "miniprogram-automator": "^0.12.1",
     "prettier": "^3.0.2",
     "typescript": "^5.9.3"
   },

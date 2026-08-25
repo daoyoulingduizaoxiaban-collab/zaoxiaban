@@ -22,6 +22,31 @@ const CLIENT = process.env.WECHATIDE_CLIENT || 'ClaudeCode';
 const PROJECT = path.join(__dirname, '..', '..');
 const LOCAL_PORT = Number(process.env.LOCAL_PORT || 3000);
 
+/** CLI 有时会在 JSON 后附带日志；只取第一个完整 JSON 对象。 */
+const firstJsonObject = (raw) => {
+  const start = raw.indexOf('{');
+  if (start < 0) return '';
+  let depth = 0;
+  let quoted = false;
+  let escaped = false;
+  for (let i = start; i < raw.length; i++) {
+    const char = raw[i];
+    if (quoted) {
+      if (escaped) escaped = false;
+      else if (char === '\\') escaped = true;
+      else if (char === '"') quoted = false;
+      continue;
+    }
+    if (char === '"') quoted = true;
+    else if (char === '{') depth += 1;
+    else if (char === '}') {
+      depth -= 1;
+      if (depth === 0) return raw.slice(start, i + 1);
+    }
+  }
+  return raw.slice(start);
+};
+
 /** 跑一个 wechatide 工具，回传 result；工具回 ok:false 就抛错。 */
 const run = (tool, args = {}) => new Promise((resolve, reject) => {
   const argv = [`-c`, CLIENT, tool, '--project', PROJECT];
@@ -33,10 +58,26 @@ const run = (tool, args = {}) => new Promise((resolve, reject) => {
   execFile(CLI, argv, { maxBuffer: 32 * 1024 * 1024 }, (err, stdout) => {
     // CLI 会在 JSON 前面印一行 [wechatide] skill-call:...，取第一个 { 之后的内容。
     const raw = String(stdout || '');
+    // CLI 会在 JSON 前印一行 [wechatide] skill-call:...，之后偶尔还会补印警告行。
+    // 所以取「第一个 { 起、括号配平为止」这一段，别从第一个 { 一路 parse 到档尾。
     const start = raw.indexOf('{');
     if (start < 0) return reject(new Error(`${tool} 没有回传 JSON：${raw.slice(0, 300) || (err && err.message)}`));
+    let depth = 0; let end = -1; let inStr = false; let esc = false;
+    for (let i = start; i < raw.length; i++) {
+      const ch = raw[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+        continue;
+      }
+      if (ch === '"') inStr = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}' && --depth === 0) { end = i + 1; break; }
+    }
+    if (end < 0) return reject(new Error(`${tool} 回传的 JSON 不完整（${raw.length} 字元）`));
     let parsed;
-    try { parsed = JSON.parse(raw.slice(start)); } catch (e) { return reject(new Error(`${tool} 回传不是 JSON：${raw.slice(start, start + 300)}`)); }
+    try { parsed = JSON.parse(raw.slice(start, end)); } catch (e) { return reject(new Error(`${tool} 回传不是 JSON：${raw.slice(start, start + 300)}`)); }
     if (!parsed.ok) return reject(new Error(`${tool} 失败：${parsed.message || JSON.stringify(parsed).slice(0, 300)}`));
     return resolve(parsed.result);
   });
@@ -51,6 +92,7 @@ const currentPage = () => run('automation_runtime_info', { action: 'currentPage'
   .then(r => (r && r.currentPage) || r);
 const getData = (dataPath) => run('automation_page_action', { action: 'getData', 'data-path': dataPath })
   .then(r => (r && typeof r === 'object' && 'data' in r ? r.data : r));
+const pageData = () => getData();
 const setData = (patch) => run('automation_page_action', { action: 'setData', patch: JSON.stringify(patch) });
 // CLI 不吃 --args（会报 unsupported argument），复杂参数一律走 --args-file。
 const writeArgsFile = (args) => {
@@ -59,7 +101,7 @@ const writeArgsFile = (args) => {
   return file;
 };
 const callMethod = async (method, args = []) => {
-  const file = writeArgsFile(args);
+  const file = writeArgsFile(Array.isArray(args) ? args : [args]);
   try {
     return await run('automation_page_action', { action: 'callMethod', method, 'args-file': file });
   } finally {
@@ -126,6 +168,19 @@ const dataWhenReady = async (dataPath, tries = 10, gap = 800) => {
   return undefined;
 };
 
+/** 等待整页资料满足流程自己的复合条件（例如 isEdit 与预填资料同时就绪）。 */
+const pageDataWhen = async (isReady, tries = 10, gap = 800) => {
+  let data = {};
+  for (let i = 0; i < tries; i++) {
+    try {
+      data = await pageData();
+      if (isReady(data)) return data;
+    } catch (e) { /* 页面还没就绪，重试 */ }
+    await sleep(gap);
+  }
+  return data;
+};
+
 /** 确保 App 走本地后端（写的是本机储存，即时生效，不改源码）。 */
 const useLocalBackend = () => evaluate(
   "function() { wx.setStorageSync('dao_you_ling_data_backend', 'local'); return wx.getStorageSync('dao_you_ling_data_backend'); }",
@@ -139,6 +194,14 @@ const loginOnce = async () => {
     await callMethod('login');
     await sleep(1200);
   } catch (e) { /* 会话建过一次就够，失败不致命 */ }
+};
+
+/** 切到本地后端并确保 owner 会话可用，供所有需要写入的流程共用。 */
+const ensureLocalOwner = async () => {
+  await useLocalBackend();
+  await gotoPage('/pages/groupOrder/index', 'groupOrder/index');
+  if (!(await dataWhenReady('isLoggedIn'))) await loginOnce();
+  return getData('isLoggedIn');
 };
 
 /* ── 本地后端（seed 与回查） ─────────────────────────────── */
@@ -170,8 +233,8 @@ const reportFailure = async (message) => {
 
 module.exports = {
   PROJECT, OWNER, run, sleep,
-  navigate, currentPage, getData, setData, callMethod, querySelectorAll, tap, evaluate,
+  navigate, currentPage, getData, pageData, setData, callMethod, querySelectorAll, tap, evaluate,
   consoleLog, screenshot, mockWxApi, restoreWxApi,
-  gotoPage, dataWhenReady, useLocalBackend, loginOnce,
+  gotoPage, dataWhenReady, pageDataWhen, useLocalBackend, loginOnce, ensureLocalOwner,
   callFn, bd, reportFailure,
 };
