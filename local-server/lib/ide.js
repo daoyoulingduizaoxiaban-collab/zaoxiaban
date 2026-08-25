@@ -95,13 +95,17 @@ const callMethod = async (method, args = []) => {
   }
 };
 const querySelectorAll = (selector) => run('automation_page_action', { action: 'querySelectorAll', selector });
-const tap = (selector, opts = {}) => run('automation_element_action', { action: 'tap', selector, ...opts });
+const tap = (selector, opts = {}) => run('automation_element_action', { action: 'tap', selector, 'wait-for-selector': selector, ...opts });
+/** 真的触发输入事件（走 WXML 的 bindinput），不是直接 setData 绕过绑定。 */
+const input = (selector, value, opts = {}) => run('automation_element_action', { action: 'input', selector, value: String(value), 'wait-for-selector': selector, ...opts });
 // 注意：evaluate 不吃 --args，要传值就直接写进函式源码字串里。
-const unwrap = (value) => {
-  let out = value;
-  while (out && typeof out === 'object' && 'result' in out) out = out.result;
-  return out;
-};
+// CLI 会把求值结果再包一层 { result: ... }。只剥这一层，不要 while 一路剥到底——
+// 被求值的函式若自己回传带 result 键的物件，会连同兄弟栏位一起被吃掉。
+const unwrap = (value) => (
+  value && typeof value === 'object' && 'result' in value && Object.keys(value).length === 1
+    ? value.result
+    : value
+);
 const evaluate = (fnSource) => run('automation_evaluate', { 'fn-source': fnSource }).then(unwrap);
 
 /* ── 取证与 mock（旧方式做不到的） ────────────────────────── */
@@ -147,11 +151,18 @@ const gotoPage = async (url, matchPath, tries = 5) => {
  * 轮询到页面 data 的某个栏位真的有值再回传。
  * reLaunch 后可能拿到还没就绪的页面句柄，直接读会整片 undefined。
  */
-const dataWhenReady = async (dataPath, tries = 10, gap = 800) => {
+const dataWhenReady = async (dataPath, tries = 10, gap = 800, isReady) => {
+  // 预设：有值（非 undefined/null）且不是 'loading' 就算就绪。
+  // ⚠️ 布林权限栏位（canSave / canEdit / isLoggedIn 等）初始值多半就是 false，
+  // 用预设判定会第一次轮询就拿到 false 直接回传，等于完全没等鉴权跑完 → 偶发假失败。
+  // 那种情况要传 isReady，例如 `v => v === true`。
+  const ready = typeof isReady === 'function'
+    ? isReady
+    : (value) => value !== undefined && value !== null && value !== 'loading';
   for (let i = 0; i < tries; i++) {
     try {
       const value = await getData(dataPath);
-      if (value !== undefined && value !== null && value !== 'loading') return value;
+      if (ready(value)) return value;
     } catch (e) { /* 页面还没就绪，重试 */ }
     await sleep(gap);
   }
@@ -223,7 +234,7 @@ const reportFailure = async (message) => {
 
 module.exports = {
   PROJECT, OWNER, run, sleep,
-  navigate, currentPage, getData, pageData, setData, callMethod, querySelectorAll, tap, evaluate,
+  navigate, currentPage, getData, pageData, setData, callMethod, querySelectorAll, tap, input, evaluate,
   consoleLog, screenshot, mockWxApi, restoreWxApi,
   gotoPage, dataWhenReady, pageDataWhen, useLocalBackend, loginOnce, ensureLocalOwner,
   callFn, bd, reportFailure,

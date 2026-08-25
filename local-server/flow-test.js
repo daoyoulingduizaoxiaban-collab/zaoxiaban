@@ -5,9 +5,11 @@ const ide = require('./lib/ide');
   const marker = `[自测]报Bug-${Date.now()}`;
   await ide.ensureLocalOwner();
   await ide.gotoPage('/pages/feedback/index', 'feedback');
-  await ide.setData({ content: marker });
+  // 走真实元件互动（input 事件 + 点按钮），不要用 setData + callMethod 绕过 WXML 绑定——
+  // 这是唯一一支验到元件层的流程，绕过去就只剩服务层还有人验。
+  await ide.input('.textarea', marker);
   console.log('输入后 content =', JSON.stringify(await ide.getData('content')));
-  await ide.callMethod('onSubmit');
+  await ide.tap('.submit-btn');
   await ide.sleep(1500);
   const list = await ide.bd('feedbacks', 'list', {});
   const hit = ((list && list.data) || []).find(r => r.content === marker);

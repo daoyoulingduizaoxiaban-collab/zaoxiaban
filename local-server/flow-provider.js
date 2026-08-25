@@ -5,7 +5,8 @@ const ide = require('./lib/ide');
   const marker = `自测供应商${Date.now()}`;
   await ide.ensureLocalOwner();
   await ide.gotoPage('/pages/providers/edit/index', 'providers/edit');
-  const canSave = await ide.dataWhenReady('canSave');
+  // 传 v => v === true：canSave 初始值就是 false，用预设判定会第一次就拿到 false、根本没等鉴权。
+  const canSave = await ide.dataWhenReady('canSave', 10, 800, v => v === true);
   if (!canSave) return ide.reportFailure('无保存权限（canSave=false）');
   await ide.setData({ formData: { title: marker, contact: '自测联系人', note: '自测备注', statusText: '可显示资料' }, isDirty: true });
   await ide.callMethod('onSave');

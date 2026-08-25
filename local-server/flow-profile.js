@@ -8,7 +8,8 @@ const ide = require('./lib/ide');
   if (!ownerId) return ide.reportFailure(`取 owner id 失败: ${login && login.error}`);
   await ide.ensureLocalOwner();
   await ide.gotoPage('/pages/my/info-edit/index', 'my/info-edit');
-  if (!(await ide.dataWhenReady('canEdit'))) return ide.reportFailure('无编辑权限（canEdit=false）');
+  // 传 v => v === true：canEdit 初始值就是 false，用预设判定会第一次就拿到 false、根本没等鉴权。
+  if (!(await ide.dataWhenReady('canEdit', 10, 800, v => v === true))) return ide.reportFailure('无编辑权限（canEdit=false）');
   await ide.setData({ 'personInfo.name': newName, 'personInfo.phone': '13800000000' });
   await ide.callMethod('onSaveInfo');
   await ide.sleep(2000);

@@ -3,7 +3,7 @@ import {
 } from '~/models/GroupOrder';
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
-import { getConfirmedAmountError } from '~/services/customerOrder/orderAmount';
+import { getConfirmedAmountError, getMaxPayableAmount } from '~/services/customerOrder/orderAmount';
 import { generateGroupOrderQr, callBusinessData } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
@@ -351,7 +351,9 @@ Page({
       confirmOrderStatus: selectedOrder ? Number(selectedOrder.status) : 1,
       confirmForm: {
         paymentMethod: '',
-        confirmedAmount: selectedOrder ? String(selectedOrder.declaredAmount || selectedOrder.totalPrice || selectedOrder.originalTotalPrice || '') : '',
+        // 预填就取上限，跟校验同一支函式算。原本这里多兜一层 originalTotalPrice，
+        // 会预填出超过上限的金额，使用者按下去必被挡。
+        confirmedAmount: selectedOrder ? String(getMaxPayableAmount(selectedOrder) || '') : '',
         confirmRemark: '',
       },
     });

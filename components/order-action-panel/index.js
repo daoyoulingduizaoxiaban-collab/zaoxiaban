@@ -5,7 +5,7 @@
 //   <order-action-panel visible="{{actionPanelVisible}}" action-type="{{actionType}}"
 //     title="{{actionPanelTitle}}" submit-text="{{actionSubmitText}}" order="{{actionOrder}}"
 //     submitting="{{isSubmittingAction}}" bind:submit="onActionSubmit" bind:close="closeActionPanel" />
-import { getDeclaredAmountError, getConfirmedAmountError } from '~/services/customerOrder/orderAmount';
+import { getDeclaredAmountError, getConfirmedAmountError, getMaxPayableAmount } from '~/services/customerOrder/orderAmount';
 
 Component({
   options: {
@@ -84,7 +84,8 @@ Component({
         actionForm.declaredAmount = String(order.totalPrice || '');
       }
       if (actionType === 'confirmPayment' && order) {
-        actionForm.confirmedAmount = String(order.declaredAmount || order.totalPrice || '');
+        // 预填就取上限，跟校验同一支函式算，不要各自内联一份。
+        actionForm.confirmedAmount = String(getMaxPayableAmount(order) || '');
       }
       this.setData({ actionForm });
     },
