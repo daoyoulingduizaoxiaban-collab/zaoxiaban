@@ -6,6 +6,7 @@ import { AuthService } from '~/services/auth/authService';
 import { canManageGroupOrder } from '~/services/auth/roleScope';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { filterFormalProducts } from '~/utils/productContent';
+import { getDeclaredAmountError, getConfirmedAmountError, hasInitialPayment } from '~/services/customerOrder/orderAmount';
 
 const normalizeNumber = value => Number(value || 0);
 const trimText = value => String(value || '').trim();
@@ -236,7 +237,9 @@ export const CustomerOrderService = {
       paymentMethod: String(payload.paymentMethod || '').trim(),
       paymentRemark: String(payload.paymentRemark || '').trim(),
       paymentProofUrls,
-      declaredAmount: paymentProofUrls.length ? normalizeNumber(payload.totalPrice) : '',
+      // 与云端 create 同口径：算不算「已声明付款」只看付款方式，不看凭证张数。
+      // 从前这里看凭证张数，只填付款方式不传图时云端建成 PAID、前端却送空申报额，两边对不上。
+      declaredAmount: hasInitialPayment(payload) ? normalizeNumber(payload.totalPrice) : '',
       totalPrice: normalizeNumber(payload.totalPrice),
     }, { shareToken });
   },
@@ -247,8 +250,10 @@ export const CustomerOrderService = {
     const declaredAmount = normalizeNumber(payload.declaredAmount);
     let paymentProofUrls = payload.paymentProofUrls || [];
 
-    if (declaredAmount <= 0) {
-      return { success: false, error: '请填写有效付款金额' };
+    // payload 带了 totalPrice 才比得了上限；没带就只验「金额有效」，上限交由云端权威版兜底。
+    const declaredAmountError = getDeclaredAmountError({ totalPrice: payload.totalPrice }, payload.declaredAmount);
+    if (declaredAmountError) {
+      return { success: false, error: declaredAmountError };
     }
     if (!paymentMethod) {
       return { success: false, error: '请填写付款方式' };
@@ -276,8 +281,10 @@ export const CustomerOrderService = {
 
   async confirmPayment(id, payload = {}) {
     const confirmedAmount = normalizeNumber(payload.confirmedAmount);
-    if (confirmedAmount <= 0) {
-      return { success: false, error: '请填写有效实收金额' };
+    // 同上：payload 带了 declaredAmount/totalPrice 才比得了上限。
+    const confirmedAmountError = getConfirmedAmountError(payload, payload.confirmedAmount);
+    if (confirmedAmountError) {
+      return { success: false, error: confirmedAmountError };
     }
 
     const confirmRemark = trimText(payload.confirmRemark);

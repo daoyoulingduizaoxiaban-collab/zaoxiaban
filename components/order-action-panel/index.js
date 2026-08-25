@@ -5,6 +5,8 @@
 //   <order-action-panel visible="{{actionPanelVisible}}" action-type="{{actionType}}"
 //     title="{{actionPanelTitle}}" submit-text="{{actionSubmitText}}" order="{{actionOrder}}"
 //     submitting="{{isSubmittingAction}}" bind:submit="onActionSubmit" bind:close="closeActionPanel" />
+import { getDeclaredAmountError, getConfirmedAmountError } from '~/services/customerOrder/orderAmount';
+
 Component({
   options: {
     addGlobalClass: true,
@@ -165,15 +167,12 @@ Component({
       const confirmedAmountText = String(actionForm.confirmedAmount || '').trim();
       const confirmRemark = String(actionForm.confirmRemark || '').trim();
       const cancelRemark = String(actionForm.cancelRemark || '').trim();
-      const totalPrice = Number(order && order.totalPrice ? order.totalPrice : 0);
 
       if (actionType === 'declarePaid') {
         const declaredAmount = Number(declaredAmountText);
-        if (!declaredAmountText || Number.isNaN(declaredAmount) || declaredAmount <= 0) {
-          return { error: '请填写有效付款金额' };
-        }
-        if (totalPrice > 0 && declaredAmount > totalPrice) {
-          return { error: '付款金额不能超过订单金额' };
+        const declaredAmountError = getDeclaredAmountError(order, declaredAmountText);
+        if (declaredAmountError) {
+          return { error: declaredAmountError };
         }
         if (!paymentMethod) {
           return { error: '请填写付款方式' };
@@ -191,11 +190,9 @@ Component({
 
       if (actionType === 'confirmPayment') {
         const confirmedAmount = Number(confirmedAmountText);
-        if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
-          return { error: '请填写有效实收金额' };
-        }
-        if (totalPrice > 0 && confirmedAmount > totalPrice) {
-          return { error: '实收金额不能超过订单金额' };
+        const confirmedAmountError = getConfirmedAmountError(order, confirmedAmountText);
+        if (confirmedAmountError) {
+          return { error: confirmedAmountError };
         }
         return {
           data: {

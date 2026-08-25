@@ -1,7 +1,6 @@
 import { Product } from './Product';
 import { getGroupOrderStatusTextByValue, GroupOrderStatus } from '~/enum/GroupOrderStatus';
 import { MemberOrder } from '~/models/MemberOrder';
-import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 
 export class GroupOrder {
   id: number = -1;
@@ -34,26 +33,9 @@ export class GroupOrder {
   refreshStatusText() {
     this.statusText = getGroupOrderStatusTextByValue(this.status);
   }
-
-  /**
-   * 核心邏輯：重新計算統計數據
-   * 當手動調整訂單金額後呼叫
-   */
-  recalculateTotals(): void {
-    // 應收：所有訂單 totalPrice 的加總
-    this.totalReceivable = this.memberOrderList.reduce((sum, order) => {
-      const price = order.totalPrice > 0 ? order.totalPrice : 0;
-      return sum + price;
-    }, 0);
-
-    // 已收：僅加總已付款訂單的金額 (假設欄位為 isPaid)
-    this.totalReceived = this.memberOrderList.reduce((sum, order) => {
-      if (order.status === MemberOrderStatus.PAID && order.totalPrice > 0) {
-        return sum + order.totalPrice;
-      }
-      return sum;
-    }, 0);
-
-    this.totalCustomers = this.memberOrderList.length;
-  }
 }
+
+// 註：原本這裡有 recalculateTotals()，用「status===PAID 的 totalPrice」算已收、
+// 應收含已取消訂單，與 services/groupOrder/groupOrderService.js 的口徑不同（那邊是
+// 「status===CONFIRMED 的 confirmedAmount」、應收排除已取消）。且它依賴 memberOrderList，
+// 而雲端該欄位恆為 []，已無執行路徑。口徑以 groupOrderService 為準，故移除，見 FIELD_DICT.md §5.4。

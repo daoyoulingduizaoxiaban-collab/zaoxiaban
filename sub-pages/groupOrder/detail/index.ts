@@ -3,6 +3,7 @@ import {
 } from '~/models/GroupOrder';
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { getConfirmedAmountError } from '~/services/customerOrder/orderAmount';
 import { generateGroupOrderQr, callBusinessData } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
@@ -420,16 +421,10 @@ Page({
     const confirmRemark = String(this.data.confirmForm.confirmRemark || '').trim();
     const isUndeclared = this.data.confirmOrderStatus === 0;
     const selectedOrder = (this.data.groupOrder.memberOrderList || [])
-      .find(order => String(order.id) === String(this.data.selectedMemberOrderId));
-    const declaredAmount = Number(selectedOrder && selectedOrder.declaredAmount ? selectedOrder.declaredAmount : 0);
-    const totalPrice = Number(selectedOrder && selectedOrder.totalPrice ? selectedOrder.totalPrice : 0);
-    const maxPayableAmount = declaredAmount > 0 ? declaredAmount : totalPrice;
-    if (!confirmedAmountText || Number.isNaN(confirmedAmount) || confirmedAmount <= 0) {
-      wx.showToast({ title: '请填写有效实收金额', icon: 'none' });
-      return;
-    }
-    if (maxPayableAmount > 0 && confirmedAmount > maxPayableAmount) {
-      wx.showToast({ title: declaredAmount > 0 ? '实收金额不能超过申报金额' : '实收金额不能超过订单金额', icon: 'none' });
+      .find(order => String(order.id) === String(this.data.selectedMemberOrderId)) || {};
+    const confirmedAmountError = getConfirmedAmountError(selectedOrder, confirmedAmountText);
+    if (confirmedAmountError) {
+      wx.showToast({ title: confirmedAmountError, icon: 'none' });
       return;
     }
     if (isUndeclared && !paymentMethod) {
@@ -446,6 +441,8 @@ Page({
       const declareRes = await CustomerOrderService.declarePaid(this.data.selectedMemberOrderId, {
         paymentMethod,
         declaredAmount: confirmedAmount,
+        // 带上订单总额，服务层才有得比「申报额不得超过订单金额」这条上限。
+        totalPrice: selectedOrder.totalPrice,
         note: `团主登记付款：￥${confirmedAmount}｜${paymentMethod}`,
       });
       if (!declareRes.success) {

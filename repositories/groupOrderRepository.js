@@ -58,7 +58,6 @@ const normalizeGroupOrder = (item) => {
     updatedAt: item.updatedAt || nowIso(),
     deletedAt: item.deletedAt || '',
   });
-  order.recalculateTotals();
   return order;
 };
 

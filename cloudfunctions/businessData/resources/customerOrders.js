@@ -200,6 +200,14 @@ const customerOrderActions = {
     // A6：付款凭证选填，判断"是否已付款声明"只看有没有填付款方式，不強制要求凭证图。
     const hasInitialPayment = Boolean(trimText(payload.paymentMethod));
     const initialStatus = hasInitialPayment ? MEMBER_ORDER_STATUS.PAID : MEMBER_ORDER_STATUS.UNPAID;
+    // 申报额不信任前端送的值：夹到服务端重算的订单金额以内，没送或送非正数就取订单金额。
+    // 否则客户可虚报一个巨额申报值，把后面「确认收款」的上限撑大（该上限取 declaredAmount 优先，
+    // 见 updatePaymentStatus），团单「已收」统计随之被灌水。与 updatePaymentStatus 的
+    // 「付款金额不能超过订单金额」同口径。
+    const declaredAmountInput = Number(payload.declaredAmount || 0);
+    const declaredAmountValue = declaredAmountInput > 0
+      ? Math.min(declaredAmountInput, recomputed.totalPrice)
+      : recomputed.totalPrice;
     const order = normalizeOrder({
       groupOrderId: groupOrder.id || groupOrder._id,
       guideUserId: groupOrder.guideUserId,
@@ -219,7 +227,7 @@ const customerOrderActions = {
       paymentMethod: payload.paymentMethod || '',
       paymentRemark: payload.paymentRemark || '',
       paymentProofUrls: payload.paymentProofUrls || [],
-      declaredAmount: hasInitialPayment ? Number(payload.declaredAmount || recomputed.totalPrice || 0) : '',
+      declaredAmount: hasInitialPayment ? declaredAmountValue : '',
       hostRemark: '',
       createdAt,
       updatedAt: createdAt,
