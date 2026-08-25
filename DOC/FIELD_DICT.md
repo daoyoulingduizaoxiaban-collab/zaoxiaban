@@ -210,7 +210,8 @@
 | `shareToken` / `shareExpiresAt` / `sharePath` | string | 系统 | 分享入口 |
 | `qrCodeUrl` | string | 系统 | 进详情自动补生成并写回 |
 | `createdAt` / `updatedAt` / `deletedAt` | string | 系统 | |
-| ⚠️ `pickupNote` / `paymentNote` / `contactName` / `contactPhone` | string | — | **表单输入已移除**，见 §4.3 E7 |
+| ⚠️ `pickupNote` / `paymentNote` | string | — | **表单输入已移除**，且无兜底 → 恒为空。见 §4.3 E7 |
+| `contactName` / `contactPhone` | string | — | 表单输入已移除，但云端 `normalizeGroupOrderPayload` 会用开团者的 `profile.displayName` / `profile.phone` 兜底（`resources/groupOrders.js:83-84`）→ **通常有值**，是刻意让客户看得到联络方式 |
 | ⚠️ `memberOrderList[]` | — | — | 云端**无任何写入路径**，恒为 `[]` |
 | `totalReceivable` / `totalReceived` / `totalCustomers` | number | 衍生 | 云端**无此栏位**，由 `groupOrderService.js:71-97` join 客户订单算 |
 | `canManageGroupOrder` | boolean | 衍生 | 由 `customerOrderService.js:150` 前端注入 |
@@ -241,7 +242,9 @@
 | `pages/customerOrders/edit/index.wxml:20-28` 客户下单团单卡 | ⚠️ 9 |
 | `sub-pages/groupOrder/add/index.ts:49-56` 开团表单 | 6 |
 
-⚠️ **E7 — 客户下单页固定显示 4 个「未填写」栏位**：`pickupNote` / `paymentNote` / `contactName` / `contactPhone` 的表单输入已在开团页移除（`groupOrderService.js:116` 与 `groupOrders.js:99` 均注明「已按需求移除」），但下单页还在渲染 → 永远显示「未填写」。
+✅ **E7 — 客户下单页固定印「未填写」（2026-08-26 已修）**：`pickupNote` / `paymentNote` 的表单输入已在开团页移除（`groupOrderService.js` 与 `resources/groupOrders.js` 均注明「已按需求移除」）且**没有兜底**，所以恒为空，但下单页还在无条件渲染 → 每张团单卡固定印两行「未填写」。已改成有值才显示（`pages/customerOrders/edit/index.wxml:28-30`），写法跟同区块的「提示」一致。
+
+> **订正**：本条原本写成「4 个栏位永远未填写」，实测后确认**只有 2 个**是这样。`contactName` / `contactPhone` 虽然表单也拿掉了，但云端会用开团者的 `profile.displayName` / `profile.phone` 兜底（`resources/groupOrders.js:83-84`），通常有值，是刻意要让客户看到联络方式——不是垃圾栏位。
 
 ---
 
