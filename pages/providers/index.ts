@@ -23,9 +23,13 @@ Page({
 
   async loadProviders() {
     if ((this as any).requireLogin()) return;
+    // 本页挂了 useAccessPage，就要照它的契约维护三态栏位（见 DEVELOPMENT_GUIDE 第 6 节）。
+    // 不维护的话 pageState 会从初始的 loading 起永远不动，任何读它的人都会被骗。
+    this.setData((this as any).loadingState());
     const profile = AuthService.getCurrentProfile();
     if (!canUseProviderPortal(profile)) {
       this.setData({
+        ...(this as any).threeState('empty', { emptyText: '当前账号没有供应商资料管理权限。' }),
         providersList: [],
         disabledReason: '当前账号没有供应商资料管理权限。',
         canCreateProvider: false,
@@ -36,7 +40,15 @@ Page({
     }
 
     const res = await DirectoryRepository.listProviders();
-    const providers = res.success ? res.data : [];
+    if (!res.success) {
+      this.setData({
+        ...(this as any).threeState('error', { errorText: res.error || '供应商资料加载失败' }),
+        providersList: [],
+        disabledReason: res.error || '供应商资料加载失败',
+      });
+      return;
+    }
+    const providers = res.data || [];
     const canCreateProvider = isOwnerOrAdmin(profile);
     this.setData({
       providersList: providers.map(provider => ({
@@ -46,7 +58,8 @@ Page({
         isDisabled: provider.status === 'disabled',
         stateLabel: provider.status === 'disabled' ? '已停用' : (provider.statusText || '可显示资料'),
       })),
-      disabledReason: res.success ? '' : (res.error || '当前账号没有供应商资料管理权限。'),
+      ...(this as any).threeState(providers.length ? 'ready' : 'empty', { emptyText: '还没有供应商资料' }),
+      disabledReason: '',
       canCreateProvider,
       providerActionIcon: canCreateProvider ? 'add' : 'edit',
       providerActionLabel: canCreateProvider ? '新增供应商' : '编辑供应商资料',

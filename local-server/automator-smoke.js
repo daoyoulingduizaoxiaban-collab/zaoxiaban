@@ -61,12 +61,19 @@ const readState = async () => {
 // 共用的 page-state 元件，自己画 isPageLoading/accessDenied。那些栏位对它们没有意义，
 // 拿来判三态会把好页面误判成「卡在 loading」。所以以「有没有注册 page-state 元件」为准。
 const usesPageState = (route) => {
+  const base = path.join(ide.PROJECT, route.replace(/^\//, ''));
   try {
-    const json = JSON.parse(fs.readFileSync(path.join(ide.PROJECT, `${route.replace(/^\//, '')}.json`), 'utf8'));
-    return JSON.stringify(json.usingComponents || {}).includes('page-state');
-  } catch (e) {
-    return false;
+    const json = JSON.parse(fs.readFileSync(`${base}.json`, 'utf8'));
+    if (JSON.stringify(json.usingComponents || {}).includes('page-state')) return true;
+  } catch (e) { /* 没有 json 就往下看原始码 */ }
+  // 就算没注册元件，只要页面自己有照契约维护三态（有呼叫 threeState），
+  // pageState 就是可信的，一样按三态判。
+  for (const ext of ['.ts', '.js']) {
+    try {
+      if (fs.readFileSync(`${base}${ext}`, 'utf8').includes('threeState(')) return true;
+    } catch (e) { /* 换下一个副档名 */ }
   }
+  return false;
 };
 
 const verdictOf = (state, route) => {
@@ -79,9 +86,13 @@ const verdictOf = (state, route) => {
       if (expected && String(state.pageErrorText).includes(expected)) return 'PASS(正确降级)';
       return `FAIL(${state.pageErrorText})`;
     }
-    if (state.isPageLoading === true) return 'WARN(停留后仍 loading)';
+    // 自绘的页用自己的载入旗标，名称不一：有的叫 isPageLoading，有的叫 isLoading。
+    // ⚠️ 有自己的旗标就**只信自己的**——这些页多半也挂了 useAccessPage，
+    // 那个 isLoading 是继承来、没人维护的残留值，永远是 true，一起看会全部误判成卡住。
+    const ownLoading = state.isPageLoading !== undefined ? state.isPageLoading : state.isLoading;
+    if (ownLoading === true) return 'WARN(停留后仍 loading)';
     if (state.accessDenied === true) return 'PASS(正式受限态)';
-    if (state.isPageLoading === false || state.accessDenied === false) return 'PASS(自绘，已定案)';
+    if (ownLoading === false || state.accessDenied === false) return 'PASS(自绘，已定案)';
     // 这些页三种状态栏位都没有。至少验它真的渲染出东西——抓得到 onLoad 炸掉、整片白。
     // 这是底线，不是完整验证：只证明画面有内容，不证明内容对不对。
     if (state.renderedNodes > 0) return `PASS(已渲染 ${state.renderedNodes} 个节点)`;

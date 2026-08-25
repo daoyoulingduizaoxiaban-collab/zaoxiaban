@@ -31,9 +31,12 @@ Page({
 
   async loadProfiles() {
     if ((this as any).requireLogin()) return;
+    // 挂了 useAccessPage 就要照契约维护三态栏位，见 DEVELOPMENT_GUIDE 第 6 节。
+    this.setData((this as any).loadingState());
     const currentProfile = AuthService.getCurrentProfile();
     if (!canUseFeature(currentProfile, FEATURE_KEYS.PROFILE)) {
       this.setData({
+        ...(this as any).threeState('empty', { emptyText: AuthService.getAccessStateText(currentProfile) }),
         profileList: [],
         canEditCurrentProfile: false,
         currentProfileId: '',
@@ -59,6 +62,7 @@ Page({
         statusText: user.displayRole,
         description: `${user.city || '城市未填写'}｜手机号 ${user.phone || '未填写'}`,
       })),
+      ...(this as any).threeState(visibleUsers.length ? 'ready' : 'empty', { emptyText: '当前账号没有可查看的个人资料。' }),
       canEditCurrentProfile: canUseFeature(currentProfile, FEATURE_KEYS.PROFILE),
       currentProfileId: currentProfile.id || '',
       disabledReason: visibleUsers.length ? '' : '当前账号没有可查看的个人资料。',
