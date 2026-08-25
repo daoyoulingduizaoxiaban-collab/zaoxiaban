@@ -99,13 +99,19 @@ const tap = (selector, opts = {}) => run('automation_element_action', { action: 
 /** 真的触发输入事件（走 WXML 的 bindinput），不是直接 setData 绕过绑定。 */
 const input = (selector, value, opts = {}) => run('automation_element_action', { action: 'input', selector, value: String(value), 'wait-for-selector': selector, ...opts });
 // 注意：evaluate 不吃 --args，要传值就直接写进函式源码字串里。
-// CLI 会把求值结果再包一层 { result: ... }。只剥这一层，不要 while 一路剥到底——
-// 被求值的函式若自己回传带 result 键的物件，会连同兄弟栏位一起被吃掉。
-const unwrap = (value) => (
-  value && typeof value === 'object' && 'result' in value && Object.keys(value).length === 1
-    ? value.result
-    : value
-);
+// CLI 会把求值结果包进信封（{ success, result } 之类），有时还包两层。
+// 只在「这一层看起来就是信封」时才剥：所有键都是已知的信封键。
+// 被求值的函式若自己回传带 result 的**业务**物件（有其他栏位），就不会被误剥。
+const ENVELOPE_KEYS = new Set(['success', 'result', 'ok', 'tool', 'clientName', 'taskId', 'status', 'message', 'errMsg']);
+const unwrap = (value) => {
+  let out = value;
+  for (let i = 0; i < 3; i++) {
+    if (!out || typeof out !== 'object' || !('result' in out)) break;
+    if (!Object.keys(out).every(k => ENVELOPE_KEYS.has(k))) break;
+    out = out.result;
+  }
+  return out;
+};
 const evaluate = (fnSource) => run('automation_evaluate', { 'fn-source': fnSource }).then(unwrap);
 
 /* ── 取证与 mock（旧方式做不到的） ────────────────────────── */
@@ -187,6 +193,25 @@ const useLocalBackend = () => evaluate(
   "function() { wx.setStorageSync('dao_you_ling_data_backend', 'local'); return wx.getStorageSync('dao_you_ling_data_backend'); }",
 );
 
+/**
+ * 切本机测试身份（仅本地后端有效）。传空字串＝还原成预设的 owner。
+ * 身份存在储存里，切完重新登录即生效，**不必重编开发者工具**——旧文件说要 GUI 重编，
+ * 那讲的是改源码里的 openId，测试身份这条路后来就做好了。
+ * ⚠️ 切走之后一定要在 finally 里切回来，否则后面所有流程都会用错身份。
+ */
+const setLocalIdentity = async (label) => {
+  const slug = String(label || '').trim().replace(/\s+/g, '-').slice(0, 40);
+  const openId = slug ? `tester-${slug}` : '';
+  await evaluate(`function () {
+    var k = 'dao_you_ling_local_identity';
+    ${openId ? `wx.setStorageSync(k, '${openId}');` : 'wx.removeStorageSync(k);'}
+    try { wx.removeStorageSync('dao_you_ling_auth_profile'); wx.removeStorageSync('dao_you_ling_auth_session'); } catch (e) {}
+    return wx.getStorageSync(k) || '(预设 owner)';
+  }`);
+  await loginOnce();
+  return openId || '(预设 owner)';
+};
+
 /** 首次登录：refreshSession 只刷新既有会话、不会建立首次登录，所以要先进登录页 call 一次 login。 */
 const loginOnce = async () => {
   try {
@@ -236,6 +261,6 @@ module.exports = {
   PROJECT, OWNER, run, sleep,
   navigate, currentPage, getData, pageData, setData, callMethod, querySelectorAll, tap, input, evaluate,
   consoleLog, screenshot, mockWxApi, restoreWxApi,
-  gotoPage, dataWhenReady, pageDataWhen, useLocalBackend, loginOnce, ensureLocalOwner,
+  gotoPage, dataWhenReady, pageDataWhen, useLocalBackend, loginOnce, ensureLocalOwner, setLocalIdentity,
   callFn, bd, reportFailure,
 };

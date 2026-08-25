@@ -41,6 +41,17 @@ const READ_STATE_FN = `function () {
     accessDenied: d.accessDenied, isPageLoading: d.isPageLoading, pageErrorText: d.pageErrorText || '',
   };
 }`;
+
+// 数一数这页到底渲染出几个节点。没有可判定状态栏位的页面靠这个当底线验证。
+const countNodes = async () => {
+  try {
+    const r = await ide.querySelectorAll('view');
+    const els = (r && (r.elements || r.result || r)) || [];
+    return Array.isArray(els) ? els.length : 0;
+  } catch (e) {
+    return 0;
+  }
+};
 const readState = async () => {
   // 读不到要回 null，不能回 {}——回 {} 会被当成「这页没有三态栏位」而记 SKIP，
   // 于是模拟器抖动或回传被截断时，整轮 25 页全 SKIP、问题 0、退 0 算通过。
@@ -71,7 +82,10 @@ const verdictOf = (state, route) => {
     if (state.isPageLoading === true) return 'WARN(停留后仍 loading)';
     if (state.accessDenied === true) return 'PASS(正式受限态)';
     if (state.isPageLoading === false || state.accessDenied === false) return 'PASS(自绘，已定案)';
-    return 'SKIP(无可判定的状态栏位)';
+    // 这些页三种状态栏位都没有。至少验它真的渲染出东西——抓得到 onLoad 炸掉、整片白。
+    // 这是底线，不是完整验证：只证明画面有内容，不证明内容对不对。
+    if (state.renderedNodes > 0) return `PASS(已渲染 ${state.renderedNodes} 个节点)`;
+    return 'FAIL(页面没有渲染出任何内容)';
   }
   if (state.pageState === undefined) return 'SKIP(无三态)';
   // 只看 pageState：isLoading 是各页自用的旗标，不驱动共用元件的画面，有些页设完 ready 就没关它。
@@ -114,6 +128,7 @@ const settledState = async () => {
     try {
       await ide.gotoPage(route, route.replace(/(^\/|\/index$)/g, ''));
       const state = usesPageState(route) ? await settledState() : await readState();
+      if (state && !usesPageState(route)) state.renderedNodes = await countNodes();
       const verdict = verdictOf(state, route);
       results.push({ route, verdict, state });
       const mark = verdict.startsWith('PASS') ? '✓' : (verdict.startsWith('SKIP') ? '·' : '✗');
