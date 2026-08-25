@@ -1,7 +1,7 @@
 # PAGE_MAP — 页面跳转契约
 
 > **这份是什么**：全站 26 个页面的「谁能进 / 从哪进 / 带什么参数 / 出去哪 / 返回落在哪」的**唯一口径**。
-> **怎么用**：动任何页面跳转前先查这份；改完跑 `node local-server/check-contract.js` 验证没违约。
+> **怎么用**：动任何页面跳转前先查这份。
 > **和别的文件的分工**：`BUSINESS_LOGIC_PRINCIPLES.md` 定「业务上应该长怎样」（A12 入口编排、A13 鉴权闸门）；这份定「代码层面具体跳去哪」。欄位口径查 `FIELD_DICT.md`。
 >
 > **状态**：2026-08-25 全站扫描后建立。标 ⚠️ 的是**现况有问题、待收敛**，标 ❓ 的是**待拍板**。收敛完成后把标记拿掉。
@@ -154,7 +154,7 @@
 ### 3.5 鉴权闸门覆盖不一致
 
 - `requireLogin()`：11 页有，但三个主 tab（`groupOrder` / `customerOrders` / `productManagement`）**没有**，改用各自的空态 + 登录 CTA。
-- `useAccessPage`：12 页有、14 页无；无的全部自写 `canUseFeature`。
+- `useAccessPage`：14 页有、12 页无；无的全部自写 `canUseFeature`。
 
 ---
 

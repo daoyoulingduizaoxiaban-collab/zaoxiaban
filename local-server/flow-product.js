@@ -15,7 +15,10 @@ const ide = require('./lib/ide');
   await ide.sleep(2000);
   const list = await ide.bd('products', 'listVisible', {});
   const hit = ((list && list.data) || []).find(p => String(p.title) === marker);
-  if (!hit || !Array.isArray(hit.pictureUrls) || !hit.pictureUrls.length) return ide.reportFailure('未在商品列表找到该商品');
+  if (!hit) return ide.reportFailure('未在商品列表找到该商品');
+  if (!Array.isArray(hit.pictureUrls) || !hit.pictureUrls.length) return ide.reportFailure('商品落库了但图片没存进去');
+  // 价格档一定要回查：商品存档时价格规则被静默丢掉的话，只验图片这支测试照样会绿。
+  if (!((hit.priceSetting || hit.priceSettings || []).length)) return ide.reportFailure('商品落库了但价格档没存进去');
   console.log(`✅ 商品新增已落库: ${hit._id || hit.id}`);
   process.exit(0);
 })().catch(e => ide.reportFailure(`FLOW 出错: ${e && e.message}`));

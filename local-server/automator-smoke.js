@@ -15,6 +15,8 @@ const READY_TRIES = Number(process.env.READY_TRIES || 12);
 // key 是路由，value 是预期会看到的错误文案片段（比中就算 PASS）。
 const EXPECTED_DEGRADE = {
   '/sub-pages/groupOrder/detail/index': '缺少团单 ID',
+  '/sub-pages/groupOrder/productList/index': '缺少团单 ID',
+  '/pages/customerOrders/edit/index': '缺少团单入口',
 };
 const PAGES = [
   '/pages/groupOrder/index', '/pages/customerOrders/index', '/pages/productManagement/index', '/pages/my/index',
@@ -36,10 +38,13 @@ const READ_STATE_FN = `function () {
     pageState: d.pageState, isLoading: d.isLoading, authReady: d.authReady,
     isLoggedIn: d.isLoggedIn, canUseBusiness: d.canUseBusiness,
     loadErrorText: d.loadErrorText || '', emptyText: d.emptyText || '',
+    accessDenied: d.accessDenied, isPageLoading: d.isPageLoading, pageErrorText: d.pageErrorText || '',
   };
 }`;
 const readState = async () => {
-  try { return (await ide.evaluate(READ_STATE_FN)) || {}; } catch (e) { return {}; }
+  // 读不到要回 null，不能回 {}——回 {} 会被当成「这页没有三态栏位」而记 SKIP，
+  // 于是模拟器抖动或回传被截断时，整轮 25 页全 SKIP、问题 0、退 0 算通过。
+  try { return (await ide.evaluate(READ_STATE_FN)) || null; } catch (e) { return null; }
 };
 // 有些页挂了 useAccessPage 行为（因此 data 里带 pageState/authReady），但 wxml 根本没用
 // 共用的 page-state 元件，自己画 isPageLoading/accessDenied。那些栏位对它们没有意义，
@@ -54,7 +59,20 @@ const usesPageState = (route) => {
 };
 
 const verdictOf = (state, route) => {
-  if (!usesPageState(route)) return 'SKIP(未接三态元件)';
+  if (!state) return 'ERROR(读不到页面状态)';
+  if (!usesPageState(route)) {
+    // 这些页自己画载入/受限，不走共用元件。判它们自绘的那组栏位，
+    // 不能整页放过——否则 onLoad 炸掉、画面全白也照样印通过。
+    if (state.pageErrorText) {
+      const expected = EXPECTED_DEGRADE[route];
+      if (expected && String(state.pageErrorText).includes(expected)) return 'PASS(正确降级)';
+      return `FAIL(${state.pageErrorText})`;
+    }
+    if (state.isPageLoading === true) return 'WARN(停留后仍 loading)';
+    if (state.accessDenied === true) return 'PASS(正式受限态)';
+    if (state.isPageLoading === false || state.accessDenied === false) return 'PASS(自绘，已定案)';
+    return 'SKIP(无可判定的状态栏位)';
+  }
   if (state.pageState === undefined) return 'SKIP(无三态)';
   // 只看 pageState：isLoading 是各页自用的旗标，不驱动共用元件的画面，有些页设完 ready 就没关它。
   if (state.pageState === 'loading') return 'WARN(停留后仍 loading)';
@@ -106,7 +124,11 @@ const settledState = async () => {
     }
   }
   const bad = results.filter(r => !r.verdict.startsWith('PASS') && !r.verdict.startsWith('SKIP'));
-  console.log(`\n${results.length} 页：PASS ${results.filter(r => r.verdict.startsWith('PASS')).length}，问题 ${bad.length}，SKIP ${results.filter(r => r.verdict.startsWith('SKIP')).length}`);
+  const passed = results.filter(r => r.verdict.startsWith('PASS')).length;
+  console.log(`\n${results.length} 页：PASS ${passed}，问题 ${bad.length}，SKIP ${results.filter(r => r.verdict.startsWith('SKIP')).length}`);
   if (bad.length) return ide.reportFailure(`冒烟发现 ${bad.length} 个问题`);
+  // 防线：一页都没通过还印「问题 0」，代表根本没验到东西（连线断了/全都读不到），
+  // 不能当成通过。
+  if (passed === 0) return ide.reportFailure('一页都没通过——等于这轮没验到任何东西');
   process.exit(0);
 })().catch(e => ide.reportFailure(`SMOKE 出错: ${e && e.message}`));

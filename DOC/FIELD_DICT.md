@@ -1,7 +1,7 @@
 # FIELD_DICT — 栏位字典
 
 > **这份是什么**：8 个核心实体的栏位、型别、必填、校验规则，以及**每个栏位显示在哪些页面**的唯一口径。
-> **怎么用**：做任何表单、卡片、详情弹窗之前先查这份；同一实体在第二个页面要显示，**必须走同一个共用元件 + 同一个 view model**，不准自绘。改完跑 `node local-server/check-contract.js`。
+> **怎么用**：做任何表单、卡片、详情弹窗之前先查这份；同一实体在第二个页面要显示，**必须走同一个共用元件 + 同一个 view model**，不准自绘。
 > **和别的文件的分工**：`BUSINESS_LOGIC_PRINCIPLES.md` A5 定「有哪些实体、归属谁」；这份定「每个实体到底有哪些栏位、长什么样、显示在哪」。跳转查 `PAGE_MAP.md`。
 >
 > **状态**：2026-08-25 全站扫描后建立。标 ⚠️ 的是**现况有问题、待收敛**，标 ❓ 的是**待拍板**。
@@ -285,7 +285,7 @@
 `0 未付款` →（声明付款 / 团主代登记）→ `1 已付款` →（团主确认收款）→ `2 已确认`
 任一非终态 →（取消）→ `3 已取消`。已确认 / 已取消不可再变更。
 
-### 5.2 金额校验 ⚠️ 三处口径不同
+### 5.2 金额校验 ✅ 已收敛成一份（2026-08-25）
 
 | 规则 | 操作面板 | 团单详情弹窗 | service | 云端（权威） |
 | --- | --- | --- | --- | --- |
@@ -294,29 +294,27 @@
 | `confirmedAmount > 0` | ✅ | ✅ | ✅ | ✅ |
 | `confirmedAmount` 上限 | ⚠️ `totalPrice` | ⚠️ `declaredAmount \|\| totalPrice` | ✅ | `declaredAmount` 优先 |
 
-⚠️ **E1**：客户申报 50、订单 100 时，操作面板允许填 80 送出，按下去才被云端挡「实收金额不能超过申报金额」。
-⚠️ **E9**：走团单详情的团主代登记路径时，`declaredAmount` 上限前端完全不挡。
+✅ **E1／E9 已修**：上限规则原本三处各写一份（面板用订单总额、团单详情弹窗用申报额优先、云端用申报额优先），现已收敛成 `services/customerOrder/orderAmount.js` 的 `getConfirmedAmountError` / `getDeclaredAmountError`，面板、团单详情、服务层三处都 import 它，与云端逐条对齐。
 
-**收敛口径**：`confirmedAmount` 上限 = `declaredAmount || totalPrice`，与云端一致，收敛成单一函式。
+**唯一口径**：`confirmedAmount` 上限 = `declaredAmount || totalPrice`。金额一律先转数再判 finite（`toAmount`）——`Number('abc')` 是 NaN，而 `NaN <= 0` 与 `NaN > 上限` 都是 false，直接用 `Number(x || 0)` 判会让非数字字串两道校验全过。云端同款 helper 在 `lib/core.js`，**改一边要改两边**。
 
-### 5.3 首单「是否已声明付款」⚠️ 三套判定
+### 5.3 首单「是否已声明付款」✅ 已对齐（2026-08-25）
 
 | 位置 | 判定依据 |
 | --- | --- |
 | 云端 `customerOrders.js:201`（权威） | 只看 `paymentMethod` 有无 |
-| `customerOrderService.js:239` | 只看 `paymentProofUrls.length` 决定 `declaredAmount` |
+| `customerOrderService.js` | ✅ 已改用 `hasInitialPayment(payload)`，只看 `paymentMethod`，与云端一致 |
 | （死码）`customerOrderRepository.js:353-355` | `paymentMethod` **且** 有凭证 |
 
-⚠️ **E2**：只填付款方式不传图时，云端建成 PAID 且 `declaredAmount = totalPrice`，但前端送的是 `declaredAmount: ''`。
+✅ **E2 已修**。另：云端 `create` 现在会把客户送来的申报额**夹到服务端重算的订单金额以内**，并把夹逼后的值写进付款历史——原本订单上的值夹住了、历史那笔还记着虚报值且会显示给团主看。
 
-### 5.4 「已收 / 应收」⚠️ 两套口径
+### 5.4 「已收 / 应收」✅ 已统一（2026-08-25）
 
 | 口径 | 已收 | 应收 |
 | --- | --- | --- |
 | `groupOrderService.js:81-86`、`customerOrderService.js:136-144`、`dataCenter/index.ts:65,75` | `status===CONFIRMED(2)` 的 `confirmedAmount \|\| totalPrice` | 排除 `CANCELLED(3)` |
-| ⚠️ `models/GroupOrder.ts:42-58` `recalculateTotals` | `status===PAID(1)` 的 `totalPrice` | **含已取消** |
 
-⚠️ **E3 / E4**。`recalculateTotals` 依赖 `memberOrderList`，而云端该栏位恒为 `[]` → 已无执行路径。**收敛口径以 `groupOrderService.js` 为准。**
+✅ **E3 / E4 已修**：`models/GroupOrder.ts` 的 `recalculateTotals` 已删除（它用错的订单状态、应收还含已取消，且依赖云端恒为 `[]` 的 `memberOrderList`，本就无执行路径）。**唯一口径以 `groupOrderService.js` 为准。**
 
 ### 5.5 状态文案 ⚠️ 4 份独立 map
 
@@ -415,4 +413,4 @@
 | `groupOrders.startAt < endAt` 不验 | 前后端都明文放弃；`endAt` 早于 `startAt` 时分享连结立即过期 | 建议补验，当初是刻意放弃的 |
 | `users.guideApplication` | `A5` 有规范，未实作 | |
 | `REVIEW_STATUS.expired` 云端没有 | 地端会产出，云端不认 | 建议云端补上 |
-| **4 支子页面的三态栏位永远在说谎** | `sub-pages/product/add`、`sub-pages/groupOrder/add`、`sub-pages/groupOrder/productList`、`sub-pages/groupOrder/product-picker` 都挂了 `useAccessPage` 行为（所以 data 里带 `pageState` / `authReady` / `isLoggedIn`），但 wxml **没有注册 `page-state` 元件**，画面是自己用 `isPageLoading` / `accessDenied` 画的。结果这几个栏位从初始值起就没人更新过——`pageState` 永远是 `loading`、`authReady` 永远是 `false`、`isLoggedIn` 永远是 `false`，**即使当下明明登录了**。画面正常，是栏位在骗人。2026-08-25 冒烟脚本就被骗过一次，把 4 支好页面报成「卡在 loading」 | 二选一：① 这几页照 `DEVELOPMENT_GUIDE` 第 6 节接上 `page-state` 元件走统一三态；② 不接的话就别挂 `useAccessPage`，改只引需要的判断函式，别让 data 带着永不更新的栏位。建议 ①，跟全站口径一致 |
+| **6 个页面的三态栏位永远在说谎** | `pages/providers`、`pages/profile`、`sub-pages/product/add`、`sub-pages/groupOrder/add`、`sub-pages/groupOrder/productList`、`sub-pages/groupOrder/product-picker` 都挂了 `useAccessPage` 行为（所以 data 里带 `pageState` / `authReady` / `isLoggedIn`），但 wxml **没有注册 `page-state` 元件**，画面是自己用 `isPageLoading` / `accessDenied` 画的。结果这几个栏位从初始值起就没人更新过——`pageState` 永远是 `loading`、`authReady` 永远是 `false`、`isLoggedIn` 永远是 `false`，**即使当下明明登录了**。画面正常，是栏位在骗人。2026-08-25 冒烟脚本就被骗过一次，把这些好页面报成「卡在 loading」。全站 26 页里，注册了 `page-state` 的只有 10 页 | 二选一：① 这几页照 `DEVELOPMENT_GUIDE` 第 6 节接上 `page-state` 元件走统一三态；② 不接的话就别挂 `useAccessPage`，改只引需要的判断函式，别让 data 带着永不更新的栏位。建议 ①，跟全站口径一致 |

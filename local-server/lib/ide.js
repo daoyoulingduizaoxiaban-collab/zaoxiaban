@@ -44,7 +44,8 @@ const firstJsonObject = (raw) => {
       if (depth === 0) return raw.slice(start, i + 1);
     }
   }
-  return raw.slice(start);
+  // 括号没配平＝回传被截断，回空字串让呼叫端报错，不要拿半截 JSON 去 parse。
+  return '';
 };
 
 /** 跑一个 wechatide 工具，回传 result；工具回 ok:false 就抛错。 */
@@ -59,25 +60,10 @@ const run = (tool, args = {}) => new Promise((resolve, reject) => {
     // CLI 会在 JSON 前面印一行 [wechatide] skill-call:...，取第一个 { 之后的内容。
     const raw = String(stdout || '');
     // CLI 会在 JSON 前印一行 [wechatide] skill-call:...，之后偶尔还会补印警告行。
-    // 所以取「第一个 { 起、括号配平为止」这一段，别从第一个 { 一路 parse 到档尾。
-    const start = raw.indexOf('{');
-    if (start < 0) return reject(new Error(`${tool} 没有回传 JSON：${raw.slice(0, 300) || (err && err.message)}`));
-    let depth = 0; let end = -1; let inStr = false; let esc = false;
-    for (let i = start; i < raw.length; i++) {
-      const ch = raw[i];
-      if (inStr) {
-        if (esc) esc = false;
-        else if (ch === '\\') esc = true;
-        else if (ch === '"') inStr = false;
-        continue;
-      }
-      if (ch === '"') inStr = true;
-      else if (ch === '{') depth++;
-      else if (ch === '}' && --depth === 0) { end = i + 1; break; }
-    }
-    if (end < 0) return reject(new Error(`${tool} 回传的 JSON 不完整（${raw.length} 字元）`));
+    const body = firstJsonObject(raw);
+    if (!body) return reject(new Error(`${tool} 没有回传完整 JSON（${raw.length} 字元）：${raw.slice(0, 200) || (err && err.message)}`));
     let parsed;
-    try { parsed = JSON.parse(raw.slice(start, end)); } catch (e) { return reject(new Error(`${tool} 回传不是 JSON：${raw.slice(start, start + 300)}`)); }
+    try { parsed = JSON.parse(body); } catch (e) { return reject(new Error(`${tool} 回传不是 JSON：${body.slice(0, 300)}`)); }
     if (!parsed.ok) return reject(new Error(`${tool} 失败：${parsed.message || JSON.stringify(parsed).slice(0, 300)}`));
     return resolve(parsed.result);
   });
@@ -148,7 +134,11 @@ const gotoPage = async (url, matchPath, tries = 5) => {
     let page;
     try { page = await currentPage(); } catch (e) { page = null; }
     const p = String((page && (page.path || page.route)) || '');
-    if (p.indexOf(matchPath) >= 0) return page;
+    // 比对结尾，不用 indexOf：父页路径是子页的前缀（pages/tourGuides 会命中
+    // pages/tourGuides/edit/index），子字串比对会把「导错页」当成导对了。
+    const want = String(matchPath).replace(/(^\/|\/index$)/g, '');
+    const got = p.replace(/(^\/|\/index$)/g, '');
+    if (got === want || got.endsWith(`/${want}`) || want.endsWith(`/${got}`)) return page;
   }
   throw new Error(`导不到 ${matchPath}（试了 ${tries} 次）`);
 };

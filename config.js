@@ -25,8 +25,26 @@ const devMode = Object.freeze({
   allowRolePreview: true,
 });
 
-const isDev = APP_ENV === ENVIRONMENTS.DEV;
-const isProd = APP_ENV === ENVIRONMENTS.PROD;
+// ⚠️ APP_ENV 读的是 process.env，而**小程序 runtime 没有 process**（实测
+// typeof process === 'undefined'），所以 APP_ENV 恒为 'DEV'、下面两个恒为 true/false。
+// 光靠它们当「正式版」的门是无效的——正式包一样会放行，开发工具会露给真实用户。
+// 真正可靠的是官方的 envVersion：'develop'（开发者工具）/ 'trial'（体验版）/ 'release'（正式版）。
+// 所以对外暴露的 isDev / isProd 一律再过一次 isReleaseBuild()，见档案下方的 getter。
+const isDevEnv = APP_ENV === ENVIRONMENTS.DEV;
+const isProdEnv = APP_ENV === ENVIRONMENTS.PROD;
+
+const isReleaseBuild = () => {
+  try {
+    return wx.getAccountInfoSync().miniProgram.envVersion === 'release';
+  } catch (err) {
+    // 取不到就当正式版：宁可少一个开发工具，也不要在正式版露出来。
+    return true;
+  }
+};
+
+/** 开发工具（报Bug 入口、复制 ID、角色预览、本地测试身份、数据后端开关）统一用这个当门。 */
+const resolveIsDev = () => isDevEnv && !isReleaseBuild();
+const resolveIsProd = () => isProdEnv || isReleaseBuild();
 
 // 数据后端开关：
 //   'local' —— 本地 Node 服务（付费云开发前测试，见 local-server/），前台走 wx.request。
@@ -42,21 +60,8 @@ const DEFAULT_DATA_BACKEND = 'cloud';
 
 // 每次读都查储存（不快取），所以切完立刻生效、不必重新编译，自动化脚本也能直接写储存后就跑。
 // 查的是一个极小的 key，成本可忽略，且只在发后端请求时被读到，不在渲染路径上。
-// ⚠️ 不能用 isDev / isProd 当正式环境的门：那两个由 APP_ENV 推导，而 APP_ENV 读的是
-// process.env——小程序 runtime 根本没有 process（实测 typeof process === 'undefined'），
-// 所以 isDev 恒为 true、isProd 恒为 false，正式包也一样。用官方的版本判断才可靠：
-// envVersion = 'develop'（开发者工具）/ 'trial'（体验版）/ 'release'（正式版）。
-const isReleaseBuild = () => {
-  try {
-    return wx.getAccountInfoSync().miniProgram.envVersion === 'release';
-  } catch (err) {
-    // 取不到就当正式版，宁可少一个开发工具，也不要在正式版露出来。
-    return true;
-  }
-};
-
 const resolveDataBackend = () => {
-  if (isProd || isReleaseBuild()) return 'cloud';
+  if (resolveIsProd()) return 'cloud';
   try {
     const stored = wx.getStorageSync(DATA_BACKEND_STORAGE_KEY);
     return stored === 'local' || stored === 'cloud' ? stored : DEFAULT_DATA_BACKEND;
@@ -68,7 +73,7 @@ const resolveDataBackend = () => {
 
 /** 切数据后端。PROD 不给切。回传切完的值。 */
 export const setDataBackend = (value) => {
-  if (isProd || isReleaseBuild()) return 'cloud';
+  if (resolveIsProd()) return 'cloud';
   const next = value === 'local' ? 'local' : 'cloud';
   wx.setStorageSync(DATA_BACKEND_STORAGE_KEY, next);
   return next;
@@ -76,8 +81,9 @@ export const setDataBackend = (value) => {
 
 export default {
   appEnv: APP_ENV,
-  isDev,
-  isProd,
+  // getter：每次读都重新判定正式版（见上方注释，不能在载入当下算死）。
+  get isDev() { return resolveIsDev(); },
+  get isProd() { return resolveIsProd(); },
 
   cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',
 
@@ -88,14 +94,11 @@ export default {
   localBaseUrl: 'http://localhost:3000',
   localDevOpenId: 'dev-owner-openid',
 
-  allowRolePreview: isDev && devMode.allowRolePreview,
+  get allowRolePreview() { return resolveIsDev() && devMode.allowRolePreview; },
 
   // R6-2 调试日志开关：开时关键页/behavior 打带时间戳日志，便于排查加载三态瞬态（空白闪帧等）。
   // 默认 DEV 开、PROD 关；需要静默时在 DEV 手动改为 false。
-  debugLog: isDev,
-
-  // 给 UI 判断「这颗开发用开关能不能露出来」用。别用 isDev，理由见上方 isReleaseBuild。
-  get canSwitchDataBackend() { return !isProd && !isReleaseBuild(); },
+  get debugLog() { return resolveIsDev(); },
 };
 
 // config/menu.js
