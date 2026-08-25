@@ -8,13 +8,13 @@
 
     <view wx:if="{{showLocalIdentity}}" class="login__local-identity">
       <view class="login__local-identity-label">测试身份（仅本地测试）</view>
-      <input class="login__local-identity-input" value="{{localIdentity}}" placeholder="留空＝管理员本人｜填名字＝新客户号" bindinput="onLocalIdentityInput" />
+      <input class="login__local-identity-input" value="{{localIdentity}}" placeholder="留空＝管理员，ivy1/ivy2/ivy3 见下方" bindinput="onLocalIdentityInput" />
       <view class="login__local-identity-tip">
-        <view>留空＝以管理员（owner）本人登录，看得到全部功能。</view>
-        <view>填 zhang3＝登录成账号 tester-zhang3，角色「客户」，已通过审核可直接下单。</view>
-        <view>不同人填不同名字＝各自独立账号，互相看不到对方数据。</view>
-        <view>要变团主/管理员：先留空以管理员登录，到「用户审核」把该账号升级。</view>
-        <view>注意：数据库全空时，第一个登录的账号（就算填了名字）会自动成为 owner。</view>
+        <view>留空＝管理员（owner）本人，全部功能都看得到。</view>
+        <view>ivy1＝未通过审核的用户（用来看「审核中」被挡住的画面）。</view>
+        <view>ivy2＝已通过审核的团主。</view>
+        <view>ivy3＝一般客户（已过审，可直接下单）。</view>
+        <view>其他名字＝各自独立的一般客户账号；角色只在第一次建号时决定，之后到「用户审核」改。</view>
       </view>
     </view>
 

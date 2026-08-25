@@ -214,6 +214,18 @@ profile 增加/使用团主申请子结构，至少包含：
 
 切换身份：改 `localDevOpenId` → 开发者工具「清缓存」→ 重新登录。`GUIDE_OPENIDS` 仅本地开发便捷用，`PROD` 禁止用 allowlist 直接发团主。
 
+**DEV 固定测试身份**（登录页「测试身份」栏，仅 `isDev && dataBackend:'local'` 显示；输入值会加前缀成 openId `tester-<输入>`）：
+
+| 输入 | 结果 |
+| --- | --- |
+| 留空 | 以 `localDevOpenId`（owner）登录 |
+| `ivy1` | 未通过审核用户（customer / `pending_review`） |
+| `ivy2` | 已通过审核团主（guide / `approved`） |
+| `ivy3` | 一般客户（customer / `approved`） |
+| 其他 | 各自独立的一般客户账号 |
+
+固定身份表在 `cloudfunctions/authLogin/index.js` 的 `DEV_FIXTURE_PROFILES`，仅 `APP_ENV=DEV` 生效，且只在**首次建号**时套用；建号后一律走正常审核流程，不会被后续登录覆盖。`tester-` 开头的 openId 不参与 bootstrap owner 初始化（避免空库首登的测试帐号被升成 owner）。
+
 ## A9. 命名与正式文案
 
 - 用户可见团主角色统一称「团主」，不得出现「导游」「领队」「导游/领队」。内部 role key 仍为 `guide`，文档提及内部 key 时须注明"内部 role key 为 `guide`，用户显示为团主"。

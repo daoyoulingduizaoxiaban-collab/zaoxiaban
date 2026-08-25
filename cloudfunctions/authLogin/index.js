@@ -36,6 +36,19 @@ const APP_ENV = String((process.env.APP_ENV || process.env.ENV_NAME || 'PROD').t
 const ALLOW_ROLE_PREVIEW = process.env.ALLOW_ROLE_PREVIEW === 'true';
 const APP_IS_DEV = APP_ENV === 'DEV';
 
+// DEV 固定测试身份：登录页「测试身份」栏填 ivy1/ivy2/ivy3 → openId tester-ivy1…，
+// 建号时直接给到对应角色与审核状态，省去每次手动审核。仅 APP_ENV=DEV 生效，且只在首次建号时套用；
+// 建号后照正常流程（用户审核）调整，不会被登录覆盖回来。其他名字＝默认已审核客户。
+const DEV_FIXTURE_PROFILES = {
+  'tester-ivy1': { role: ROLE_CUSTOMER, reviewStatus: REVIEW_STATUS.PENDING, remark: 'DEV 固定测试身份：待审核用户' },
+  'tester-ivy2': { role: ROLE_GUIDE, reviewStatus: REVIEW_STATUS.APPROVED, remark: 'DEV 固定测试身份：已审核团主' },
+  'tester-ivy3': { role: ROLE_CUSTOMER, reviewStatus: REVIEW_STATUS.APPROVED, remark: 'DEV 固定测试身份：一般客户' },
+};
+const getDevFixture = openId => (APP_IS_DEV ? DEV_FIXTURE_PROFILES[openId] || null : null);
+// 本地「测试身份」栏产生的 openId 一律 tester- 开头：不吃 bootstrap 升级，
+// 否则空库时第一个登录的测试帐号会莫名变 owner（管理员固定走 OWNER_OPENIDS，即登录页留空）。
+const isDevTesterOpenId = openId => APP_IS_DEV && String(openId || '').indexOf('tester-') === 0;
+
 const getBootstrapRole = async () => {
   if (!APP_IS_DEV) return '';
 
@@ -140,10 +153,23 @@ const ensureUsersCollection = async () => {
 };
 
 const buildDefaultProfile = (openId, unionId, requestedRole, bootstrapRole = '') => {
-  const privilegedRole = getPrivilegedRole(openId) || bootstrapRole;
+  const allowlistRole = getPrivilegedRole(openId);
+  // DEV 固定测试身份优先于 bootstrap（否则空库时第一个登录的 tester 会被升成 owner）。
+  const fixture = allowlistRole ? null : getDevFixture(openId);
+  const privilegedRole = allowlistRole || (fixture ? '' : bootstrapRole);
   // 客户为默认开放身份：任何新用户登录即成为已审核客户，无需审核。
   // 仅 owner/admin allowlist 命中者拿到对应管理角色（同样 approved）。
-  const normalizedRole = privilegedRole || ROLE_CUSTOMER;
+  const normalizedRole = privilegedRole || (fixture ? fixture.role : ROLE_CUSTOMER);
+  const normalizedStatus = fixture ? fixture.reviewStatus : REVIEW_STATUS.APPROVED;
+  let reviewedBy = 'system-default';
+  let reviewRemark = '默认开放客户，无需审核';
+  if (privilegedRole) {
+    reviewedBy = getSystemReviewer(bootstrapRole);
+    reviewRemark = getSystemReviewRemark(bootstrapRole);
+  } else if (fixture) {
+    reviewedBy = 'system-dev-fixture';
+    reviewRemark = fixture.remark;
+  }
   const now = db.serverDate();
   const profile = {
     openId,
@@ -156,11 +182,11 @@ const buildDefaultProfile = (openId, unionId, requestedRole, bootstrapRole = '')
     displayName: '微信用户',
     phone: '',
     avatarUrl: '',
-    status: REVIEW_STATUS.APPROVED,
-    reviewStatus: REVIEW_STATUS.APPROVED,
-    reviewedBy: privilegedRole ? getSystemReviewer(bootstrapRole) : 'system-default',
+    status: normalizedStatus,
+    reviewStatus: normalizedStatus,
+    reviewedBy,
     reviewedAt: now,
-    reviewRemark: privilegedRole ? getSystemReviewRemark(bootstrapRole) : '默认开放客户，无需审核',
+    reviewRemark,
     createdAt: now,
     updatedAt: now,
     deletedAt: null,
@@ -231,7 +257,7 @@ exports.main = async (event = {}) => {
   if (existing.data && existing.data.length) {
     const profile = existing.data[0];
     const allowlistRole = getPrivilegedRole(openId);
-    const bootstrapRole = allowlistRole ? '' : await getBootstrapRole();
+    const bootstrapRole = (allowlistRole || isDevTesterOpenId(openId)) ? '' : await getBootstrapRole();
     const privilegedRole = allowlistRole || bootstrapRole;
     const currentRole = profile.role || normalizeRequestedRole(event.requestedRole);
     const currentRoles = normalizeRoles(profile.roles, currentRole);
@@ -304,7 +330,7 @@ exports.main = async (event = {}) => {
     };
   }
 
-  const bootstrapRole = await getBootstrapRole();
+  const bootstrapRole = isDevTesterOpenId(openId) ? '' : await getBootstrapRole();
   const profile = buildDefaultProfile(openId, unionId, event.requestedRole, bootstrapRole);
   const created = await users.add({ data: profile });
   const createdProfile = toClientProfile({
