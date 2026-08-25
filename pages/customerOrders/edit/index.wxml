@@ -22,11 +22,11 @@
     <view class="group-status">收单状态：{{groupOrder.statusText}}</view>
     <view class="group-meta">出团/活动：{{groupOrder.startAt || '未填写'}}</view>
     <view class="group-meta">收单截止：{{groupOrder.endAt || '未填写'}}</view>
-    <!-- 这三行的输入已从开团表单移除（见 groupOrderService.validate 与云端 validateGroupOrderPayload
-         的「已按需求移除」注释），新团单一定是空的；旧团单可能还有值，所以有值才显示，
-         不再固定印一排「未填写」。写法跟下一行的「提示」一致。 -->
-    <view wx:if="{{groupOrder.pickupNote}}" class="group-meta">取货/集合：{{groupOrder.pickupNote}}</view>
-    <view wx:if="{{groupOrder.paymentNote}}" class="group-meta">付款说明：{{groupOrder.paymentNote}}</view>
+    <!-- 取货/集合、付款说明两行已删：输入早就从开团表单拿掉（见 groupOrderService.validate 与
+         云端 validateGroupOrderPayload 的「已按需求移除」注释）、且云端没有兜底，恒为空，
+         留着只会每张卡固定印两行「未填写」。
+         联系人保留：表单虽然也拿掉了，但云端会用开团者的 displayName / phone 兜底，是刻意
+         要让客户看得到联络方式。 -->
     <view wx:if="{{groupOrder.contactName || groupOrder.contactPhone}}" class="group-meta">联系人：{{groupOrder.contactName}} {{groupOrder.contactPhone}}</view>
     <view class="group-meta" wx:if="{{groupOrder.customerNotice}}">提示：{{groupOrder.customerNotice}}</view>
   </view>

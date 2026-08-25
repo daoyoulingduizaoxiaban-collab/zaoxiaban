@@ -34,16 +34,29 @@ const isProd = APP_ENV === ENVIRONMENTS.PROD;
 //
 // **不要改这个档来切后端**（改源码会触发热重载，把模拟器导航重置，自动化测试会莫名其妙
 // 停在起始页；而且很容易忘了还原就提交上去）。DEV 改从本机储存读，切法两种：
-//   1. 设置页最底下的「数据后端」开关（仅 DEV 可见），点完立即生效；
+//   1. 设置页的「数据后端」开关（正式版不显示），点完立即生效；
 //   2. 指令：node local-server/set-backend.js local ｜ cloud
-// PROD 一律 cloud，读都不读这个储存值。
+// 正式版（envVersion==='release'）一律 cloud，读都不读这个储存值。
 export const DATA_BACKEND_STORAGE_KEY = 'dao_you_ling_data_backend';
 const DEFAULT_DATA_BACKEND = 'cloud';
 
 // 每次读都查储存（不快取），所以切完立刻生效、不必重新编译，自动化脚本也能直接写储存后就跑。
 // 查的是一个极小的 key，成本可忽略，且只在发后端请求时被读到，不在渲染路径上。
+// ⚠️ 不能用 isDev / isProd 当正式环境的门：那两个由 APP_ENV 推导，而 APP_ENV 读的是
+// process.env——小程序 runtime 根本没有 process（实测 typeof process === 'undefined'），
+// 所以 isDev 恒为 true、isProd 恒为 false，正式包也一样。用官方的版本判断才可靠：
+// envVersion = 'develop'（开发者工具）/ 'trial'（体验版）/ 'release'（正式版）。
+const isReleaseBuild = () => {
+  try {
+    return wx.getAccountInfoSync().miniProgram.envVersion === 'release';
+  } catch (err) {
+    // 取不到就当正式版，宁可少一个开发工具，也不要在正式版露出来。
+    return true;
+  }
+};
+
 const resolveDataBackend = () => {
-  if (isProd) return 'cloud';
+  if (isProd || isReleaseBuild()) return 'cloud';
   try {
     const stored = wx.getStorageSync(DATA_BACKEND_STORAGE_KEY);
     return stored === 'local' || stored === 'cloud' ? stored : DEFAULT_DATA_BACKEND;
@@ -55,7 +68,7 @@ const resolveDataBackend = () => {
 
 /** 切数据后端。PROD 不给切。回传切完的值。 */
 export const setDataBackend = (value) => {
-  if (isProd) return 'cloud';
+  if (isProd || isReleaseBuild()) return 'cloud';
   const next = value === 'local' ? 'local' : 'cloud';
   wx.setStorageSync(DATA_BACKEND_STORAGE_KEY, next);
   return next;
@@ -80,6 +93,9 @@ export default {
   // R6-2 调试日志开关：开时关键页/behavior 打带时间戳日志，便于排查加载三态瞬态（空白闪帧等）。
   // 默认 DEV 开、PROD 关；需要静默时在 DEV 手动改为 false。
   debugLog: isDev,
+
+  // 给 UI 判断「这颗开发用开关能不能露出来」用。别用 isDev，理由见上方 isReleaseBuild。
+  get canSwitchDataBackend() { return !isProd && !isReleaseBuild(); },
 };
 
 // config/menu.js

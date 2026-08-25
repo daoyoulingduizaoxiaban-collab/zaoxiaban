@@ -63,6 +63,15 @@ const STATUS_TEXT = {
 
 const nowIso = () => new Date().toISOString();
 const sameId = (a, b) => String(a) === String(b);
+// 金额一律先转数再判 finite：Number('abc') 是 NaN，而 NaN <= 0 与 NaN > 上限都是 false，
+// 直接用 Number(x || 0) 判会让非数字字串两道校验全过、原样写进资料库，之后统计全变 NaN。
+// 前端对应实作见 services/customerOrder/orderAmount.js 的 toAmount（地端云端双通，改一边要改两边）。
+const toAmount = (value) => {
+  const text = String(value === null || value === undefined ? '' : value).trim();
+  if (!text) return NaN;
+  return Number(text);
+};
+
 const trimText = value => String(value || '').trim();
 const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APPROVED : (status || REVIEW_STATUS.PENDING));
 const ALL_ROLES = ['owner', 'admin', 'guide', 'customer', 'provider'];
@@ -498,6 +507,7 @@ module.exports = {
   nowIso,
   sameId,
   trimText,
+  toAmount,
   normalizeReviewStatus,
   ALL_ROLES,
   normalizeShareToken,

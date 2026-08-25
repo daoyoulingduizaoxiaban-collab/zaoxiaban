@@ -83,9 +83,10 @@ Page({
       ],
     ];
 
-    // DEV 专用：切数据后端不必改源码（改源码会触发热重载，把自动化测试的模拟器导航重置，
-    // 而且常忘了还原就提交）。PROD 一律 cloud，这一组整个不出现。
-    if (config.isDev) {
+    // 开发用：切数据后端不必改源码（改源码会触发热重载，把自动化测试的模拟器导航重置，
+    // 而且常忘了还原就提交）。正式版不显示——门用 config.canSwitchDataBackend，**不要用
+    // config.isDev**，那个在小程序里恒为 true（APP_ENV 读 process.env，小程序没有 process）。
+    if (config.canSwitchDataBackend) {
       menuData.push([
         {
           title: '数据后端',

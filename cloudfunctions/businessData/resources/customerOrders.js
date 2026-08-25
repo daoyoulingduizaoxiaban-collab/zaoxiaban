@@ -5,6 +5,7 @@ const {
   nowIso,
   sameId,
   trimText,
+  toAmount,
   hasRole,
   getEffectiveRoles,
   getCollection,
@@ -241,7 +242,9 @@ const customerOrderActions = {
       initialStatus,
       hasInitialPayment ? '客户提交订单并声明已付款' : '客户提交订单',
       profile,
-      payload,
+      // 传夹逼后的申报额，不是客户送来的原始值——否则订单上的金额是对的，
+      // 付款历史那笔却还记着虚报值，并且会显示给团主看。
+      { ...payload, declaredAmount: declaredAmountValue },
     );
     orderWithId.paymentHistory = [history];
     await getCollection('customerOrders').doc(created._id).update({ data: { paymentHistory: [history] } });
@@ -294,20 +297,21 @@ const customerOrderActions = {
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.PAID) {
       const hasProof = Array.isArray(paymentProofUrls) && paymentProofUrls.length > 0;
-      const declaredAmountValue = Number(declaredAmount || 0);
-      if (declaredAmountValue <= 0) return failure('请填写有效付款金额');
+      const declaredAmountValue = toAmount(declaredAmount);
+      if (!Number.isFinite(declaredAmountValue) || declaredAmountValue <= 0) return failure('请填写有效付款金额');
       if (declaredAmountValue > Number(target.totalPrice || 0)) return failure('付款金额不能超过订单金额');
       if (!trimText(paymentMethod)) return failure('请填写付款方式');
       // A6：付款凭证选填，没图不得阻止声明（线下现金/转账常常没有截图）。
       if (hasProof && !hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('请重新上传付款凭证后提交');
     }
-    if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(confirmedAmount || 0) <= 0) {
-      return failure('请填写有效实收金额');
-    }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED) {
+      const confirmedAmountValue = toAmount(confirmedAmount);
+      if (!Number.isFinite(confirmedAmountValue) || confirmedAmountValue <= 0) {
+        return failure('请填写有效实收金额');
+      }
       const targetDeclaredAmount = Number(target.declaredAmount || 0);
       const maxPayableAmount = targetDeclaredAmount > 0 ? targetDeclaredAmount : Number(target.totalPrice || 0);
-      if (maxPayableAmount > 0 && Number(confirmedAmount || 0) > maxPayableAmount) {
+      if (maxPayableAmount > 0 && confirmedAmountValue > maxPayableAmount) {
         return failure(targetDeclaredAmount > 0 ? '实收金额不能超过申报金额' : '实收金额不能超过订单金额');
       }
     }
