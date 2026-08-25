@@ -7,9 +7,15 @@
     <view class="login__notice">{{authNotice}}</view>
 
     <view wx:if="{{showLocalIdentity}}" class="login__local-identity">
-      <view class="login__local-identity-label">测试身份（本地测试用·留空即管理员本人）</view>
-      <input class="login__local-identity-input" value="{{localIdentity}}" placeholder="填你的名字/编号，如 zhang3" bindinput="onLocalIdentityInput" />
-      <view class="login__local-identity-tip">不同人填不同身份＝各自独立账号（默认客户，可在用户审核升级团主）。</view>
+      <view class="login__local-identity-label">测试身份（仅本地测试）</view>
+      <input class="login__local-identity-input" value="{{localIdentity}}" placeholder="留空＝管理员本人｜填名字＝新客户号" bindinput="onLocalIdentityInput" />
+      <view class="login__local-identity-tip">
+        <view>留空＝以管理员（owner）本人登录，看得到全部功能。</view>
+        <view>填 zhang3＝登录成账号 tester-zhang3，角色「客户」，已通过审核可直接下单。</view>
+        <view>不同人填不同名字＝各自独立账号，互相看不到对方数据。</view>
+        <view>要变团主/管理员：先留空以管理员登录，到「用户审核」把该账号升级。</view>
+        <view>注意：数据库全空时，第一个登录的账号（就算填了名字）会自动成为 owner。</view>
+      </view>
     </view>
 
     <!-- 第一步：登录（老用户点完直接进，看不到名字栏） -->
