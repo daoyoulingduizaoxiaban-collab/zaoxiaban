@@ -31,10 +31,35 @@ const isProd = APP_ENV === ENVIRONMENTS.PROD;
 // 数据后端开关：
 //   'local' —— 本地 Node 服务（付费云开发前测试，见 local-server/），前台走 wx.request。
 //   'cloud' —— 微信云开发，前台走 wx.cloud.callFunction。
-// PROD 固定 cloud；DEV 默认 local（改成 'cloud' 即无痛切到云开发，业务代码不变）。
-// 多人真人测试期：DEV 也走云开发（callFunction 不需合法域名，别人手机可直接测）。
-// 想切回本地单机开发：改回 isProd ? 'cloud' : 'local'。
-const DATA_BACKEND = 'cloud';
+//
+// **不要改这个档来切后端**（改源码会触发热重载，把模拟器导航重置，自动化测试会莫名其妙
+// 停在起始页；而且很容易忘了还原就提交上去）。DEV 改从本机储存读，切法两种：
+//   1. 设置页最底下的「数据后端」开关（仅 DEV 可见），点完立即生效；
+//   2. 指令：node local-server/set-backend.js local ｜ cloud
+// PROD 一律 cloud，读都不读这个储存值。
+export const DATA_BACKEND_STORAGE_KEY = 'dao_you_ling_data_backend';
+const DEFAULT_DATA_BACKEND = 'cloud';
+
+// 每次读都查储存（不快取），所以切完立刻生效、不必重新编译，自动化脚本也能直接写储存后就跑。
+// 查的是一个极小的 key，成本可忽略，且只在发后端请求时被读到，不在渲染路径上。
+const resolveDataBackend = () => {
+  if (isProd) return 'cloud';
+  try {
+    const stored = wx.getStorageSync(DATA_BACKEND_STORAGE_KEY);
+    return stored === 'local' || stored === 'cloud' ? stored : DEFAULT_DATA_BACKEND;
+  } catch (err) {
+    // 取不到储存（极早期启动、或储存被清）就走预设，不让设定读取本身把 App 打挂。
+    return DEFAULT_DATA_BACKEND;
+  }
+};
+
+/** 切数据后端。PROD 不给切。回传切完的值。 */
+export const setDataBackend = (value) => {
+  if (isProd) return 'cloud';
+  const next = value === 'local' ? 'local' : 'cloud';
+  wx.setStorageSync(DATA_BACKEND_STORAGE_KEY, next);
+  return next;
+};
 
 export default {
   appEnv: APP_ENV,
@@ -43,7 +68,8 @@ export default {
 
   cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',
 
-  dataBackend: DATA_BACKEND,
+  // getter：每次读都查储存，切换即时生效（见上方 resolveDataBackend）。
+  get dataBackend() { return resolveDataBackend(); },
   // 本地后端地址与开发用 openId（仅 dataBackend==='local' 生效）。
   // localDevOpenId 决定你以谁的身份登录：填 owner 白名单里的值即以 owner 测，换成别的字符串即普通客户。
   localBaseUrl: 'http://localhost:3000',

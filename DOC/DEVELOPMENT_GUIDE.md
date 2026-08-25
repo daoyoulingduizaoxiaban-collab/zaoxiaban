@@ -74,7 +74,9 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 ## 3. 数据后端开关（config）
 
 `config.js`：
-- `dataBackend`：`'local'`（本地 Node）或 `'cloud'`（微信云开发）。当前多人测试期设为 `'cloud'`。
+- `dataBackend`：`'local'`（本地 Node）或 `'cloud'`（微信云开发）。**不写死在源码里**——PROD 恒 `'cloud'`；DEV 每次从本机储存 `dao_you_ling_data_backend` 读，预设 `'cloud'`。
+  - 切法（**不要改 `config.js`**）：`node local-server/set-backend.js local ｜ cloud`（不带参数＝查现况），或 App 内「设置」页最底下的「数据后端」（仅 DEV 显示）。立即生效，不必重新编译。
+  - 为什么不改源码切：改源码会触发开发者工具热重载，把模拟器导航重置到编译起始页，自动化测试会莫名其妙停在错的页；而且很容易忘了还原就提交上去。
 - `appEnv`：`DEV` / `PROD`。`isDev` / `isProd` 由它派生。
 - `localBaseUrl` / `localDevOpenId`：仅 `local` 生效。
 - **local 库与 cloud 库数据互相独立、不自动迁移**。切后端＝换一套数据。

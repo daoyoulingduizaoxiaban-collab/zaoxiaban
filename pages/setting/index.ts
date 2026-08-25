@@ -5,6 +5,7 @@ import { isCloudBusinessEnabled } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateByUrl } from '~/utils/navigation';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
+import config, { setDataBackend } from '~/config';
 
 Page({
   behaviors: [useToastBehavior],
@@ -81,6 +82,19 @@ Page({
         },
       ],
     ];
+
+    // DEV 专用：切数据后端不必改源码（改源码会触发热重载，把自动化测试的模拟器导航重置，
+    // 而且常忘了还原就提交）。PROD 一律 cloud，这一组整个不出现。
+    if (config.isDev) {
+      menuData.push([
+        {
+          title: '数据后端',
+          note: `当前：${config.dataBackend === 'local' ? '本地服务（localhost:3000）' : '微信云开发'}｜点这里切换，立即生效`,
+          icon: 'swap',
+          action: 'toggleDataBackend',
+        },
+      ]);
+    }
 
     const canEditInfo = canUseFeature(profile, FEATURE_KEYS.INFO_EDIT);
 
@@ -171,8 +185,31 @@ Page({
     toastSuccess(RESULT_TEXT.save);
   },
 
+  onToggleDataBackend() {
+    let next = '';
+    try {
+      next = setDataBackend(config.dataBackend === 'local' ? 'cloud' : 'local');
+    } catch (err) {
+      wx.showToast({ title: '写入设定失败，请改用开发者工具的储存面板', icon: 'none' });
+      return;
+    }
+    this.refreshSettingState();
+    wx.showModal({
+      title: `已切到${next === 'local' ? '本地服务' : '微信云开发'}`,
+      content: next === 'local'
+        ? '立即生效。记得先启动本地服务：node local-server/server.js'
+        : '立即生效。',
+      showCancel: false,
+      confirmText: '知道了',
+    });
+  },
+
   onEleClick(e) {
-    const { title, note, url } = e.currentTarget.dataset.data;
+    const { title, note, url, action } = e.currentTarget.dataset.data;
+    if (action === 'toggleDataBackend') {
+      this.onToggleDataBackend();
+      return;
+    }
     if (url) {
       navigateByUrl(url, {
         fail: () => wx.showToast({ title: '打开账号资料失败', icon: 'none' }),
