@@ -412,3 +412,4 @@
 | `groupOrders.startAt < endAt` 不验 | 前后端都明文放弃；`endAt` 早于 `startAt` 时分享连结立即过期 | 建议补验，当初是刻意放弃的 |
 | `users.guideApplication` | `A5` 有规范，未实作 | |
 | `REVIEW_STATUS.expired` 云端没有 | 地端会产出，云端不认 | 建议云端补上 |
+| **4 支子页面的三态栏位永远在说谎** | `sub-pages/product/add`、`sub-pages/groupOrder/add`、`sub-pages/groupOrder/productList`、`sub-pages/groupOrder/product-picker` 都挂了 `useAccessPage` 行为（所以 data 里带 `pageState` / `authReady` / `isLoggedIn`），但 wxml **没有注册 `page-state` 元件**，画面是自己用 `isPageLoading` / `accessDenied` 画的。结果这几个栏位从初始值起就没人更新过——`pageState` 永远是 `loading`、`authReady` 永远是 `false`、`isLoggedIn` 永远是 `false`，**即使当下明明登录了**。画面正常，是栏位在骗人。2026-08-25 冒烟脚本就被骗过一次，把 4 支好页面报成「卡在 loading」 | 二选一：① 这几页照 `DEVELOPMENT_GUIDE` 第 6 节接上 `page-state` 元件走统一三态；② 不接的话就别挂 `useAccessPage`，改只引需要的判断函式，别让 data 带着永不更新的栏位。建议 ①，跟全站口径一致 |
