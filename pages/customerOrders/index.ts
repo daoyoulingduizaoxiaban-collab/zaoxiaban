@@ -1,20 +1,12 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
+import { buildOrderDetailView } from '~/services/customerOrder/orderViewModel';
 import { getSaveModeText } from '~/repositories/cloudBusinessRepository';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
 import { getMemberOrderStatusList } from '~/enum/MemberOrderStatus';
 import { consumeTabRouteQuery, navigateByUrl, parseRouteQuery } from '~/utils/navigation';
 import { useAccessPage } from '~/behaviors/useAccessPage';
 import { RESULT_TEXT, toastSuccess, toastError } from '~/utils/feedback';
-
-const MEMBER_ORDER_STATUS_TEXT = getMemberOrderStatusList()
-  .reduce((map, item) => ({ ...map, [item.value]: item.label }), {});
-const ROLE_TEXT = {
-  customer: '客户',
-  guide: '团主',
-  owner: '产品拥有者',
-  admin: '运营管理员',
-};
 
 Page({
   // access-state + 三态字段与 helper 来自 behavior（R1）
@@ -234,24 +226,8 @@ Page({
       return;
     }
 
-    const detail = {
-      ...item,
-      displayItems: (item.items || item.productList || []).map(product => ({
-        title: product.title || '商品资料',
-        quantity: product.amount || product.quantity || 0,
-        totalPrice: product.totalPrice || 0,
-      })),
-      displayHistory: (item.paymentHistory || []).map(history => ({
-        createdAt: history.createdAt || '',
-        actorText: [history.actorName, ROLE_TEXT[history.actorRole] || history.actorRole].filter(Boolean).join(' / '),
-        statusText: history.toStatus !== undefined ? (MEMBER_ORDER_STATUS_TEXT[history.toStatus] || history.toStatus) : '',
-        amount: Number(history.amount || 0) > 0 ? history.amount : '',
-        paymentMethod: history.paymentMethod || '',
-        proofText: Number(history.proofCount || 0) > 0 ? `${history.proofCount} 张` : '未上传凭证',
-        note: history.note || '',
-      })),
-      proofText: item.paymentProofUrls && item.paymentProofUrls.length ? `${item.paymentProofUrls.length} 张` : '未上传凭证',
-    };
+    // 显示口径走共用模组，团单详情页用的是同一支，不要在这里自己组。
+    const detail = buildOrderDetailView(item);
     this.setData({
       detailVisible: true,
       selectedOrderDetail: detail,

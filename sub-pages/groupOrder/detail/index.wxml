@@ -71,17 +71,17 @@
         <view class="order-header">
           <text class="order-no">订单编号：{{utils.buildOrderNo(memberOrder)}}</text>
           <text
-            class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
+            class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{memberOrder.statusText}}</text>
         </view>
 
         <view class="order-body">
           <view class="info-item">
             <text class="label">客户：</text>
-            <text class="value">{{memberOrder.customerName || memberOrder.customerUserId || memberOrder.userId}}</text>
+            <text class="value">{{memberOrder.customerName}}</text>
           </view>
           <view class="info-item">
             <text class="label">商品数量：</text>
-            <text class="value">{{memberOrder.itemCount || memberOrder.productList.length || 0}} 件</text>
+            <text class="value">{{memberOrder.itemCount}} 件</text>
           </view>
           <view class="info-item">
             <text class="label">应付总额：</text>
@@ -128,12 +128,12 @@
         <view class="order-header">
           <text class="order-no">订单编号：{{utils.buildOrderNo(memberOrder)}}</text>
           <text
-            class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{utils.memberOrderHelper.getStatusText(memberOrder.status)}}</text>
+            class="order-status {{utils.memberOrderHelper.getStatusClass(memberOrder.status)}}">{{memberOrder.statusText}}</text>
         </view>
         <view class="order-body">
           <view class="info-item">
             <text class="label">商品数量：</text>
-            <text class="value">{{memberOrder.itemCount || memberOrder.productList.length || 0}} 件</text>
+            <text class="value">{{memberOrder.itemCount}} 件</text>
           </view>
           <view class="info-item">
             <text class="label">应付总额：</text>
@@ -164,41 +164,13 @@
   </page-state>
 </view>
 
-<t-popup wx:if="{{canManageGroupOrder}}" visible="{{showDetails}}" bind:visible-change="onCloseDetails" placement="center">
-  <view class="details-popup">
-    <view class="popup-header">订单明细 ({{utils.buildOrderNo(selectedMemberOrder)}})</view>
-
-    <scroll-view scroll-y class="details-content" wx:if="{{selectedMemberOrder && selectedMemberOrder.productList}}">
-      <view class="item-row" wx:for="{{selectedMemberOrder.productList}}" wx:key="productId">
-        <view class="item-main">
-          <text wx:if="{{item.title}}" class="item-name">{{item.title}}</text>
-          <text wx:else class="item-name">商品资料</text>
-          <text class="item-spec">数量: {{item.amount}}</text>
-        </view>
-        <view class="item-price-info">
-          <text class="item-subtotal">￥{{utils.formatNumber(item.totalPrice)}}</text>
-        </view>
-      </view>
-
-      <view class="popup-payment-info">
-        <view class="item-row"><text class="item-name">状态</text><text class="item-subtotal">{{utils.memberOrderHelper.getStatusText(selectedMemberOrder.status)}}</text></view>
-        <view class="item-row" wx:if="{{selectedMemberOrder.paymentMethod}}"><text class="item-name">付款方式</text><text class="item-subtotal">{{selectedMemberOrder.paymentMethod}}</text></view>
-        <view class="item-row" wx:if="{{selectedMemberOrder.declaredAmount}}"><text class="item-name">申报金额</text><text class="item-subtotal">￥{{selectedMemberOrder.declaredAmount}}</text></view>
-        <view class="item-row" wx:if="{{selectedMemberOrder.confirmedAmount}}"><text class="item-name">实收金额</text><text class="item-subtotal">￥{{selectedMemberOrder.confirmedAmount}}</text></view>
-        <view class="item-row" wx:if="{{selectedMemberOrder.confirmRemark}}"><text class="item-name">确认备注</text><text class="item-subtotal">{{selectedMemberOrder.confirmRemark}}</text></view>
-        <view class="item-row" wx:if="{{selectedMemberOrder.cancelRemark}}"><text class="item-name">取消原因</text><text class="item-subtotal">{{selectedMemberOrder.cancelRemark}}</text></view>
-      </view>
-    </scroll-view>
-
-    <view class="popup-footer">
-      <view class="total-bar">
-        <text>应付总额</text>
-        <text class="total-price">￥{{utils.formatNumber(selectedMemberOrder.totalPrice)}}</text>
-      </view>
-      <t-button theme="primary" block size="large" bindtap="onCloseDetails">关闭</t-button>
-    </view>
-  </view>
-</t-popup>
+<!-- 订单明细走共用元件，跟客户订单页同一份显示口径（services/customerOrder/orderViewModel.js）。
+     原本这里内嵌自绘一份，少了付款备注、状态变更纪录、付款凭证、客户姓名，每次补栏位都只补到一边。 -->
+<order-detail
+  visible="{{showDetails}}"
+  detail="{{selectedOrderDetail}}"
+  bind:close="onCloseDetails"
+/>
 
 <view wx:if="{{showConfirmDialog}}" class="action-mask" catchtap="handleDialogClose">
   <view class="action-panel" catchtap="stopPanelTap">

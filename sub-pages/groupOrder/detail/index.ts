@@ -4,6 +4,7 @@ import {
 import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getConfirmedAmountError, getMaxPayableAmount } from '~/services/customerOrder/orderAmount';
+import { buildOrderDetailView, buildOrderCardView } from '~/services/customerOrder/orderViewModel';
 import { generateGroupOrderQr, callBusinessData } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
@@ -52,6 +53,7 @@ Page({
     groupOrderId: '',
     showDetails: false,
     selectedMemberOrder: new MemberOrder(),
+    selectedOrderDetail: null,
     showConfirmDialog: false,
     selectedMemberOrderId: '',
     // 打开确认收款弹窗当下那张订单的状态：0=客户没声明过(要连带登记付款)，1=已声明(直接确认)。
@@ -117,6 +119,10 @@ Page({
         };
         // 门控改用数据层返回的 canManageGroupOrder 标记；readonly=1 强制走客户视图（E-4）。
         const canManageGroupOrder = Boolean(res.data.canManageGroupOrder) && !this.data.forceReadonly;
+        // 订单卡片走共用模组算显示栏位，跟客户订单页同一份口径；客户看自己的单不露客户姓名，
+        // 这个差异用参数表达，不要两种视图各画一份卡片。
+        groupOrder.memberOrderList = (groupOrder.memberOrderList || [])
+          .map(order => buildOrderCardView(order, { showCustomerName: canManageGroupOrder }));
         this.setData({
           groupOrder,
           customerEntryPath: res.data.sharePath || buildCustomerEntryPath(id, res.data.shareToken),
@@ -196,7 +202,9 @@ Page({
 
     if (selectedMemberOrder) {
       this.setData({
-        selectedMemberOrder: selectedMemberOrder,
+        selectedMemberOrder,
+        // 明细弹窗的资料走共用模组，跟客户订单页同一份口径。
+        selectedOrderDetail: buildOrderDetailView(selectedMemberOrder),
         showDetails: true
       });
     } else {
@@ -209,7 +217,8 @@ Page({
 
   onCloseDetails() {
     this.setData({
-      showDetails: false
+      showDetails: false,
+      selectedOrderDetail: null
     });
   },
   // 自动补生成团单二维码（无 qrCodeUrl 时静默执行，不打扰用户）：

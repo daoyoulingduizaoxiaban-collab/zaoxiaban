@@ -7,6 +7,7 @@
     "sub-nav": "/components/sub-nav/index",
     "t-popup": "tdesign-miniprogram/popup/popup",
     "t-dialog": "tdesign-miniprogram/dialog/dialog",
-    "page-state": "/components/page-state/index"
+    "page-state": "/components/page-state/index",
+    "order-detail": "/components/order-detail/index"
   }
 }
