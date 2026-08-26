@@ -31,11 +31,11 @@
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*出团时间</view>
-      <view class="picker-display {{readOnly ? 'is-readonly' : ''}}" bindtap="openDatePicker" data-field="startAt">{{formData.startAt || '请选择出团时间（如 2026-07-10 09:00）'}}</view>
+      <view class="picker-display {{readOnly ? 'is-readonly' : ''}}" bindtap="openDatePicker" data-field="startAt">{{formData.startAt || '请选择出团时间（不得晚于收单截止，如 2026-07-09 09:00）'}}</view>
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">*收单截止</view>
-      <view class="picker-display {{readOnly ? 'is-readonly' : ''}}" bindtap="openDatePicker" data-field="endAt">{{formData.endAt || '请选择收单截止时间（如 2026-07-09 20:00）'}}</view>
+      <view class="picker-display {{readOnly ? 'is-readonly' : ''}}" bindtap="openDatePicker" data-field="endAt">{{formData.endAt || '请选择收单截止时间（不得早于出团时间，如 2026-07-10 20:00）'}}</view>
     </view>
     <view class="native-textarea-field">
       <view class="native-textarea-label">客户提示</view>

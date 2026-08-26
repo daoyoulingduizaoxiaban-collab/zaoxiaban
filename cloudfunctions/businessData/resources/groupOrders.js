@@ -5,6 +5,7 @@ const {
   sameId,
   trimText,
   normalizeShareToken,
+  parseExpiryTime,
   buildShareToken,
   buildShareExpiresAt,
   buildCustomerEntryPath,
@@ -96,6 +97,11 @@ const validateGroupOrderPayload = (groupOrder) => {
   if (trimText(groupOrder.description).length > 200) return '团单描述最多 200 个字';
   if (!trimText(groupOrder.startAt)) return '请输入出团或活动时间';
   if (!trimText(groupOrder.endAt)) return '请输入收单截止时间';
+  // 决策 10：开始不得晚于结束。前端 sub-pages/groupOrder/add 有同一条，这里是权威版本。
+  // 两边都解不出时间就不挡（旧资料格式各异，宁可放行也不要让人存不了）。
+  const startTime = parseExpiryTime(groupOrder.startAt);
+  const endTime = parseExpiryTime(groupOrder.endAt);
+  if (startTime && endTime && startTime > endTime) return '出团时间不能晚于收单截止时间';
   // 取货/付款/联系人/联系电话 4 栏位已按需求移除（不再必填）。
   return '';
 };

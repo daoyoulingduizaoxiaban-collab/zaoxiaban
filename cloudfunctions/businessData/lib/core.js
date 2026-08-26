@@ -77,10 +77,15 @@ const normalizeReviewStatus = status => (status === 'active' ? REVIEW_STATUS.APP
 const ALL_ROLES = ['owner', 'admin', 'guide', 'customer', 'provider'];
 const normalizeShareToken = value => String(value || '').trim();
 const buildShareToken = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+// 收得下三种写法：'YYYY-MM-DD'（当天最后一刻）、'YYYY-MM-DD HH:mm'（picker 存的格式）、ISO。
+// 中间那格空白一定要换成 T——小程序在 iOS 跑的是 JSCore，`new Date('2026-07-10 09:00')`
+// 在那里是 Invalid Date，只有 Node 与 V8 收。
 const parseExpiryTime = (value) => {
   if (!value) return 0;
-  const text = String(value);
-  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text;
+  const text = String(value).trim();
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text)
+    ? `${text}T23:59:59`
+    : text.replace(' ', 'T');
   const time = new Date(normalized).getTime();
   return Number.isNaN(time) ? 0 : time;
 };

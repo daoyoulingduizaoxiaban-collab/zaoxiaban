@@ -13,6 +13,17 @@ const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
 // 出团时间/收单截止预设「此时此刻」，格式与 date-time-picker 的 format 一致（YYYY-MM-DD HH:mm）。
 const pad2 = (n: number) => String(n).padStart(2, '0');
+// 解析表单时间字串。中间那格空白一定要换成 T——小程序在 iOS 跑的是 JSCore，
+// `new Date('2026-07-10 09:00')` 在那里是 Invalid Date，只有 Node 与 V8 收。
+// 与云端 lib/core.js 的 parseExpiryTime 同一套规则。
+const parseFormTime = (value) => {
+  const text = String(value || '').trim();
+  if (!text) return 0;
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text.replace(' ', 'T');
+  const time = new Date(normalized).getTime();
+  return Number.isNaN(time) ? 0 : time;
+};
+
 const formatNow = () => {
   const d = new Date();
   return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
@@ -347,12 +358,17 @@ Page({
     this.setData({ selectedGoods });
   },
 
-  // 前端必填校验（记账+基本信息定位，日期不做顺序/过期防呆，仅要求已填写）。
+  // 前端必填 + 时间顺序校验。权威版本在云端 businessData/resources/groupOrders.js
+  // 的 validateGroupOrderPayload，这里只是提早给提示，两边文案要一致。
   buildFormError() {
     const { formData, selectedGoods } = this.data;
     if (!String(formData.title || '').trim()) return '请输入团单名称';
     if (!String(formData.startAt || '').trim()) return '请选择出团时间';
     if (!String(formData.endAt || '').trim()) return '请选择收单截止时间';
+    // 决策 10：开始不得晚于结束。两边都解不出时间就不挡（旧资料格式各异）。
+    const startTime = parseFormTime(formData.startAt);
+    const endTime = parseFormTime(formData.endAt);
+    if (startTime && endTime && startTime > endTime) return '出团时间不能晚于收单截止时间';
     if (!selectedGoods.length) return '请至少添加一件团单商品';
     return '';
   },
