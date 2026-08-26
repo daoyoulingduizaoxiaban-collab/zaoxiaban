@@ -4,6 +4,7 @@ import { filterCustomerOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/
 import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
 import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
+import { getDeclaredAmountError, getConfirmedAmountError } from '~/services/customerOrder/orderAmount';
 
 const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
 
@@ -458,30 +459,22 @@ export const CustomerOrderRepository = {
     if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(target.status) !== MemberOrderStatus.PAID) {
       return { success: false, error: '只有客户已付款订单才能确认到账' };
     }
+    // 金额规则一律走 services/customerOrder/orderAmount.js 那一份，不要在这里复制。
+    // 原本这里是独立的第三份写法，用 Number(x || 0) <= 0 判，非数字字串会变 NaN 而整个绕过。
     if (nextStatusValue === MemberOrderStatus.PAID) {
-      const declaredAmount = Number(payload.declaredAmount || 0);
-      if (declaredAmount <= 0) {
-        return { success: false, error: '请填写有效付款金额' };
-      }
-      if (declaredAmount > Number(target.totalPrice || 0)) {
-        return { success: false, error: '付款金额不能超过订单金额' };
+      const declaredAmountError = getDeclaredAmountError(target, payload.declaredAmount);
+      if (declaredAmountError) {
+        return { success: false, error: declaredAmountError };
       }
       if (!trimText(payload.paymentMethod)) {
         return { success: false, error: '请填写付款方式' };
       }
       // A6：付款凭证选填，没图不得阻止声明。
     }
-    if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(payload.confirmedAmount || 0) <= 0) {
-      return { success: false, error: '请填写有效实收金额' };
-    }
     if (nextStatusValue === MemberOrderStatus.CONFIRMED) {
-      const declaredAmount = Number(target.declaredAmount || 0);
-      const maxPayableAmount = declaredAmount > 0 ? declaredAmount : Number(target.totalPrice || 0);
-      if (maxPayableAmount > 0 && Number(payload.confirmedAmount || 0) > maxPayableAmount) {
-        return {
-          success: false,
-          error: declaredAmount > 0 ? '实收金额不能超过申报金额' : '实收金额不能超过订单金额',
-        };
+      const confirmedAmountError = getConfirmedAmountError(target, payload.confirmedAmount);
+      if (confirmedAmountError) {
+        return { success: false, error: confirmedAmountError };
       }
     }
 

@@ -5,7 +5,8 @@ import config from '~/config';
 // 即各自独立账号。留空＝回退 config.localDevOpenId（即 owner 自己）。
 const KEY = 'dao_you_ling_local_identity';
 
-const isEnabled = () => Boolean(config.isDev && config.dataBackend === 'local');
+// 用 isDevTools 不是 isDev：体验版是真机，不该被本地测试身份换掉登入身份。
+const isEnabled = () => Boolean(config.isDevTools && config.dataBackend === 'local');
 
 const sanitize = raw => String(raw || '').trim().replace(/\s+/g, '-').slice(0, 40);
 

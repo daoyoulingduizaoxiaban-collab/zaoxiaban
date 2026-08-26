@@ -77,7 +77,9 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 - `dataBackend`：`'local'`（本地 Node）或 `'cloud'`（微信云开发）。**不写死在源码里**——PROD 恒 `'cloud'`；DEV 每次从本机储存 `dao_you_ling_data_backend` 读，预设 `'cloud'`。
   - 切法（**不要改 `config.js`**）：`node local-server/set-backend.js local ｜ cloud`（不带参数＝查现况），或 App 内「设置」页最底下的「数据后端」（仅 DEV 显示）。立即生效，不必重新编译。
   - 为什么不改源码切：改源码会触发开发者工具热重载，把模拟器导航重置到编译起始页，自动化测试会莫名其妙停在错的页；而且很容易忘了还原就提交上去。
-- `appEnv`：`DEV` / `PROD`。`isDev` / `isProd` 由它派生。
+- `appEnv`：`DEV` / `PROD`，由 `process.env` 读。⚠️ **小程序 runtime 没有 `process`**（实测 `typeof process === 'undefined'`），所以 `appEnv` 在 App 里恒为 `'DEV'`，**设 `APP_ENV=PROD` 关不掉任何开发工具**。
+- `isDev` / `isProd`：**不是单纯由 `appEnv` 派生**，还要再过一次官方的 `wx.getAccountInfoSync().miniProgram.envVersion`（`develop` 开发者工具 / `trial` 体验版 / `release` 正式版）。取不到就当正式版。
+- `isDevTools`：**只有开发者工具**才为真，体验版也是 false。会连 `localhost` 的东西（数据后端开关、本地测试身份）必须用这个，不能用 `isDev`——体验版是真机，切到 local 会连不上、App 当场废掉。
 - `localBaseUrl` / `localDevOpenId`：仅 `local` 生效。
 - **local 库与 cloud 库数据互相独立、不自动迁移**。切后端＝换一套数据。
 
@@ -138,12 +140,18 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 
 ## 7. DEV 工具与 PROD 硬关
 
-以下都是**测试环境工具**，必须 `config.isDev`（PROD 自动关）门控，**不得在 PROD 暴露**：
-- **角色预览**（owner 专用，`services/auth/authService` 的 `canUseRolePreview`）：`config.allowRolePreview = isDev`。
-- **本地测试身份**（`services/auth/localIdentity`）：仅 `isDev && dataBackend==='local'` 生效；给本地多人各自 openId。
-- **报Bug 入口**（底部 NAV）：仅 `config.isDev` 显示；写入 `feedbacks` 资源。
+以下都是**测试环境工具**，必须门控、**不得在正式版暴露**。门有两种，别选错（理由见第 3 节）：
 
-加任何测试/调试工具，照此模式 `isDev` 门控。
+**`config.isDev`（开发者工具＋体验版）**——不会连 localhost、体验版给测试者用也无妨的：
+- **角色预览**（owner 专用，`services/auth/authService` 的 `canUseRolePreview`）：`config.allowRolePreview`。
+- **报Bug 入口**（底部 NAV，`custom-tab-bar`）：写入 `feedbacks` 资源。
+- **复制 ID**（`pages/my/index`）。
+
+**`config.isDevTools`（只有开发者工具）**——会连 `localhost` 或换掉登入身份的，**一律用这个**：
+- **数据后端开关**（`pages/setting/index`）：切到 local 会去连 `http://localhost:3000`，真机连不上，体验版按下去 App 直接废掉。
+- **本地测试身份**（`services/auth/localIdentity`）：会换掉登入身份，仅 `isDevTools && dataBackend==='local'` 生效。
+
+加任何测试/调试工具，先问「它会不会连 localhost、会不会动身份」——会就用 `isDevTools`，不会才用 `isDev`。**绝对不要只靠 `appEnv`**，那个在 App 里恒为 DEV。
 
 ---
 

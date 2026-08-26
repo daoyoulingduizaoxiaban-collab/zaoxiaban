@@ -79,7 +79,13 @@ let finished = false;
   } finally {
     // 一定要还原成 owner，否则后面所有流程都会用错身份。
     // 还原必须在结束进程之前跑：process.exit() 会直接终止，finally 根本来不及执行。
-    await ide.setLocalIdentity('').catch(() => {});
+    // 还原失败不准吞掉——不然后面整轮测试都在用错的身份，而且没人会知道。
+    try {
+      await ide.setLocalIdentity('');
+    } catch (e) {
+      console.error(`❌ 还原测试身份失败，请手动清掉储存里的 dao_you_ling_local_identity：${e && e.message}`);
+      finished = false;
+    }
   }
   process.exit(finished ? 0 : 1);
 })().catch(e => ide.reportFailure(`FLOW 出错: ${e && e.message}`));

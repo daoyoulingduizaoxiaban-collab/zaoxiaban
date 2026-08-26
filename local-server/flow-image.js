@@ -40,18 +40,28 @@ let finished = false;
     }
     console.log('点上传后图片数 =', urls.length);
 
-    // ② 再点两次到上限，第四次要被前端挡住（后端不挡这条）
-    for (let i = 0; i < 3; i++) {
-      await ide.tap('.upload-btn').catch(() => {});   // 满 3 张后按钮会消失，点不到属预期
-      await ide.sleep(600);
-    }
+    // ② 一次回 5 张，验的是页面自己的截断逻辑（.slice(0,3)），不是「按钮消失」。
+    //    原本用连点四次来验，第四次因为按钮已消失点不到而静默跳过，页面里真正的
+    //    remainCount 与 slice 两道限制其实一次都没跑到，删掉它们测试照样绿。
+    await ide.restoreWxApi('chooseMedia');
+    await ide.mockWxApi('chooseMedia', fakePick(5));
+    await ide.tap('.upload-btn');
+    await ide.sleep(900);
     urls = await ide.getData('currentProduct.pictureUrls');
     if (!Array.isArray(urls) || urls.length !== 3) {
-      throw new Error(`图片上限没守住，应为 3 张，实际 ${(urls || []).length} 张`);
+      throw new Error(`图片上限没守住，应为 3 张，实际 ${Array.isArray(urls) ? urls.length : JSON.stringify(urls)} 张`);
     }
-    console.log('连点到上限后图片数 =', urls.length, '（上限 3，正确）');
+    console.log('一次选 5 张后图片数 =', urls.length, '（被截到上限 3，正确）');
 
-    // ③ 补齐必填栏位后保存
+    // ③ 满 3 张后上传按钮要消失（wxml 的 wx:if）
+    const btns = await ide.querySelectorAll('.upload-btn');
+    const btnCount = (btns && (btns.elements || btns.result || btns)) || [];
+    if (Array.isArray(btnCount) && btnCount.length > 0) {
+      throw new Error('满 3 张后上传按钮应该消失，却还在');
+    }
+    console.log('满 3 张后上传按钮已隐藏');
+
+    // ④ 补齐必填栏位后保存
     await ide.setData({
       'currentProduct.title': marker,
       'currentProduct.description': '选图流程自测',
@@ -61,7 +71,7 @@ let finished = false;
     await ide.callMethod('addProductToList');
     await ide.sleep(2000);
 
-    // ④ 回查：商品落库，而且图片是从选图流程带进去的
+    // ⑤ 回查：商品落库，而且图片是从选图流程带进去的
     const list = await ide.bd('products', 'listVisible', {});
     const hit = ((list && list.data) || []).find(p => String(p.title) === marker);
     if (!hit) throw new Error('商品没落库');
@@ -72,7 +82,13 @@ let finished = false;
     finished = true;
   } finally {
     // 还原一定要在结束进程之前跑：process.exit() 会直接终止，finally 根本来不及执行。
-    await ide.restoreWxApi('chooseMedia').catch(() => {});
+    // 还原失败不准吞掉——没还原的话，之后每一支流程的原生弹窗都会被自动按确定。
+    try {
+      await ide.restoreWxApi('chooseMedia');
+    } catch (e) {
+      console.error(`❌ 还原 chooseMedia 失败，请手动重启开发者工具：${e && e.message}`);
+      finished = false;
+    }
   }
   process.exit(finished ? 0 : 1);
 })().catch(e => ide.reportFailure(`FLOW 出错: ${e && e.message}`));

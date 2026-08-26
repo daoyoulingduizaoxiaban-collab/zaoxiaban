@@ -36,6 +36,7 @@ Page({
     const currentProfile = AuthService.getCurrentProfile();
     if (!canUseFeature(currentProfile, FEATURE_KEYS.PROFILE)) {
       this.setData({
+        ...(this as any).buildAccessState(FEATURE_KEYS.PROFILE, currentProfile),
         ...(this as any).threeState('empty', { emptyText: AuthService.getAccessStateText(currentProfile) }),
         profileList: [],
         canEditCurrentProfile: false,
@@ -46,7 +47,19 @@ Page({
     }
 
     const res = await DirectoryRepository.listUsers();
-    const visibleUsers = res.success ? res.data : [{
+    if (!res.success) {
+      // 原本失败时用当前用户假造一笔，结果标成 ready，等于把错误盖掉。
+      this.setData({
+        ...(this as any).buildAccessState(FEATURE_KEYS.PROFILE, currentProfile),
+        ...(this as any).threeState('error', { errorText: res.error || '个人资料加载失败' }),
+        profileList: [],
+        canEditCurrentProfile: false,
+        currentProfileId: currentProfile.id || '',
+        disabledReason: res.error || '个人资料加载失败',
+      });
+      return;
+    }
+    const visibleUsers = res.data && res.data.length ? res.data : [{
       id: currentProfile.id,
       name: currentProfile.displayName,
       displayName: currentProfile.displayName,
@@ -62,6 +75,7 @@ Page({
         statusText: user.displayRole,
         description: `${user.city || '城市未填写'}｜手机号 ${user.phone || '未填写'}`,
       })),
+      ...(this as any).buildAccessState(FEATURE_KEYS.PROFILE, currentProfile),
       ...(this as any).threeState(visibleUsers.length ? 'ready' : 'empty', { emptyText: '当前账号没有可查看的个人资料。' }),
       canEditCurrentProfile: canUseFeature(currentProfile, FEATURE_KEYS.PROFILE),
       currentProfileId: currentProfile.id || '',

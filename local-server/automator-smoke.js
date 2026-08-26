@@ -33,8 +33,10 @@ const PAGES = [
 // 会超出 CLI 回传上限被截断；逐栏位读又要开 7 次程序，太慢。用一次执行取回精简物件。
 const READ_STATE_FN = `function () {
   var pages = getCurrentPages();
-  var d = (pages[pages.length - 1] || {}).data || {};
+  var page = pages[pages.length - 1] || {};
+  var d = page.data || {};
   return {
+    __route: page.route || '',
     pageState: d.pageState, isLoading: d.isLoading, authReady: d.authReady,
     isLoggedIn: d.isLoggedIn, canUseBusiness: d.canUseBusiness,
     loadErrorText: d.loadErrorText || '', emptyText: d.emptyText || '',
@@ -89,14 +91,15 @@ const verdictOf = (state, route) => {
     // 自绘的页用自己的载入旗标，名称不一：有的叫 isPageLoading，有的叫 isLoading。
     // ⚠️ 有自己的旗标就**只信自己的**——这些页多半也挂了 useAccessPage，
     // 那个 isLoading 是继承来、没人维护的残留值，永远是 true，一起看会全部误判成卡住。
+    // 一个节点都没渲染＝页面根本没起来，最先挡掉，不能被「已定案」放行。
+    if (state.renderedNodes === 0) return 'FAIL(页面没有渲染出任何内容)';
     const ownLoading = state.isPageLoading !== undefined ? state.isPageLoading : state.isLoading;
     if (ownLoading === true) return 'WARN(停留后仍 loading)';
     if (state.accessDenied === true) return 'PASS(正式受限态)';
     if (ownLoading === false || state.accessDenied === false) return 'PASS(自绘，已定案)';
     // 这些页三种状态栏位都没有。至少验它真的渲染出东西——抓得到 onLoad 炸掉、整片白。
     // 这是底线，不是完整验证：只证明画面有内容，不证明内容对不对。
-    if (state.renderedNodes > 0) return `PASS(已渲染 ${state.renderedNodes} 个节点)`;
-    return 'FAIL(页面没有渲染出任何内容)';
+    return `PASS(已渲染 ${state.renderedNodes} 个节点)`;
   }
   if (state.pageState === undefined) return 'SKIP(无三态)';
   // 只看 pageState：isLoading 是各页自用的旗标，不驱动共用元件的画面，有些页设完 ready 就没关它。
@@ -113,10 +116,11 @@ const verdictOf = (state, route) => {
  * 轮询到这一页真的定案再读：pageState 不是 loading、且有 authReady 的页面要等它翻 true。
  * 轮询完还是 loading 才算问题——那才是真的卡住。
  */
-const settledState = async () => {
+const settledState = async (route) => {
   let state = {};
   for (let i = 0; i < READY_TRIES; i++) {
-    state = await readState();
+    state = await readState(route);
+    if (!state) return null;
     const stillLoading = state.pageState === 'loading';
     const authPending = state.authReady === false;
     if (state.pageState === undefined) return state;      // 没接三态，等也没用
@@ -131,14 +135,14 @@ const settledState = async () => {
   // 必须先登录：需登录的页面在未登录时会被闸门导去登录页（这是 A13 要的正确行为），
   // 不登录跑等于在测「有没有被挡下来」，测不到各页真正的加载三态。
   await ide.loginOnce();
-  if (!(await ide.dataWhenReady('isLoggedIn'))) {
+  if (!(await ide.dataWhenReady('isLoggedIn', 10, 800, v => v === true))) {
     console.log('⚠ 登录没建立起来，需登录的页面会被导去登录页，结果参考价值有限');
   }
   const results = [];
   for (const route of PAGES) {
     try {
       await ide.gotoPage(route, route.replace(/(^\/|\/index$)/g, ''));
-      const state = usesPageState(route) ? await settledState() : await readState();
+      const state = usesPageState(route) ? await settledState(route) : await readState(route);
       if (state && !usesPageState(route)) state.renderedNodes = await countNodes();
       const verdict = verdictOf(state, route);
       results.push({ route, verdict, state });

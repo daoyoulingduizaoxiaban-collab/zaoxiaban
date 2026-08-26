@@ -29,6 +29,7 @@ Page({
     const profile = AuthService.getCurrentProfile();
     if (!canUseProviderPortal(profile)) {
       this.setData({
+        ...(this as any).buildAccessState(),
         ...(this as any).threeState('empty', { emptyText: '当前账号没有供应商资料管理权限。' }),
         providersList: [],
         disabledReason: '当前账号没有供应商资料管理权限。',
@@ -42,9 +43,13 @@ Page({
     const res = await DirectoryRepository.listProviders();
     if (!res.success) {
       this.setData({
+        ...(this as any).buildAccessState(),
         ...(this as any).threeState('error', { errorText: res.error || '供应商资料加载失败' }),
         providersList: [],
         disabledReason: res.error || '供应商资料加载失败',
+        canCreateProvider: false,
+        providerActionIcon: 'add',
+        providerActionLabel: '新增供应商',
       });
       return;
     }
@@ -58,7 +63,8 @@ Page({
         isDisabled: provider.status === 'disabled',
         stateLabel: provider.status === 'disabled' ? '已停用' : (provider.statusText || '可显示资料'),
       })),
-      ...(this as any).threeState(providers.length ? 'ready' : 'empty', { emptyText: '还没有供应商资料' }),
+      ...(this as any).buildAccessState(),
+      ...(this as any).threeState(providers.length ? 'ready' : 'empty', { emptyText: '暂无供应商资料' }),
       disabledReason: '',
       canCreateProvider,
       providerActionIcon: canCreateProvider ? 'add' : 'edit',

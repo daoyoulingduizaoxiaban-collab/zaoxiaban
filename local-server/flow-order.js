@@ -44,7 +44,7 @@ const ide = require('./lib/ide');
   // ② 确保 App 走本地后端 + 会话已建立
   await ide.useLocalBackend();
   await ide.gotoPage('/pages/groupOrder/index', 'groupOrder/index');
-  if (!(await ide.dataWhenReady('isLoggedIn'))) await ide.loginOnce();
+  if (!(await ide.dataWhenReady('isLoggedIn', 10, 800, v => v === true))) await ide.loginOnce();
 
   // ③ 进客户下单页，等 productRows 就绪
   await ide.gotoPage(`/pages/customerOrders/edit/index?groupOrderId=${encodeURIComponent(groupOrderId)}`, 'customerOrders/edit');

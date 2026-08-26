@@ -49,6 +49,9 @@ let finished = false;
     // ── ① 商品删除 ──────────────────────────────────
     const productMarker = `自测删商品${String(stamp).slice(-6)}`;
     const productId = await seedProduct(productMarker);
+    // 删之前先确认它真的在列表里：seed 回传的 id 键名若变了，productId 会是 undefined，
+    // 之后的「不在列表」比对恒成立，整支测试假性通过。
+    if (!(await stillListed('products', productId))) throw new Error(`seed 的商品 ${productId} 根本不在列表，测不到删除`);
     await ide.gotoPage('/pages/productManagement/index', 'productManagement');
     await ide.dataWhenReady('pageState');
     await ide.callMethod('onDelete', { currentTarget: { dataset: { id: productId } } });
@@ -59,6 +62,7 @@ let finished = false;
     // ── ② 团单删除 ──────────────────────────────────
     const groupMarker = `自测删团${String(stamp).slice(-6)}`;
     const groupOrderId = await seedGroupOrder(groupMarker);
+    if (!(await stillListed('groupOrders', groupOrderId))) throw new Error(`seed 的团单 ${groupOrderId} 根本不在列表，测不到删除`);
     await ide.gotoPage('/pages/groupOrder/index', 'groupOrder/index');
     await ide.dataWhenReady('pageState');
     await ide.callMethod('onDeleteItinerary', { currentTarget: { dataset: { id: groupOrderId } } });
@@ -69,7 +73,13 @@ let finished = false;
     finished = true;
   } finally {
     // 还原一定要在结束进程之前跑：process.exit() 会直接终止，finally 根本来不及执行。
-    await ide.restoreWxApi('showModal').catch(() => {});
+    // 还原失败不准吞掉——没还原的话，之后每一支流程的原生弹窗都会被自动按确定。
+    try {
+      await ide.restoreWxApi('showModal');
+    } catch (e) {
+      console.error(`❌ 还原 showModal 失败，请手动重启开发者工具：${e && e.message}`);
+      finished = false;
+    }
   }
   process.exit(finished ? 0 : 1);
 })().catch(e => ide.reportFailure(`FLOW 出错: ${e && e.message}`));

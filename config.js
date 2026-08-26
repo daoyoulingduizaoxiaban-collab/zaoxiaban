@@ -33,14 +33,26 @@ const devMode = Object.freeze({
 const isDevEnv = APP_ENV === ENVIRONMENTS.DEV;
 const isProdEnv = APP_ENV === ENVIRONMENTS.PROD;
 
-const isReleaseBuild = () => {
+// envVersion 在一个 build 内不会变，但 config.isDev 被读得很凶（getCurrentProfile 每次都读），
+// 所以快取起来，避免每次都多一次同步桥接呼叫。只快取成功的结果——失败不快取，
+// 免得启动早期一次取不到就把整个 App 永久锁成正式版。
+let cachedEnvVersion = '';
+const getEnvVersion = () => {
+  if (cachedEnvVersion) return cachedEnvVersion;
   try {
-    return wx.getAccountInfoSync().miniProgram.envVersion === 'release';
+    cachedEnvVersion = wx.getAccountInfoSync().miniProgram.envVersion || '';
+    return cachedEnvVersion;
   } catch (err) {
-    // 取不到就当正式版：宁可少一个开发工具，也不要在正式版露出来。
-    return true;
+    return '';
   }
 };
+
+// 取不到就当正式版：宁可少一个开发工具，也不要在正式版露出来。
+const isReleaseBuild = () => getEnvVersion() !== 'develop' && getEnvVersion() !== 'trial';
+
+// 只有开发者工具里才算「开发机」。体验版(trial)刻意排除：那是真机，
+// 一按资料后端开关就会去连 localhost，真机连不上、App 当场废掉。
+const isDevToolsBuild = () => getEnvVersion() === 'develop';
 
 /** 开发工具（报Bug 入口、复制 ID、角色预览、本地测试身份、数据后端开关）统一用这个当门。 */
 const resolveIsDev = () => isDevEnv && !isReleaseBuild();
@@ -61,7 +73,8 @@ const DEFAULT_DATA_BACKEND = 'cloud';
 // 每次读都查储存（不快取），所以切完立刻生效、不必重新编译，自动化脚本也能直接写储存后就跑。
 // 查的是一个极小的 key，成本可忽略，且只在发后端请求时被读到，不在渲染路径上。
 const resolveDataBackend = () => {
-  if (resolveIsProd()) return 'cloud';
+  // 用 isDevToolsBuild 不是 resolveIsProd：体验版是真机，连不到 localhost。
+  if (!isDevToolsBuild()) return 'cloud';
   try {
     const stored = wx.getStorageSync(DATA_BACKEND_STORAGE_KEY);
     return stored === 'local' || stored === 'cloud' ? stored : DEFAULT_DATA_BACKEND;
@@ -73,7 +86,7 @@ const resolveDataBackend = () => {
 
 /** 切数据后端。PROD 不给切。回传切完的值。 */
 export const setDataBackend = (value) => {
-  if (resolveIsProd()) return 'cloud';
+  if (!isDevToolsBuild()) return 'cloud';
   const next = value === 'local' ? 'local' : 'cloud';
   wx.setStorageSync(DATA_BACKEND_STORAGE_KEY, next);
   return next;
@@ -83,6 +96,8 @@ export default {
   appEnv: APP_ENV,
   // getter：每次读都重新判定正式版（见上方注释，不能在载入当下算死）。
   get isDev() { return resolveIsDev(); },
+  // 只有开发者工具算数的门（资料后端开关、本地测试身份用这个，别用 isDev）。
+  get isDevTools() { return isDevEnv && isDevToolsBuild(); },
   get isProd() { return resolveIsProd(); },
 
   cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',

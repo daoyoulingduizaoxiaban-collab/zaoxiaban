@@ -69,6 +69,14 @@ const canViewOrder = async (order, profile) => {
   return canManageOrder(order, profile);
 };
 
+// amount 只取「与本次状态转移相关」的那个金额，且必须是已校验的数——
+// 原本 confirmedAmount 排第一顺位却在 PAID 转移时没人校验，带任意值就能在历史留一笔假金额。
+const historyAmountOf = (nextStatus, payload = {}, order = {}) => {
+  const pick = nextStatus === MEMBER_ORDER_STATUS.CONFIRMED ? payload.confirmedAmount : payload.declaredAmount;
+  const value = toAmount(pick);
+  return Number.isFinite(value) && value > 0 ? value : Number(order.totalPrice || 0);
+};
+
 const appendPaymentHistory = async (order, nextStatus, note, profile, payload = {}) => {
   const history = {
     customerOrderId: order.id || order._id,
@@ -78,7 +86,7 @@ const appendPaymentHistory = async (order, nextStatus, note, profile, payload = 
     actorOpenId: profile.openId,
     actorName: profile.displayName || '',
     actorRole: profile.role,
-    amount: Number(payload.confirmedAmount || payload.declaredAmount || order.totalPrice || 0),
+    amount: historyAmountOf(nextStatus, payload, order),
     paymentMethod: trimText(payload.paymentMethod) || order.paymentMethod || '',
     proofCount: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length
       ? payload.paymentProofUrls.length
@@ -295,9 +303,13 @@ const customerOrderActions = {
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number(target.status) !== MEMBER_ORDER_STATUS.PAID) {
       return failure('只有客户已付款订单才能确认到账');
     }
+    // 两个金额一律先转数，且**只采用与本次状态转移相关的那一个**。
+    // 否则做确认收款时带一个没人校验的申报额进来，会直接覆盖订单上已校验的值
+    // （上限比对用的是资料库里的旧值，挡不到），付款历史也会记到未校验的数。
+    const declaredAmountValue = toAmount(declaredAmount);
+    const confirmedAmountValue = toAmount(confirmedAmount);
     if (nextStatusValue === MEMBER_ORDER_STATUS.PAID) {
       const hasProof = Array.isArray(paymentProofUrls) && paymentProofUrls.length > 0;
-      const declaredAmountValue = toAmount(declaredAmount);
       if (!Number.isFinite(declaredAmountValue) || declaredAmountValue <= 0) return failure('请填写有效付款金额');
       if (declaredAmountValue > Number(target.totalPrice || 0)) return failure('付款金额不能超过订单金额');
       if (!trimText(paymentMethod)) return failure('请填写付款方式');
@@ -305,7 +317,6 @@ const customerOrderActions = {
       if (hasProof && !hasOnlyDurableAssetUrls(paymentProofUrls)) return failure('请重新上传付款凭证后提交');
     }
     if (nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED) {
-      const confirmedAmountValue = toAmount(confirmedAmount);
       if (!Number.isFinite(confirmedAmountValue) || confirmedAmountValue <= 0) {
         return failure('请填写有效实收金额');
       }
@@ -333,8 +344,12 @@ const customerOrderActions = {
       paymentMethod: trimText(paymentMethod) || target.paymentMethod || '',
       paymentRemark: trimText(paymentRemark) || target.paymentRemark || '',
       paymentProofUrls: Array.isArray(paymentProofUrls) && paymentProofUrls.length ? paymentProofUrls : (target.paymentProofUrls || []),
-      declaredAmount: declaredAmount || target.declaredAmount || '',
-      confirmedAmount: confirmedAmount || target.confirmedAmount || '',
+      declaredAmount: nextStatusValue === MEMBER_ORDER_STATUS.PAID && Number.isFinite(declaredAmountValue)
+        ? declaredAmountValue
+        : (target.declaredAmount || ''),
+      confirmedAmount: nextStatusValue === MEMBER_ORDER_STATUS.CONFIRMED && Number.isFinite(confirmedAmountValue)
+        ? confirmedAmountValue
+        : (target.confirmedAmount || ''),
       confirmRemark: trimText(confirmRemark) || target.confirmRemark || '',
       cancelRemark: trimText(cancelRemark) || target.cancelRemark || '',
       paymentHistory: [...(target.paymentHistory || []), history],

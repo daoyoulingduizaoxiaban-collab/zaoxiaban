@@ -133,6 +133,17 @@ const restoreWxApi = (method) => run('automation_wx_api', { action: 'restore', m
 
 /* ── 组合动作 ───────────────────────────────────────────── */
 
+/** 用与「读资料」同一支指令问当前路由——不要用 runtime_info，那是另一条通道，会跟读到的页不一致。 */
+const currentRoute = () => evaluate('function () { var p = getCurrentPages(); return (p[p.length - 1] || {}).route || ""; }')
+  .then(r => String(r || ''));
+
+const samePath = (a, b) => {
+  const norm = v => String(v || '').replace(/(^\/|\/index$)/g, '');
+  const x = norm(a);
+  const y = norm(b);
+  return Boolean(x) && Boolean(y) && (x === y || x.endsWith(`/${y}`) || y.endsWith(`/${x}`));
+};
+
 /**
  * 导到目标页并确认真的落在那一页。
  * 开发者工具热重载会把导航重置到编译起始页并盖掉 reLaunch，所以要复查 + 重试。
@@ -141,14 +152,11 @@ const gotoPage = async (url, matchPath, tries = 5) => {
   for (let i = 0; i < tries; i++) {
     try { await navigate('reLaunch', { url }); } catch (e) { /* 抖动，重试 */ }
     await sleep(1200);
-    let page;
-    try { page = await currentPage(); } catch (e) { page = null; }
-    const p = String((page && (page.path || page.route)) || '');
-    // 比对结尾，不用 indexOf：父页路径是子页的前缀（pages/tourGuides 会命中
-    // pages/tourGuides/edit/index），子字串比对会把「导错页」当成导对了。
-    const want = String(matchPath).replace(/(^\/|\/index$)/g, '');
-    const got = p.replace(/(^\/|\/index$)/g, '');
-    if (got === want || got.endsWith(`/${want}`) || want.endsWith(`/${got}`)) return page;
+    // 用 evaluate 问路由，跟後面读 data 走同一条通道；用 runtime_info 问会出现
+    // 「它说在 A 页、读到的却是 B 页的 data」，整轮结论就张冠李戴了。
+    let route = '';
+    try { route = await currentRoute(); } catch (e) { route = ''; }
+    if (samePath(route, matchPath)) return { path: route };
   }
   throw new Error(`导不到 ${matchPath}（试了 ${tries} 次）`);
 };
@@ -223,10 +231,22 @@ const loginOnce = async () => {
 };
 
 /** 切到本地后端并确保 owner 会话可用，供所有需要写入的流程共用。 */
+/**
+ * 清掉上一支测试可能留下的污染（mock 与测试身份跨 node 进程活在 IDE / 储存里）。
+ * 上一支若被 Ctrl-C 或还原失败，不清的话这一支会用错身份、或原生弹窗被自动按确定。
+ */
+const resetTestEnv = async () => {
+  for (const method of ['showModal', 'chooseMedia']) {
+    await restoreWxApi(method).catch(() => {});
+  }
+  await evaluate("function () { wx.removeStorageSync('dao_you_ling_local_identity'); return 'ok'; }").catch(() => {});
+};
+
 const ensureLocalOwner = async () => {
+  await resetTestEnv();
   await useLocalBackend();
   await gotoPage('/pages/groupOrder/index', 'groupOrder/index');
-  if (!(await dataWhenReady('isLoggedIn'))) await loginOnce();
+  if (!(await dataWhenReady('isLoggedIn', 10, 800, v => v === true))) await loginOnce();
   return getData('isLoggedIn');
 };
 
@@ -262,5 +282,6 @@ module.exports = {
   navigate, currentPage, getData, pageData, setData, callMethod, querySelectorAll, tap, input, evaluate,
   consoleLog, screenshot, mockWxApi, restoreWxApi,
   gotoPage, dataWhenReady, pageDataWhen, useLocalBackend, loginOnce, ensureLocalOwner, setLocalIdentity,
-  callFn, bd, reportFailure,
+  currentRoute, samePath,
+  callFn, bd, reportFailure, resetTestEnv,
 };
