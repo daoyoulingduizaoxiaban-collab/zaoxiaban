@@ -14,6 +14,9 @@ Page({
   behaviors: [useAccessPage],
   data: {
     groupOrderId: '',
+    // 返回落点：本页唯一来源是团单详情，冷启动（分享/扫码直入）时退回它；
+    // 没拿到团单 ID 才退到团单列表。
+    backFallbackUrl: '/pages/groupOrder/index',
     searchQuery: '',
     rawList: [] as Product[],
     displayList: [] as Product[],
@@ -31,10 +34,13 @@ Page({
 
   async onLoad(options) {
     await AuthService.refreshSession();
-    const groupOrderId = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
+    const groupOrderId = options.id ? String(options.id) : '';
     const pendingProductId = options.productId ? String(options.productId) : '';
     this.setData({
       groupOrderId,
+      backFallbackUrl: groupOrderId
+        ? `/sub-pages/groupOrder/detail/index?id=${encodeURIComponent(groupOrderId)}`
+        : '/pages/groupOrder/index',
       pendingProductId,
       pageErrorText: groupOrderId ? '' : '缺少团单 ID，请返回团单详情重新进入。',
       isLoading: Boolean(groupOrderId),

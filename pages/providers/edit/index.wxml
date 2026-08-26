@@ -1,4 +1,4 @@
-<sub-nav title="{{ pageTitle }}" />
+<sub-nav title="{{ pageTitle }}" fallback-url="/pages/providers/index" />
 
 <view class="edit-container">
   <view wx:if="{{!canSave}}" class="empty-state">

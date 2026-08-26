@@ -25,7 +25,7 @@ Page({
 
   async onLoad(options = {}) {
     await AuthService.refreshSession();
-    const pendingProductId = options.productId || options.id || '';
+    const pendingProductId = options.productId || '';
     this.setData({ pendingProductId: pendingProductId ? String(pendingProductId) : '' });
     await this.loadProducts();
   },

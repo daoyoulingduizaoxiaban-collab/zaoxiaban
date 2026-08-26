@@ -10,6 +10,10 @@ const buildCustomerEntryPath = (groupOrderId, shareToken = '') => {
   return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
 };
 
+const buildBackFallbackUrl = groupOrderId => (groupOrderId
+  ? `/sub-pages/groupOrder/detail/index?id=${encodeURIComponent(String(groupOrderId))}`
+  : '/pages/customerOrders/index');
+
 // 扫小程序码进入时，微信只透传一个 scene（我们放的是 shareToken，且经过 URL 编码）。
 const decodeSceneToken = (scene) => {
   const raw = String(scene || '').trim();
@@ -38,6 +42,10 @@ Page({
     accessStateText: '',
     isLoggedIn: false,
     loginRedirectTo: '/pages/customerOrders/index',
+    // 返回落点：本页多半是客户经分享连结/扫码冷启动进来的，栈是空的，
+    // 退回他刚刚在看的那张团单（团单详情不需登入，客户视图看得到）；
+    // 拿不到团单 ID 才退到自己的订单列表。
+    backFallbackUrl: '/pages/customerOrders/index',
     saveModeText: CLOUD_SAVE_MODE_TEXT,
     formData: {
       customerName: '',
@@ -52,7 +60,7 @@ Page({
   async onLoad(options) {
     await AuthService.refreshSession();
     const profile = AuthService.getCurrentProfile();
-    const groupOrderId = options.groupOrderId || options.id || '';
+    const groupOrderId = options.groupOrderId || '';
     // 扫小程序码进入时只有 scene（=shareToken）；普通分享链接则带 shareToken 参数。scene 优先。
     const scannedToken = decodeSceneToken(options.scene);
     let shareToken = scannedToken || String((options && options.shareToken) || '').trim();
@@ -71,6 +79,7 @@ Page({
       this.setData({
         groupOrderId,
         shareToken,
+        backFallbackUrl: buildBackFallbackUrl(groupOrderId),
         accessDenied: true,
         accessStateText: AuthService.getAccessStateText(profile),
         isLoggedIn: Boolean(profile),
@@ -82,6 +91,7 @@ Page({
     this.setData({
       groupOrderId,
       shareToken,
+      backFallbackUrl: buildBackFallbackUrl(groupOrderId),
       accessDenied: false,
       accessStateText: '',
       isLoggedIn: Boolean(profile),
@@ -125,6 +135,7 @@ Page({
     const resolvedId = res.data.id || res.data._id || groupOrderId;
     this.setData({
       groupOrderId: resolvedId,
+      backFallbackUrl: buildBackFallbackUrl(resolvedId),
       groupOrder: res.data,
       isStopped,
       pageTitle: res.data.title || '客户下单',
@@ -226,10 +237,6 @@ Page({
         });
       },
     });
-  },
-
-  onBack() {
-    navigateBackOrTab('/pages/groupOrder/index');
   },
 
   choosePaymentProof() {

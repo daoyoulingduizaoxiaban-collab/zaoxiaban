@@ -182,8 +182,4 @@ Page({
     const url = '/static/account/ivy.jpeg';
     wx.previewImage({ current: url, urls: [url], fail: () => wx.showToast({ title: '预览失败', icon: 'none' }) });
   },
-
-  onBack() {
-    navigateBackOrTab('/pages/my/index');
-  }
 });

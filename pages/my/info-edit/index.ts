@@ -271,7 +271,7 @@ Page({
     AuthService.updateCurrentProfile(res.data);
     toastSuccess(RESULT_TEXT.save);
     // 保存后返回上一页（#F2）。
-    setTimeout(() => navigateBackOrTab('/pages/my/index'), 600);
+    setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
   },
 
   onLogin() {

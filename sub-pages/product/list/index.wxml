@@ -1,4 +1,4 @@
-<nav nav-type="productManagement" titleText="{{titleText}}" />
+<sub-nav title="{{titleText}}" fallback-url="/pages/productManagement/index" />
 <view class="container">
   <view class="filter-section">
     <view class="search-input-wrap">

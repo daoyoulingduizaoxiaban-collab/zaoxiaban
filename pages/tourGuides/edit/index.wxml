@@ -1,4 +1,4 @@
-<sub-nav title="{{ pageTitle }}" />
+<sub-nav title="{{ pageTitle }}" fallback-url="/pages/my/index" />
 
 <view class="edit-container">
   <!-- 已提交团主申请(pending)：显示系统管理员微信 QR，引导加好友私聊，等待审核通过。 -->

@@ -141,8 +141,4 @@ Page({
     toastSuccess(RESULT_TEXT.save);
     setTimeout(() => navigateBackOrTab('/pages/providers/index'), 300);
   },
-
-  onBack() {
-    navigateBackOrTab('/pages/providers/index');
-  }
 });

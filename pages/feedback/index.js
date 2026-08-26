@@ -1,6 +1,7 @@
 import config from '~/config';
 import { FeedbackRepository } from '~/repositories/feedbackRepository';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
+import { navigateBackOrTab } from '~/utils/navigation';
 
 Page({
   data: {
@@ -14,7 +15,7 @@ Page({
     // 仅测试环境可用
     if (!config.isDev) {
       wx.showToast({ title: '仅测试环境可用', icon: 'none' });
-      setTimeout(() => wx.navigateBack({ fail: () => {} }), 800);
+      setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
       return;
     }
     // 自动带出「从哪个页面进来的」，方便定位问题
@@ -49,6 +50,6 @@ Page({
       return;
     }
     toastSuccess(RESULT_TEXT.submit);
-    setTimeout(() => wx.navigateBack({ fail: () => {} }), 800);
+    setTimeout(() => navigateBackOrTab('/pages/my/index'), 300);
   },
 });

@@ -1,4 +1,4 @@
-import { navigateByUrl } from '~/utils/navigation';
+import { navigateByUrl, navigateBackOrTab } from '~/utils/navigation';
 
 Component({
   options: {
@@ -43,12 +43,7 @@ Component({
   },
   methods: {
     navigateBack() {
-      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
-      if (pages.length > 1) {
-        wx.navigateBack();
-        return;
-      }
-      navigateByUrl('/pages/my/index');
+      navigateBackOrTab('/pages/my/index');
     },
 
     openDrawer() {

@@ -1,5 +1,5 @@
 <wxs src="../../../utils/utils.wxs" module="utils" />
-<sub-nav title="{{ pageTitle }}" />
+<sub-nav title="{{ pageTitle }}" fallback-url="/pages/groupOrder/index" />
 
 <view class="edit-container">
   <page-state

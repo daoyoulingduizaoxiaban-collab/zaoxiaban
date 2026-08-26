@@ -1,4 +1,4 @@
-<sub-nav title="{{ pageTitle }}" />
+<sub-nav title="{{ pageTitle }}" fallback-url="{{backFallbackUrl}}" />
 
 <view class="access-card" wx:if="{{accessDenied}}">
   <view class="access-title">{{accessStateText || '当前账号不能提交客户订单'}}</view>

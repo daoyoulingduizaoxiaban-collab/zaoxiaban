@@ -75,7 +75,7 @@ Page({
   async onLoad(options = {}) {
     (this as any)._skipNextShowRefresh = true;
     await AuthService.refreshSession();
-    const pendingOrderId = options.orderId || options.id || '';
+    const pendingOrderId = options.orderId || '';
     const currentStatus = options.status !== undefined ? Number(options.status) : this.data.currentStatus;
     this.setData({
       pendingOrderId: pendingOrderId ? String(pendingOrderId) : '',
@@ -88,7 +88,7 @@ Page({
     const query = consumeTabRouteQuery('/pages/customerOrders/index');
     if (!query) return;
     const options = parseRouteQuery(query);
-    const pendingOrderId = options.orderId || options.id || '';
+    const pendingOrderId = options.orderId || '';
     const currentStatus = options.status !== undefined ? Number(options.status) : this.data.currentStatus;
     if (pendingOrderId) {
       this.setData({ pendingOrderId: String(pendingOrderId) });

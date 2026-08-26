@@ -419,7 +419,7 @@ Page({
       title: this.data.isEdit ? RESULT_TEXT.save : RESULT_TEXT.create,
       icon: 'success',
       success: () => {
-        setTimeout(() => navigateBackOrTab('/pages/groupOrder/index'), 800);
+        setTimeout(() => navigateBackOrTab(this.data.sourceUrl || '/pages/groupOrder/index'), 300);
       }
     });
   }

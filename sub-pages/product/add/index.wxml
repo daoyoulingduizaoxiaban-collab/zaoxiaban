@@ -1,4 +1,4 @@
-<sub-nav title="{{ pageTitle }}" />
+<sub-nav title="{{ pageTitle }}" fallback-url="/pages/productManagement/index" />
 
 <view class="access-card" wx:if="{{accessDenied}}">
   <view class="access-title">{{accessStateText || '当前账号不能新增商品'}}</view>

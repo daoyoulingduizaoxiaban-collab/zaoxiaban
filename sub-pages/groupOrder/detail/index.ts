@@ -64,7 +64,7 @@ Page({
   async onLoad(options) {
     await AuthService.refreshSession();
     const forceReadonly = String(options.readonly || '') === '1';
-    const id = options.id || options.groupOrderId ? String(options.id || options.groupOrderId) : '';
+    const id = options.id ? String(options.id) : '';
     this.setData({ forceReadonly });
     if (id) {
       this.setData({
@@ -485,7 +485,7 @@ Page({
       return;
     }
 
-    navigateByUrl(`/sub-pages/groupOrder/add/index?id=${id}`, {
+    navigateByUrl(`/sub-pages/groupOrder/add/index?id=${id}&from=${encodeURIComponent(`/sub-pages/groupOrder/detail/index?id=${id}`)}`, {
       fail: () => {
         wx.showToast({
           title: '打开编辑团单失败',

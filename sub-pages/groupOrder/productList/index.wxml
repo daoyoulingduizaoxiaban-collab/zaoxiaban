@@ -1,4 +1,4 @@
-<sub-nav title="本团商品" />
+<sub-nav title="本团商品" fallback-url="{{backFallbackUrl}}" />
 
 <view class="container">
   <view wx:if="{{readOnly}}" class="readonly-banner">团单已停止收单，仅供查看，不能移除商品</view>

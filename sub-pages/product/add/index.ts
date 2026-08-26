@@ -278,6 +278,6 @@ Page({
 
     this.setData({ saveModeText: getSaveModeText(res.meta) });
     toastSuccess(this.data.isEdit ? RESULT_TEXT.save : RESULT_TEXT.create);
-    navigateBackOrTab('/pages/productManagement/index');
+    setTimeout(() => navigateBackOrTab('/pages/productManagement/index'), 300);
   },
 });
