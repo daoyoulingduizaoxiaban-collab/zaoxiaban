@@ -34,7 +34,7 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 `businessData` 已模块化（勿再塞回单文件）：
 - `index.js` — 路由入口（require 各资源 + 建 handlers + exports.main）。
 - `lib/core.js` — 共享层：云初始化 / 常量 / 通用 helper / db 访问 / **权限判定** / 预览。
-- `resources/{products,groupOrders,customerOrders,users,providers,feedbacks}.js` — 每个资源一个文件，含该资源的 normalizer/validator + Actions 对象，从 `../lib/core` require 所需。
+- `resources/{groupOrders,customerOrders,users,providers,feedbacks,operationLogs}.js` — 每个资源一个文件，含该资源的 normalizer/validator + Actions 对象，从 `../lib/core` require 所需。
 - **改一个资源只动它那个文件；改共享/权限动 `lib/core.js`。**
 
 **铁律：页面不许直接 `wx.request` / `wx.cloud.callFunction`。** 一律走 `repositories/*`。仓库层是唯一对接后端的地方。
@@ -215,6 +215,7 @@ node local-server/check-contract.js
 | C4 | `pages` / `sub-pages` / `components` 等不得直接 `wx.request` / `wx.cloud.callFunction` | 分层铁律（§1.1）。允许清单只有 `repositories/`、`services/backend/`、`local-server/` |
 | C5 | 存档成功后的跳转延迟一律 `300ms` | 口径见 `PAGE_MAP.md` §3.2。曾经有 0 / 300 / 600 / 800 四种 |
 | C6 | 全仓 `no-undef` 扫描 | **eslint 预设不查这条**。清死码时砍掉了还在用的 helper（`normalizeShareToken`、`PROVIDER_STATUS`），lint 一片绿，只有跑 flow 测试才炸出来 |
+| C7 | 文件的 🚧 未实作标记都有对应开发项 | 只往 `BUSINESS_LOGIC_PRINCIPLES` Part A/B 写规格、不开 Part C 开发项，下一个接手的人会把「还没做」当成现况去改码（2026-08-27 真的发生过）。规矩见该档 §0.0 |
 
 **加规则的门槛**：只收「已经害人踩过一次」的规则，且误报率要低。想不出具体踩过的场景就别加——规则一旦开始误报，下次真的红了也没人看。
 

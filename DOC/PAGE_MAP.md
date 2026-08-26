@@ -56,7 +56,7 @@
 | `pages/tourGuides/edit/index` | `id`（缺省用 `profile.id`） | 自写 `canUseFeature` + `isOwnerOrAdmin` + `hasRole(GUIDE)` | ✅ `/pages/my/index` | 300ms → `/pages/my/index`<br>申请模式原地不跳，重跑 `initPage({})` |
 | `pages/providers/index` | 无 | `useAccessPage` + `requireLogin` + `canUseProviderPortal`<br>❓ 无 featureKey | 无返回键 | `providers/edit?id=` |
 | `pages/providers/edit/index` | `id` | 自写 `canUseProviderPortal` | ✅ `/pages/providers/index` | 300ms → `/pages/providers/index` |
-| `pages/customerOrders/edit/index` | `groupOrderId`<br>`shareToken`<br>`scene`（扫码） | 自写 `CUSTOMER_ORDER_CREATE` → `accessDenied` | ✅ 动态 `detail?id=<团单>`，无 ID 退客户订单列表 | `showModal` 确认 →`/pages/customerOrders/index` |
+| `pages/customerOrders/edit/index` | `groupOrderId`<br>`shareToken`<br>`scene`（扫码）<br>🚧 代下单模式参数见 §5（`C-PROXY-ORDER`） | 自写 `CUSTOMER_ORDER_CREATE` → `accessDenied`<br>🚧 代下单需放行本团 `guide`，见 §5（`C-PROXY-ORDER`） | ✅ 动态 `detail?id=<团单>`，无 ID 退客户订单列表 | `showModal` 确认 →`/pages/customerOrders/index` |
 | `pages/my/info-edit/index` | 无 | 自写 `INFO_EDIT` | ✅ `/pages/my/index` | ✅ 300ms → `/pages/my/index` |
 
 ### 1.4 其余（6 个）
@@ -81,6 +81,7 @@
 | `groupOrder/productList` | `groupOrder/detail` |
 | `customerOrders/index` | tab、`search`（`?orderId=`）、`customerOrders/edit` |
 | `customerOrders/edit` | `customerOrders/index`（`?groupOrderId=`）、`groupOrder/detail` 的分享 / 小程序码（`?groupOrderId=&shareToken=`）、扫码 `scene` |
+| `customerOrders/edit`（🚧 代下单模式） | `sub-pages/groupOrder/detail` 的团主管理区「代客下单」按钮（未实作，见 §5 `C-PROXY-ORDER`） |
 | `providers/index` | `my`（管理区；商品库删除后搬回来） |
 | `providers/edit` | `providers/index` |
 | `tourGuides/index` | `my` |
@@ -159,3 +160,47 @@
 | `setting` 的 url 跳转分支 | `onEleClick` 有 `url` 分支，但 `menuData` 无任何项带 `url` | 建议删死分支 |
 | `providers/index` 无 featureKey | 用 `canUseProviderPortal` 而非 `canUseFeature` | 统一到 featureKey？ |
 | `components/nav` 的两个出口不可达 | `searchTurn` 无 bind；`openDrawer` 只在 `navType==='search'` 渲染，全站无页面用此 navType | 建议删死码 |
+
+---
+
+## 5. 🚧 未实作的画面契约（目标态，不是现况）— `C-PROXY-ORDER`
+
+> 本节写的是**还没做**的画面。开发项 `C-PROXY-ORDER`（`BUSINESS_LOGIC_PRINCIPLES.md` Part C · C5），
+> 业务规则见同档 A6「代下单订单的归属与认领」，栏位见 `FIELD_DICT.md` §5「待开发栏位——代客下单」。
+> **做完后把本节内容并进上面 §1–§3，并删掉这一节。**
+
+### 5.1 团主代客下单（决策 14）
+
+**入口**：`sub-pages/groupOrder/detail` 团主管理区新增「代客下单」——只对**本团归属/被授权的团主**与管理层显示，客户视图不得出现。
+放在既有的管理操作条内（该条已收敛成单行三小按钮，见 `进度总览.md` #E4），不另开入口，遵守 A12 一功能一固定位置。
+
+**跳转**：`navigateByUrl('/pages/customerOrders/edit/index?groupOrderId=<团单id>&proxy=1')`
+- `proxy=1` 是代下单模式旗标；**不带 `shareToken`**——团主代下单走团主权限，不是分享链接路径。
+- 参数名沿用既有 `groupOrderId`（§3.3 参数单名规矩），新增的旗标只有 `proxy` 一个，不要再发明第二个名字。
+
+**下单页在 `proxy=1` 时的差异**：
+
+| 项目 | 客户自助（现况） | 🚧 团主代下单 |
+| --- | --- | --- |
+| 权限闸门 | 自写 `CUSTOMER_ORDER_CREATE` → `accessDenied` | （`C-PROXY-ORDER`）改判「是本团团主或管理层」；纯 `guide` 也要能进（现况会被挡） |
+| 收单截止后 | 挡住，不能提交 | **仍可提交**（A6 团主例外） |
+| 客户姓名/手机 | 预填自己的 profile，可改 | **必填、不预填**，这两栏就是「帮谁下的」依据 |
+| 标题区 | 一般下单 | 明确标示「代客下单」，避免团主误以为在帮自己下 |
+| 保存后 | `showModal` 确认 → `/pages/customerOrders/index` | 回 `detail?id=<团单>`（团主还在管这张团单，不该被丢去订单列表） |
+
+**返回落点**：`detail?id=<团单>`；无 ID 时退 `/pages/groupOrder/index`（团主的列表，不是客户订单列表）。
+
+### 5.2 代下单/待认领的显示位置
+
+同一笔订单会在多处渲染，**改一处就回报＝没查完**（这是本项目最大宗 BUG 来源，见 `FIELD_DICT.md` §5.6 已列 11 处）。
+代下单标记至少要出现在：
+
+| 位置 | 要显示什么 |
+| --- | --- |
+| `pages/customerOrders/index` 订单卡片（团主视角） | 「代下单」标记；未绑定的加「待认领」 |
+| `pages/customerOrders/index` 订单卡片（客户视角） | 认领后才出现在这里；显示是哪位团主代下的 |
+| `sub-pages/groupOrder/detail` 团主的订单明细列表 | 同卡片，标记一致 |
+| 订单详情弹窗 | 代下单团主、填入的客户姓名/手机、认领状态与认领时间 |
+
+**判定**：以上四处文案与标记必须同一份口径（沿用 `FIELD_DICT.md` §5.5 已知的「状态文案 4 份独立 map」教训，不要再各写一份）。
+

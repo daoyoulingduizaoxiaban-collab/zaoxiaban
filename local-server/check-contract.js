@@ -11,6 +11,7 @@
  *   C3 sub-nav 没写返回落点 —— 吃预设值，不管从哪进来都弹回团单列表
  *   C4 页面直接打后端       —— 违反分层铁律（DEVELOPMENT_GUIDE §1.1）
  *   C5 存档后跳转延迟不统一 —— 口径是 300ms（PAGE_MAP §3.2）
+ *   C7 文件 🚧 标记没对应开发项 —— 只写规格不开开发项，下一个人会把没做的当现况
  *   C6 用到没定义的东西     —— 清理死码时砍到还在用的 helper，eslint 预设不查，只有跑测试才抓得到
  */
 const fs = require('fs');
@@ -143,6 +144,50 @@ try {
   }
 }
 
+
+/* ── C7：文件里的「未实作」标记要有对应开发项 ─────────────────
+ *   Part A/B 写的是「该长怎样」，其中一部分还没做。只写 Part A 不开 Part C 项，
+ *   下一个接手的人会把没做的当现况去改码（2026-08-27 真的发生过）。
+ *   规矩见 BUSINESS_LOGIC_PRINCIPLES.md §0.0。                             */
+{
+  const DOC = path.join(ROOT, 'DOC');
+  const master = path.join(DOC, 'BUSINESS_LOGIC_PRINCIPLES.md');
+  if (exists(master)) {
+    const text = read(master);
+    const partC = text.slice(text.indexOf('# Part C'));
+    // Part C 里定义了哪些开发项编号
+    const defined = new Set([...partC.matchAll(/\*\*(C-[A-Z0-9-]+)\s/g)].map(m => m[1]));
+
+    // 1) 全 DOC 的 🚧 标记都必须带一个 C-XXX，且该编号在 Part C 找得到
+    for (const name of fs.readdirSync(DOC).filter(n => n.endsWith('.md'))) {
+      const body = read(path.join(DOC, name));
+      body.split('\n').forEach((line, i) => {
+        if (!line.includes('🚧')) return;
+        // 排除「在讲这条规则本身」的行（如规则表、测试清单），那不是在标某段未实作
+        if (/🚧\s*(未实作)?标记/.test(line)) return;
+        const ids = [...line.matchAll(/(C-[A-Z0-9-]+)/g)].map(m => m[1]).filter(id => id !== 'C-XXX');
+        if (!ids.length) {
+          // 整段引言式的 🚧（指向同档他处）放行：同段落 5 行内找得到编号即可
+          const near = body.split('\n').slice(Math.max(0, i - 2), i + 6).join('\n');
+          if (/(C-[A-Z0-9-]+)/.test(near)) return;
+          fail('C7', `DOC/${name}:${i + 1} 标了 🚧 未实作，却没写是哪个开发项（要写 C-XXX，见 BUSINESS_LOGIC_PRINCIPLES §0.0）`);
+          return;
+        }
+        ids.forEach((id) => {
+          if (!defined.has(id)) fail('C7', `DOC/${name}:${i + 1} 引用的开发项 ${id} 在 Part C 找不到（只写规格没开开发项＝陷阱）`);
+        });
+      });
+    }
+
+    // 2) Part C 里带 🚧 的开发项必须有同名 D- 验收点
+    const partD = text.slice(text.indexOf('# Part D'));
+    [...text.matchAll(/🚧[^\n]*?(C-[A-Z0-9-]+)/g)].map(m => m[1]).filter(id => id !== 'C-XXX').forEach((id) => {
+      const d = id.replace(/^C-/, 'D-');
+      if (!partD.includes(d)) fail('C7', `开发项 ${id} 没有对应的验收点 ${d}（Part D 要补）`);
+    });
+  }
+}
+
 /* ── 结果 ───────────────────────────────────────────────── */
 const CHECKS = [
   'C1 页面注册 ↔ 档案两边对得上',
@@ -151,11 +196,12 @@ const CHECKS = [
   'C4 页面/元件不直接打后端',
   'C5 存档后跳转统一 300ms',
   'C6 没有用到未定义的符号',
+  'C7 文件的 🚧 未实作标记都有对应开发项',
 ];
 console.log(CHECKS.map(c => `  · ${c}`).join('\n'));
 console.log('');
 if (!problems.length) {
-  console.log('✅ 契约检查通过，6 项全过');
+  console.log('✅ 契约检查通过，7 项全过');
   process.exit(0);
 }
 console.log(problems.map(p => `❌ ${p}`).join('\n'));
