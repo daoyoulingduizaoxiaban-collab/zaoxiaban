@@ -253,7 +253,7 @@
 | --- | --- | --- | --- |
 | `id` | number | 系统 | |
 | `groupOrderId` | number | ✅ | |
-| `customerUserId` / `customerOpenId` | — | 系统 | ⚠️ 云端归属判定用 `customerOpenId`。**目前一律写成「提交这笔订单的人」**，团主代下单时会写成团主自己 → 被代下单的真客户看不到这笔订单（见下方待开发栏位） |
+| `customerUserId` / `customerOpenId` | — | 系统 | ⚠️ 云端归属判定用 `customerOpenId`，一律写成「提交这笔订单的人」。代下单时就是**团主自己**，被代下单的客户看不到这笔——刻意如此（决策 14，见下方待开发栏位） |
 | `guideUserId` / `guideOpenId` | — | 系统 | |
 | `customerName` | string | ✅ | |
 | `customerPhone` | string | ✅ | 11 码格式 |
@@ -279,21 +279,18 @@
 
 > **⚠️ 待开发栏位——代客下单（OWNER 决策 14，2026-08-27）**
 >
-> 团主代客下单必须记录「是帮谁下的」，现况**一栏都没有**，只有 `customerName` / `customerPhone` 两个文字栏，
-> 且 `customerOpenId` 会写成团主自己。**已拍板要绑真实客户帐号**（决策 14 细则，2026-08-27）：对得上就绑，
-> 对不上先留待认领，客户日后注册再自动绑。规格见 `BUSINESS_LOGIC_PRINCIPLES.md` A6「代下单订单的归属与认领」。
+> 团主代客下单必须记录「是帮谁下的」，现况**一栏都没有**，只有 `customerName` / `customerPhone` 两个文字栏。
+> **不绑客户帐号**：订单归属写代下单的团主，客户端看不到这笔，没有认领机制。
+> 规格见 `BUSINESS_LOGIC_PRINCIPLES.md` A6「代下单订单的归属」，开发项 **`C-PROXY-ORDER`**，画面契约 `PAGE_MAP.md` §5。
 >
-> 至少要有这几栏（名称待实作时定，语义不可少）：
+> 要补的欄位（名称待实作时定，语义不可少）：
 >
 > | 语义 | 说明 |
 > | --- | --- |
-> | 是不是代下单 | 布林或来源标记，团主端与客户端都要能分辨 |
-> | 代下单的团主 | principal（userId + openId）。**绑定后也不得抹去** |
-> | 认领状态 | 待认领 / 已绑定。待认领时 `customerOpenId` 为空 |
-> | 认领依据 | 绑定时用的手机号，与绑定时间 |
+> | 是不是代下单 | 布林或来源标记。团主端要靠它把代下单的单与自己下的单区分开（归属欄位两者都是团主，分不出来） |
+> | 代下单的团主 | principal（userId + openId）。不得抹去 |
 >
-> ⚠️ **两题未确认，别先动码**：① 自动绑定的触发点（手机号从哪来）② 是否只接受微信验证过的手机号（防冒领）。
-> 见开发项 **`C-PROXY-ORDER`**（`BUSINESS_LOGIC_PRINCIPLES.md` Part C · C5），画面契约见 `PAGE_MAP.md` §5。
+> 客户姓名/手机沿用既有的 `customerName` / `customerPhone`，代下单时改为**必填、不预填**。
 
 ### 5.1 状态流转
 
