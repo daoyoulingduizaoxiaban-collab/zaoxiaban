@@ -47,18 +47,6 @@ const bd = async (label, resource, action, data, openId = 'dev-owner') => {
     await fn('authLogin', { code: 'x' }, 'dev-owner'); // owner bootstrap
     await fn('authLogin', { code: 'x' }, 'cust-1'); // 一个客户
 
-    // ---- products ----
-    const prod = await bd('products.create', 'products', 'create', {
-      title: '验证商品', description: '验证用', sourceNote: '验证来源',
-      pictureUrls: ['https://x/a.png'], priceSetting: [{ minQuantity: 1, unitPrice: 10 }], status: 2,
-    });
-    const pid = prod.data && prod.data.id;
-    await bd('products.listPublic', 'products', 'listPublic', {});
-    await bd('products.listVisible', 'products', 'listVisible', {});
-    await bd('products.updateStatus', 'products', 'updateStatus', { id: pid, status: 1 });
-    await bd('products.update', 'products', 'update', { id: pid, title: '验证商品2', description: '验证用', sourceNote: '来源', pictureUrls: ['https://x/a.png'], priceSetting: [{ minQuantity: 1, unitPrice: 12 }] });
-    await bd('products.softDelete', 'products', 'softDelete', { id: pid });
-
     // ---- groupOrders ----
     const go = await bd('groupOrders.create', 'groupOrders', 'create', {
       title: '验证团', description: 'd', startAt: '2030-01-02 09:00', endAt: '2030-01-01 20:00',

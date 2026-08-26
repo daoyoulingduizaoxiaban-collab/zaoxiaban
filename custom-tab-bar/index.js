@@ -7,7 +7,6 @@ import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 const TAB_FEATURE_MAP = {
   groupOrder: FEATURE_KEYS.GROUP_ORDERS,
   customerOrders: FEATURE_KEYS.CUSTOMER_ORDERS,
-  productManagement: FEATURE_KEYS.PRODUCTS,
   // 用户审核：仅 owner/admin 可见（FEATURE_ALLOWED_ROLES 已限定）
   userReview: FEATURE_KEYS.USER_REVIEW,
 };
@@ -15,7 +14,6 @@ const TAB_FEATURE_MAP = {
 const TAB_ROUTE_VALUE_MAP = {
   'pages/groupOrder/index': 'groupOrder',
   'pages/customerOrders/index': 'customerOrders',
-  'pages/productManagement/index': 'productManagement',
   'pages/userReview/index': 'userReview',
   'pages/my/index': 'my',
 };
@@ -66,8 +64,6 @@ Component({
       // 客户订单 tab 改名「我的订单」（B2：客户经分享/扫码进团，不需要团单列表入口）。
       const isManager = canUseFeature(profile, FEATURE_KEYS.GROUP_ORDER_CREATE);
       const tabs = BOTTOM_BAR_LIST.filter((item) => {
-        // #8：商品库入口暂隐藏（改为开团时内嵌新增商品）。页面/数据结构保留，日后拆回只需删此行。
-        if (item.value === 'productManagement') return false;
         if (!isManager && item.value === 'groupOrder') return false;
         if (item.value === 'my') return true;
         const featureKey = TAB_FEATURE_MAP[item.value];

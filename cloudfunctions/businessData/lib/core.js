@@ -11,7 +11,6 @@ const db = cloud.database();
 const COLLECTIONS = [
   'users',
   'providers',
-  'products',
   'groupOrders',
   'groupOrderProducts',
   'customerOrders',
@@ -319,27 +318,6 @@ const assertApprovedProfile = (profile, allowedRoles = []) => {
   }
 };
 
-const canManageProduct = (product, profile) => {
-  if (!profile || !product) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  if (getEffectiveRoles(profile).includes('guide')) return sameId(product.ownerOpenId, profile.openId);
-  if (hasRole(profile, 'provider')) return sameId(product.providerId, profile.providerId || profile.id);
-  return false;
-};
-
-const canViewProduct = (product, profile) => {
-  if (!profile || !product || product.deletedAt) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  const isPublishedPublic = Number(product.status) === PRODUCT_STATUS.PUBLISHED
-    && product.visibility !== 'private';
-  if (getEffectiveRoles(profile).includes('guide')) {
-    return sameId(product.ownerOpenId, profile.openId) || isPublishedPublic;
-  }
-  if (hasRole(profile, 'provider')) return sameId(product.providerId, profile.providerId || profile.id);
-  if (hasRole(profile, 'customer')) return isPublishedPublic;
-  return false;
-};
-
 const canManageGroupOrder = (groupOrder, profile) => {
   if (!profile || !groupOrder) return false;
   if (isOwnerOrAdmin(profile)) return true;
@@ -547,8 +525,6 @@ module.exports = {
   isOwnerOrAdmin,
   assertProfile,
   assertApprovedProfile,
-  canManageProduct,
-  canViewProduct,
   canManageGroupOrder,
   canViewGroupOrder,
   getShareAccessError,

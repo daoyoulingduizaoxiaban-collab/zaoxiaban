@@ -19,14 +19,12 @@ const EXPECTED_DEGRADE = {
   '/pages/customerOrders/edit/index': '缺少团单入口',
 };
 const PAGES = [
-  '/pages/groupOrder/index', '/pages/customerOrders/index', '/pages/productManagement/index', '/pages/my/index',
+  '/pages/groupOrder/index', '/pages/customerOrders/index', '/pages/my/index',
   '/pages/search/index', '/pages/dataCenter/index', '/pages/setting/index', '/pages/operationLogs/index',
   '/pages/userReview/index', '/pages/tourGuides/index', '/pages/providers/index',
-  '/pages/feedback/index', '/sub-pages/product/list/index',
-  '/pages/customerOrders/edit/index', '/pages/tourGuides/edit/index', '/pages/providers/edit/index',
+  '/pages/feedback/index', '/pages/customerOrders/edit/index', '/pages/tourGuides/edit/index', '/pages/providers/edit/index',
   '/pages/my/info-edit/index', '/sub-pages/groupOrder/add/index',
   '/sub-pages/groupOrder/detail/index', '/sub-pages/groupOrder/productList/index',
-  '/sub-pages/product/add/index',
 ];
 
 // 一次只取要判定的那几个栏位，不整包捞页面 data——像客户订单页整包超过 60KB，

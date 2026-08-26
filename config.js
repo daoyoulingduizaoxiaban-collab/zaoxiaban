@@ -132,12 +132,6 @@ export const BOTTOM_BAR_LIST = [
     path: '/pages/customerOrders/index'
   },
   {
-    icon: 'shop',
-    value: 'productManagement',
-    label: '商品库',
-    path: '/pages/productManagement/index'
-  },
-  {
     icon: 'user-setting',
     value: 'userReview',
     label: '用户审核',

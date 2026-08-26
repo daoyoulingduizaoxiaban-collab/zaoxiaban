@@ -1,14 +1,13 @@
 import { AuthService } from '~/services/auth/authService';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
-import { ProductService } from '~/services/product/productService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 
 Page({
   data: {
     historyWords: [],
-    popularWords: ['团单', '本团商品', '商品库', '客户订单', '收款状态'],
+    popularWords: ['团单', '本团商品', '客户订单', '收款状态'],
     searchValue: '',
     isSearching: false,
     resultGroups: [],
@@ -165,9 +164,8 @@ Page({
 
     this.setData({ isSearching: true, hasSearched: true });
     // 三类均取角色可见集(listVisible 已按角色收敛,符 B6),再统一走客户端 match 过滤(口径一致)。
-    const [groupOrdersRes, productsRes, customerOrdersRes] = await Promise.all([
+    const [groupOrdersRes, customerOrdersRes] = await Promise.all([
       GroupOrderService.listVisible(),
-      ProductService.listVisible(),
       CustomerOrderService.listVisible(),
     ]);
     const lowered = keyword.toLowerCase();
@@ -180,17 +178,6 @@ Page({
         title: item.title || '团单',
         desc: item.startAt || item.pickupNote || '查看团单详情',
         type: 'groupOrder',
-      }));
-    // 客户无 PRODUCTS 功能：搜索不返回商品结果（客户不得浏览/搜索商品库，B1）。
-    const canSearchProducts = canUseFeature(profile, FEATURE_KEYS.PRODUCTS);
-    const products = (canSearchProducts && productsRes.success ? productsRes.data : [])
-      .filter(item => match(item.title) || match(item.description))
-      .slice(0, 8)
-      .map(item => ({
-        id: item.id,
-        title: item.title || '商品',
-        desc: item.description || '查看商品资料',
-        type: 'product',
       }));
     const customerOrders = (customerOrdersRes.success ? customerOrdersRes.data : [])
       .filter(item => match(item.customerName) || match(item.orderNo) || match(item.groupOrderTitle))
@@ -206,7 +193,6 @@ Page({
       isSearching: false,
       resultGroups: [
         { title: '团单', items: groupOrders },
-        { title: '商品', items: products },
         { title: '客户订单', items: customerOrders },
       ].filter(group => group.items.length),
     });
@@ -244,10 +230,6 @@ Page({
     }
     if (type === 'customerOrder') {
       navigateByUrl(`/pages/customerOrders/index?orderId=${encodeURIComponent(String(id))}`);
-      return;
-    }
-    if (type === 'product') {
-      navigateByUrl(`/sub-pages/product/list/index?productId=${encodeURIComponent(String(id))}`);
     }
   },
 

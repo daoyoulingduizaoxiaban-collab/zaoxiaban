@@ -53,7 +53,7 @@ BUG 由使用者在微信开发者工具实测后于对话回报，不在本文�
 
 ### 用户角色（auth role，写入 `roles[]`）
 
-- `customer` **客户 — 默认开放身份**。任何微信登录用户默认拥有，无需审核。**只能经团主分享链接进入某个团单**，浏览**该团在售商品**并下单、声明与更新自己订单的付款状态、查看自己订单。**客户没有独立的「商品库」浏览/搜索入口，也不能自由浏览别的团主的商品或随意加入别人的团单**——看商品只发生在「团单详情客户视图 / 下单页」内联。客户底部 NAV 仅 `团单`（自己参与过的）+ `客户订单` + `我的`，**不含商品库**。
+- `customer` **客户 — 默认开放身份**。任何微信登录用户默认拥有，无需审核。**只能经团主分享链接进入某个团单**，浏览**该团在售商品**并下单、声明与更新自己订单的付款状态、查看自己订单。**不能自由浏览别的团主的商品或随意加入别人的团单**——看商品只发生在「团单详情客户视图 / 下单页」内联。客户底部 NAV 仅 `团单`（自己参与过的）+ `客户订单` + `我的`。
 - `guide` **内部 role key，UI 显示为「团主」— 唯一需审核的用户角色**。管理自己的商品、供应商实体、团单、本团客户订单，确认收款。
 - `admin` 运营管理员：审核团主申请、管理用户与全局资料，权限低于 owner。
 - `owner` 产品拥有者与最高业务管理者，来自受控 allowlist。
@@ -250,7 +250,7 @@ profile 增加/使用团主申请子结构，至少包含：
 
 - 微信登录默认成为可下单客户。
 - 客户能申请团主，owner/admin 能审核通过并保留客户身份（多角色不冲突）。
-- 团主能维护商品与供应商实体、开团。**开团时的商品一律在开团页内嵌新增**（不从商品库选，见 B2 #8）。
+- 团主能开团，**商品在开团页内嵌新增**（见 B2 #8），并能维护供应商实体。
 - 客户能从合法团单入口下单、声明付款（凭证选填）。
 - 团主能确认收款、更新订单/团单状态；客户能查看并更新自己订单付款状态。
 - owner/admin 与团主能查看自己的关键操作记录。
@@ -334,7 +334,6 @@ owner/admin 必须有一个正式的**用户目录（管理面）**，能**看�
 | `groupOrders` | pages/groupOrder | ✅(仅自己下过单关联的团单) | ✅(自己创建/被授权的团单) | ✅ |
 | `groupOrderCreate` | 开团主流程 | — | ✅ | ✅ |
 | `products` 浏览 | 商品浏览 | ✅(可下单商品) | ✅ | ✅ |
-| `productManage` 管理 | pages/productManagement | — | ✅(自己的商品) | ✅ |
 | `providerManage` 供应商实体 | 团主商品/供应商维护 | — | ✅(自己的供应商实体) | ✅ |
 | `customerOrders` | pages/customerOrders | ✅(自己的订单) | ✅(自己团单下的订单) | ✅ |
 | `customerOrderCreate` 下单 | 下单流程 | ✅ | ✅(经分享作客户时) | ✅ |
@@ -356,11 +355,20 @@ owner/admin 必须有一个正式的**用户目录（管理面）**，能**看�
 tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 - **客户（纯 customer，不具开团能力）**：**我的订单 / 我的**——不显示「团单」tab（客户经分享/扫码直达团单，不需要列表入口）；「客户订单」tab 对客户显示为**「我的订单」**（看自己下了什么单），页面标题同步。
-- **团主**（含 customer+guide）：团单 / 客户订单 / 我的（**商品库 tab 目前仍隐藏**，见下）
-- **管理层**：全部 + **用户审核 tab**（仅 owner/admin 显示；「我的」页不再放重复入口）（商品库 tab 同样仍隐藏）
-- **⚠ 商品库与开团不互通（决策 6，2026-08-26 定案）**：**开团的商品一律在开团页内嵌新增**——填「商品名称 + 起订量 + 这一档总价」直接加入本团单，不从商品库选、也不回存商品库。选品页（`product-picker`）与「团单商品⇄商品库复用」的规划都已**取消并删档**。
-  商品库（`productManagement` / `product/list` / `product/add`）本身保留，定位是**团主自己的商品资料与其供应商关联**（guide-only，非客户可见，不违反 A2），与开团各走各的。
-  `custom-tab-bar` 目前仍过滤掉 `productManagement` tab（#8 留下的），所以商品库、商品新增/编辑与供应商维护在 UI 上**都没有入口**——这一条待 OWNER 拍板，见 `PAGE_MAP.md` §4。
+- **团主**（含 customer+guide）：团单 / 客户订单 / 我的
+- **管理层**：全部 + **用户审核 tab**（仅 owner/admin 显示；「我的」页不再放重复入口）
+- **⚠ #8 没有商品库，商品只活在团单里（OWNER 2026-08-26 最终定案，不要再问）**
+
+  **开团时同步新增商品，全站没有任何独立的商品管理页面。**
+
+  - 开团页填「商品名称 + 起订量 + 这一档总价 + 商品图（选填，最多 3 张）」，**直接加进本团单**。
+  - 商品**不是独立实体**，没有自己的集合、列表、详情、上下架、软删除。它只是团单文件里的 `productList`，随团单一起生老病死。
+  - 团单已建立后要改商品，去「编辑团单」；要看本团有哪些商品，去团单详情的「本团商品」。
+  - 客户看商品只发生在「团单详情客户视图 / 下单页」，看的也是那张团单自己的 `productList`。
+
+  **已整个删除**（不是隐藏、不是保留待拆回）：商品库页、商品浏览页、商品表单页、选品页、`ProductService`、`ProductRepository`、云端 `products` 资源与 `products` 集合、`FEATURE_KEYS.PRODUCTS` / `PRODUCT_MANAGE`、底部导航的商品库 tab、搜索页的商品分类。
+
+  供应商实体保留（团主自己维护的上游名单），入口在「我的」。
 - **定价填法（#1）**：商品价格档按「**起订量 + 该档总价（支援小数）**」录入（如买五送一 6 件总价 500）；存储换算 `unitPrice = 总价 / 起订量`（可为小数，如 83.33），客户下单计价仍按 unitPrice × 数量，逻辑不变；展示优先显示总价。
 - **停用/未登录**：仅安全状态页，无业务 tab
 
@@ -386,13 +394,13 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 | --- | --- | --- | --- | --- |
 | 团单 | **底部 NAV** | ✅(自己相关) | ✅ | ✅ |
 | 客户订单 | **底部 NAV** | ✅(自己的) | ✅(本团) | ✅ |
-| 商品库（浏览/管理） | ~~底部 NAV~~ **仍隐藏(#8)**，开团一律内嵌新增、与商品库不互通 | — | (无入口，待拍板) | (无入口，待拍板) |
+| ~~商品库（浏览/管理）~~ | **整个删除(#8)**，商品只在开团页内嵌新增、随团单存活 | — | — | — |
 | 我的 | **底部 NAV** | ✅ | ✅ | ✅ |
 | 个人资料 / 设置 | 我的·账号区 | ✅ | ✅ | ✅ |
 | 操作记录 | 我的·账号区 | — | ✅(自己相关) | ✅(管理记录) |
 | 申请成为团主 | 我的·账号区 | ✅(未持 guide 时) | — | — |
 | 用户审核 | 我的·管理区 | — | — | ✅ |
-| 供应商实体维护 | 商品库内（非独立入口） | — | ✅ | ✅ |
+| 供应商实体维护 | 我的·管理区（商品库删除后搬回来） | — | ✅ | ✅ |
 | ~~用户目录 / 改他人资料·角色~~ | **已整页删除（决策 5）**，功能并入用户审核 | — | — | — |
 | ~~工作台/首页(home)~~ | **废弃** | — | — | — |
 | ~~开团入口页(release)~~ | **废弃**（开团走团单列表 FAB / 我的·常用工作） | — | — | — |
@@ -401,7 +409,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 规则补充：
 - 底部 NAV 一栏对无权限角色**隐藏该 tab**（如客户看不到"商品管理"写操作、但保留浏览）。同一功能不因角色不同而在 NAV / 我的之间搬家。
-- 「我的」页**不再重复** NAV 的团单/客户订单/商品库/工作台入口。
+- 「我的」页**不再重复** NAV 的团单/客户订单/工作台入口。
 - **孤儿页废弃**：`home`（工作台）、`pages/release`（开团入口页）、`pages/loginCode`（验证码登录）、`pages/chat`（聊天/订单公告）均无正式入口、内容已被现有流程覆盖 → 废弃（删页 + 清 `app.json` 分包/页面注册）；开团入口固定为团单列表 FAB，登录统一走微信登录，消息统一走订单提醒页（无聊天）。
 - **个人资料只有一个自我编辑入口**：普通用户维护自己的资料统一走 `pages/my/info-edit`（账号资料：姓名/手机/性别/生日/地区/简介/头像）；`pages/profile/*`（用户目录 + 改他人/改角色）**仅管理层可用**，并入「我的·管理区」用户审核域，不对客户/团主开放。
 - **他人资料隐私**：普通用户（客户/团主）**不得看到其他用户的姓名、手机号等个人资料**；用户目录/名单类页面仅管理层可见，普通用户的资料页只返回并显示**本人**记录。对外展示他人信息处按 A7 脱敏。
@@ -440,18 +448,17 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
   - 判定：全站数据页无"先显旧档再突然重刷"或白屏；失败有重试；空数据有正式空状态。
 
 - [ ] **C-ENTRY-IA 功能入口编排落地**
-  - 改动：按 Part B「B5」把入口位置固定；「我的」页移除与 NAV 重复的团单/客户订单/商品库/工作台入口；废弃 home 作为正式入口。
+  - 改动：按 Part B「B5」把入口位置固定；「我的」页移除与 NAV 重复的团单/客户订单/工作台入口；废弃 home 作为正式入口。
   - 判定：同一功能对所有有权限角色出现在同一固定位置；无重复入口；无权限角色隐藏。
 
 - [ ] **C-AUTH-GATE 页面进入鉴权闸门统一化（落地 A13）**
-  - 背景：现状各页各写——`groupOrder`/`productManagement`/`my`/`my/info-edit`/`customerOrders`/`customerOrders/edit`/`setting` 未登录会导向 `pages/login/login`；而 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 等未登录**只把列表清空 + 显示一句受限文案，停在原页**，不导登录页（用户实测到的漏洞）；`sub-pages/groupOrder/detail` 则完全不判登录、仅凭 id 取数（属公开白名单，须保留但显式确认）。
+  - 背景：现状各页各写——`groupOrder`/`my`/`my/info-edit`/`customerOrders`/`customerOrders/edit`/`setting` 未登录会导向 `pages/login/login`；而 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 等未登录**只把列表清空 + 显示一句受限文案，停在原页**，不导登录页（用户实测到的漏洞）；`sub-pages/groupOrder/detail` 则完全不判登录、仅凭 id 取数（属公开白名单，须保留但显式确认）。
   - 改动：把 A13 四类去向 + 公开白名单收口到 `behaviors/useAccessPage`（新增统一 gate helper，如 `requireLogin()` / `resolveAccessRedirect()`）；各需登录页在取数前统一调用，未登录 → 导 `login?redirectTo=`，无权/停用/过期 → 正式受限态，不再停在原页显示空/异常数据；公开白名单（团单详情客户视图 / 下单页）显式登记、仅浏览、写操作仍隐藏 + 后端拒绝。
   - 判定：以未登录身份逐一打开每个需登录页 → 全部落到登录页（白名单页仅浏览态且无管理操作）；登录后回原页；无权/停用/过期显示正式受限态而非空业务数据；无一页停在原页显示登录后才有的数据。
-  - **落地范围（已完成）**：`ebd7037` 收口 `requireLogin()`（`getRealProfile` 判定避开 DEV 预览、1s 去抖防 onLoad+onShow 叠登录页）并覆盖 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 七页；`662e8af` 再补 `sub-pages/groupOrder/add`（开团）、`sub-pages/groupOrder/productList`（本团商品）、选品页、`sub-pages/product/add`（商品表单）。
-    > 2026-08-26 后续：`message` / `profile` / 选品页三者已整档删除（决策 5/6）；三个主 tab 也补上了 `requireLogin`（决策 7 + D-1）。
+  - **落地范围（已完成）**：`ebd7037` 收口 `requireLogin()`（`getRealProfile` 判定避开 DEV 预览、1s 去抖防 onLoad+onShow 叠登录页）并覆盖 `providers`/`operationLogs`/`userReview`/`tourGuides`/`dataCenter`/`message`/`profile` 七页；`662e8af` 再补 `sub-pages/groupOrder/add`（开团）、`sub-pages/groupOrder/productList`（本团商品）、选品页、商品表单页。
+    > 2026-08-26 后续：`message` / `profile` / 选品页 / **整个商品库（商品库页、商品浏览页、商品表单页）** 都已整档删除（决策 5 / #8）；`groupOrder` 与 `customerOrders` 两个主 tab 补上了 `requireLogin`。
   - **不 gate 的例外**：`pages/feedback`（DEV-only 内部工具，`onLoad` 已挡 `!isDev`、不读业务数据）。
-  - **商品库三页（`productManagement` / `product/list` / `product/add`）保留**，定位是团主自己的商品资料与供应商关联，**与开团不互通**（B2 #8）。三页都是 guide-only 管理页。
-    > 2026-08-26：`productManagement` 已补 `requireLogin` 并移除「未登录浏览公开商品」分支（D-1）。`product/list` 仍留公开清单分支，服务对象改为「已登录但未通过审核」的人，不再对未登录开放。
+  - ~~商品库三页~~ **已整个删除**（B2 #8）。商品不是独立实体，只活在团单的 `productList` 里。
 
 - [ ] **C-DEV-IDENTITY 本地身份模拟便捷开关**
   - 改动：本地 server 支持 `GUIDE_OPENIDS` 便捷 allowlist（仅本地）；`config.localDevOpenId` 说明与默认；按 A8 表让本地可扮 owner/admin/customer/guide。
@@ -493,15 +500,15 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 
 ## C4. 团主开团、商品、供应商、团单闭环
 
-- [ ] **C-PRODUCT 团主商品管理**：`pages/productManagement/*`、`services/product/productService.js`、`sub-pages/product/*`。新增/编辑/上下架/软删除自己的商品，含供应商实体关联；上下架用可辨识 toggle（J9）；删除二次确认并提示"下架/软删除，不影响历史团单与订单"（J8）；两套列表明确"管理/浏览"定位（J7）。判定：保存后列表/详情即时更新，重开仍在；团主不得改他人商品。（开团不走商品库，见 B2 #8）
-- ~~**C-PRODUCT-LIB-SAVE 团单商品⇄商品库复用**~~ — **取消（决策 6，2026-08-26）**：商品库与开团不互通，开团一律内嵌新增。选品页已删档。
+- ~~**C-PRODUCT 团主商品管理**~~ — **取消并删档（#8，2026-08-26）**。没有独立的商品管理页；商品在开团页内嵌新增、随团单存活。团单内的商品要改/移除，走「编辑团单」（`sub-pages/groupOrder/add`）与团单详情的「本团商品」（`sub-pages/groupOrder/productList`）。
+- ~~**C-PRODUCT-LIB-SAVE 团单商品⇄商品库复用**~~ — **取消（#8，2026-08-26）**：根本没有商品库可以互通了。
 - [ ] **C-GROUP 开团流程**：`sub-pages/groupOrder/add/*`。出团时间/收单截止用微信日期时间 picker（禁自由文本）、付款说明/取货集合用可编辑模板、必填与格式校验（时间顺序、金额、数量边界）（J5）。判定：空数据有校验提示，picker 保存后可回填。
 - [ ] **C-GROUP-PRODUCT 本团商品**：保存商品/价格/供应商/可售状态快照；下架或供应商停用后新团单不得选用，既有团单保留历史状态。
 - [ ] **C-GUIDE-ORDERVIEW 团主客户订单视图**：`pages/customerOrders/*`。团主查看自己团单下订单与付款状态，可更新订单/团单状态与确认收款；不得看他人团单订单。
 
 ## C5. 客户下单、付款、分享
 
-- [ ] **C-ORDER 客户下单**：`pages/customerOrders/edit*`。从合法团单入口选品提交订单，记录 group order/customer principal/items/金额/状态/时间。判定：客户只见自己订单。
+- [ ] **C-ORDER 客户下单**：`pages/customerOrders/edit*`。从合法团单入口挑该团商品提交订单，记录 group order/customer principal/items/金额/状态/时间。判定：客户只见自己订单。
 - [ ] **C-PAY 付款声明（凭证选填）**：付款方式/金额/备注可提交声明，图片选填；有图走正式 media picker + 持久化存储，不存临时本地路径。客户可在团主确认前更新/撤回声明。团主确认/拒绝/取消写状态历史。凭证仅客户本人/所属团主/管理层可见（J13 报表用语与行为一致）。
 - [ ] **C-SHARE 分享下单 token 校验（J12）**：`pages/customerOrders/edit*`、`repositories/groupOrderRepository.js`、`services/customerOrder/*`、`cloudfunctions/businessData/index.js`。入口不只靠 `groupOrderId`，须校验 share token、团单状态、截止时间、可售性；非法/过期导向安全页并说明拒绝原因。已是团主者从他人分享进入时进入客户下单场景，退出后回团主首屏。
 - [ ] **C-SHARE-QR 分享/QR 行为一致（J16）**：文案、按钮、实际功能一致；未实作 QR 则移除"暂无团单二维码"改为可实现替代（如复制链接）。

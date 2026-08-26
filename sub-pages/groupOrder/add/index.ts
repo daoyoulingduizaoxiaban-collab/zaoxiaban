@@ -46,7 +46,8 @@ Page({
     datePickerVisible: false,
     pickerField: '',
     pickerValue: '',
-    // #8 开团内嵌新增商品：填名称 + 多档「数量+总价(支援小数)」价格区间 + 商品图(选填)，加入 selectedGoods（不必先去商品库）。
+    // #8 商品只在这里新增：填名称 + 多档「数量+总价(支援小数)」价格区间 + 商品图(选填)，加入 selectedGoods。
+    // 商品不是独立实体，随团单的 productList 一起存活；全站没有独立的商品管理页（见 DOC/BUSINESS_LOGIC_PRINCIPLES B2 #8）。
     newProduct: {
       title: '',
       tiers: [] as Array<{ minQuantity: number; totalPrice: number }>,

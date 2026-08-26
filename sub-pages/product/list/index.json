@@ -1,6 +1,0 @@
-{
-  "usingComponents": {
-    "sub-nav": "/components/sub-nav/index",
-    "page-state": "/components/page-state/index"
-  }
-}

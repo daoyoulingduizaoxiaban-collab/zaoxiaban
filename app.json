@@ -1,11 +1,8 @@
 {
   "pages": [
     "pages/my/index",
-    "pages/productManagement/index",
     "sub-pages/groupOrder/detail/index",
     "sub-pages/groupOrder/productList/index",
-    "sub-pages/product/add/index",
-    "sub-pages/product/list/index",
     "sub-pages/groupOrder/add/index",
     "pages/groupOrder/index",
     "pages/tourGuides/index",
@@ -75,9 +72,6 @@
       },
       {
         "pagePath": "pages/customerOrders/index"
-      },
-      {
-        "pagePath": "pages/productManagement/index"
       },
       {
         "pagePath": "pages/userReview/index"

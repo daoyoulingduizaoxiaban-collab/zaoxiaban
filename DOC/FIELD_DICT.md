@@ -4,7 +4,7 @@
 > **怎么用**：做任何表单、卡片、详情弹窗之前先查这份；同一实体在第二个页面要显示，**必须走同一个共用元件 + 同一个 view model**，不准自绘。
 > **和别的文件的分工**：`BUSINESS_LOGIC_PRINCIPLES.md` A5 定「有哪些实体、归属谁」；这份定「每个实体到底有哪些栏位、长什么样、显示在哪」。跳转查 `PAGE_MAP.md`。
 >
-> **状态**：2026-08-25 全站扫描后建立。标 ⚠️ 的是**现况有问题、待收敛**，标 ❓ 的是**待拍板**。
+> **状态**：2026-08-25 全站扫描后建立，2026-08-26 随删档/收敛更新。标 ⚠️ 的是**现况有问题、待收敛**，标 ❓ 的是**待拍板**。
 
 ---
 
@@ -137,27 +137,30 @@
 
 ---
 
-## 3. products
+## 3. 团单商品（`groupOrders.productList` 的元素）
 
-**权威**：`cloudfunctions/businessData/resources/products.js`
+> **没有 `products` 集合，商品不是独立实体**（B2 #8，OWNER 2026-08-26 最终定案）。
+> 商品在开团页内嵌新增，直接写进团单文件的 `productList`，随团单一起生老病死。
+> 商品库页、商品浏览页、商品表单页、选品页、`ProductService`、`ProductRepository`、
+> 云端 `products` 资源与集合，**全部已删档**。
+
+**权威**：`cloudfunctions/businessData/resources/groupOrders.js` 的 `validateNewProducts` 与 `syncGroupOrderProducts`。
+**产生处**：`sub-pages/groupOrder/add/index.ts` 的 `addProductInline()`。
 
 | 栏位 | 型别 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `id` | number | 系统 | |
-| `title` | string | ✅ | |
-| `description` | string | ✅ | |
-| `sourceNote` | string | ✅ | 供应来源 |
-| `pictureUrls[]` | string[] | ✅ | 上限 3 张（仅前端限制）；必须 durable URL（仅云端校验） |
-| `priceSetting[]` | PriceSetting[] | ✅ | 至少一组，见 §3.1 |
-| ⚠️ `priceSettings[]` | — | — | 云端**双写**同一份资料，读取端到处 `a \|\| b` 兜底 |
-| `status` | enum | ✅ | `1` 已下架 / `2` 已上架 |
-| `ownerUserId` | number | 系统 | |
-| `ownerOpenId` | string | 系统 | ⚠️ 只有云端有；`core.js:311` 的 guide 归属判定靠它 |
-| `visibility` | string | 系统 | ⚠️ 只有云端有，预设 `'public'` |
-| `providerId` | string\|number | — | 关联供应商；⚠️ 表单有 data 无 UI 输入 |
-| `priceDisplay` | string | 衍生 | **对外价格的唯一口径**，由 `productService.js:33` 计算 |
-| `coverUrl` / `isImageFallback` / `imageFallbackText` | — | 衍生 | 由 `utils/productImage.js:24-30` 前端注入 |
-| `createdAt` / `updatedAt` / `deletedAt` | string | 系统 | |
+| `id` | string | 系统 | 开团页产生，形如 `inline-<时间戳>-<乱数>`，只在本团单内唯一 |
+| `title` | string | ✅ | 商品名称 |
+| `priceSetting[]` | PriceSetting[] | ✅ | 至少一档，见 §3.1。云端 `validateNewProducts` 逐档验 |
+| `status` | number | 系统 | 固定 `2`（上架）。客户下单页按 `status===2` 过滤，给别的值客户就看不到 |
+| `pictureUrls[]` | string[] | — | 选填，上限 3 张（仅前端限制）；云端后端只收 `cloud://` / `https://` |
+| `coverUrl` | string | 衍生 | `pictureUrls[0]`，开团页加入商品时算好 |
+| `isImageFallback` / `imageFallbackText` | — | 衍生 | 由 `utils/productImage.js` 前端注入 |
+| `priceDisplay` | string | 衍生 | **对外价格的唯一口径**，由 `utils/priceDisplay.js` 计算 |
+
+`description`、`sourceNote`、`providerId`、`ownerUserId`、`visibility` 这些原本属于商品库实体的栏位**都没有了**——内嵌新增只填名称、价格档、图片三样。
+
+> 落库时另有一份快照写进 `groupOrderProducts` 集合（`titleSnapshot` / `priceSnapshot` / `status` / `sortOrder`），供日后追溯用；读取端目前不读它。
 
 ### 3.1 PriceSetting（价格档）
 
@@ -170,27 +173,18 @@
 
 **规则**（`75c18d2` / `ea7386e` 确立）：第一档 `minQuantity` 必须为 1；各档 `minQuantity` 逐档递增；各档 `totalPrice` 逐档递增。下单时走最优组合 DP 计价。
 
-⚠️ **前端只在「按 + 加档」当下检查**（`product/add/index.ts:145,164-169`），`productService.js:96-105` 的 `validateProduct` **完全没有这两条** → 编辑既有商品时前端不重验，要送出才被云端 `products.js:56-68` 挡下。
+前端在开团页「按 + 加档」当下检查，云端 `groupOrders.js` 的 `validateNewProducts` 是权威版本，送出时再验一次。
 
-### 3.2 显示位置 ⚠️ 同一实体 8 处、价格 4 种口径
+### 3.2 显示位置（商品库删档后剩 4 处）
 
 | 位置 | 栏位数 | 价格用什么 |
 | --- | --- | --- |
-| `pages/productManagement/index.wxml:37-50` 商品库列表卡 | 5 | ⚠️ `unitPrice`（**无 `priceDisplay`**） |
-| `pages/productManagement/index.wxml:76-102` 商品库详情弹窗 | 5 | ⚠️ `unitPrice` |
-| `sub-pages/product/list/index.wxml:36-56` 浏览列表卡 | 7 | `priceDisplay` + 逐档 `unitPrice`/`totalPrice` |
-| `sub-pages/product/list/index.wxml:66-92` 浏览详情弹窗 | 4 | ⚠️ **无 `priceDisplay`** |
 | `sub-pages/groupOrder/productList/index.wxml:26-42` 本团商品列表卡 | 4 | `priceDisplay` |
-| `sub-pages/groupOrder/productList/index.wxml:66-90` 本团商品详情弹窗 | 4 | ⚠️ `totalPrice`（**与商品库弹窗同一组 priceSetting，显示不同数字**） |
-| `sub-pages/groupOrder/product-picker/index.wxml:45-58` 选品卡 | 4 | `priceDisplay` |
+| `sub-pages/groupOrder/productList/index.wxml:66-90` 本团商品详情弹窗 | 4 | `totalPrice` |
 | `pages/customerOrders/edit/index.wxml:59-79` 客户下单商品列 | 6 | `priceDisplay` + `selectedRuleText` + `lineTotal` |
 | `sub-pages/groupOrder/detail/index.wxml:113-121` 在售商品 | 3 | `priceTiers` |
 
-⚠️ `sourceNote` 只在商品库与浏览页显示；选品页、本团商品、客户下单页全无。
-
-⚠️ **价格格式化有 5 套各自输出不同字串**：`productService.js:19-25`（`N件 ¥X`，` / ` 连）、`customerOrderService.js:61-67`（同格式但走 `roundMoney`）、`groupOrderService.js:13-19`、`groupOrder/detail/index.ts:18-24`（全形 `￥`）、云端 `products.js:24-26`（`N件¥X`，`、` 连，仅用于操作记录）。
-
-**收敛口径**：`priceDisplay` 是唯一对外价格展示；格式化函式收敛成一支。
+**收敛口径**：`priceDisplay` 是唯一对外价格展示，格式化只有 `utils/priceDisplay.js` 一支（2026-08-26 已从七份收敛完成）。
 
 ---
 
@@ -411,11 +405,10 @@
 | --- | --- | --- |
 | ~~`repositories/*` 本地 seed 分支~~ | ✅ 已整批删除（2026-08-26，决策 4） | 仓库层 1640 → 390 行；边界规则见 `DEVELOPMENT_GUIDE` §1.1 |
 | ~~`models/Host.ts` / `Member.ts`~~ | ✅ 已删除（2026-08-26，决策 9） | 零 import，栏位与实际形状无交集 |
-| `models/GroupOrder.ts` / `MemberOrder.ts` | 宣告与云端实际严重失真 | 补齐或降级为纯型别档 |
-| `products.priceSettings` 双写 | 云端同时写单复数两个栏位 | 建议收敛成单数 |
-| `groupOrderProducts` 缺供应商快照 | `A5` 有要求，未实作 | 要补要拍板 |
+| `models/GroupOrder.ts` / `MemberOrder.ts` / `Product.ts` | 宣告与云端实际严重失真（`Product.ts` 现在只用于开团页的内嵌商品型别） | 补齐或降级为纯型别档 |
+| `groupOrderProducts` 缺供应商快照 | `A5` 有要求，未实作；商品库删档后内嵌商品也不带 `providerId` | 这条要不要跟着取消 |
 | `payments` 独立表零读取 | 只写不读 | 留着追溯用？ |
-| `groupOrders.startAt < endAt` 不验 | 前后端都明文放弃；`endAt` 早于 `startAt` 时分享连结立即过期 | 建议补验，当初是刻意放弃的 |
+| ~~`groupOrders.startAt < endAt` 不验~~ | ✅ 已补（2026-08-26，决策 10）：出团不得晚于收单截止，前后端各一道，文案一致 | 权威版本在云端 `groupOrders.js` |
 | `users.guideApplication` | `A5` 有规范，未实作 | |
 | `REVIEW_STATUS.expired` 云端没有 | 地端会产出，云端不认 | 建议云端补上 |
-| **4 个子页面的三态栏位永远在说谎** | `sub-pages/product/add`、`sub-pages/groupOrder/add`、`sub-pages/groupOrder/productList`、`sub-pages/groupOrder/product-picker` 都挂了 `useAccessPage` 行为（所以 data 里带 `pageState` / `authReady` / `isLoggedIn`），但 wxml **没有注册 `page-state` 元件**，画面是自己用 `isPageLoading` / `accessDenied` 画的。结果这几个栏位从初始值起就没人更新过——`pageState` 永远是 `loading`、`authReady` 永远是 `false`、`isLoggedIn` 永远是 `false`，**即使当下明明登录了**。画面正常，是栏位在骗人。2026-08-25 冒烟脚本就被骗过一次，把这些好页面报成「卡在 loading」。（`pages/providers` 与 `pages/profile` 原本也在此列，2026-08-26 已改成照契约维护三态。）全站 26 页里，注册了 `page-state` 元件的只有 10 页，另 2 页自己维护三态 | 二选一：① 这几页照 `DEVELOPMENT_GUIDE` 第 6 节接上 `page-state` 元件走统一三态；② 不接的话就别挂 `useAccessPage`，改只引需要的判断函式，别让 data 带着永不更新的栏位。建议 ①，跟全站口径一致 |
+| ~~子页面的三态栏位永远在说谎~~ | ✅ 已修（2026-08-26，决策 8）。原本 `sub-pages/groupOrder/add`、`groupOrder/productList`、商品表单页、选品页都挂了 `useAccessPage`（data 里带 `pageState` / `authReady` / `isLoggedIn`）却自己用 `isPageLoading` / `accessDenied` 画画面，那几个栏位从初始值起没人更新过，冒烟因此被骗过一次。现在存活的三页都接上 `page-state` 走统一三态，另两页已随删档消失 | 新页照 `DEVELOPMENT_GUIDE` §6 接 `page-state`；`check-contract.js` 的 C2 会挡「用了元件没注册」 |

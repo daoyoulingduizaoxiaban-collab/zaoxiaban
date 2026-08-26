@@ -1,7 +1,6 @@
 const TAB_PAGE_URLS = new Set([
   '/pages/groupOrder/index',
   '/pages/customerOrders/index',
-  '/pages/productManagement/index',
   '/pages/userReview/index',
   '/pages/my/index',
 ]);

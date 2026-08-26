@@ -41,7 +41,7 @@ Page({
     canShowRolePreviewNotice: false,
     realRoleText: '',
     previewRoleText: '',
-    // 九宫格不再重复底部 NAV 的团单/客户订单/商品库/工作台入口（A12/B5）；实际项由 buildGridList 按角色生成。
+    // 九宫格不再重复底部 NAV 的团单/客户订单/工作台入口（A12/B5）；实际项由 buildGridList 按角色生成。
     gridList: [],
 
     settingList: [],
@@ -117,7 +117,7 @@ Page({
   buildGridList(profile) {
     if (!AuthService.canUseBusiness(profile)) return [];
 
-    // 我的页九宫格只放非 NAV 主流程的辅助入口（搜索/数据中心）；团单/客户订单/商品库/工作台/开团不在此重复（A12/B5）。
+    // 我的页九宫格只放非 NAV 主流程的辅助入口（搜索/数据中心）；团单/客户订单/工作台/开团不在此重复（A12/B5）。
     const list = [
       {
         name: '搜索',
@@ -164,7 +164,9 @@ Page({
       // 用户目录页（列出他人姓名/手机）已整页删除（决策 5）：功能由「用户审核」取代。
       // 自我编辑入口在「设置」页的「账号资料」，「我的」头像卡不再放编辑笔。
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
-      // 「供应商资料」入口已移进「商品库」页（D-4/B5：供应商是团主管理商品的上游，归商品域）。
+      // 「供应商资料」原本挂在商品库页里（D-4）。商品库整个删掉后（开团一律内嵌新增商品，
+      // 不再有独立的商品管理页），这个入口跟着没了家，搬回「我的」——否则供应商资料点不到。
+      { name: '供应商资料', icon: 'shop', type: 'providers', url: '/pages/providers/index', feature: FEATURE_KEYS.PROVIDERS },
       { name: '操作记录', icon: 'time', type: 'operationLogs', url: '/pages/operationLogs/index', feature: FEATURE_KEYS.OPERATION_LOGS },
     ];
 
@@ -300,7 +302,7 @@ Page({
     if (this.lastNavKey === navKey && now - (this.lastNavAt || 0) < 800) return;
     this.lastNavKey = navKey;
     this.lastNavAt = now;
-    const loginRequiredTypes = ['tourGuides', 'dataCenter', 'userReview', 'operationLogs', 'providerApply', 'rolePreview'];
+    const loginRequiredTypes = ['tourGuides', 'dataCenter', 'userReview', 'operationLogs', 'providers', 'providerApply', 'rolePreview'];
     if (!this.data.isLoggedIn && loginRequiredTypes.includes(type)) {
       this.onLogin();
       return;
@@ -332,7 +334,6 @@ Page({
       });
       return;
     }
-    // 供应商入口已移进「商品库」页（D-4），此处不再处理 type === 'providers'。
     this.onShowToast('#t-toast', name);
   },
 

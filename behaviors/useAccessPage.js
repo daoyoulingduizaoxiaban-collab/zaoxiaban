@@ -15,7 +15,7 @@ const buildRedirectTo = (page) => {
 
 /**
  * 共享「鉴权 + 加载三态」脚手架（R1）。
- * 把 customerOrders / groupOrder / productManagement 三个 tab 页 copy 的
+ * 把 customerOrders / groupOrder 两个 tab 页 copy 的
  * access-state（authReady/canUseBusiness/accessStateText/isLoggedIn/roleScopeText）
  * 与三态（isLoading/loadErrorText/pageState/emptyText/emptyCta）样板收口。
  *

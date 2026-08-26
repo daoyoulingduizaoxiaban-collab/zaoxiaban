@@ -69,37 +69,44 @@ const waitHealth = async () => {
     const cust2 = await fn('authLogin', { code: 'x' }, 'cust-1');
     ok('重复登录幂等', cust2.success === true && cust2.openId === 'cust-1', cust2.openId);
 
-    // 4. businessData：owner 创建商品（写入 + 校验通过）
+    // 4. businessData：owner 开团（写入 + 校验通过）。商品不再是独立实体，
+    //    开团时内嵌带进 productList，所以这里连商品一起验。
     const created = await fn('businessData', {
-      resource: 'products', action: 'create',
+      resource: 'groupOrders', action: 'create',
       data: {
-        title: '桂花糕', description: '手工桂花糕伴手礼', sourceNote: '杭州老字号',
-        pictureUrls: ['https://example.com/a.jpg'],
-        priceSetting: [{ minQuantity: 1, unitPrice: 30 }],
-        status: 2,
+        title: '桂花糕团', description: '手工桂花糕伴手礼', startAt: '2030-09-01 09:00', endAt: '2030-09-30 20:00',
+        productList: [{
+          id: `inline-${Date.now()}`, title: '桂花糕', status: 2,
+          pictureUrls: ['https://example.com/a.jpg'],
+          priceSetting: [{ minQuantity: 1, unitPrice: 30 }],
+        }],
       },
     }, 'dev-owner');
-    ok('商品创建成功', created.success === true, created.error);
-    const productId = created.data && (created.data.id || created.data._id);
-    ok('返回商品 id', Boolean(productId));
+    ok('开团成功', created.success === true, created.error);
+    const groupOrderId = created.data && (created.data.id || created.data._id);
+    ok('返回团单 id', Boolean(groupOrderId));
+    ok('团单带着内嵌商品', Array.isArray(created.data && created.data.productList) && created.data.productList.length === 1);
 
-    // 5. 列表可见 → 读回刚建的商品
-    const list = await fn('businessData', { resource: 'products', action: 'listVisible', data: {} }, 'dev-owner');
-    ok('商品列表读取成功', list.success === true, list.error);
-    ok('列表含新建商品', Array.isArray(list.data) && list.data.some(p => (p.id || p._id) === productId), list.data && list.data.length);
+    // 5. 列表可见 → 读回刚建的团单
+    const list = await fn('businessData', { resource: 'groupOrders', action: 'listVisible', data: {} }, 'dev-owner');
+    ok('团单列表读取成功', list.success === true, list.error);
+    ok('列表含新建团单', Array.isArray(list.data) && list.data.some(g => (g.id || g._id) === groupOrderId), list.data && list.data.length);
 
-    // 6. 持久化：直接读数据库文件，商品仍在（模拟重开）
+    // 6. 持久化：直接读数据库文件，团单仍在（模拟重开）
     const raw = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-    ok('数据落库持久化', Array.isArray(raw.products) && raw.products.some(p => p._id === String(productId)), raw.products && raw.products.length);
+    ok('数据落库持久化', Array.isArray(raw.groupOrders) && raw.groupOrders.some(g => g._id === String(groupOrderId)), raw.groupOrders && raw.groupOrders.length);
     ok('users 落库(含 cust-1 与 dev-owner)',
       Array.isArray(raw.users) && raw.users.some(u => u.openId === 'cust-1') && raw.users.some(u => u.openId === 'dev-owner'));
 
-    // 7. 客户无权创建商品（负向）
+    // 7. 客户无权开团（负向）
     const denied = await fn('businessData', {
-      resource: 'products', action: 'create',
-      data: { title: 'x', description: 'x', sourceNote: 'x', pictureUrls: ['https://e.com/a.jpg'], priceSetting: [{ minQuantity: 1, unitPrice: 1 }] },
+      resource: 'groupOrders', action: 'create',
+      data: {
+        title: 'x', description: 'x', startAt: '2030-09-01 09:00', endAt: '2030-09-30 20:00',
+        productList: [{ id: 'inline-x', title: 'x', status: 2, priceSetting: [{ minQuantity: 1, unitPrice: 1 }] }],
+      },
     }, 'cust-1');
-    ok('客户创建商品被拒(后端鉴权)', denied.success === false, denied);
+    ok('客户开团被拒(后端鉴权)', denied.success === false, denied);
 
   } catch (err) {
     failed = true;

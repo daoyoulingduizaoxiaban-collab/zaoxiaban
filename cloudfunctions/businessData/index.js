@@ -4,7 +4,6 @@
 const { ensureCollections, getCallerProfile, failure, toPublicError } = require('./lib/core');
 const userActions = require('./resources/users');
 const providerActions = require('./resources/providers');
-const productActions = require('./resources/products');
 const groupOrderActions = require('./resources/groupOrders');
 const customerOrderActions = require('./resources/customerOrders');
 const feedbackActions = require('./resources/feedbacks');
@@ -13,7 +12,6 @@ const operationLogActions = require('./resources/operationLogs');
 const handlers = {
   users: userActions,
   providers: providerActions,
-  products: productActions,
   groupOrders: groupOrderActions,
   customerOrders: customerOrderActions,
   feedbacks: feedbackActions,

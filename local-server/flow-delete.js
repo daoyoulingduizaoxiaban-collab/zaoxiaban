@@ -1,7 +1,10 @@
 /**
- * UI 写流程自测 · 删除类操作（商品删除 + 团单删除）。
+ * UI 写流程自测 · 团单删除。
  *
- * 这两条流程以前列在「不可自动化」：删除动作放在 wx.showModal 的 success 回调里，
+ * 原本还测商品删除，商品库已整个删除（开团一律内嵌新增商品），那半段跟着拿掉。
+ * 团单内的商品要「删」就是在编辑团单里移除，那条走 flow-groupedit。
+ *
+ * 这条流程以前列在「不可自动化」：删除动作放在 wx.showModal 的 success 回调里，
  * 旧的 automator 点不了原生弹窗。新版 wechatide 可以 mock wx API，把 showModal
  * 直接回 { confirm: true }，回调就会照真实路径跑下去——测的仍是页面真正的删除逻辑，
  * 只有「使用者按下确定」这一下被替换掉。
@@ -10,16 +13,6 @@
  * 跑法：node local-server/flow-delete.js
  */
 const ide = require('./lib/ide');
-
-const seedProduct = async (marker) => {
-  const res = await ide.bd('products', 'create', {
-    title: marker, description: '待删样品', sourceNote: '自测来源', status: 2,
-    pictureUrls: ['https://example.com/del.jpg'],
-    priceSetting: [{ minQuantity: 1, unitPrice: 10, totalPrice: 10, description: '1 件起' }],
-  });
-  if (!res || !res.success) throw new Error(`seed 商品失败: ${res && res.error}`);
-  return res.data.id || res.data._id;
-};
 
 const seedGroupOrder = async (marker) => {
   const res = await ide.bd('groupOrders', 'create', {
@@ -46,22 +39,10 @@ let finished = false;
   await ide.mockWxApi('showModal', { confirm: true, cancel: false });
 
   try {
-    // ── ① 商品删除 ──────────────────────────────────
-    const productMarker = `自测删商品${String(stamp).slice(-6)}`;
-    const productId = await seedProduct(productMarker);
-    // 删之前先确认它真的在列表里：seed 回传的 id 键名若变了，productId 会是 undefined，
-    // 之后的「不在列表」比对恒成立，整支测试假性通过。
-    if (!(await stillListed('products', productId))) throw new Error(`seed 的商品 ${productId} 根本不在列表，测不到删除`);
-    await ide.gotoPage('/pages/productManagement/index', 'productManagement');
-    await ide.dataWhenReady('pageState');
-    await ide.callMethod('onDelete', { currentTarget: { dataset: { id: productId } } });
-    await ide.sleep(1800);
-    if (await stillListed('products', productId)) throw new Error(`商品删除没生效，${productId} 仍在列表`);
-    console.log(`✅ 商品删除生效：${productMarker} 已不在商品列表`);
-
-    // ── ② 团单删除 ──────────────────────────────────
     const groupMarker = `自测删团${String(stamp).slice(-6)}`;
     const groupOrderId = await seedGroupOrder(groupMarker);
+    // 删之前先确认它真的在列表里：seed 回传的 id 键名若变了，groupOrderId 会是 undefined，
+    // 之后的「不在列表」比对恒成立，整支测试假性通过。
     if (!(await stillListed('groupOrders', groupOrderId))) throw new Error(`seed 的团单 ${groupOrderId} 根本不在列表，测不到删除`);
     await ide.gotoPage('/pages/groupOrder/index', 'groupOrder/index');
     await ide.dataWhenReady('pageState');

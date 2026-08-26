@@ -39,8 +39,6 @@ export const FEATURE_KEYS = Object.freeze({
   HOME: 'home',
   GROUP_ORDERS: 'groupOrders',
   GROUP_ORDER_CREATE: 'groupOrderCreate',
-  PRODUCTS: 'products',
-  PRODUCT_MANAGE: 'productManage',
   CUSTOMER_ORDERS: 'customerOrders',
   CUSTOMER_ORDER_CREATE: 'customerOrderCreate',
   DATA_CENTER: 'dataCenter',
@@ -58,10 +56,6 @@ const FEATURE_ALLOWED_ROLES = Object.freeze({
   [FEATURE_KEYS.HOME]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.GROUP_ORDERS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.GROUP_ORDER_CREATE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
-  // 客户不得独立浏览/搜索商品库（B1：客户只能经团主分享链接进某团、看该团在售商品并下单）。
-  // 客户看商品只发生在「团单详情客户视图/下单页」内联，不走此 PRODUCTS 功能与商品库 tab。
-  [FEATURE_KEYS.PRODUCTS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
-  [FEATURE_KEYS.PRODUCT_MANAGE]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.CUSTOMER_ORDERS]: [AUTH_ROLES.GUIDE, AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.CUSTOMER_ORDER_CREATE]: [AUTH_ROLES.CUSTOMER, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
   [FEATURE_KEYS.DATA_CENTER]: [AUTH_ROLES.GUIDE, AUTH_ROLES.OWNER, AUTH_ROLES.ADMIN],
@@ -162,12 +156,6 @@ export const getRoleScopeText = (profile, featureKey) => {
       [AUTH_ROLES.OWNER]: '当前为管理角色，可查看授权范围内团单',
       [AUTH_ROLES.ADMIN]: '当前为管理角色，可查看授权范围内团单',
     },
-    [FEATURE_KEYS.PRODUCTS]: {
-      [AUTH_ROLES.GUIDE]: '仅显示你可管理或可使用的商品',
-      [AUTH_ROLES.CUSTOMER]: '仅显示可下单商品',
-      [AUTH_ROLES.OWNER]: '当前为管理角色，可查看授权范围内商品',
-      [AUTH_ROLES.ADMIN]: '当前为管理角色，可查看授权范围内商品',
-    },
     [FEATURE_KEYS.CUSTOMER_ORDERS]: {
       [AUTH_ROLES.GUIDE]: '当前身份：团主｜仅显示你管理团单下的客户订单',
       [AUTH_ROLES.CUSTOMER]: '当前身份：客户｜仅显示你自己的客户订单',
@@ -233,43 +221,3 @@ export const filterCustomerOrdersByRole = (customerOrders, groupOrders, profile)
   return [];
 };
 
-export const filterProductsByRole = (products, profile) => {
-  const activeProducts = products.filter(product => !product.deletedAt);
-  const publicProducts = activeProducts.filter(product => (
-    Number(product.status) === 2
-    && product.visibility !== 'private'
-  ));
-
-  if (!isApprovedProfile(profile)) return publicProducts;
-  if (isOwnerOrAdmin(profile)) return activeProducts;
-
-  if (getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) {
-    return activeProducts.filter(product => (
-      !product.ownerUserId
-      || sameId(product.ownerUserId, profile.id)
-      || product.visibility === 'public'
-    ));
-  }
-
-  if (hasRole(profile, AUTH_ROLES.PROVIDER)) {
-    return activeProducts.filter(product => sameId(product.providerId, profile.providerId || profile.id));
-  }
-
-  if (hasRole(profile, AUTH_ROLES.CUSTOMER)) {
-    return publicProducts;
-  }
-
-  return [];
-};
-
-export const canManageProduct = (product, profile) => {
-  if (!isApprovedProfile(profile) || !product) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  if (getEffectiveRoles(profile).includes(AUTH_ROLES.GUIDE)) {
-    return !product.ownerUserId || sameId(product.ownerUserId, profile.id);
-  }
-  if (hasRole(profile, AUTH_ROLES.PROVIDER)) {
-    return sameId(product.providerId, profile.providerId || profile.id);
-  }
-  return false;
-};

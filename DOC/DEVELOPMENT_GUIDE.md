@@ -210,7 +210,7 @@ node local-server/check-contract.js
 | 代号 | 检查什么 | 为什么有这条 |
 | --- | --- | --- |
 | C1 | `app.json` 注册 ↔ 磁碟上的页面档，两边都要对得上 | 删页只拿掉注册会留死档；只删档不拿注册会留死注册。**分包两种拼法（`subPackages` / `subpackages`）都要认**，本专案用小写那个 |
-| C2 | wxml 用到的自订元件，该页 `json` 或 `app.json` 里要有注册 | `product/list` 挂了 `<nav>` 但全站没注册 → 整条导览列不渲染、连返回键都没有，肉眼看不出来 |
+| C2 | wxml 用到的自订元件，该页 `json` 或 `app.json` 里要有注册 | 商品浏览页挂了 `<nav>` 但全站没注册 → 整条导览列不渲染、连返回键都没有，肉眼看不出来（该页后来随商品库删档，规则留着） |
 | C3 | 每个用 `sub-nav` 的页都要写 `fallback-url`（或 `custom-back` + `bind:back`） | 不写就吃元件预设值 `/pages/groupOrder/index`，冷启动时不管从哪进来都弹回团单列表 |
 | C4 | `pages` / `sub-pages` / `components` 等不得直接 `wx.request` / `wx.cloud.callFunction` | 分层铁律（§1.1）。允许清单只有 `repositories/`、`services/backend/`、`local-server/` |
 | C5 | 存档成功后的跳转延迟一律 `300ms` | 口径见 `PAGE_MAP.md` §3.2。曾经有 0 / 300 / 600 / 800 四种 |

@@ -71,7 +71,7 @@
 
     <view class="add-goods-btn-wrap" wx:if="{{selectedGoods.length === 0}}">还没有商品，用下方表单直接新增</view>
 
-    <!-- #8 内嵌新增商品：不必先去商品库，填名称 + 多档「数量+总价(支援小数)」直接加入。 -->
+    <!-- #8 商品只在这里新增：填名称 + 多档「数量+总价(支援小数)」+ 商品图，直接加进本团单。全站没有独立的商品管理页。 -->
     <view class="inline-product" wx:if="{{!readOnly}}">
       <view class="inline-product__label">新增商品</view>
       <input class="inline-product__input" placeholder="商品名称" value="{{newProduct.title}}" bindinput="onNewProductInput" />
