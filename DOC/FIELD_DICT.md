@@ -22,11 +22,11 @@
 
 `local-server/server.js:29-33` 直接 `require` 云函数源码。**地端与云端跑的是同一份程式码**，栏位口径以 `cloudfunctions/businessData/resources/*.js` 为准。
 
-### 0.2 `repositories/*.js` 的本地 storage 分支是死码
+### 0.2 `repositories/*.js` 已经没有本地 storage 分支了
 
-4 个 repository 的本地分支全部由 `config.allowSeedDataFallback` 控制，而 **`config.js` 从未定义这个 key**（`repositories/productRepository.js:46-49` 的 `ensureSeedDataAvailable()` 恒回 `false`）。
+原本 4 个 repository 各有一层由 `config.allowSeedDataFallback` 控制的本地假资料分支，而该 key `config.js` 从未定义 → 100% 不可达。**2026-08-26 已整批删除**（决策 4，仓库层 1640 → 390 行）。
 
-→ 那些分支 100% 不可达。查栏位时**不要**参考它们，也不需要为它们补校验。
+→ 现在仓库层只有一条路：走 `services/backend/backendCall` 到后端（地端或云端）。要测资料请用 `local-server/`。
 
 ### 0.3 `models/*.ts` 只是型别宣告，且多处已与实际资料失真
 
@@ -409,8 +409,8 @@
 
 | 项目 | 事实 | 建议 |
 | --- | --- | --- |
-| `repositories/*` 本地 seed 分支 | 100% 不可达死码，数百行 | 建议删；属架构决定，见 `DATA_LAYER_DECISION.md` |
-| `models/Host.ts` / `Member.ts` | 零 import，栏位与实际形状无交集 | 建议删 |
+| ~~`repositories/*` 本地 seed 分支~~ | ✅ 已整批删除（2026-08-26，决策 4） | 仓库层 1640 → 390 行；边界规则见 `DEVELOPMENT_GUIDE` §1.1 |
+| ~~`models/Host.ts` / `Member.ts`~~ | ✅ 已删除（2026-08-26，决策 9） | 零 import，栏位与实际形状无交集 |
 | `models/GroupOrder.ts` / `MemberOrder.ts` | 宣告与云端实际严重失真 | 补齐或降级为纯型别档 |
 | `products.priceSettings` 双写 | 云端同时写单复数两个栏位 | 建议收敛成单数 |
 | `groupOrderProducts` 缺供应商快照 | `A5` 有要求，未实作 | 要补要拍板 |

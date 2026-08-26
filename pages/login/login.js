@@ -1,6 +1,7 @@
 import { AuthService } from '~/services/auth/authService';
 import { normalizeRouteUrl, redirectByUrl } from '~/utils/navigation';
 import { isLocalIdentityEnabled, getLocalIdentityLabel, setLocalIdentity } from '~/services/auth/localIdentity';
+import { resetLocalBackendData } from '~/services/backend/backendCall';
 import { DirectoryRepository } from '~/repositories/directoryRepository';
 
 Page({
@@ -18,6 +19,8 @@ Page({
     // 本地测试多人身份（仅 DEV+local 显示；留空＝owner，填名字/扫码带 ?tester= ＝独立账号）
     showLocalIdentity: false,
     localIdentity: '',
+    // 清空本地测试资料（决策 3）：与「测试身份」同一个门——开发者工具＋本地后端才出现。
+    isResettingLocalData: false,
   },
 
   onLoad(options = {}) {
@@ -33,6 +36,36 @@ Page({
 
   onNicknameInput(e) {
     this.setData({ nickname: (e.detail && e.detail.value) || '' });
+  },
+
+  // 清空本地测试资料库：把 local-server 那个（放在专案目录外的）JSON 库清空，
+  // 并顺手登出——账号纪录都没了，留着旧的登录态只会看到一堆读不到的资料。
+  onResetLocalData() {
+    if (this.data.isResettingLocalData) return;
+    wx.showModal({
+      title: '清空本地测试资料',
+      content: '会把本地测试资料库整个清空（团单、订单、商品、账号全没），并登出目前身份。云端资料不受影响。确定吗？',
+      confirmText: '清空',
+      confirmColor: '#e34d59',
+      success: async (modalRes) => {
+        if (!modalRes.confirm) return;
+        this.setData({ isResettingLocalData: true });
+        wx.showLoading({ title: '清空中...' });
+        try {
+          const res = await resetLocalBackendData();
+          if (!res.success) {
+            wx.showToast({ title: res.error || '清空失败', icon: 'none' });
+            return;
+          }
+          AuthService.logout();
+          this.setData({ needName: false, pendingUserId: '', nickname: '' });
+          wx.showToast({ title: '已清空，请重新登录', icon: 'none' });
+        } finally {
+          wx.hideLoading();
+          this.setData({ isResettingLocalData: false });
+        }
+      },
+    });
   },
 
   onLocalIdentityInput(e) {

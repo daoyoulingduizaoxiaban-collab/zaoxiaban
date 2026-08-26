@@ -141,3 +141,22 @@
   color: #8a94a6;
   line-height: 32rpx;
 }
+
+/* 清空本地测试资料（决策 3）：与「测试身份」同区，破坏性操作故用红字描边、不做主按钮样式 */
+.login__reset-local {
+  margin-top: 20rpx;
+  width: 100%;
+  box-sizing: border-box;
+  height: 72rpx;
+  line-height: 72rpx;
+  padding: 0;
+  background: #fff;
+  color: #e34d59;
+  border: 2rpx solid #e34d59;
+  border-radius: 8rpx;
+  font-size: 26rpx;
+
+  &::after {
+    border: none;
+  }
+}

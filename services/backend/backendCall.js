@@ -44,3 +44,26 @@ const callCloud = (name, event) => new Promise((resolve) => {
 export const callBackendFunction = ({ name, event, openId }) => (
   isLocalBackend() ? callLocal(name, event, openId) : callCloud(name, event)
 );
+
+/**
+ * 清空本地测试资料库（决策 3：做成登录页上的按钮给 OWNER 自己清）。
+ * 只在「开发者工具 + 本地后端」下可用——云端资料不给这条路碰，正式版根本不该有这个按钮。
+ * 打的是 local-server 的 /reset，它会把那个放在专案目录外的 JSON 库清成空的。
+ */
+export const resetLocalBackendData = () => new Promise((resolve) => {
+  if (!config.isDevTools || !isLocalBackend()) {
+    resolve({ success: false, error: '只有开发者工具＋本地后端才能清空测试资料' });
+    return;
+  }
+  wx.request({
+    url: `${config.localBaseUrl}/reset`,
+    method: 'POST',
+    header: { 'content-type': 'application/json' },
+    data: {},
+    success: (res) => {
+      const ok = Boolean(res && res.data && res.data.ok);
+      resolve(ok ? { success: true } : { success: false, error: '本地后端没有清成功' });
+    },
+    fail: () => resolve({ success: false, error: '本地后端连接失败，请确认 local-server 已启动' }),
+  });
+});

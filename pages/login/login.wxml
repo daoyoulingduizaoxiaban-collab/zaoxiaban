@@ -16,6 +16,12 @@
         <view>ivy3＝一般客户（已过审，可直接下单）。</view>
         <view>其他名字＝各自独立的一般客户账号；角色只在第一次建号时决定，之后到「用户审核」改。</view>
       </view>
+      <button class="login__reset-local" loading="{{isResettingLocalData}}" disabled="{{isResettingLocalData}}" bindtap="onResetLocalData">
+        清空本地测试资料
+      </button>
+      <view class="login__local-identity-tip">
+        <view>把本地测试资料库整个清空（团单／订单／商品／账号全没），并登出。云端资料不受影响。</view>
+      </view>
     </view>
 
     <!-- 第一步：登录（老用户点完直接进，看不到名字栏） -->
