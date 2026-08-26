@@ -565,19 +565,16 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
     2. **不得**为了让 pending 通过而放宽 `lib/core.js` 的 `assertApprovedProfile`——
        该函式检查「账户 approved」是正确的安全边界，放宽会连带放行 `disabled` 账户。**修上游，不动它。**
     3. 通过审核时 `roles[]` 走 A2「追加不覆盖」，`customer` 基线不得掉。
-  - **迁移策略（读时兼容，不写迁移脚本）**：
-    既有资料若 `reviewStatus==='pending_review'` 且 `requestedRole==='guide'`，
-    读取时**推导**成 `guideApplication.status='pending'` 且账户视为 `approved`（推导逻辑放在
-    `normalizeDirectoryUser` 与 `authLogin` 的 `toClientProfile` 两处镜像）。
-    理由：本机 `.data/dev.json` 仅有 1 个 approved 帐号、无 pending，云端据交接文件从未有真实用户走完审核；
-    读时兼容在「有旧资料」与「没有旧资料」两种情况下都安全，不需事后补做迁移。
-    `requestedRole` 栏位**保留但冻结**（只读、不再写入），避免牵动 `authLogin` 的登录路径。
+  - **不做资料兼容**（OWNER 2026-08-27 更正）：系统尚未开始运营，没有需要保住的既有资料。
+    **直接用新格式**——不做旧资料推导、不写迁移脚本、不保留任何相容分支。
+    `requestedRole` 栏位**保留但冻结**（只读、不再写入），避免牵动 `authLogin` 的登录路径；
+    这与资料兼容无关，是为了不动登录路径。
   - **改动文件**：
     - `cloudfunctions/businessData/resources/users.js`：`applyForRole` 改写 `guideApplication` 不动账户状态；
-      `normalizeDirectoryUser`（:54-56）缺省值 `PENDING` → `APPROVED`，并加读时兼容推导；
+      `normalizeDirectoryUser`（:54-56）缺省值 `PENDING` → `APPROVED`；
       `review`（:91）拆出团主申请审核路径（见下）。
     - `cloudfunctions/authLogin/index.js`：`buildDefaultProfile` 种 `guideApplication:{status:'none'}`；
-      `toClientProfile`（:207 一带）回传该子结构 + 读时兼容推导。**改了要部署。**
+      `toClientProfile`（:207 一带）回传该子结构。**改了要部署。**
     - `services/auth/authService.js`：`normalizeCloudProfile` 收 `guideApplication`（沿用 `pickPresent` 保险）。
     - `repositories/directoryRepository.js`：`applyForRole` 白名单去掉已废弃的 `AUTH_ROLES.PROVIDER`（:45）。
     - `pages/tourGuides/edit/index.ts`：`isGuideApplicant`（:59）改读 `guideApplication.status==='pending'`，
@@ -602,8 +599,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
        `roles[]==['customer','guide']`（customer 未掉）、`guideApplication.status==='approved'`。
     4. 拒绝路径：`guideApplication.status==='rejected'`、`roles[]` 不变、账户仍 approved、`remark` 有值。
     5. 停用账户（`reviewStatus='disabled'`）仍被 `assertApprovedProfile` 挡住——证明防线没被放宽。
-    6. 既有 pending 旧资料读出来不报错，且推导成 approved + 申请 pending（读时兼容生效）。
-    7. 地端与云端同一份逻辑（双通铁律），`verify-actions` 无红旗。
+    6. 地端与云端同一份逻辑（双通铁律），`verify-actions` 无红旗。
 
 - [ ] **C-MULTIROLE roles[] 追加不覆盖 + effectiveRole 全面化**
   - 改动：审核通过写入处（`pages/userReview/index.js` 现为 `role: roles[0]`，需改为**追加** guide 并保留 customer）、`cloudfunctions/authLogin` 与 `businessData`（`effectiveRole` 一致化）、`services/auth/roleScope.js` 的 `getRoleScopeText`（改读 `roles[]`/`effectiveRole`，不再只读单一 `profile.role`）、所有按 `profile.role` 做入口/文案判断处。
@@ -699,9 +695,7 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
   且 customer 功能仍在（追加不覆盖）。
   ④ 拒绝路径：申请状态 `rejected`、角色不变、账户仍 approved、备注必填。
   ⑤ 负向：`disabled` 账户一切业务功能仍被**后端**拒绝——证明未因本次改动放宽 `assertApprovedProfile`。
-  ⑥ 旧资料兼容：既有「账户 pending + requestedRole=guide」的帐号读出来不报错，
-  推导成 approved + 申请 pending，客户功能可用。
-  ⑦ 重开小程序后以上状态仍在（readback）。
+  ⑥ 重开小程序后以上状态仍在（readback）。
 
 - [ ] **D-MULTIROLE**：客户升团主后 `roles[]`=`[customer,guide]`；用该账号验证 customer 下单与 guide 开团/收款同时可用、互不影响；多角色文案与入口正确；后端按 roles[] 判权。团主角色过期 → 团主功能关闭但客户功能正常。
 
