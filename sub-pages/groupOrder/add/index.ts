@@ -28,8 +28,7 @@ Page({
     isSubmitting: false,
     accessDenied: false,
     accessStateText: '',
-    pageErrorText: '',
-    isPageLoading: true,
+
     sourceUrl: '/pages/groupOrder/index',
     // 已停止收单的团单进编辑页只能看，不能改（含新增商品/上传图）。
     readOnly: false,
@@ -58,7 +57,7 @@ Page({
 
   async onLoad(options) {
     const sourceUrl = normalizeRouteUrl(options.from || '/pages/groupOrder/index', '/pages/groupOrder/index');
-    this.setData({ isPageLoading: true, sourceUrl });
+    this.setData({ ...(this as any).loadingState(), sourceUrl });
     await AuthService.refreshSession();
     if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
@@ -67,7 +66,7 @@ Page({
       this.setData({
         accessDenied: true,
         accessStateText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
-        isPageLoading: false,
+        ...(this as any).threeState('ready'),
       });
       return;
     }
@@ -79,7 +78,6 @@ Page({
         groupOrderId
       });
       await this.loadGroupOrder(groupOrderId);
-      this.setData({ isPageLoading: false });
       return;
     }
     // 复制团单：带入源团单内容（含商品价格档与图片）到「开团」表单，保存时按新团单 create。
@@ -91,7 +89,6 @@ Page({
         groupOrderId: '',
       });
       await this.loadGroupOrder(copyFrom, { asCopy: true });
-      this.setData({ isPageLoading: false });
       return;
     }
     this.setData({
@@ -99,7 +96,6 @@ Page({
       isEdit: false,
       groupOrderId: '',
       selectedGoods: [],
-      pageErrorText: '',
       formData: {
         title: '',
         description: '',
@@ -109,12 +105,20 @@ Page({
         customerNotice: '',
         status: GroupOrderStatus.OPEN,
       },
-      isPageLoading: false,
+      ...(this as any).threeState('ready'),
     });
   },
 
   async onShow() {
     this.consumePickerFallbackResult();
+  },
+
+  // page-state 的重试：只有「读既有团单失败」会进 error 态，重读它即可。
+  onRetry() {
+    const id = this.data.groupOrderId;
+    if (!id) return;
+    this.setData((this as any).loadingState());
+    this.loadGroupOrder(id);
   },
 
   onBack() {
@@ -150,8 +154,8 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载团单失败';
       this.setData({
-        pageErrorText: errorText,
         selectedGoods: [],
+        ...(this as any).threeState('error', { errorText }),
       });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
@@ -161,7 +165,6 @@ Page({
     const sourceTitle = res.data.title || '';
     const status = asCopy ? GroupOrderStatus.OPEN : Number(res.data.status || GroupOrderStatus.OPEN);
     this.setData({
-      pageErrorText: '',
       formData: {
         title: asCopy ? `${sourceTitle.slice(0, 16)}（副本）` : sourceTitle,
         description: res.data.description || '',
@@ -172,6 +175,7 @@ Page({
       },
       selectedGoods: this.normalizeGoods(res.data.productList || []),
       readOnly: status === GroupOrderStatus.STOPPED,
+      ...(this as any).threeState('ready'),
     });
   },
 
@@ -358,8 +362,8 @@ Page({
 
     if (this.guardReadOnly()) return;
     if (this.data.isSubmitting) return;
-    if (this.data.pageErrorText) {
-      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
+    if (this.data.loadErrorText) {
+      wx.showToast({ title: this.data.loadErrorText, icon: 'none' });
       return;
     }
 

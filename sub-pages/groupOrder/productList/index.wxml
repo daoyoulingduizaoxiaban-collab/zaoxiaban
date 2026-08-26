@@ -11,16 +11,13 @@
   </view>
 
   <scroll-view scroll-y class="product-list">
-    <view wx:if="{{isLoading}}" class="empty-state">
-      <text>正在加载本团商品</text>
-    </view>
-
-    <view wx:elif="{{pageErrorText}}" class="empty-state">
-      <text>{{pageErrorText}}</text>
-      <button class="empty-action" bindtap="loadGroupProducts">重试</button>
-    </view>
-
-    <block wx:elif="{{displayList.length > 0}}">
+    <page-state
+      state="{{pageState}}"
+      loading-text="正在加载本团商品"
+      error-text="{{loadErrorText}}"
+      empty-text="{{emptyText}}"
+      bind:retry="loadGroupProducts"
+    >
       <view class="product-card" wx:for="{{displayList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
         
         <view class="p-img-wrap">
@@ -50,12 +47,7 @@
         </view>
 
       </view>
-    </block>
-
-    <view wx:else class="empty-state">
-      <text>本团当前没有商品</text>
-      <text wx:if="{{canManageGroupOrder}}" class="sub-text">到「编辑团单」里新增商品</text>
-    </view>
+    </page-state>
 
     <view class="list-spacer"></view>
   </scroll-view>

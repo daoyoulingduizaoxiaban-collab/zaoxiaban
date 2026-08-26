@@ -5,17 +5,14 @@
   <view class="access-desc">请使用已通过审核且具备商品管理权限的账号。</view>
 </view>
 
-<view class="access-card" wx:elif="{{pageErrorText}}">
-  <view class="access-title">{{pageErrorText}}</view>
-  <view class="access-desc">请返回商品库后重新选择商品。</view>
-</view>
-
-<view class="access-card" wx:elif="{{isPageLoading}}">
-  <view class="access-title">{{isEdit ? '正在加载商品资料' : '正在准备商品表单'}}</view>
-  <view class="access-desc">{{isEdit ? '请稍候，系统正在读取要编辑的商品。' : '请稍候，系统正在确认商品管理权限。'}}</view>
-</view>
-
-<view class="page-container" wx:else>
+<page-state
+  wx:else
+  state="{{pageState}}"
+  loading-text="{{isEdit ? '正在加载商品资料' : '正在准备商品表单'}}"
+  error-text="{{loadErrorText}}"
+  bind:retry="onRetry"
+>
+<view class="page-container">
   <view class="content-scroll">
     <view class="card">
       <view class="form-group">
@@ -100,3 +97,4 @@
     <button class="btn-submit" loading="{{isSubmitting}}" disabled="{{isSubmitting}}" bindtap="addProductToList">保存商品</button>
   </view>
 </view>
+</page-state>

@@ -24,8 +24,6 @@ Page({
     selectedProduct: null,
     selectedPriceRules: [],
     skipNextReload: false,
-    pageErrorText: '',
-    isLoading: true,
     canManageGroupOrder: false,
     pendingProductId: '',
     // 团单已停止收单：本团商品也不能再移除。
@@ -42,8 +40,9 @@ Page({
         ? `/sub-pages/groupOrder/detail/index?id=${encodeURIComponent(groupOrderId)}`
         : '/pages/groupOrder/index',
       pendingProductId,
-      pageErrorText: groupOrderId ? '' : '缺少团单 ID，请返回团单详情重新进入。',
-      isLoading: Boolean(groupOrderId),
+      ...(groupOrderId
+        ? (this as any).loadingState()
+        : (this as any).threeState('error', { errorText: '缺少团单 ID，请返回团单详情重新进入。' })),
     });
   },
 
@@ -92,11 +91,8 @@ Page({
         return;
       }
       const rawList = this.normalizeProducts(res.data.productList || []);
-      this.setData({
-        rawList,
-        displayList: this.filterList(rawList, this.data.searchQuery),
-        skipNextReload: false,
-      });
+      this.setData({ rawList, skipNextReload: false });
+      this.applyDisplayList(rawList);
       toastSuccess(RESULT_TEXT.save);
     });
     return true;
@@ -107,11 +103,10 @@ Page({
     const { groupOrderId } = this.data;
     if (!groupOrderId) {
       this.resetDetailState({
-        isLoading: false,
-        pageErrorText: '缺少团单 ID，请返回团单详情重新进入。',
         rawList: [],
         displayList: [],
         pendingProductId: '',
+        ...(this as any).threeState('error', { errorText: '缺少团单 ID，请返回团单详情重新进入。' }),
       });
       return;
     }
@@ -123,10 +118,9 @@ Page({
       this.resetDetailState({
         rawList: [],
         displayList: [],
-        isLoading: false,
-        pageErrorText: errorText,
         canManageGroupOrder: false,
         pendingProductId: '',
+        ...(this as any).threeState('error', { errorText }),
       });
       return;
     }
@@ -136,12 +130,11 @@ Page({
       wx.redirectTo({
         url: `/sub-pages/groupOrder/detail/index?id=${encodeURIComponent(this.data.groupOrderId)}`,
         fail: () => this.resetDetailState({
-          isLoading: false,
-          pageErrorText: '当前账号不能管理本团商品，请返回团单详情。',
           rawList: [],
           displayList: [],
           canManageGroupOrder: false,
           pendingProductId: '',
+          ...(this as any).threeState('error', { errorText: '当前账号不能管理本团商品，请返回团单详情。' }),
         }),
       });
       return;
@@ -150,12 +143,10 @@ Page({
 
     this.setData({
       rawList: groupProducts,
-      isLoading: false,
-      pageErrorText: '',
       canManageGroupOrder,
       readOnly: Number(res.data.status) === GroupOrderStatus.STOPPED,
-      displayList: this.filterList(groupProducts, this.data.searchQuery)
     });
+    this.applyDisplayList(groupProducts);
     this.openPendingProductDetail();
   },
 
@@ -167,19 +158,25 @@ Page({
     }));
   },
 
-  onSearchInput(e) {
-    const query = e.detail.value;
+  // 列表 + 三态一起落，避免搜寻/移除商品后清单空了但状态还停在 ready。
+  applyDisplayList(list, query = this.data.searchQuery) {
+    const displayList = this.filterList(list, query);
+    const emptyText = query
+      ? '没有符合条件的商品'
+      : (this.data.canManageGroupOrder ? '本团还没有商品，到「编辑团单」里新增' : '本团当前没有商品');
     this.setData({
       searchQuery: query,
-      displayList: this.filterList(this.data.rawList, query)
+      displayList,
+      ...(this as any).threeState(displayList.length ? 'ready' : 'empty', { emptyText }),
     });
   },
 
+  onSearchInput(e) {
+    this.applyDisplayList(this.data.rawList, e.detail.value);
+  },
+
   clearSearch() {
-    this.setData({
-      searchQuery: '',
-      displayList: this.data.rawList
-    });
+    this.applyDisplayList(this.data.rawList, '');
   },
 
   filterList(list, query) {
@@ -198,7 +195,7 @@ Page({
 
   openPendingProductDetail() {
     const id = this.data.pendingProductId;
-    if (!id || this.data.pageErrorText) return;
+    if (!id || this.data.loadErrorText) return;
     this.setData({ pendingProductId: '' });
     this.openProductDetailById(id);
   },
@@ -274,10 +271,8 @@ Page({
           }
           const rawList = this.data.rawList.filter(item => item.id !== id);
 
-          this.setData({
-            rawList,
-            displayList: this.filterList(rawList, this.data.searchQuery)
-          });
+          this.setData({ rawList });
+          this.applyDisplayList(rawList);
 
           toastSuccess(RESULT_TEXT.remove);
         }

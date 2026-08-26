@@ -196,3 +196,31 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 - **可派 agent**：互不重叠的**页面**修改（`pages/X`、`sub-pages/X`），文件域清晰、不依赖彼此。
 - **不可派 agent、必须主导者自己做**：`config.js`、`app.json`、`services/*`（尤其 auth/roleScope）、`repositories/*`、`components/*`、`behaviors/*`、`cloudfunctions/*`。
 - agent 回报后**逐项审核**（对照需求 + 本文件铁律），对不上或碰错文件→主导者自己改好才算完成。别照单全收。
+
+---
+
+## 10. 契约自动检查（收工前跑一次）
+
+```
+node local-server/check-contract.js
+```
+
+不需要开发者工具，纯静态扫描 + 一次 eslint，几秒跑完。六条规则，**每一条都是真的踩过的坑**：
+
+| 代号 | 检查什么 | 为什么有这条 |
+| --- | --- | --- |
+| C1 | `app.json` 注册 ↔ 磁碟上的页面档，两边都要对得上 | 删页只拿掉注册会留死档；只删档不拿注册会留死注册。**分包两种拼法（`subPackages` / `subpackages`）都要认**，本专案用小写那个 |
+| C2 | wxml 用到的自订元件，该页 `json` 或 `app.json` 里要有注册 | `product/list` 挂了 `<nav>` 但全站没注册 → 整条导览列不渲染、连返回键都没有，肉眼看不出来 |
+| C3 | 每个用 `sub-nav` 的页都要写 `fallback-url`（或 `custom-back` + `bind:back`） | 不写就吃元件预设值 `/pages/groupOrder/index`，冷启动时不管从哪进来都弹回团单列表 |
+| C4 | `pages` / `sub-pages` / `components` 等不得直接 `wx.request` / `wx.cloud.callFunction` | 分层铁律（§1.1）。允许清单只有 `repositories/`、`services/backend/`、`local-server/` |
+| C5 | 存档成功后的跳转延迟一律 `300ms` | 口径见 `PAGE_MAP.md` §3.2。曾经有 0 / 300 / 600 / 800 四种 |
+| C6 | 全仓 `no-undef` 扫描 | **eslint 预设不查这条**。清死码时砍掉了还在用的 helper（`normalizeShareToken`、`PROVIDER_STATUS`），lint 一片绿，只有跑 flow 测试才炸出来 |
+
+**加规则的门槛**：只收「已经害人踩过一次」的规则，且误报率要低。想不出具体踩过的场景就别加——规则一旦开始误报，下次真的红了也没人看。
+
+**与其他检查的分工**：
+
+- `check-contract.js` —— 静态契约（这份）。改完就能跑，最先跑。
+- `npm run smoke` —— 21 页真的开得起来、三态没停在载入中。
+- `node local-server/flow-*.js` —— 15 条真实业务流程走得通。
+- `node local-server/verify-actions.js` —— 后端每个动作都不抛错，不需要 IDE。

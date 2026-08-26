@@ -16,12 +16,10 @@ Page({
   data: {
     pageTitle: '商品表单',
     isEdit: false,
-    isPageLoading: true,
     isSubmitting: false,
     isChoosingImage: false,
     accessDenied: false,
     accessStateText: '',
-    pageErrorText: '',
     saveModeText: '',
     imageModeTip: '图片会随商品资料一起保存，便于客户查看实物。',
 
@@ -51,17 +49,17 @@ Page({
     if (!canCreate) {
       this.setData({
         accessDenied: true,
-        isPageLoading: false,
         accessStateText: getRoleScopeText(profile, FEATURE_KEYS.PRODUCT_MANAGE),
+        ...(this as any).threeState('ready'),
       });
       return;
     }
     const productId = options && options.id ? String(options.id) : '';
     if (productId) {
-      this.setData({ pageTitle: '编辑商品', isEdit: true, isPageLoading: true });
+      this.setData({ pageTitle: '编辑商品', isEdit: true, ...(this as any).loadingState() });
       await this.loadProduct(productId);
     } else {
-      this.setData({ pageTitle: '新增商品', isEdit: false, isPageLoading: false });
+      this.setData({ pageTitle: '新增商品', isEdit: false, ...(this as any).threeState('ready') });
     }
     this.refreshSaveModeText();
   },
@@ -88,16 +86,14 @@ Page({
     if (!res.success) {
       const errorText = res.error || '加载商品失败';
       this.setData({
-        pageErrorText: errorText,
         saveModeText: errorText,
-        isPageLoading: false,
+        ...(this as any).threeState('error', { errorText }),
       });
       wx.showToast({ title: errorText, icon: 'none' });
       return;
     }
 
     this.setData({
-      pageErrorText: '',
       currentProduct: {
         ...this.data.currentProduct,
         ...res.data,
@@ -106,8 +102,16 @@ Page({
         priceSetting: res.data.priceSetting || res.data.priceSettings || [],
       },
       saveModeText: getSaveModeText(res.meta),
-      isPageLoading: false,
+      ...(this as any).threeState('ready'),
     });
+  },
+
+  // page-state 的重试：只有「读既有商品失败」会进 error 态，重读它即可。
+  onRetry() {
+    const id = this.data.currentProduct && this.data.currentProduct.id;
+    if (!id) return;
+    this.setData((this as any).loadingState());
+    this.loadProduct(id);
   },
 
   getSafeEventChannel() {
@@ -239,8 +243,8 @@ Page({
 
   async addProductToList() {
     if (this.data.isSubmitting) return;
-    if (this.data.pageErrorText) {
-      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
+    if (this.data.loadErrorText) {
+      wx.showToast({ title: this.data.loadErrorText, icon: 'none' });
       return;
     }
     const p = this.data.currentProduct;
