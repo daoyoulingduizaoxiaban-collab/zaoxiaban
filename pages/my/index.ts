@@ -118,7 +118,6 @@ Page({
     if (!AuthService.canUseBusiness(profile)) return [];
 
     // 我的页九宫格只放非 NAV 主流程的辅助入口（搜索/数据中心）；团单/客户订单/商品库/工作台/开团不在此重复（A12/B5）。
-    // 「消息」入口已按用户决定(2026-07-27)拿掉；pages/message 页本体+注解保留备用（见该页「消息机制说明」）。
     const list = [
       {
         name: '搜索',
@@ -162,9 +161,7 @@ Page({
     }
 
     const roleEntries = [
-      // 「个人资料」入口已移除(P0-2)：它指向 pages/profile 用户目录页(列出他人姓名/手机),
-      // FEATURE_KEYS.PROFILE 含客户/团主 → 普通用户可点入=隐私泄露。自我编辑统一走「账号资料」(info-edit)。
-      // 用户目录的管理层入口另在 W4/D-1 按管理层门控重建。
+      // 用户目录页（列出他人姓名/手机）已整页删除（决策 5）：功能由「用户审核」取代。
       // 自我编辑入口在「设置」页的「账号资料」，「我的」头像卡不再放编辑笔。
       { name: '团主资料', icon: 'usergroup', type: 'tourGuides', url: '/pages/tourGuides/index', feature: FEATURE_KEYS.TOUR_GUIDES },
       // 「供应商资料」入口已移进「商品库」页（D-4/B5：供应商是团主管理商品的上游，归商品域）。

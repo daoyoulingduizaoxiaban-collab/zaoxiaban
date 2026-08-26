@@ -4,7 +4,6 @@
     "pages/productManagement/index",
     "sub-pages/groupOrder/detail/index",
     "sub-pages/groupOrder/productList/index",
-    "sub-pages/groupOrder/product-picker/index",
     "sub-pages/product/add/index",
     "sub-pages/product/list/index",
     "sub-pages/groupOrder/add/index",
@@ -17,9 +16,6 @@
     "pages/providers/edit/index",
     "pages/operationLogs/index",
     "pages/userReview/index",
-    "pages/profile/index",
-    "pages/profile/edit/index",
-    "pages/message/index",
     "pages/feedback/index"
   ],
   "usingComponents": {

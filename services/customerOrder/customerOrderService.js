@@ -89,7 +89,6 @@ const normalizeGroupOrderProducts = (groupOrder) => {
 };
 
 export const CustomerOrderService = {
-  storageKey: CustomerOrderRepository.storageKey,
 
   async listVisible() {
     const result = await CustomerOrderRepository.listVisible();

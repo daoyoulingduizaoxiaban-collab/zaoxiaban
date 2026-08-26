@@ -16,8 +16,7 @@
 
   <view class="access-card" wx:if="{{authReady && !isLoading && !canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
-    <view class="access-desc">可先浏览公开商品；下单、管理商品或查看专属资料需登录并通过身份确认。</view>
-    <t-button wx:if="{{!isLoggedIn}}" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
+    <view class="access-desc">通过管理员确认身份后，可查看与你相关的商品。</view>
   </view>
 
   <scroll-view scroll-y="true" class="product-list" wx:if="{{canShowProductCatalog}}">
@@ -26,9 +25,7 @@
       loading-text="正在加载商品"
       error-text="{{loadErrorText}}"
       empty-text="{{emptyText}}"
-      empty-cta-text="{{emptyCta}}"
       bind:retry="fetchData"
-      bind:emptycta="onLogin"
     >
       <block wx:for="{{productList}}" wx:key="id">
         <view class="product-card">

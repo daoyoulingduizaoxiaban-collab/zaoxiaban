@@ -1,7 +1,0 @@
-{
-  "navigationStyle": "custom",
-  "usingComponents": {
-    "sub-nav": "/components/sub-nav/index",
-    "t-icon": "/components/t-icon/index"
-  }
-}

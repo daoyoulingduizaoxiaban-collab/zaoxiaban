@@ -1,8 +1,3 @@
-import { Product } from '~/models/Product';
-import { ProductStatus } from '~/enum/ProductStatus';
-import config from '~/config';
-import { AuthService } from '~/services/auth/authService';
-import { FEATURE_KEYS, canManageProduct, canUseFeature, filterProductsByRole, hasRole } from '~/services/auth/roleScope';
 import {
   callBusinessData,
   callPublicBusinessData,
@@ -11,67 +6,15 @@ import {
   isCloudBusinessEnabled
 } from './cloudBusinessRepository';
 
-const PRODUCT_STORAGE_KEY = 'dao_you_ling_local_products';
-
-const nowIso = () => new Date().toISOString();
-
 const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
 
-const getStoredProducts = () => {
-  try {
-    const stored = wx.getStorageSync(PRODUCT_STORAGE_KEY);
-    if (stored && Array.isArray(stored.products)) {
-      return stored.products.map(item => new Product(item));
-    }
-  } catch (err) {
-    return null;
-  }
-  return null;
-};
-
-const saveStoredProducts = (products) => {
-  wx.setStorageSync(PRODUCT_STORAGE_KEY, {
-    mode: 'local-product-repository',
-    updatedAt: nowIso(),
-    products,
-  });
-};
-
-const getAllProducts = () => {
-  const storedProducts = getStoredProducts();
-  if (storedProducts) return storedProducts;
-  return null;
-};
-
-const ensureSeedDataAvailable = () => {
-  if (config.allowSeedDataFallback) return true;
-  return false;
-};
-
 export const ProductRepository = {
-  storageKey: PRODUCT_STORAGE_KEY,
-
   async listPublic(filters = {}) {
     if (isCloudBusinessConfigured()) {
       return callPublicBusinessData({ resource: 'products', action: 'listPublic', data: filters });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const products = filterProductsByRole(getAllProducts(), null);
-
-    return {
-      success: true,
-      data: products,
-      meta: {
-        role: '',
-        authSource: '',
-        isMockOpenId: false,
-        saveMode: 'local-product-repository',
-      },
-    };
+    return unavailableError();
   },
 
   async listVisible() {
@@ -79,23 +22,7 @@ export const ProductRepository = {
       return callBusinessData({ resource: 'products', action: 'listVisible' });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const products = filterProductsByRole(getAllProducts(), profile);
-
-    return {
-      success: true,
-      data: products,
-      meta: {
-        role: profile && profile.role,
-        authSource: profile && profile.authSource,
-        isMockOpenId: Boolean(profile && profile.isMockOpenId),
-        saveMode: 'local-product-repository',
-      },
-    };
+    return unavailableError();
   },
 
   async filterVisible({ keyword = '', status = 0 } = {}) {
@@ -107,23 +34,7 @@ export const ProductRepository = {
       });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const result = await this.listVisible();
-    const query = String(keyword || '').trim().toLowerCase();
-    const statusValue = Number(status || 0);
-    const data = result.data.filter((product) => {
-      const matchesQuery = !query
-        || String(product.title || '').toLowerCase().includes(query)
-        || String(product.description || '').toLowerCase().includes(query)
-        || String(product.sourceNote || '').toLowerCase().includes(query);
-      const matchesStatus = !statusValue || Number(product.status) === statusValue;
-      return matchesQuery && matchesStatus;
-    });
-
-    return { ...result, data };
+    return unavailableError();
   },
 
   async getById(id) {
@@ -144,35 +55,7 @@ export const ProductRepository = {
       });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    if (!canUseFeature(profile, FEATURE_KEYS.PRODUCT_MANAGE)) {
-      return { success: false, error: '当前角色不能新增商品' };
-    }
-
-    const allProducts = getAllProducts();
-    const createdAt = nowIso();
-    const nextProduct = new Product({
-      ...productData,
-      id: Date.now(),
-      ownerUserId: productData.ownerUserId || profile.id,
-      providerId: productData.providerId || (hasRole(profile, 'provider') ? (profile.providerId || profile.id) : ''),
-      status: Number(productData.status || ProductStatus.PUBLISHED),
-      createdAt,
-      updatedAt: createdAt,
-      deletedAt: '',
-    });
-    const nextProducts = [...allProducts, nextProduct];
-    saveStoredProducts(nextProducts);
-
-    return {
-      success: true,
-      data: nextProduct,
-      meta: { saveMode: 'local-product-repository' },
-    };
+    return unavailableError();
   },
 
   async updateStatus(id, status) {
@@ -184,32 +67,7 @@ export const ProductRepository = {
       });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const allProducts = getAllProducts();
-    const target = allProducts.find(product => String(product.id) === String(id));
-    if (!canManageProduct(target, profile)) {
-      return { success: false, error: '当前角色不能修改此商品' };
-    }
-
-    const updatedProducts = allProducts.map((product) => {
-      if (String(product.id) !== String(id)) return product;
-      return new Product({
-        ...product,
-        status: Number(status),
-        updatedAt: nowIso(),
-      });
-    });
-    saveStoredProducts(updatedProducts);
-
-    return {
-      success: true,
-      data: updatedProducts.find(product => String(product.id) === String(id)),
-      meta: { saveMode: 'local-product-repository' },
-    };
+    return unavailableError();
   },
 
   async update(productData) {
@@ -221,37 +79,7 @@ export const ProductRepository = {
       });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const allProducts = getAllProducts();
-    const target = allProducts.find(product => String(product.id) === String(productData.id));
-    if (!canManageProduct(target, profile)) {
-      return { success: false, error: '当前角色不能修改此商品' };
-    }
-
-    const updatedAt = nowIso();
-    const updatedProducts = allProducts.map((product) => {
-      if (String(product.id) !== String(productData.id)) return product;
-      return new Product({
-        ...product,
-        ...productData,
-        id: product.id,
-        ownerUserId: product.ownerUserId,
-        providerId: product.providerId || productData.providerId || (hasRole(profile, 'provider') ? (profile.providerId || profile.id) : ''),
-        status: Number(productData.status || product.status || ProductStatus.PUBLISHED),
-        updatedAt,
-      });
-    });
-    saveStoredProducts(updatedProducts);
-
-    return {
-      success: true,
-      data: updatedProducts.find(product => String(product.id) === String(productData.id)),
-      meta: { saveMode: 'local-product-repository' },
-    };
+    return unavailableError();
   },
 
   async softDelete(id) {
@@ -263,34 +91,7 @@ export const ProductRepository = {
       });
     }
 
-    if (!ensureSeedDataAvailable()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const allProducts = getAllProducts();
-    const target = allProducts.find(product => String(product.id) === String(id));
-    if (!canManageProduct(target, profile)) {
-      return { success: false, error: '当前角色不能删除此商品' };
-    }
-
-    const deletedAt = nowIso();
-    const updatedProducts = allProducts.map((product) => {
-      if (String(product.id) !== String(id)) return product;
-      return new Product({
-        ...product,
-        status: ProductStatus.UNPUBLISHED,
-        updatedAt: deletedAt,
-        deletedAt,
-      });
-    });
-    saveStoredProducts(updatedProducts);
-
-    return {
-      success: true,
-      data: updatedProducts.find(product => String(product.id) === String(id)),
-      meta: { saveMode: 'local-product-repository' },
-    };
+    return unavailableError();
   },
 };
 

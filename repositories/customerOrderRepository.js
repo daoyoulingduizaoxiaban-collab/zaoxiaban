@@ -1,240 +1,15 @@
-import config from '~/config';
-import { AuthService } from '~/services/auth/authService';
-import { filterCustomerOrdersByRole, hasRole, isOwnerOrAdmin } from '~/services/auth/roleScope';
-import { MemberOrderStatus } from '~/enum/MemberOrderStatus';
-import { GroupOrderRepository } from '~/repositories/groupOrderRepository';
 import { callBusinessData, CLOUD_SAVE_MODE, isCloudBusinessEnabled } from './cloudBusinessRepository';
-import { getDeclaredAmountError, getConfirmedAmountError } from '~/services/customerOrder/orderAmount';
 
-const CUSTOMER_ORDER_STORAGE_KEY = 'dao_you_ling_local_customer_orders';
-
-const nowIso = () => new Date().toISOString();
 const unavailableError = () => ({ success: false, error: '资料服务暂时不可用' });
-const sameId = (a, b) => String(a) === String(b);
-const trimText = value => String(value || '').trim();
-const parseDateTime = (value) => {
-  if (!value) return 0;
-  const text = String(value).trim();
-  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text}T23:59:59` : text.replace(' ', 'T');
-  const time = new Date(normalized).getTime();
-  return Number.isNaN(time) ? 0 : time;
-};
-const isSeedDataAllowed = () => Boolean(config.allowSeedDataFallback);
 const normalizeShareToken = value => String(value || '').trim();
 
-const safeGetStorage = (key, fallback = null) => {
-  try {
-    return wx.getStorageSync(key) || fallback;
-  } catch (err) {
-    return fallback;
-  }
-};
-
-const safeSetStorage = (key, value) => {
-  wx.setStorageSync(key, value);
-};
-
-const getStatusText = (status) => {
-  const statusMap = {
-    [MemberOrderStatus.UNPAID]: '未付款',
-    [MemberOrderStatus.PAID]: '客户付款',
-    [MemberOrderStatus.CONFIRMED]: '已确认',
-    [MemberOrderStatus.CANCELLED]: '已取消',
-  };
-  return statusMap[Number(status)] || '未知状态';
-};
-
-const getProductMap = () => {
-  const map = {};
-  [].forEach((product) => {
-    map[String(product.id)] = product;
-  });
-  return map;
-};
-
-const normalizeOrder = (order) => ({
-  ...order,
-  id: order.id,
-  status: Number(order.status),
-  paymentStatus: Number(order.paymentStatus !== undefined ? order.paymentStatus : order.status),
-  statusText: order.statusText || getStatusText(order.status),
-  items: order.items || order.productList || [],
-  productList: order.productList || order.items || [],
-  paymentHistory: order.paymentHistory || [],
-  paymentMethod: order.paymentMethod || '',
-  paymentRemark: order.paymentRemark || '',
-  paymentProofUrls: order.paymentProofUrls || [],
-  declaredAmount: order.declaredAmount || '',
-  confirmedAmount: order.confirmedAmount || '',
-  confirmRemark: order.confirmRemark || '',
-  cancelRemark: order.cancelRemark || '',
-  customerPhone: order.customerPhone || '',
-  customerName: order.customerName || '客户',
-  totalPrice: Number(order.totalPrice || 0),
-  originalTotalPrice: Number(order.originalTotalPrice || order.totalPrice || 0),
-});
-
-const enrichSeedOrders = () => {
-  const productMap = getProductMap();
-  const groupOrders = [];
-  const memberOrders = groupOrders.flatMap(groupOrder => (
-    (groupOrder.memberOrderList || []).map(memberOrder => ({
-      ...memberOrder,
-      groupOrderTitle: groupOrder.title,
-      guideUserId: groupOrder.guideUserId,
-    }))
-  ));
-
-  return [].map((order) => {
-    const memberOrder = memberOrders.find(item => sameId(item.id, order.id));
-    const productList = (memberOrder && memberOrder.productList ? memberOrder.productList : []).map((item) => {
-      const product = productMap[String(item.productId)] || {};
-      return {
-        ...item,
-        productId: item.productId,
-        title: product.title || '商品资料',
-        unitPrice: Number(item.amount) > 0 ? Number(item.totalPrice || 0) / Number(item.amount) : 0,
-        pictureUrl: (product.pictureUrls && product.pictureUrls[0]) || '',
-      };
-    });
-
-    return normalizeOrder({
-      ...order,
-      paymentStatus: order.status,
-      productList,
-      items: productList,
-      customerPhone: order.customerPhone || '',
-      memberRemark: memberOrder && memberOrder.memberRemark,
-      hostRemark: memberOrder && memberOrder.hostRemark,
-      createdAt: order.createdAt || nowIso(),
-      updatedAt: order.updatedAt || nowIso(),
-      paymentHistory: [
-        {
-          id: `${order.id}-seed`,
-          customerOrderId: order.id,
-          fromStatus: '',
-          toStatus: Number(order.status),
-          actorUserId: order.customerUserId,
-          actorName: order.customerName || '客户',
-          actorRole: 'customer',
-          amount: Number(order.totalPrice || 0),
-          paymentMethod: order.paymentMethod || '',
-          proofCount: (order.paymentProofUrls || []).length || 0,
-          note: '系统初始状态',
-          createdAt: order.createdAt || nowIso(),
-        },
-      ],
-    });
-  });
-};
-
-const getStoredState = () => {
-  const stored = safeGetStorage(CUSTOMER_ORDER_STORAGE_KEY, null);
-  if (stored && stored.mode === 'local-customer-order-repository' && Array.isArray(stored.orders)) {
-    return stored;
-  }
-  const seededState = {
-    mode: 'local-customer-order-repository',
-    updatedAt: nowIso(),
-    orders: enrichSeedOrders(),
-    payments: [],
-  };
-  safeSetStorage(CUSTOMER_ORDER_STORAGE_KEY, seededState);
-  return seededState;
-};
-
-const saveState = (state) => {
-  safeSetStorage(CUSTOMER_ORDER_STORAGE_KEY, {
-    ...state,
-    updatedAt: nowIso(),
-  });
-};
-
-const getAllOrders = () => getStoredState().orders.map(normalizeOrder);
-
-const canManageOrder = (order, groupOrders, profile) => {
-  if (!profile || !order) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  if (!hasRole(profile, 'guide')) return false;
-  const groupOrder = groupOrders.find(item => sameId(item.id, order.groupOrderId));
-  if (!groupOrder) return false;
-  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
-  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
-};
-
-const canViewSharedGroupOrder = (groupOrder, profile) => {
-  if (!groupOrder) return false;
-  if (!profile) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  if (hasRole(profile, 'customer')) return true;
-  if (!hasRole(profile, 'guide')) return false;
-  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
-  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
-};
-const canManageSharedGroupOrder = (groupOrder, profile) => {
-  if (!groupOrder) return false;
-  if (isOwnerOrAdmin(profile)) return true;
-  if (!profile || !hasRole(profile, 'guide')) return false;
-  const authorizedGuideIds = groupOrder.authorizedGuideIds || [];
-  return sameId(groupOrder.guideUserId, profile.id) || authorizedGuideIds.some(id => sameId(id, profile.id));
-};
-const getShareAccessError = (groupOrder, profile, shareToken = '') => {
-  if (!groupOrder) return '未找到团单';
-  if (canManageSharedGroupOrder(groupOrder, profile)) return '';
-  if (!profile || !hasRole(profile, 'customer')) return '';
-  const normalizedToken = normalizeShareToken(shareToken);
-  if (!normalizedToken) return '请从分享链接进入团单';
-  if (normalizeShareToken(groupOrder.shareToken) !== normalizedToken) return '分享链接无效';
-  const shareExpireTime = parseDateTime(groupOrder.shareExpiresAt || groupOrder.endAt);
-  if (!shareExpireTime || shareExpireTime <= Date.now()) return '分享入口已过期';
-  const groupOrderEndTime = parseDateTime(groupOrder.endAt);
-  if (groupOrderEndTime <= Date.now()) return '当前团单已停止收单';
-  return '';
-};
-
-const appendHistory = (order, nextStatus, note, profile, payload = {}) => ({
-  id: `${order.id}-${Date.now()}`,
-  customerOrderId: order.id,
-  fromStatus: Number(order.status),
-  toStatus: Number(nextStatus),
-  actorUserId: profile && profile.id,
-  actorName: (profile && profile.displayName) || '',
-  actorRole: profile && profile.role,
-  amount: Number(payload.confirmedAmount || payload.declaredAmount || order.totalPrice || 0),
-  paymentMethod: trimText(payload.paymentMethod) || order.paymentMethod || '',
-  proofCount: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length
-    ? payload.paymentProofUrls.length
-    : ((order.paymentProofUrls || []).length || 0),
-  note,
-  createdAt: nowIso(),
-});
-
 export const CustomerOrderRepository = {
-  storageKey: CUSTOMER_ORDER_STORAGE_KEY,
-
   async listVisible() {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({ resource: 'customerOrders', action: 'listVisible' });
     }
 
-    if (!isSeedDataAllowed()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const groupOrders = GroupOrderRepository.listAll();
-    const customerOrders = getAllOrders();
-
-    return {
-      success: true,
-      data: filterCustomerOrdersByRole(customerOrders, groupOrders, profile),
-      meta: {
-        role: profile && profile.role,
-        authSource: profile && profile.authSource,
-        isMockOpenId: Boolean(profile && profile.isMockOpenId),
-        saveMode: 'local-customer-order-repository',
-      },
-    };
+    return unavailableError();
   },
 
   async listByGroupOrder(groupOrderId) {
@@ -246,25 +21,7 @@ export const CustomerOrderRepository = {
       });
     }
 
-    if (!isSeedDataAllowed()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const groupOrders = GroupOrderRepository.listAll();
-    const groupOrder = groupOrders.find(item => sameId(item.id, groupOrderId));
-    if (!canViewSharedGroupOrder(groupOrder, profile)) {
-      return { success: false, error: '当前角色不能查看此团单订单' };
-    }
-
-    const orders = getAllOrders()
-      .filter(order => sameId(order.groupOrderId, groupOrderId))
-      .filter(order => !hasRole(profile, 'customer') || sameId(order.customerUserId, profile.id));
-    return {
-      success: true,
-      data: orders,
-      meta: { saveMode: 'local-customer-order-repository' },
-    };
+    return unavailableError();
   },
 
   async getById(id) {
@@ -276,15 +33,7 @@ export const CustomerOrderRepository = {
       });
     }
 
-    if (!isSeedDataAllowed()) {
-      return unavailableError();
-    }
-
-    const result = await this.listVisible();
-    if (!result.success) return result;
-    const order = result.data.find(item => sameId(item.id, id));
-    if (!order) return { success: false, error: '未找到订单资料' };
-    return { ...result, data: order };
+    return unavailableError();
   },
 
   async getGroupOrderEntry(groupOrderId, options = {}) {
@@ -299,27 +48,7 @@ export const CustomerOrderRepository = {
       });
     }
 
-    if (!isSeedDataAllowed()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    // 扫小程序码进团只带得动 scene(=shareToken)，无 groupOrderId 时按 token 反查（与云端一致）。
-    const token = normalizeShareToken(options.shareToken);
-    const groupOrder = groupOrderId
-      ? GroupOrderRepository.listAll().find(item => sameId(item.id, groupOrderId))
-      : GroupOrderRepository.listAll().find(item => token && normalizeShareToken(item.shareToken) === token);
-    if (!groupOrder) return { success: false, error: '未找到团单' };
-    const shareAccessError = getShareAccessError(groupOrder, profile, options.shareToken);
-    if (shareAccessError) return { success: false, error: shareAccessError };
-    if (!canViewSharedGroupOrder(groupOrder, profile)) {
-      return { success: false, error: '当前角色不能进入此团单' };
-    }
-    return {
-      success: true,
-      data: groupOrder,
-      meta: { saveMode: 'local-customer-order-repository' },
-    };
+    return unavailableError();
   },
 
   async create(orderData, options = {}) {
@@ -334,85 +63,7 @@ export const CustomerOrderRepository = {
       });
     }
 
-    if (!isSeedDataAllowed()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    if (!profile || (!hasRole(profile, 'customer') && !isOwnerOrAdmin(profile))) {
-      return { success: false, error: '当前角色不能提交客户订单' };
-    }
-
-    const groupOrder = GroupOrderRepository.listAll().find(item => sameId(item.id, orderData.groupOrderId));
-    if (!groupOrder) return { success: false, error: '未找到团单' };
-    const shareAccessError = getShareAccessError(groupOrder, profile, options.shareToken);
-    if (shareAccessError) return { success: false, error: shareAccessError };
-    if (Number(groupOrder.status) !== 1) return { success: false, error: '当前团单已停止收单' };
-
-    const state = getStoredState();
-    const createdAt = nowIso();
-    const hasInitialPayment = Boolean(trimText(orderData.paymentMethod))
-      && Array.isArray(orderData.paymentProofUrls)
-      && orderData.paymentProofUrls.length > 0;
-    const initialStatus = hasInitialPayment ? MemberOrderStatus.PAID : MemberOrderStatus.UNPAID;
-    const nextOrder = normalizeOrder({
-      id: Date.now(),
-      groupOrderId: groupOrder.id,
-      guideUserId: groupOrder.guideUserId,
-      customerUserId: profile.id,
-      customerName: orderData.customerName || profile.displayName || '客户',
-      customerPhone: orderData.customerPhone || profile.phone || '',
-      title: `${groupOrder.title} - ${orderData.customerName || profile.displayName || '客户'}`,
-      status: initialStatus,
-      paymentStatus: initialStatus,
-      statusText: getStatusText(initialStatus),
-      totalPrice: orderData.totalPrice,
-      originalTotalPrice: orderData.totalPrice,
-      items: orderData.items,
-      productList: orderData.items,
-      memberRemark: orderData.memberRemark || '',
-      paymentMethod: orderData.paymentMethod || '',
-      paymentRemark: orderData.paymentRemark || '',
-      paymentProofUrls: orderData.paymentProofUrls || [],
-      declaredAmount: hasInitialPayment ? Number(orderData.declaredAmount || orderData.totalPrice || 0) : '',
-      confirmedAmount: '',
-      confirmRemark: '',
-      cancelRemark: '',
-      hostRemark: '',
-      createdAt,
-      updatedAt: createdAt,
-      paymentHistory: [
-        {
-          id: `${createdAt}-created`,
-          customerOrderId: '',
-          fromStatus: '',
-          toStatus: initialStatus,
-          actorUserId: profile.id,
-          actorName: profile.displayName || '客户',
-          actorRole: profile.role,
-          amount: Number(orderData.totalPrice || 0),
-          paymentMethod: orderData.paymentMethod || '',
-          proofCount: (orderData.paymentProofUrls || []).length || 0,
-          note: hasInitialPayment ? '客户提交订单并声明已付款' : '客户提交订单',
-          createdAt,
-        },
-      ],
-    });
-    nextOrder.paymentHistory = nextOrder.paymentHistory.map(item => ({
-      ...item,
-      customerOrderId: nextOrder.id,
-    }));
-
-    saveState({
-      ...state,
-      orders: [...state.orders.map(normalizeOrder), nextOrder],
-    });
-
-    return {
-      success: true,
-      data: nextOrder,
-      meta: { saveMode: 'local-customer-order-repository' },
-    };
+    return unavailableError();
   },
 
   async updatePaymentStatus(id, nextStatus, note, payload = {}) {
@@ -424,108 +75,7 @@ export const CustomerOrderRepository = {
       });
     }
 
-    if (!isSeedDataAllowed()) {
-      return unavailableError();
-    }
-
-    const profile = AuthService.getCurrentProfile();
-    const groupOrders = GroupOrderRepository.listAll();
-    const state = getStoredState();
-    const orders = state.orders.map(normalizeOrder);
-    const target = orders.find(order => sameId(order.id, id));
-    if (!target) return { success: false, error: '未找到订单资料' };
-
-    const nextStatusValue = Number(nextStatus);
-    const isCustomerOwner = profile && hasRole(profile, 'customer') && sameId(target.customerUserId, profile.id);
-    const isManager = canManageOrder(target, groupOrders, profile);
-    if (nextStatusValue === MemberOrderStatus.PAID && !isCustomerOwner && !isManager) {
-      return { success: false, error: '只有下单客户或团主可以登记付款' };
-    }
-    if (nextStatusValue === MemberOrderStatus.CONFIRMED && !isManager) {
-      return { success: false, error: '当前角色不能处理此订单' };
-    }
-    if (nextStatusValue === MemberOrderStatus.CANCELLED && !isManager && !isCustomerOwner) {
-      return { success: false, error: '当前角色不能取消此订单' };
-    }
-    if (Number(target.status) === MemberOrderStatus.CONFIRMED && nextStatusValue !== MemberOrderStatus.CONFIRMED) {
-      return { success: false, error: '已确认订单不能再变更状态' };
-    }
-    if (Number(target.status) === MemberOrderStatus.CANCELLED) {
-      return { success: false, error: '已取消订单不能再变更状态' };
-    }
-    if (nextStatusValue === MemberOrderStatus.PAID && Number(target.status) === MemberOrderStatus.PAID) {
-      return { success: false, error: '订单已声明付款，请等待确认' };
-    }
-    if (nextStatusValue === MemberOrderStatus.CONFIRMED && Number(target.status) !== MemberOrderStatus.PAID) {
-      return { success: false, error: '只有客户已付款订单才能确认到账' };
-    }
-    // 金额规则一律走 services/customerOrder/orderAmount.js 那一份，不要在这里复制。
-    // 原本这里是独立的第三份写法，用 Number(x || 0) <= 0 判，非数字字串会变 NaN 而整个绕过。
-    if (nextStatusValue === MemberOrderStatus.PAID) {
-      const declaredAmountError = getDeclaredAmountError(target, payload.declaredAmount);
-      if (declaredAmountError) {
-        return { success: false, error: declaredAmountError };
-      }
-      if (!trimText(payload.paymentMethod)) {
-        return { success: false, error: '请填写付款方式' };
-      }
-      // A6：付款凭证选填，没图不得阻止声明。
-    }
-    if (nextStatusValue === MemberOrderStatus.CONFIRMED) {
-      const confirmedAmountError = getConfirmedAmountError(target, payload.confirmedAmount);
-      if (confirmedAmountError) {
-        return { success: false, error: confirmedAmountError };
-      }
-    }
-
-    const historyItem = appendHistory(target, nextStatusValue, note, profile, payload);
-    const updatedOrder = normalizeOrder({
-      ...target,
-      status: nextStatusValue,
-      paymentStatus: nextStatusValue,
-      statusText: getStatusText(nextStatusValue),
-      updatedAt: nowIso(),
-      cancelledAt: nextStatusValue === MemberOrderStatus.CANCELLED ? nowIso() : target.cancelledAt,
-      paymentMethod: trimText(payload.paymentMethod) || target.paymentMethod || '',
-      paymentRemark: trimText(payload.paymentRemark) || target.paymentRemark || '',
-      paymentProofUrls: Array.isArray(payload.paymentProofUrls) && payload.paymentProofUrls.length ? payload.paymentProofUrls : (target.paymentProofUrls || []),
-      declaredAmount: payload.declaredAmount || target.declaredAmount || '',
-      confirmedAmount: payload.confirmedAmount || target.confirmedAmount || '',
-      confirmRemark: trimText(payload.confirmRemark) || target.confirmRemark || '',
-      cancelRemark: trimText(payload.cancelRemark) || target.cancelRemark || '',
-      paymentHistory: [...(target.paymentHistory || []), historyItem],
-    });
-
-    const payments = [...(state.payments || [])];
-    if (nextStatusValue === MemberOrderStatus.CONFIRMED) {
-      payments.push({
-        id: `${target.id}-${Date.now()}`,
-        customerOrderId: target.id,
-        groupOrderId: target.groupOrderId,
-        amount: target.totalPrice,
-        declaredAmount: Number(updatedOrder.declaredAmount || target.totalPrice || 0),
-        confirmedAmount: Number(payload.confirmedAmount || target.totalPrice || 0),
-        method: payload.paymentMethod || target.paymentMethod || 'manual',
-        status: 'confirmed',
-        confirmedByUserId: profile && profile.id,
-        confirmedAt: nowIso(),
-        note: payload.confirmRemark || note || '团主确认收款',
-        createdAt: nowIso(),
-        updatedAt: nowIso(),
-      });
-    }
-
-    saveState({
-      ...state,
-      orders: orders.map(order => (sameId(order.id, id) ? updatedOrder : order)),
-      payments,
-    });
-
-    return {
-      success: true,
-      data: updatedOrder,
-      meta: { saveMode: 'local-customer-order-repository' },
-    };
+    return unavailableError();
   },
 };
 

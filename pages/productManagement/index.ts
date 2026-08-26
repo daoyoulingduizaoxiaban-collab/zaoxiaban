@@ -90,48 +90,30 @@ Page({
   },
 
   async fetchData() {
+    // A13 登录闸门（决策 7）：未登录导登录页并带回原页。原本这里让未登录访客浏览公开商品，
+    // OWNER 拍板改成三个主 tab 一律要登录，那条分支连同它的空态 CTA 一并移除。
+    // （公开商品清单本身还在，商品浏览页给「已登录但未通过审核」的人用。）
+    // 摆在 refreshSession 之后（唯二呼叫点都先 refresh），否则冷启动身分未水合会误踢已登录的人。
+    if ((this as any).requireLogin()) return;
     if ((this as any)._fetchInFlight) return (this as any)._fetchInFlight;
     (this as any)._fetchInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
+    // 已登录但未通过审核/被停用/角色过期：显示受限态，不取数。
     if (!AuthService.canUseBusiness(profile)) {
-      this.setData((this as any).loadingState());
-      const publicRes = await ProductService.listPublic({
-        keyword: this.data.searchQuery,
-      });
-      if (!publicRes.success) {
-        const errorText = publicRes.error || '加载公开商品失败';
-        wx.showToast({ title: errorText, icon: 'none' });
-        this.resetDetailState({
-          allProducts: [],
-          productList: [],
-          roleScopeText: AuthService.getAccessStateText(profile),
-          saveModeText: '',
-          canManageProducts: false,
-          canShowProductCatalog: true,
-          isLoggedIn: Boolean(profile),
-          canUseBusiness: false,
-          accessStateText: AuthService.getAccessStateText(profile),
-          authReady: true,
-          ...(this as any).threeState('error', { errorText }),
-        });
-        return;
-      }
-      const publicProducts = this.normalizeProducts(publicRes.data);
+      const accessText = AuthService.getAccessStateText(profile);
       this.resetDetailState({
-        allProducts: publicProducts,
-        productList: publicProducts,
-        roleScopeText: profile ? AuthService.getAccessStateText(profile) : '公开商品可直接浏览，下单与管理需登录后使用。',
+        allProducts: [],
+        productList: [],
+        roleScopeText: accessText,
         saveModeText: '',
         canManageProducts: false,
-        canShowProductCatalog: true,
-        isLoggedIn: Boolean(profile),
+        canManageProviders: false,
+        canShowProductCatalog: false,
+        isLoggedIn: true,
         canUseBusiness: false,
-        accessStateText: AuthService.getAccessStateText(profile),
+        accessStateText: accessText,
         authReady: true,
-        ...(this as any).threeState(publicProducts.length ? 'ready' : 'empty', {
-          emptyText: '当前暂无公开商品',
-          emptyCta: profile ? '' : '去登录',
-        }),
+        ...(this as any).threeState('empty'),
       });
       return;
     }
@@ -177,7 +159,6 @@ Page({
       authReady: true,
       ...(this as any).threeState(products.length ? 'ready' : 'empty', {
         emptyText: this.canManageProducts() ? '当前没有商品，可点右下角新增' : '当前账号暂无可管理商品',
-        emptyCta: '',
       }),
     });
     })();
@@ -216,12 +197,6 @@ Page({
   // 供应商是团主管理商品的上游，入口从「我的」移进商品库（D-4/B5）。owner/admin/团主可用。
   canManageProviders() {
     return canUseProviderPortal(AuthService.getCurrentProfile());
-  },
-
-  onLogin() {
-    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/productManagement/index')}`, {
-      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
-    });
   },
 
   onAddProduct() {

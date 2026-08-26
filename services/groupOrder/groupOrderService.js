@@ -44,7 +44,6 @@ const normalizeGroupOrder = (groupOrder) => {
 };
 
 export const GroupOrderService = {
-  storageKey: GroupOrderRepository.storageKey,
 
   async listVisible(filters = {}) {
     const result = filters.keyword || Number(filters.status || 0)

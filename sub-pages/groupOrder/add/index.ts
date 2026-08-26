@@ -4,7 +4,7 @@ import { GroupOrderService } from '~/services/groupOrder/groupOrderService';
 import { RESULT_TEXT } from '~/utils/feedback';
 import { AuthService } from '~/services/auth/authService';
 import { FEATURE_KEYS, canUseFeature, getRoleScopeText } from '~/services/auth/roleScope';
-import { navigateBackOrTab, navigateByUrl, normalizeRouteUrl } from '~/utils/navigation';
+import { navigateBackOrTab, normalizeRouteUrl } from '~/utils/navigation';
 import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
@@ -341,33 +341,6 @@ Page({
         : item
     ));
     this.setData({ selectedGoods });
-  },
-
-  onSelectGoods() {
-    if (this.guardReadOnly()) return;
-    if ((this as any)._isOpeningProductPicker) return;
-    if (this.data.pageErrorText) {
-      wx.showToast({ title: this.data.pageErrorText, icon: 'none' });
-      return;
-    }
-    const existingIds = this.data.selectedGoods.map(item => item.id);
-    (this as any)._isOpeningProductPicker = true;
-    navigateByUrl(
-      `/sub-pages/groupOrder/product-picker/index?excludeIds=${JSON.stringify(existingIds)}&from=${encodeURIComponent('/sub-pages/groupOrder/add/index')}`,
-      {
-        events: {
-          selectedProducts: (data) => {
-            this.appendSelectedProducts(data.products || []);
-          }
-        },
-        complete: () => {
-          (this as any)._isOpeningProductPicker = false;
-        },
-        fail: () => {
-          wx.showToast({ title: '打开商品库失败', icon: 'none' });
-        }
-      }
-    );
   },
 
   // 前端必填校验（记账+基本信息定位，日期不做顺序/过期防呆，仅要求已填写）。
