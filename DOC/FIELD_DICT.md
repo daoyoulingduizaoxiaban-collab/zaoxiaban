@@ -52,10 +52,10 @@
 | `displayName` | string | ✅ | 显示名 |
 | `name` | string | — | |
 | `phone` | string | — | 填了要合 `/^1[3-9]\d{9}$/` |
-| `city` | string | — | ⚠️ 见 §1.3 E5 |
-| `gender` | number | — | ⚠️ 见 §1.3 E6 |
+| `city` | string | — | 登录回传，见 §1.3 E5/E6 |
+| `gender` | number | — | 登录回传，见 §1.3 E5/E6 |
 | `birth` | string | — | 格式 `YYYY-MM-DD`，不得晚于今天 |
-| `introduction` | string | — | ⚠️ 见 §1.3 E6 |
+| `introduction` | string | — | 登录回传，见 §1.3 E5/E6 |
 | `avatarUrl` | string | — | 必须是 durable URL（`cloud://` / `https://` / 空） |
 | `roles[]` | string[] | ✅ | **权限真相**。owner / admin / guide / customer |
 | `role` | string | — | primary role，仅相容用，不得当唯一权限来源 |
@@ -98,9 +98,14 @@
 | `pages/my/info-edit/index.wxml` | 姓名 / 性别 / 手机 / 生日 / 地区 / 简介 / 头像 |
 | `pages/tourGuides/edit/index.wxml:18-21` | 团主名称 / 城市 / 手机 / 团主状态 |
 
-⚠️ **E5 — 城市每次刷新登录态就被清空**：`cloudfunctions/authLogin/index.js` 的 `toClientProfile` 不回传 `city`，但 `services/auth/authService.js:202` 写 `city: profile.city || ''`，经 `mergeProfileTimestamps` 的 `{...previous, ...nextProfile}` 用空字串盖掉旧值。
+✅ **E5 / E6 — 已修（2026-08-26）**：`city` / `gender` / `birth` / `introduction` 四栏原本云端登录不回传，前端又用空值写进 profile，经 `mergeProfileTimestamps` 的 `{...previous, ...nextProfile}` 把本机旧值盖掉（城市每次刷新登录被清空；性别/生日/简介只活在本机 storage，换装置即消失）。
 
-⚠️ **E6 — `gender` / `birth` / `introduction` 云端永不回传**，只活在本机 storage，换装置即消失。
+两侧都修了：
+
+- `cloudfunctions/authLogin/index.js` 的 `toClientProfile` 补回这四栏，`buildDefaultProfile` 一并种空值。**改了云函数要部署。**
+- `services/auth/authService.js` 的 `pickPresent()`：云端没回传的栏位就不写进 profile。这是保险——云函数还没部署到的环境，本机旧值仍留得住。
+
+口径：**登录回传的 profile 是这四栏的权威来源；前端只在云端明确给值时才覆写。**
 
 ---
 
