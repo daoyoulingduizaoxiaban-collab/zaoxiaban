@@ -11,6 +11,7 @@ import {
 } from '~/enum/ProductStatus'
 import { useAccessPage } from '~/behaviors/useAccessPage';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
+import { buildPriceTiers } from '~/utils/priceDisplay';
 
 Page({
   // access-state + 三态字段与 helper 来自 behavior（R1）
@@ -290,7 +291,12 @@ Page({
     }
     this.setData({
       selectedProduct: product,
-      selectedPriceRules: product.priceSetting || [],
+      // 走共用的价格档拆解，总价由它统一算（缺 totalPrice 会用数量×单价补），
+      // 不要直接把原始 priceSetting 丢给画面，那样各页会各印各的。
+      selectedPriceRules: buildPriceTiers(product.priceSetting).map((tier, i) => ({
+        ...tier,
+        description: (product.priceSetting || [])[i] ? (product.priceSetting || [])[i].description : '',
+      })),
       detailVisible: true,
     });
   },

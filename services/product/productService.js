@@ -4,6 +4,7 @@ import { DirectoryRepository } from '~/repositories/directoryRepository';
 import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { getProductPriceDisplay } from '~/utils/priceDisplay';
 import { filterFormalProducts, hasInternalProductCopy, normalizeFormalProductCopy } from '~/utils/productContent';
 
 const normalizeNumber = value => Number(value || 0);
@@ -15,14 +16,8 @@ export const calculatePriceRule = rule => ({
   description: rule.description || '',
 });
 
-// 完整列出每一档「数量+总价」，跟设置商品时的填写口径一致（不算单价区间），同 #C1 口径。
-export const getProductPriceDisplay = (priceSetting = []) => {
-  const tierLabels = (priceSetting || [])
-    .filter(rule => Number(rule.minQuantity) > 0)
-    .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
-    .map(rule => `${Number(rule.minQuantity)}件 ¥${rule.totalPrice != null ? rule.totalPrice : Number(rule.minQuantity) * Number(rule.unitPrice || 0)}`);
-  return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
-};
+// 价格文案口径收在 utils/priceDisplay.js 一份，这里只是转呼给既有呼叫端用。
+export { getProductPriceDisplay };
 
 const normalizeProduct = (product) => {
   const displayProduct = normalizeFormalProductCopy(product);

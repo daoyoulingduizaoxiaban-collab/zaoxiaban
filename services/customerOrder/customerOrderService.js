@@ -6,6 +6,7 @@ import { AuthService } from '~/services/auth/authService';
 import { canManageGroupOrder } from '~/services/auth/roleScope';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { filterFormalProducts } from '~/utils/productContent';
+import { getProductPriceDisplay } from '~/utils/priceDisplay';
 import { getDeclaredAmountError, getConfirmedAmountError, hasInitialPayment } from '~/services/customerOrder/orderAmount';
 
 const normalizeNumber = value => Number(value || 0);
@@ -57,15 +58,7 @@ const getOptimalCombo = (priceSetting = [], quantity = 0) => {
   return { totalPrice: roundMoney(dp[count]), parts };
 };
 
-// 完整列出每一档「数量+总价」，跟开团/设置商品时的填写口径一致（不算单价），
-// 客户下单前才看得出买多少件划算（同 groupOrder detail 页 #C1 口径）。
-const getProductPriceDisplay = (product) => {
-  const tierLabels = (product.priceSetting || [])
-    .filter(rule => normalizeNumber(rule.minQuantity) > 0)
-    .sort((a, b) => normalizeNumber(a.minQuantity) - normalizeNumber(b.minQuantity))
-    .map(rule => `${normalizeNumber(rule.minQuantity)}件 ¥${roundMoney(rule.totalPrice)}`);
-  return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
-};
+
 
 const normalizeOrderListItem = order => ({
   ...order,

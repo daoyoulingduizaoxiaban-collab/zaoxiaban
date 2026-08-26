@@ -2,6 +2,7 @@ import { ProductService } from '~/services/product/productService';
 import { ProductStatus } from '~/enum/ProductStatus';
 import { AuthService } from '~/services/auth/authService';
 import { normalizeProductImageFields } from '~/utils/productImage';
+import { getProductPriceDisplay } from '~/utils/priceDisplay';
 
 Page({
   data: {
@@ -76,7 +77,7 @@ Page({
       return {
         ...normalizeProductImageFields(item),
         priceSetting: item.priceSetting || item.priceSettings || [],
-        priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
+        priceDisplay: item.priceDisplay || getProductPriceDisplay(item.priceSetting || item.priceSettings || []),
         minUnitPrice: this.getMinUnitPrice(item.priceSetting || item.priceSettings || []),
       };
     });
@@ -87,13 +88,6 @@ Page({
     return prices.length ? Math.min(...prices) : 0;
   },
 
-  getPriceDisplay(priceSetting = []) {
-    const tierLabels = (priceSetting || [])
-      .filter(rule => Number(rule.minQuantity) > 0)
-      .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
-      .map(rule => `${Number(rule.minQuantity)}件 ¥${rule.totalPrice != null ? rule.totalPrice : Number(rule.minQuantity) * Number(rule.unitPrice || 0)}`);
-    return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
-  },
 
   onInputKeyword(e) {
     this.setData({ searchKeyword: e.detail.value });

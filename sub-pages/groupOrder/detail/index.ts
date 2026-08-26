@@ -5,6 +5,8 @@ import { MemberOrder } from '~/models/MemberOrder';
 import { CustomerOrderService } from '~/services/customerOrder/customerOrderService';
 import { getConfirmedAmountError, getMaxPayableAmount } from '~/services/customerOrder/orderAmount';
 import { buildOrderDetailView, buildOrderCardView } from '~/services/customerOrder/orderViewModel';
+// 价格文案口径收在这里一份，别在页面里再写（原本这页用全形￥、也不做四舍五入，跟别页不一样）。
+import { getProductPriceDisplay, buildPriceTiers } from '~/utils/priceDisplay';
 import { generateGroupOrderQr, callBusinessData } from '~/repositories/cloudBusinessRepository';
 import { AuthService } from '~/services/auth/authService';
 import { navigateByUrl } from '~/utils/navigation';
@@ -17,23 +19,6 @@ const buildCustomerEntryPath = (id, shareToken = '') => {
   return normalizedToken ? `${basePath}&shareToken=${encodeURIComponent(normalizedToken)}` : basePath;
 };
 
-const buildPriceDisplay = (priceSetting = []) => {
-  const tierLabels = (priceSetting || [])
-    .filter(rule => Number(rule.minQuantity) > 0)
-    .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
-    .map(rule => `${Number(rule.minQuantity)}件 ￥${rule.totalPrice}`);
-  return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
-};
-
-const roundMoney = value => Math.round(Number(value || 0) * 100) / 100;
-// 每一档价格区间的可读文案，优先显示总价（#C1 让客户看到全部区间，如「3件 ¥30」「5件 ¥45」）。
-const buildPriceTiers = (priceSetting = []) => (priceSetting || [])
-  .map(rule => ({
-    minQuantity: Number(rule.minQuantity || 0),
-    label: `${Number(rule.minQuantity || 0)}件 ￥${roundMoney(rule.totalPrice || rule.unitPrice)}`,
-  }))
-  .filter(tier => tier.minQuantity > 0)
-  .sort((a, b) => a.minQuantity - b.minQuantity);
 
 // 客户视图「本团在售商品」：仅取快照中「上架(status=2)」的商品对外展示（A6）。
 const buildOnSaleProducts = (productList = []) => (productList || [])
@@ -42,7 +27,7 @@ const buildOnSaleProducts = (productList = []) => (productList || [])
     id: product.id,
     title: product.title,
     description: product.description || '',
-    priceDisplay: buildPriceDisplay(product.priceSetting),
+    priceDisplay: getProductPriceDisplay(product.priceSetting),
     priceTiers: buildPriceTiers(product.priceSetting),
   }));
 

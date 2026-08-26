@@ -4,6 +4,7 @@ import { FEATURE_KEYS, canUseFeature } from '~/services/auth/roleScope';
 import { navigateBackOrTab, navigateByUrl } from '~/utils/navigation';
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
+import { getProductPriceDisplay } from '~/utils/priceDisplay';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
@@ -87,7 +88,7 @@ Page({
       return {
         ...normalizeProductImageFields(item),
         id: productId,
-        priceDisplay: item.priceDisplay || this.getPriceDisplay(item.priceSetting || item.priceSettings || []),
+        priceDisplay: item.priceDisplay || getProductPriceDisplay(item.priceSetting || item.priceSettings || []),
         disabled: isExist,
         selected: false
       };
@@ -175,13 +176,6 @@ Page({
     });
   },
 
-  getPriceDisplay(priceSetting = []) {
-    const tierLabels = (priceSetting || [])
-      .filter(rule => Number(rule.minQuantity) > 0)
-      .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
-      .map(rule => `${Number(rule.minQuantity)}件 ¥${rule.totalPrice != null ? rule.totalPrice : Number(rule.minQuantity) * Number(rule.unitPrice || 0)}`);
-    return tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / ');
-  },
 
   syncProducts() {
     this.setData({

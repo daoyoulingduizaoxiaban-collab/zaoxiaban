@@ -47,6 +47,8 @@
                   class="status-tag {{item.status === 2 ? 'online' : 'offline'}}">{{productStatusTextMap[item.status]}}</text>
               </view>
               <text class="description">{{item.description || '暂无描述'}}</text>
+              <!-- 补上价格：本页原本整张卡都不显示对外价格，其他列出商品的页面都有 -->
+              <text class="description">{{item.priceDisplay || '未设置价格'}}</text>
               <text class="description">{{item.sourceNote || '暂无供应来源备注'}}</text>
             </view>
           </view>
@@ -88,9 +90,11 @@
         <view class="detail-section">
           <text class="detail-label">价格规则</text>
           <block wx:if="{{selectedPriceRules.length}}">
+            <!-- 总价口径：本页原本印单价，本团商品弹窗印总价，同一组价格档两页数字不同。
+                 全站对外一律用总价（75c18d2 / ea7386e 确立）。 -->
             <view class="price-rule" wx:for="{{selectedPriceRules}}" wx:key="minQuantity">
-              <text>{{item.minQuantity}} 件起</text>
-              <text>￥{{item.unitPrice}}</text>
+              <text>{{item.minQuantity}} 件</text>
+              <text>¥{{item.totalPrice}}</text>
               <text wx:if="{{item.description}}" class="price-rule__note">{{item.description}}</text>
             </view>
           </block>

@@ -6,6 +6,7 @@ import { FEATURE_KEYS, canUseFeature, isOwnerOrAdmin, hasRole } from '~/services
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
+import { getProductPriceDisplay } from '~/utils/priceDisplay';
 
 const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
 
@@ -152,20 +153,12 @@ Page({
     this.openPendingProductDetail();
   },
 
-  // 价格显示跟开团设定时一样：按档次显示「数量件 总价¥X」，不算单价（同 detail 页 #C1 口径）。
+  // 价格文案走 utils/priceDisplay 一份口径（本页原本自己写一份，还用全形￥、跟别页不一样）。
   normalizeProducts(products) {
-    return products.map(item => {
-      const priceSetting = item.priceSetting || [];
-      const tierLabels = priceSetting
-        .filter(setting => Number(setting.minQuantity) > 0)
-        .sort((a, b) => Number(a.minQuantity) - Number(b.minQuantity))
-        .map(setting => `${Number(setting.minQuantity)}件 ￥${setting.totalPrice}`);
-
-      return {
-        ...normalizeProductImageFields(item),
-        priceDisplay: tierLabels.length === 0 ? '未设置价格' : tierLabels.join(' / '),
-      };
-    });
+    return products.map(item => ({
+      ...normalizeProductImageFields(item),
+      priceDisplay: getProductPriceDisplay(item.priceSetting),
+    }));
   },
 
   onSearchInput(e) {
