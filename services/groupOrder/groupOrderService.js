@@ -139,10 +139,6 @@ export const GroupOrderService = {
     return GroupOrderRepository.update(id, payload);
   },
 
-  async addProducts(groupOrderId, products) {
-    return GroupOrderRepository.addProducts(groupOrderId, (products || []).map(normalizeProduct));
-  },
-
   async removeProduct(groupOrderId, productId) {
     return GroupOrderRepository.removeProduct(groupOrderId, productId);
   },

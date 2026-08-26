@@ -29,7 +29,7 @@ node local-server/server.js
 node local-server/smoke-test.js
 ```
 
-自起服务、跑登录→建商品→读回→持久化→鉴权拒绝的真实闭环并断言。
+自起服务、跑登录→开团(含内嵌商品)→读回→持久化→鉴权拒绝的真实闭环并断言。
 
 小程序 UI 流程测试需要开发者工具已打开本专案，直接运行对应 `local-server/flow-*.js` 或 `npm run smoke`；新版 `wechatide` 自动化不需要 `cli auto --auto-port`。
 

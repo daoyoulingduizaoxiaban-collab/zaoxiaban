@@ -147,7 +147,7 @@
 ### 3.5 鉴权闸门覆盖不一致
 
 - `requireLogin()`：✅ 两个业务 tab（`groupOrder`、`customerOrders`）都已补上（2026-08-26），未登录导登录页并带 `redirectTo` 回原页。（商品库 tab 已整个删除，见 `BUSINESS_LOGIC_PRINCIPLES` B2 #8。）
-- `useAccessPage`：14 页有、12 页无；无的全部自写 `canUseFeature`。
+- `useAccessPage`：全站 19 页中 9 页有、10 页无；无的全部自写 `canUseFeature`。
 
 ---
 

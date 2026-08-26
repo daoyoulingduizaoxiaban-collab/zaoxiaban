@@ -44,7 +44,6 @@ const REVIEW_STATUS = {
   DISABLED: 'disabled',
 };
 
-const INTERNAL_PRODUCT_COPY_RE = /QA|mock|Seed|MVP|local|test|automation|自动化|测试|本地|后续|未完成|暂未|未开放|未启用|未串接/i;
 const PREVIEW_STATUSES = new Set([REVIEW_STATUS.PENDING, REVIEW_STATUS.REJECTED, REVIEW_STATUS.DISABLED]);
 const PREVIEWABLE_ROLES = Object.freeze(['guide', 'customer', 'provider', 'admin', 'owner']);
 const ALL_PREVIEW_ROLES = new Set([...PREVIEWABLE_ROLES, ...PREVIEW_STATUSES, 'visitor']);
@@ -478,7 +477,6 @@ module.exports = {
   GROUP_ORDER_STATUS,
   MEMBER_ORDER_STATUS,
   REVIEW_STATUS,
-  INTERNAL_PRODUCT_COPY_RE,
   PREVIEW_STATUSES,
   PREVIEWABLE_ROLES,
   ALL_PREVIEW_ROLES,

@@ -8,8 +8,6 @@ import { useAccessPage } from '~/behaviors/useAccessPage';
 import { RESULT_TEXT, toastSuccess } from '~/utils/feedback';
 import { getProductPriceDisplay } from '~/utils/priceDisplay';
 
-const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
-
 Page({
   behaviors: [useAccessPage],
   data: {
@@ -48,9 +46,6 @@ Page({
 
   async onShow() {
     await AuthService.refreshSession();
-    if (this.consumePickerFallbackResult()) {
-      return;
-    }
     if (this.data.skipNextReload) {
       this.setData({
         skipNextReload: false
@@ -68,34 +63,6 @@ Page({
       selectedPriceRules: [],
       ...extraState,
     });
-  },
-
-  consumePickerFallbackResult() {
-    let result = null;
-    try {
-      result = wx.getStorageSync(PICKER_RESULT_KEY);
-      wx.removeStorageSync(PICKER_RESULT_KEY);
-    } catch (err) {
-      result = null;
-    }
-    if (!result || !Array.isArray(result.products) || Date.now() - Number(result.createdAt || 0) > 5 * 60 * 1000) return false;
-    if (!this.data.groupOrderId || !this.data.canManageGroupOrder) return false;
-    const selectedProducts = this.normalizeProducts((result.products || []).map(item => new Product(item)));
-    if (!selectedProducts.length) return false;
-    const existingIds = new Set(this.data.rawList.map(item => String(item.id)));
-    const nextProducts = selectedProducts.filter(item => !existingIds.has(String(item.id)));
-    if (!nextProducts.length) return true;
-    GroupOrderService.addProducts(this.data.groupOrderId, nextProducts).then((res) => {
-      if (!res.success) {
-        wx.showToast({ title: res.error || '加入商品失败', icon: 'none' });
-        return;
-      }
-      const rawList = this.normalizeProducts(res.data.productList || []);
-      this.setData({ rawList, skipNextReload: false });
-      this.applyDisplayList(rawList);
-      toastSuccess(RESULT_TEXT.save);
-    });
-    return true;
   },
 
   async loadGroupProducts() {
@@ -167,6 +134,7 @@ Page({
     this.setData({
       searchQuery: query,
       displayList,
+      ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDER_CREATE),
       ...(this as any).threeState(displayList.length ? 'ready' : 'empty', { emptyText }),
     });
   },
@@ -179,13 +147,11 @@ Page({
     this.applyDisplayList(this.data.rawList, '');
   },
 
+  // 内嵌新增的商品只有名称、价格档、图片三样（没有 description），所以只比名称。
   filterList(list, query) {
     if (!query) return list;
     const keyword = query.toLowerCase();
-    return list.filter(item =>
-      String(item.title || '').toLowerCase().includes(keyword) ||
-      String(item.description || '').toLowerCase().includes(keyword)
-    );
+    return list.filter(item => String(item.title || '').toLowerCase().includes(keyword));
   },
 
   goToDetail(e) {

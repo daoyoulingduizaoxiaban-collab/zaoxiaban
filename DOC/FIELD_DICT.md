@@ -92,9 +92,7 @@
 | 位置 | 显示栏位 |
 | --- | --- |
 | `pages/my/index.wxml:8-16` 个人卡 | `avatarUrl`、`displayName`、`roleLabel`、`authSourceText` |
-| `pages/profile/index.wxml:6` 用户目录列表 | `displayName`、`statusText`、`city`+`phone` |
 | `pages/userReview/index.wxml:18` 审核卡 | `displayName`、`requestedRoleLabel`、`accountNote`、角色 chips、期限 |
-| `pages/profile/edit/index.wxml:11-14` | 姓名 / 城市 / 手机 / 维护日期 |
 | `pages/my/info-edit/index.wxml` | 姓名 / 性别 / 手机 / 生日 / 地区 / 简介 / 头像 |
 | `pages/tourGuides/edit/index.wxml:18-21` | 团主名称 / 城市 / 手机 / 团主状态 |
 
@@ -179,8 +177,8 @@
 
 | 位置 | 栏位数 | 价格用什么 |
 | --- | --- | --- |
-| `sub-pages/groupOrder/productList/index.wxml:26-42` 本团商品列表卡 | 4 | `priceDisplay` |
-| `sub-pages/groupOrder/productList/index.wxml:66-90` 本团商品详情弹窗 | 4 | `totalPrice` |
+| `sub-pages/groupOrder/productList/index.wxml:29-40` 本团商品列表卡 | 3 | `priceDisplay` |
+| `sub-pages/groupOrder/productList/index.wxml:57-81` 本团商品详情弹窗 | 3 | `totalPrice` |
 | `pages/customerOrders/edit/index.wxml:59-79` 客户下单商品列 | 6 | `priceDisplay` + `selectedRuleText` + `lineTotal` |
 | `sub-pages/groupOrder/detail/index.wxml:113-121` 在售商品 | 3 | `priceTiers` |
 
@@ -328,7 +326,6 @@
 | `sub-pages/groupOrder/detail/index.wxml:72-88` 订单卡（管理者） | 5 | 内嵌自绘 |
 | `sub-pages/groupOrder/detail/index.wxml:129-141` 订单卡（客户） | 4 | 内嵌自绘，无 `customerName` |
 | `sub-pages/groupOrder/detail/index.wxml:169-197` 明细弹窗 | **9** | ⚠️ 内嵌自绘，缺 `paymentRemark`、`displayHistory`、`paymentProofUrls`、`customerName` |
-| `pages/message/index.ts:32-43` 讯息列 | 4 | ⚠️ 读 `groupOrderTitle`，但 service 从不回传 → 永远显示 fallback「团单」（**E8**） |
 | `pages/customerOrders/edit/index.wxml:38-54` 下单表单 | 6 | |
 | `components/order-action-panel` 三种模式 | 4 / 2 / 1 | 声明付款 / 确认收款 / 取消 |
 | `sub-pages/groupOrder/detail/index.wxml:210-223` 确认收款弹窗 | 3 | 内嵌自绘 |

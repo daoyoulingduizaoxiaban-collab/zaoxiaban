@@ -65,7 +65,7 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 
 | 客户端 | 云端 | 内容 |
 | --- | --- | --- |
-| `services/auth/roleScope.js` | `cloudfunctions/businessData/lib/core.js` | `normalizeRoles` / `hasRole` / `isRoleExpired` / `getEffectiveRoles` / `isOwnerOrAdmin` / `canManageGroupOrder` / `canManageProduct` / `isApprovedProfile`↔`assertApprovedProfile` 等十几个镜像函数 |
+| `services/auth/roleScope.js` | `cloudfunctions/businessData/lib/core.js` | `normalizeRoles` / `hasRole` / `parseExpiryTime` / `isRoleExpired` / `getEffectiveRoles` / `isOwnerOrAdmin` / `canManageGroupOrder` / `isApprovedProfile`↔`assertApprovedProfile` 等十几个镜像函数 |
 
 **铁律：改动上表任一权限/校验逻辑，必须同时改客户端和云端两份，语义一致。**
 - 只改客户端 → 客户端放行、服务端拒绝（或反之），正式环境坏。
@@ -110,7 +110,7 @@ cloudfunctions/authLogin/index.js             登录（换取身份/角色）
 - `getEffectiveRoles(profile)`：到期后剥离 guide/admin，保留基线 → **团主过期后仍是客户，客户功能不受影响**。
 
 **判定规则（关键）：**
-- **权限/可见性判定一律走 `getEffectiveRoles`**（`canUseFeature` / `isOwnerOrAdmin` / `canManageGroupOrder` / `canManageProduct` / `canUseProviderPortal` / `filter*ByRole`）。
+- **权限/可见性判定一律走 `getEffectiveRoles`**（`canUseFeature` / `isOwnerOrAdmin` / `canManageGroupOrder` / `canUseProviderPortal` / `filter*ByRole`）。
 - **`hasRole` 只表示「原始角色成员」，仅供展示/文案**，不要拿它做权限门。
 - 功能可见性 = `canUseFeature(profile, FEATURE_KEYS.X)`，映射表在 `roleScope.js` 的 `FEATURE_ALLOWED_ROLES`。加新功能门控就往这张表加。
 - 云端入口统一用 `assertApprovedProfile(profile, allowedRoles)` 拦（到期/未审核/角色不符）。
@@ -221,6 +221,6 @@ node local-server/check-contract.js
 **与其他检查的分工**：
 
 - `check-contract.js` —— 静态契约（这份）。改完就能跑，最先跑。
-- `npm run smoke` —— 21 页真的开得起来、三态没停在载入中。
-- `node local-server/flow-*.js` —— 15 条真实业务流程走得通。
+- `npm run smoke` —— 18 页真的开得起来、三态没停在载入中。
+- `node local-server/flow-*.js` —— 12 条真实业务流程走得通。
 - `node local-server/verify-actions.js` —— 后端每个动作都不抛错，不需要 IDE。

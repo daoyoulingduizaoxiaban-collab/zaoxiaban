@@ -9,8 +9,6 @@ import { isCloudBusinessEnabled, uploadProductImages } from '~/repositories/clou
 import { normalizeProductImageFields } from '~/utils/productImage';
 import { useAccessPage } from '~/behaviors/useAccessPage';
 
-const PICKER_RESULT_KEY = 'dao_you_ling_product_picker_result';
-
 // 出团时间/收单截止预设「此时此刻」，格式与 date-time-picker 的 format 一致（YYYY-MM-DD HH:mm）。
 const pad2 = (n: number) => String(n).padStart(2, '0');
 // 解析表单时间字串。中间那格空白一定要换成 T——小程序在 iOS 跑的是 JSCore，
@@ -35,6 +33,7 @@ Page({
     pageTitle: '开团',
     isEdit: false,
     groupOrderId: '',
+    copyFromId: '',
     selectedGoods: [] as Product[],
     isSubmitting: false,
     accessDenied: false,
@@ -78,7 +77,8 @@ Page({
       this.setData({
         accessDenied: true,
         accessStateText: getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDER_CREATE),
-        ...(this as any).threeState('ready'),
+        ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDER_CREATE),
+      ...(this as any).threeState('ready'),
       });
       return;
     }
@@ -99,6 +99,7 @@ Page({
         pageTitle: '开团（复制）',
         isEdit: false,
         groupOrderId: '',
+        copyFromId: copyFrom,
       });
       await this.loadGroupOrder(copyFrom, { asCopy: true });
       return;
@@ -117,48 +118,24 @@ Page({
         customerNotice: '',
         status: GroupOrderStatus.OPEN,
       },
+      ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDER_CREATE),
       ...(this as any).threeState('ready'),
     });
   },
 
-  async onShow() {
-    this.consumePickerFallbackResult();
-  },
-
   // page-state 的重试：只有「读既有团单失败」会进 error 态，重读它即可。
+  // 复制模式的来源 id 不在 groupOrderId（那栏刻意留空，存档时才走 create），
+  // 所以另外记一份 copyFromId，否则复制失败后按重试是没反应的。
   onRetry() {
-    const id = this.data.groupOrderId;
+    const id = this.data.groupOrderId || this.data.copyFromId;
     if (!id) return;
     this.setData((this as any).loadingState());
-    this.loadGroupOrder(id);
+    this.loadGroupOrder(id, { asCopy: Boolean(!this.data.groupOrderId && this.data.copyFromId) });
   },
 
   onBack() {
     if (this.data.isSubmitting) return;
     navigateBackOrTab(this.data.sourceUrl || '/pages/groupOrder/index');
-  },
-
-  appendSelectedProducts(products = []) {
-    const selectedProducts = this.normalizeGoods((products || []).map(item => new Product(item)));
-    if (!selectedProducts.length) return;
-    const existingIds = new Set(this.data.selectedGoods.map(item => String(item.id)));
-    const nextProducts = selectedProducts.filter(item => !existingIds.has(String(item.id)));
-    if (!nextProducts.length) return;
-    this.setData({
-      selectedGoods: [...this.data.selectedGoods, ...nextProducts],
-    });
-  },
-
-  consumePickerFallbackResult() {
-    let result = null;
-    try {
-      result = wx.getStorageSync(PICKER_RESULT_KEY);
-      wx.removeStorageSync(PICKER_RESULT_KEY);
-    } catch (err) {
-      result = null;
-    }
-    if (!result || !Array.isArray(result.products) || Date.now() - Number(result.createdAt || 0) > 5 * 60 * 1000) return;
-    this.appendSelectedProducts(result.products);
   },
 
   async loadGroupOrder(groupOrderId, { asCopy = false } = {}) {
@@ -187,6 +164,7 @@ Page({
       },
       selectedGoods: this.normalizeGoods(res.data.productList || []),
       readOnly: status === GroupOrderStatus.STOPPED,
+      ...(this as any).buildAccessState(FEATURE_KEYS.GROUP_ORDER_CREATE),
       ...(this as any).threeState('ready'),
     });
   },

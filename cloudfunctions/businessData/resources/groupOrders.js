@@ -6,6 +6,7 @@ const {
   trimText,
   normalizeShareToken,
   parseExpiryTime,
+  hasOnlyDurableAssetUrls,
   buildShareToken,
   buildShareExpiresAt,
   buildCustomerEntryPath,
@@ -56,12 +57,20 @@ const validatePriceTiers = (priceSetting, productTitle) => {
   return '';
 };
 
-const validateNewProducts = (products = []) => {
-  const invalid = products
-    .map(product => validatePriceTiers(product.priceSetting || product.priceSettings, product.title))
-    .find(error => error);
-  return invalid || '';
-};
+// 商品图只收 cloud:// / https:// / 空。开团内嵌新增是商品唯一的进货口，
+// 放临时档路径进来，客户端看到的就是裂图（原本这道只有已删的 products.js 有）。
+const validateProductImages = product => (
+  hasOnlyDurableAssetUrls(product.pictureUrls || [])
+    ? ''
+    : `请重新上传「${product.title || '商品'}」的商品图`
+);
+
+const validateNewProducts = (products = []) => products
+  .map(product => (
+    validatePriceTiers(product.priceSetting || product.priceSettings, product.title)
+    || validateProductImages(product)
+  ))
+  .find(error => error) || '';
 
 const normalizeGroupOrderPayload = (payload, profile, existing = {}) => ({
   ...existing,
@@ -191,6 +200,13 @@ const groupOrderActions = {
     }, profile, target);
     const validationError = validateGroupOrderPayload(updated);
     if (validationError) return failure(validationError);
+    // 商品库删档后，往既有团单加商品的唯一路径是「编辑团单 → 内嵌新增 → 存档」，走的就是这里。
+    // 以前那条路是选品页 → addProducts（有验），所以 update 不验也没事；现在不补就等于后端没防线。
+    // 只验这次送上来的清单里、原本不在团单里的那些，避免旧资料把编辑整个卡死。
+    const existingProductIds = new Set((target.productList || []).map(p => String(p.id || p._id)));
+    const newlyAddedProducts = (updated.productList || []).filter(p => !existingProductIds.has(String(p.id || p._id)));
+    const productsError = validateNewProducts(newlyAddedProducts);
+    if (productsError) return failure(productsError);
     await getCollection('groupOrders').doc(String(target._id || target.id)).update({ data: toUpdateData(updated) });
     await logOperation({
       profile, resourceType: 'groupOrder', resourceId: target._id || target.id, resourceTitle: updated.title,
@@ -215,31 +231,6 @@ const groupOrderActions = {
       visibleUserIds: getVisibleUserIds(target),
     });
     return success({ id: target._id || target.id });
-  },
-
-  async addProducts({ groupOrderId, products = [] }, profile) {
-    assertApprovedProfile(profile, ['guide', 'owner', 'admin']);
-    const target = await getById('groupOrders', groupOrderId);
-    if (!canManageGroupOrder(target, profile)) return failure('当前角色不能管理本团商品');
-    const existingIds = (target.productList || []).map(product => String(product.id || product._id));
-    const newlyAdded = products.filter(product => !existingIds.includes(String(product.id || product._id)));
-    const productsError = validateNewProducts(newlyAdded);
-    if (productsError) return failure(productsError);
-    const nextProducts = [...(target.productList || []), ...newlyAdded];
-    const updatedAt = nowIso();
-    await getCollection('groupOrders').doc(String(target._id || target.id)).update({
-      data: { productList: nextProducts, updatedAt },
-    });
-    await syncGroupOrderProducts(target, products, profile);
-    if (newlyAdded.length) {
-      await logOperation({
-        profile, resourceType: 'groupOrder', resourceId: target._id || target.id, resourceTitle: target.title,
-        action: 'update', actionText: '本团新增商品',
-        changes: [{ field: 'productList', label: '商品', before: '', after: newlyAdded.map(p => p.title).join('、') }],
-        visibleUserIds: getVisibleUserIds(target),
-      });
-    }
-    return success(toId({ ...target, productList: nextProducts, updatedAt }));
   },
 
   async removeProduct({ groupOrderId, productId }, profile) {

@@ -28,11 +28,25 @@ const call = (pathname, body) => new Promise((resolve, reject) => {
 const fn = (name, event, openId) => call(`/fn/${name}`, { event, openId }).then(r => r.result || {});
 
 const flags = [];
-const bd = async (label, resource, action, data, openId = 'dev-owner') => {
+/**
+ * 每个动作都应该跑成功。两种失败都要报：
+ *   🚩 通用错误文案 = 崩溃/漏 require（原本只抓这种）
+ *   ❌ 具体业务文案 = 种子资料不合法，动作根本没走进主体
+ *
+ * ⚠️ 第二种以前不算问题，结果 2026-08-26 加了「出团不得晚于收单截止」防呆之后，
+ * 种子的日期正好违反它，团单与客户订单共 8 个动作全部走不进函式主体，
+ * 这支却照样印「无红旗」——回归网瞎了整整一轮。别再放行业务失败。
+ *
+ * 真的预期会失败的负向案例，传 expectFail 说明原因。
+ */
+const bd = async (label, resource, action, data, openId = 'dev-owner', { expectFail = '' } = {}) => {
   const res = await fn('businessData', { resource, action, data }, openId);
-  const red = res && res.success === false && res.error === GENERIC;
-  console.log(`${red ? '🚩' : '  '} ${label.padEnd(34)} success=${res.success} err=${res.error || ''}`);
-  if (red) flags.push(label);
+  const failed = Boolean(res && res.success === false);
+  const crashed = failed && res.error === GENERIC;
+  const bad = crashed || (failed && !expectFail);
+  const mark = crashed ? '🚩' : (bad ? '❌' : '  ');
+  console.log(`${mark} ${label.padEnd(34)} success=${res.success} err=${res.error || ''}`);
+  if (bad) flags.push(`${label}：${crashed ? '崩溃/漏 require' : res.error}`);
   return res;
 };
 
@@ -49,7 +63,7 @@ const bd = async (label, resource, action, data, openId = 'dev-owner') => {
 
     // ---- groupOrders ----
     const go = await bd('groupOrders.create', 'groupOrders', 'create', {
-      title: '验证团', description: 'd', startAt: '2030-01-02 09:00', endAt: '2030-01-01 20:00',
+      title: '验证团', description: 'd', startAt: '2030-01-01 09:00', endAt: '2030-01-02 20:00',
       pickupNote: '取货', paymentNote: '付款', contactName: '团主', contactPhone: '13800000000',
       productList: [{ id: 'p1', title: '商品', status: 2, priceSetting: [{ minQuantity: 1, unitPrice: 10 }] }],
     });
@@ -57,8 +71,7 @@ const bd = async (label, resource, action, data, openId = 'dev-owner') => {
     const stoken = go.data && go.data.shareToken;
     await bd('groupOrders.listVisible', 'groupOrders', 'listVisible', {});
     await bd('groupOrders.getById', 'groupOrders', 'getById', { id: gid });
-    await bd('groupOrders.update', 'groupOrders', 'update', { id: gid, data: { title: '验证团2', description: 'd', startAt: '2030-01-02 09:00', endAt: '2030-01-01 20:00', pickupNote: '取', paymentNote: '付', contactName: '团主', contactPhone: '13800000000' } });
-    await bd('groupOrders.addProducts', 'groupOrders', 'addProducts', { groupOrderId: gid, products: [{ id: 'p2', title: '商品2', status: 2 }] });
+    await bd('groupOrders.update', 'groupOrders', 'update', { id: gid, data: { title: '验证团2', description: 'd', startAt: '2030-01-01 09:00', endAt: '2030-01-02 20:00', pickupNote: '取', paymentNote: '付', contactName: '团主', contactPhone: '13800000000' } });
     await bd('groupOrders.removeProduct', 'groupOrders', 'removeProduct', { groupOrderId: gid, productId: 'p2' });
 
     // ---- customerOrders (客户身份下单,需 shareToken) ----
@@ -97,7 +110,7 @@ const bd = async (label, resource, action, data, openId = 'dev-owner') => {
     await bd('feedbacks.create(anon未登录)', 'feedbacks', 'create', { content: '匿名验证反馈', contextPage: 'y' }, 'anon-probe');
     await bd('feedbacks.list', 'feedbacks', 'list', {});
 
-    console.log(`\n结果: ${flags.length === 0 ? '✅ 无红旗(所有动作都正常执行,无意外抛错)' : `🚩 ${flags.length} 个红旗: ${flags.join(', ')}`}`);
+    console.log(`\n结果: ${flags.length === 0 ? '✅ 全部动作都跑成功(无崩溃,也没有种子失效)' : `❌ ${flags.length} 个问题:\n  - ${flags.join('\n  - ')}`}`);
     process.exitCode = flags.length ? 1 : 0;
   } catch (err) {
     console.log('探针自身出错:', err && err.message);

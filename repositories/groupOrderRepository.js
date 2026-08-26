@@ -59,18 +59,6 @@ export const GroupOrderRepository = {
     return unavailableError();
   },
 
-  async addProducts(groupOrderId, products) {
-    if (isCloudBusinessEnabled()) {
-      return callBusinessData({
-        resource: 'groupOrders',
-        action: 'addProducts',
-        data: { groupOrderId, products },
-      });
-    }
-
-    return unavailableError();
-  },
-
   async removeProduct(groupOrderId, productId) {
     if (isCloudBusinessEnabled()) {
       return callBusinessData({

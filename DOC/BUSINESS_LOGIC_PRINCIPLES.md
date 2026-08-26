@@ -158,9 +158,9 @@ profile 增加/使用团主申请子结构，至少包含：
 
 `未付款` → `客户已声明付款` → `团主已确认收款`，以及 `已取消` / `已拒绝` 分支。每次流转写入 `paymentStatusHistory`。
 
-### 消息页定位
+### 没有消息页，也没有聊天
 
-`pages/message` 定位为**订单状态提醒**：展示与当前用户相关的订单/付款状态变化，点击进入对应订单详情。不得出现聊天/对话术语。`pages/chat` 及"客户沟通"正式入口移除或降级为导回订单相关页面。
+`pages/chat` 与 `pages/message` **都已整个删档**（2026-08-26，决策 5）。团主与客户之间不在 App 内沟通，订单状态直接看「客户订单」列表与团单详情。**不得再新增聊天/对话/消息中心这类入口。**
 
 ## A7. 操作记录规则
 
@@ -338,7 +338,6 @@ owner/admin 必须有一个正式的**用户目录（管理面）**，能**看�
 | `customerOrders` | pages/customerOrders | ✅(自己的订单) | ✅(自己团单下的订单) | ✅ |
 | `customerOrderCreate` 下单 | 下单流程 | ✅ | ✅(经分享作客户时) | ✅ |
 | `dataCenter` | pages/dataCenter | — | ✅ | ✅ |
-| `message` 订单提醒 | pages/message | ✅(自己相关) | ✅(自己相关) | ✅ |
 | `guideApply` 申请团主 | pages/tourGuides/edit | ✅(未持有 guide 时) | —(已是团主) | ✅ |
 | `userReview` 用户审核 | pages/userReview | — | — | ✅ |
 | `operationLogs` | pages/operationLogs | — | ✅(自己的) | ✅(自己的管理记录) |
@@ -410,8 +409,8 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 规则补充：
 - 底部 NAV 一栏对无权限角色**隐藏该 tab**（如客户看不到"商品管理"写操作、但保留浏览）。同一功能不因角色不同而在 NAV / 我的之间搬家。
 - 「我的」页**不再重复** NAV 的团单/客户订单/工作台入口。
-- **孤儿页废弃**：`home`（工作台）、`pages/release`（开团入口页）、`pages/loginCode`（验证码登录）、`pages/chat`（聊天/订单公告）均无正式入口、内容已被现有流程覆盖 → 废弃（删页 + 清 `app.json` 分包/页面注册）；开团入口固定为团单列表 FAB，登录统一走微信登录，消息统一走订单提醒页（无聊天）。
-- **个人资料只有一个自我编辑入口**：普通用户维护自己的资料统一走 `pages/my/info-edit`（账号资料：姓名/手机/性别/生日/地区/简介/头像）；`pages/profile/*`（用户目录 + 改他人/改角色）**仅管理层可用**，并入「我的·管理区」用户审核域，不对客户/团主开放。
+- **孤儿页废弃**：`home`（工作台）、`pages/release`（开团入口页）、`pages/loginCode`（验证码登录）、`pages/chat`（聊天/订单公告）均无正式入口、内容已被现有流程覆盖 → 废弃（删页 + 清 `app.json` 分包/页面注册）；开团入口固定为团单列表 FAB，登录统一走微信登录，**App 内不做任何站内沟通**（消息页也已删档，见 A6）。
+- **个人资料只有一个自我编辑入口**：维护自己的资料统一走 `pages/my/info-edit`（账号资料：姓名/手机/性别/生日/地区/简介/头像），入口在「设置」页。改他人资料与角色一律走 `pages/userReview`（管理层）；原本的 `pages/profile/*` 用户目录与其编辑页**已整个删档**（2026-08-26，决策 5）。
 - **他人资料隐私**：普通用户（客户/团主）**不得看到其他用户的姓名、手机号等个人资料**；用户目录/名单类页面仅管理层可见，普通用户的资料页只返回并显示**本人**记录。对外展示他人信息处按 A7 脱敏。
 
 ## B6. 数据中心与搜索的可见范围
@@ -467,12 +466,12 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 ## C1. 模型简化（本次重构地基，优先）
 
 - [ ] **C-PROVIDER-REMOVE 移除 provider 角色，改为供应商实体**
-  - 改动：`services/auth/roleScope.js`（删 `AUTH_ROLES.PROVIDER`、`FEATURE_KEYS.PROVIDERS`、相关 allowed roles、`canUseProviderPortal`）、`cloudfunctions/authLogin/index.js`（删 `ROLE_PROVIDER`、登录选项、`providerId` 默认逻辑）、`pages/login/*`（删申请 provider 选项）、`pages/home/*` 与 `pages/my/index.js`（删「申请供应商」入口）、`pages/providers/*`（改造为团主的供应商实体管理或迁移到商品管理下）、`enum`/`config` 相关。
-  - 判定：全站无"以 provider 身份登录/申请/进入 provider 后台"路径；团主可在商品管理里新增供应商实体并与商品关联；旧 provider 账户数据有迁移或兼容处理，不造成崩溃。
+  - 改动：`services/auth/roleScope.js`（删 `AUTH_ROLES.PROVIDER`、`FEATURE_KEYS.PROVIDERS`、相关 allowed roles、`canUseProviderPortal`）、`cloudfunctions/authLogin/index.js`（删 `ROLE_PROVIDER`、登录选项、`providerId` 默认逻辑）、`pages/login/*`（删申请 provider 选项）、`pages/home/*` 与 `pages/my/index.js`（删「申请供应商」入口）、`pages/providers/*`（改造为团主的供应商实体管理，入口在「我的·管理区」）、`enum`/`config` 相关。
+  - 判定：全站无"以 provider 身份登录/申请/进入 provider 后台"路径；团主可在「我的·供应商资料」维护供应商实体；旧 provider 账户数据有迁移或兼容处理，不造成崩溃。
 
-- [ ] **C-CHAT-REMOVE 移除聊天**
-  - 改动：`pages/chat/*`（移除或降级）、`pages/message/*`（改为订单提醒）、首页/我的页对话入口引用、`services/auth/roleScope.js`（删 `FEATURE_KEYS.CHAT`）。
-  - 判定：正式用户看不到聊天/客户沟通入口；消息页为订单状态提醒，点击进订单详情；无聊天术语。
+- [x] **C-CHAT-REMOVE 移除聊天** ✅ 完成（2026-08-26）
+  - `pages/chat/*` 与 `pages/message/*` 都已整档删除，`FEATURE_KEYS.CHAT` / `MESSAGE` 一并移除。
+  - 判定：全站无聊天/客户沟通/消息中心入口，也无相关术语。
 
 - [ ] **C-CUSTOMER-DEFAULT 登录即已审核客户**
   - 改动：`cloudfunctions/authLogin/index.js`（新用户 `buildDefaultProfile` → `role:'customer'`、`roles:['customer']`、`reviewStatus:'approved'`，移除全员 pending 逻辑）、`pages/login/*`（去掉"选择申请身份+提交审核"，改为直接登录进入）、`services/auth/authService.js`（bootstrap 默认客户）。
@@ -519,8 +518,8 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 - [ ] **C-LOG 操作记录**：`pages/operationLogs/*`、`repositories/operationLogRepository.js`、写入点。按 A7 记录关键操作，幂等去重，脱敏；owner/admin 看自己管理记录、团主看自己相关记录；查询 API 校验身份/归属；列表支持时间/类型/状态筛选、分页、空/错/载状态。
 
 - [ ] **C-USER-DIRECTORY 用户目录管理面（落地 A14）**
-  - 背景：原本只有「审核申请」队列（`pages/userReview` 走 `listPendingUsers`，UI 框成「申请身份」）+ `pages/profile` 只读列表、`profile/edit` 只改 `displayRole` 文字；**缺**一个能看全部用户真实 `roles[]`/状态/期限并管理任意用户的正式目录。（注：`listPendingUsers` 地端/云端**均返回全部非 owner**，口径本就一致，无需改后端。）
-  - 改动：`pages/userReview/*` 扩为**用户目录**——「全部/待审核」视图切换（同一份数据前端按 `reviewStatus` 过滤），列全部非 owner 用户并显示真实 `roles[]`/状态/`roleExpiresAt`/申请状态；支持改角色（A2 追加不覆盖，始终保留 customer 基线）、停用⇄恢复、设/续/清期限、审核 pending，走日期选择器 + 二次确认（复用 C-REVIEW）；`pages/profile/edit` 去掉用 `displayRole` 文字「改角色」，角色文案改由真实 `roles[]` 推导；地端 `reviewUser` 的 owner 保护对齐云端（补查 `roles[]` 含 owner）。
+  - 背景：原本只有「审核申请」队列（`pages/userReview` 走 `listPendingUsers`，UI 框成「申请身份」）+ 一个只读的用户目录页与其编辑页；**缺**一个能看全部用户真实 `roles[]`/状态/期限并管理任意用户的正式目录。那两个目录页已于 2026-08-26 删档（决策 5），本项的落点只剩 `pages/userReview`。（注：`listPendingUsers` 地端/云端**均返回全部非 owner**，口径本就一致，无需改后端。）
+  - 改动：`pages/userReview/*` 扩为**用户目录**——「全部/待审核」视图切换（同一份数据前端按 `reviewStatus` 过滤），列全部非 owner 用户并显示真实 `roles[]`/状态/`roleExpiresAt`/申请状态；支持改角色（A2 追加不覆盖，始终保留 customer 基线）、停用⇄恢复、设/续/清期限、审核 pending，走日期选择器 + 二次确认（复用 C-REVIEW）；角色文案一律由真实 `roles[]` 推导，不再有第二个改角色的地方；地端 `reviewUser` 的 owner 保护对齐云端（补查 `roles[]` 含 owner）。
   - 判定：owner/admin 能在一个入口看到所有用户及其真实角色/状态/期限，并对任意非 owner 用户改角色·停用·续期·审核；owner 不被降级/停用、admin 不能碰 owner；所有写入后端判权 + 写操作记录，重开仍在。**（已落地：commit `5031471`/`3620b2c`。）**
 
 ## C7. 正式化与文案
@@ -548,8 +547,8 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 ## D1. 模型简化
 
 - [ ] **D-CUSTOMER-DEFAULT**：全新 OpenID 登录 → 立即为 approved 客户 → 可浏览团单商品并下单，无 pending 拦截。owner allowlist OpenID → 自动管理层。
-- [ ] **D-PROVIDER-REMOVE**：全站无 provider 登录/申请/后台入口；团主商品管理可新增供应商实体并关联商品；旧 provider 数据不致崩溃。
-- [ ] **D-CHAT-REMOVE**：无聊天/客户沟通入口；消息页为订单提醒，点击进订单详情；无聊天术语。
+- [ ] **D-PROVIDER-REMOVE**：全站无 provider 登录/申请/后台入口；团主可在「我的·供应商资料」维护供应商实体；旧 provider 数据不致崩溃。
+- [x] **D-CHAT-REMOVE** ✅：全站无聊天/客户沟通/消息中心入口，也无相关术语（聊天页与消息页都已删档）。
 
 ## D2. 团主申请与多角色
 
