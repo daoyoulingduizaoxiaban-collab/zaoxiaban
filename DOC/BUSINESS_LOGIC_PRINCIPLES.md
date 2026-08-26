@@ -29,7 +29,7 @@ BUG 由使用者在微信开发者工具实测后于对话回报，不在本文�
 3. 细节（背景/改动文件/判定/待确认问题）写在 Part C 那一项里，Part A/B 只留业务规则本身 + 一行指向。
 4. `local-server/check-contract.js` 的 **C7 规则**会检查：Part A/B 出现的每个 `C-XXX` 都要在 Part C 找得到。对不上就红。
 
-**目前带 `🚧` 的项**：`C-PROXY-ORDER`（团主代客下单，决策 14）。
+**目前带 `🚧` 的项**：`C-PROXY-ORDER`（团主代客下单，决策 14）、`C-GUIDE-APPLICATION`（团主申请子结构，2026-08-27）。
 
 **进度与检视追踪**：白话进度、以及**全功能检视表**（逐模组对照本文件 A/B 走查「入口 / 操作 / 字段 / 角色 / 连动」）都在 `进度总览.md`。分工——本文件是「应该长怎样」的标准，检视表是「查了没 · 发现什么」的记录，两边靠章节号对应。
 
@@ -107,6 +107,10 @@ BUG 由使用者在微信开发者工具实测后于对话回报，不在本文�
 因为客户默认开放，**账户级不再有"全员 pending_review 等待审核"这一步**。审核只发生在**团主升级申请**上，用独立的申请状态表达：
 
 ### 团主申请状态（`guideApplication`）
+
+> 🚧 **未实作** → 开发项 **`C-GUIDE-APPLICATION`**（Part C · C2），验收点 `D-GUIDE-APPLICATION`（Part D · D2）。
+> **本节描述的是目标态，不是现况。** 现况是把**整个账户**的 `reviewStatus` 打成 `pending`，
+> 导致客户一提交团主申请，客户功能（浏览团单、下单）全部被挡死——正是本节明文禁止的事。
 
 profile 增加/使用团主申请子结构，至少包含：
 
@@ -537,6 +541,70 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
   - 改动：`pages/tourGuides/edit/*`（申请单：申请人、时间、说明、状态）、`pages/my/index.js`（「申请成为团主」入口，仅未持有 guide 的客户可见）、`services/auth/authService.js` + 相关云函数（写 `guideApplication.status='pending'`，账户维持 approved 客户）、`pages/userReview/*`（团主申请出现在审核列表）。
   - 判定：客户能提交团主申请；提交后客户功能不受影响；owner/admin 审核列表能看到申请并可通过/拒绝；结果可回写可追溯。
 
+- [ ] 🚧 **C-GUIDE-APPLICATION 团主申请子结构（落地 A3，修正「申请即锁死客户功能」）**
+  - **背景（已查证的现况 bug）**：`cloudfunctions/businessData/resources/users.js:158-162` 的 `applyForRole`
+    把**整个账户**的 `status` 与 `reviewStatus` 都写成 `PENDING`；而 `lib/core.js:305-310` 的
+    `assertApprovedProfile` 第一关就是「非 APPROVED 即抛错」，连角色都还没看。
+    → 客户按下「申请团主」的瞬间，浏览团单、下单等客户功能**全部被后端拒绝**，
+    直接违反 A3「账户仍是 approved 客户，客户功能不受影响」。
+    另外 `users.js:54-56` 的 `normalizeDirectoryUser` 把 `status`/`reviewStatus` 缺省值设为 `PENDING`，
+    是同一个 bug 的第二个入口（任何缺省写入都会打成 pending），**必须一并修**。
+  - **资料结构**：`users.guideApplication` 子物件——
+
+    | 栏位 | 型别 | 说明 |
+    | --- | --- | --- |
+    | `status` | enum | `none` \| `pending` \| `approved` \| `rejected`，缺省 `none` |
+    | `submittedAt` | string | ISO 时间，提交当下写入 |
+    | `reviewedBy` | string | 审核者 openId |
+    | `reviewedAt` | string | ISO 时间 |
+    | `remark` | string | 审核备注；拒绝时必填（沿用 C-REVIEW 防误操作） |
+    | `roleExpiresAt` | string | 通过时可设的团主期限，留空=不限期 |
+
+  - **不变量（硬性，实作不得违反）**：
+    1. 提交申请**不得**修改账户级 `reviewStatus` / `status`，账户全程维持 `approved`。
+    2. **不得**为了让 pending 通过而放宽 `lib/core.js` 的 `assertApprovedProfile`——
+       该函式检查「账户 approved」是正确的安全边界，放宽会连带放行 `disabled` 账户。**修上游，不动它。**
+    3. 通过审核时 `roles[]` 走 A2「追加不覆盖」，`customer` 基线不得掉。
+  - **迁移策略（读时兼容，不写迁移脚本）**：
+    既有资料若 `reviewStatus==='pending_review'` 且 `requestedRole==='guide'`，
+    读取时**推导**成 `guideApplication.status='pending'` 且账户视为 `approved`（推导逻辑放在
+    `normalizeDirectoryUser` 与 `authLogin` 的 `toClientProfile` 两处镜像）。
+    理由：本机 `.data/dev.json` 仅有 1 个 approved 帐号、无 pending，云端据交接文件从未有真实用户走完审核；
+    读时兼容在「有旧资料」与「没有旧资料」两种情况下都安全，不需事后补做迁移。
+    `requestedRole` 栏位**保留但冻结**（只读、不再写入），避免牵动 `authLogin` 的登录路径。
+  - **改动文件**：
+    - `cloudfunctions/businessData/resources/users.js`：`applyForRole` 改写 `guideApplication` 不动账户状态；
+      `normalizeDirectoryUser`（:54-56）缺省值 `PENDING` → `APPROVED`，并加读时兼容推导；
+      `review`（:91）拆出团主申请审核路径（见下）。
+    - `cloudfunctions/authLogin/index.js`：`buildDefaultProfile` 种 `guideApplication:{status:'none'}`；
+      `toClientProfile`（:207 一带）回传该子结构 + 读时兼容推导。**改了要部署。**
+    - `services/auth/authService.js`：`normalizeCloudProfile` 收 `guideApplication`（沿用 `pickPresent` 保险）。
+    - `repositories/directoryRepository.js`：`applyForRole` 白名单去掉已废弃的 `AUTH_ROLES.PROVIDER`（:45）。
+    - `pages/tourGuides/edit/index.ts`：`isGuideApplicant`（:59）改读 `guideApplication.status==='pending'`，
+      不再看账户 `reviewStatus`。
+    - `pages/userReview/index.ts` + `index.wxml`：待审核视图改按 `guideApplication.status` 过滤（见下）。
+    - `local-server/verify-actions.js:97`、`local-server/flow-review.js:7`：断言改为「账户仍 approved
+      且 `guideApplication.status` 变化」，不再断言账户级 pending。
+  - **审核端连带改动（必要，非可选）**：账户不再变 pending 后，`userReview` 的「待审核」视图
+    （`index.ts:108,116` 按 `reviewStatus===PENDING` 过滤）**再也看不到团主申请**，申请会永远卡住。
+    因此审核路径一分为二，两者共用同一页两个视图（沿用 C-USER-DIRECTORY 的「全部/待审核」切换）：
+
+    | 动作 | 改什么 | 入口 |
+    | --- | --- | --- |
+    | 审团主申请 | `guideApplication.status` + `roles[]` 追加 guide | 「待审核」视图（改按 `guideApplication.status==='pending'` 过滤） |
+    | 管账户 | `reviewStatus`（停用⇄恢复）、角色、期限 | 「全部」视图 |
+
+  - **完成判定**（可验证，逐条对应）：
+    1. 客户提交团主申请后，查 `users` 该笔：`reviewStatus` 仍是 `approved`、`guideApplication.status==='pending'`。
+    2. 同一账号在申请**未审核期间**成功提交一笔客户订单（`customerOrders.create` 回 success），
+       且下单页可正常进入——即客户功能未被挡。
+    3. owner/admin 在用户审核页「待审核」视图看得到该申请并可通过；通过后
+       `roles[]==['customer','guide']`（customer 未掉）、`guideApplication.status==='approved'`。
+    4. 拒绝路径：`guideApplication.status==='rejected'`、`roles[]` 不变、账户仍 approved、`remark` 有值。
+    5. 停用账户（`reviewStatus='disabled'`）仍被 `assertApprovedProfile` 挡住——证明防线没被放宽。
+    6. 既有 pending 旧资料读出来不报错，且推导成 approved + 申请 pending（读时兼容生效）。
+    7. 地端与云端同一份逻辑（双通铁律），`verify-actions` 无红旗。
+
 - [ ] **C-MULTIROLE roles[] 追加不覆盖 + effectiveRole 全面化**
   - 改动：审核通过写入处（`pages/userReview/index.js` 现为 `role: roles[0]`，需改为**追加** guide 并保留 customer）、`cloudfunctions/authLogin` 与 `businessData`（`effectiveRole` 一致化）、`services/auth/roleScope.js` 的 `getRoleScopeText`（改读 `roles[]`/`effectiveRole`，不再只读单一 `profile.role`）、所有按 `profile.role` 做入口/文案判断处。
   - 判定：客户升团主后 `roles[]` = `[customer, guide]`；作为客户的功能完全不受影响；多角色账户文案与入口正确；单一 `role` 不再是任何权限或文案的唯一来源。
@@ -623,6 +691,18 @@ tab 由 `canUseFeature` 过滤，「我的」恒显：
 ## D2. 团主申请与多角色
 
 - [ ] **D-GUIDE-APPLY**：客户提交团主申请 → 客户功能仍可用 → owner/admin 审核列表可见 → 通过后该用户获得团主功能。
+- [ ] **D-GUIDE-APPLICATION**：
+  ① **关键回归**——客户提交团主申请后，**立刻**用同一账号浏览团单并成功下单，全程不被挡
+  （这条是本开发项存在的理由：现况会整个锁死，务必优先测）。
+  ② 提交后查资料：账户 `reviewStatus` 仍 `approved`，`guideApplication.status==='pending'`。
+  ③ owner/admin 在用户审核页「待审核」看得到该申请 → 通过 → `roles[]` 变 `[customer,guide]`
+  且 customer 功能仍在（追加不覆盖）。
+  ④ 拒绝路径：申请状态 `rejected`、角色不变、账户仍 approved、备注必填。
+  ⑤ 负向：`disabled` 账户一切业务功能仍被**后端**拒绝——证明未因本次改动放宽 `assertApprovedProfile`。
+  ⑥ 旧资料兼容：既有「账户 pending + requestedRole=guide」的帐号读出来不报错，
+  推导成 approved + 申请 pending，客户功能可用。
+  ⑦ 重开小程序后以上状态仍在（readback）。
+
 - [ ] **D-MULTIROLE**：客户升团主后 `roles[]`=`[customer,guide]`；用该账号验证 customer 下单与 guide 开团/收款同时可用、互不影响；多角色文案与入口正确；后端按 roles[] 判权。团主角色过期 → 团主功能关闭但客户功能正常。
 
 ## D3. 矩阵与导航
