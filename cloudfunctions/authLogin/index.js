@@ -182,6 +182,10 @@ const buildDefaultProfile = (openId, unionId, requestedRole, bootstrapRole = '')
     displayName: '微信用户',
     phone: '',
     avatarUrl: '',
+    city: '',
+    gender: 0,
+    birth: '',
+    introduction: '',
     status: normalizedStatus,
     reviewStatus: normalizedStatus,
     reviewedBy,
@@ -205,6 +209,12 @@ const toClientProfile = doc => ({
   displayName: doc.displayName || '微信用户',
   phone: doc.phone || '',
   avatarUrl: doc.avatarUrl || '',
+  // 个人资料四栏必须回传：不回传的话前端每次刷新登录态就用空值盖掉本机旧值
+  // （城市被清空、性别/生日/简介换装置即消失）。写入侧在 businessData/resources/users.js。
+  city: doc.city || '',
+  gender: Number(doc.gender || 0),
+  birth: doc.birth || '',
+  introduction: doc.introduction || '',
   providerId: doc.providerId || '',
   status: normalizeReviewStatus(doc.reviewStatus || doc.status || REVIEW_STATUS.PENDING),
   reviewStatus: normalizeReviewStatus(doc.reviewStatus || doc.status || REVIEW_STATUS.PENDING),

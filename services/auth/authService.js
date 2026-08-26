@@ -182,6 +182,13 @@ const buildRoleLabelText = roles => normalizeRoles(roles)
   .map(role => getRoleLabel(role))
   .join('、');
 
+// 云端没回传的栏位一律不要写进 profile：mergeProfileTimestamps 是 {...previous, ...next}，
+// 补一个空字串就会把本机既有值盖掉（城市每次登录被清空的根因）。云函数尚未部署新版时，
+// 这里少写一个 key，本机旧值才留得住。
+const pickPresent = (source, keys) => keys.reduce((acc, key) => (
+  source[key] === undefined || source[key] === null ? acc : { ...acc, [key]: source[key] }
+), {});
+
 const normalizeCloudProfile = (data, requestedRole) => {
   const role = data.role || requestedRole || AUTH_ROLES.CUSTOMER;
   const profile = data.profile || {};
@@ -199,7 +206,7 @@ const normalizeCloudProfile = (data, requestedRole) => {
     displayName: profile.displayName || '微信用户',
     phone: profile.phone || '',
     avatarUrl: profile.avatarUrl || '/static/avatar1.png',
-    city: profile.city || '',
+    ...pickPresent(profile, ['city', 'gender', 'birth', 'introduction']),
     providerId: profile.providerId || '',
     status: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),
     reviewStatus: normalizeReviewStatus(profile.reviewStatus || profile.status || data.reviewStatus || data.status),

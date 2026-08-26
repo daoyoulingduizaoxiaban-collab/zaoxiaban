@@ -26,16 +26,6 @@ Page({
     isNavigatingCreate: false,
   },
 
-  // 开团入口全站只留右下 FAB（#4 已定）：空态 CTA 不再放「新建团单」，避免双新增按钮。
-  computeEmptyCta() {
-    if (!AuthService.getCurrentProfile()) return '去登录';
-    return '';
-  },
-
-  onGroupEmptyCta() {
-    this.onLogin();
-  },
-
   async onLoad() {
     (this as any)._skipNextShowRefresh = true;
     await this.refreshAndFetchItineraryList();
@@ -108,6 +98,10 @@ Page({
   // 单一取数路径（合并原 fetchItineraryList 无筛选 与 applyFilters 带筛选）：
   // 读 this.data 的 searchKeyword/currentStatus，用 listVisibleWithStats 带回人数/已收/应收。
   async fetchItineraryList() {
+    // A13 登录闸门：未登录直接导登录页并带回原页，不再停在空态给一颗「去登录」。
+    // 摆在 refreshSession 之后（唯二呼叫点 onLoad/onShow 都先 refresh），否则冷启动
+    // 身分还没水合就会把已登录的人也踢去登录页。
+    if ((this as any).requireLogin()) return;
     const profile = AuthService.getCurrentProfile();
     if (!canUseFeature(profile, FEATURE_KEYS.GROUP_ORDERS)) {
       const accessText = getRoleScopeText(profile, FEATURE_KEYS.GROUP_ORDERS);
@@ -148,7 +142,6 @@ Page({
             emptyText: isFiltered
               ? '没有符合条件的团单'
               : (this.canCreateGroupOrder() ? '暂无团单，点右下角 + 新建' : '暂无团单'),
-            emptyCta: this.computeEmptyCta(),
           }),
         });
       } else {
@@ -184,12 +177,6 @@ Page({
 
   canCreateGroupOrder() {
     return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.GROUP_ORDER_CREATE);
-  },
-
-  onLogin() {
-    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/groupOrder/index')}`, {
-      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
-    });
   },
 
   viewItinerary(e) {

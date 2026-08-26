@@ -16,10 +16,11 @@ const ENVIRONMENTS = Object.freeze({
   PROD: 'PROD',
 });
 
-const CLOUD_ENV_IDS = Object.freeze({
-  [ENVIRONMENTS.DEV]: 'cloud1-3gwlqssy1f1972a9',
-  [ENVIRONMENTS.PROD]: '',
-});
+// 云环境 ID：全站唯一出处，换环境只改这一行（app.js 的 wx.cloud.init 读它）。
+// 不再按 APP_ENV 分 DEV/PROD 两格——APP_ENV 恒为 'DEV'（原因见下方注释），PROD 那格
+// 永远读不到，只会让人误以为「正式版没填 ID」。日后真要分环境，改成按 envVersion 取值，
+// 不要再退回按 APP_ENV 取。
+const CLOUD_ENV_ID = 'cloud1-3gwlqssy1f1972a9';
 
 const devMode = Object.freeze({
   allowRolePreview: true,
@@ -100,7 +101,7 @@ export default {
   get isDevTools() { return isDevEnv && isDevToolsBuild(); },
   get isProd() { return resolveIsProd(); },
 
-  cloudEnvId: CLOUD_ENV_IDS[APP_ENV] || '',
+  cloudEnvId: CLOUD_ENV_ID,
 
   // getter：每次读都查储存，切换即时生效（见上方 resolveDataBackend）。
   get dataBackend() { return resolveDataBackend(); },

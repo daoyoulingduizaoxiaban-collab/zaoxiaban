@@ -6,7 +6,6 @@
   <view class="access-card" wx:if="{{authReady && !isLoading && !canUseBusiness}}">
     <view class="access-title">{{accessStateText}}</view>
     <view class="access-desc">通过管理员确认身份后，可查看与你相关的客户订单。</view>
-    <t-button wx:if="{{!isLoggedIn}}" t-class="empty-login" theme="primary" size="small" bindtap="onLogin">去登录</t-button>
   </view>
 
   <block wx:else>
@@ -23,7 +22,6 @@
       empty-text="{{emptyText}}"
       empty-cta-text="{{emptyCta}}"
       bind:retry="loadOrders"
-      bind:emptycta="onLogin"
     >
       <t-cell-group theme="card">
         <block wx:for="{{ customerOrdersList }}" wx:key="id">

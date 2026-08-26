@@ -99,6 +99,9 @@ Page({
   },
 
   async loadOrders() {
+    // A13 登录闸门：未登录直接导登录页并带回原页。摆在 refreshSession 之后
+    // （onLoad/onShow 都先 refresh），否则冷启动身分未水合会误踢已登录的人。
+    if ((this as any).requireLogin()) return;
     if ((this as any)._loadOrdersInFlight) return (this as any)._loadOrdersInFlight;
     (this as any)._loadOrdersInFlight = (async () => {
     const profile = AuthService.getCurrentProfile();
@@ -185,12 +188,6 @@ Page({
 
   canCreateCustomerOrder() {
     return canUseFeature(AuthService.getCurrentProfile(), FEATURE_KEYS.CUSTOMER_ORDER_CREATE);
-  },
-
-  onLogin() {
-    navigateByUrl(`/pages/login/login?redirectTo=${encodeURIComponent('/pages/customerOrders/index')}`, {
-      fail: () => wx.showToast({ title: '打开登录页失败', icon: 'none' }),
-    });
   },
 
   getRoleScopeText(meta = {}) {
